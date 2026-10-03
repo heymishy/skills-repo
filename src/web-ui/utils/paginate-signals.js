@@ -7,8 +7,8 @@
 const SIGNALS_PAGE_SIZE = 50;
 
 /**
- * @param {Array} signals -- getSignals()'s own existing output, unmodified order
- * @param {string|undefined} rawPage -- req.query.page: a plain string or undefined, never pre-parsed
+ * @param {Array} signals — getSignals()'s own existing output, unmodified order
+ * @param {string|undefined} rawPage — req.query.page: a plain string or undefined, never pre-parsed
  * @returns {{pageSignals:Array, currentPage:number, totalPages:number, totalCount:number, startIndex:number, endIndex:number, hasPrevious:boolean, hasNext:boolean}}
  */
 function paginateSignals(signals, rawPage) {
@@ -24,8 +24,11 @@ function paginateSignals(signals, rawPage) {
   const sliceEnd = Math.min(sliceStart + SIGNALS_PAGE_SIZE, totalCount);
   const pageSignals = list.slice(sliceStart, sliceEnd);
 
+  // endIndex needs no +1: slice-end is exclusive/0-indexed, which numerically
+  // equals the inclusive/1-indexed display end -- do not "fix" this to match
+  // startIndex's own +1, that would introduce an off-by-one display bug.
   return {
-    pageSignals: pageSignals,
+    pageSignals,
     currentPage: page,
     totalPages: totalPages,
     totalCount: totalCount,
