@@ -38269,7 +38269,11 @@
       "id": "2026-09-30-refactoring-and-product-health",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md",
-      "stage": "definition"
+      "stage": "definition",
+      "name": "Refactoring as a First-Class Inner Loop Practice",
+      "track": "standard",
+      "health": "amber",
+      "updatedAt": "2026-10-03T05:12:46.028Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
