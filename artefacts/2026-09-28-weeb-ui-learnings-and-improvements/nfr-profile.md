@@ -2,7 +2,7 @@
 
 **Feature:** 2026-09-28-weeb-ui-learnings-and-improvements
 **Created:** 2026-09-30
-**Last updated:** 2026-10-01
+**Last updated:** 2026-10-02
 **Status:** Active
 
 ---
@@ -16,6 +16,7 @@
 | Skill launcher render time | <100ms | Playwright navigation timing | `ep1-s3` |
 | Signals panel render time | <100ms (matches `ep1-s3`'s own precedent) | Server-side render time, same rationale as `ep1-s3`'s own NFR verification-method deviation (see `ep1-s3-dod.md`) | `ep2-s1` |
 | Seeded session creation latency | No measurable regression vs `ep1-s3`'s own non-seeded session creation baseline | Wall-clock comparison, seeded vs non-seeded `POST /api/skills/[name]/sessions` | `ep2-s2` |
+| Paginated page render time | Well within the established <100ms budget (trivially true at ≤page-size items, down from the unbounded 5,293 signals `ep2-s1` discovered) | Server-side render time, same method as `ep2-s1`'s own NFR test | `ep2-s3` |
 
 **Source:** Story ACs / NFRs, each independently specific and measurable.
 
@@ -70,6 +71,7 @@ Signal content is drawn from this repo's own workspace/delivery artefacts (captu
 | Keyboard navigation | All CTA buttons (primary and advanced) are keyboard-navigable (Tab order, Enter/Space to activate) | `ep1-s3` |
 | Screen reader support | Button labels and primary/advanced distinction are announced; colour is not the sole indicator of visual hierarchy | `ep1-s3` |
 | Keyboard navigation | Signal list items and CTA buttons are keyboard-navigable, matching `ep1-s3`'s own established pattern | `ep2-s1` |
+| Keyboard navigation, real scale | Tab order across a real (not fixture-seeded) page of signals completes within a reasonable E2E timeout — closes the real finding that an unpaginated page could not be verified against live data at all (5,293 real signals) | `ep2-s3` AC7 |
 | Not applicable | `ep1-s1` (server-side only, no rendered UI); `ep1-s2` (JSON-only endpoint, no rendered UI); `ep2-s2` (form submission only, no new rendered surface beyond `ep2-s1`'s own CTA form) | `ep1-s1`, `ep1-s2`, `ep2-s2` |
 
 ---

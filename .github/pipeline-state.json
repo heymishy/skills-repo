@@ -38006,6 +38006,12 @@
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s2-dor.md"
+        },
+        {
+          "id": "ep2-s3",
+          "stage": "definition",
+          "health": "green",
+          "updatedAt": "2026-10-03T03:59:23.486Z"
         }
       ],
       "guardrails": [
