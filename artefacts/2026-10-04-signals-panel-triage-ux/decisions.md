@@ -54,3 +54,10 @@
 **Decision:** Corrected the mechanism to a single comma-separated value per param (`?hideType=parse-error,decision`), split server-side. Updated `sptu-s2.md`'s Architecture Constraints and added a dedicated integration test to `sptu-s2-test-plan.md` verifying the real comma-split behaviour.
 **Rationale:** Caught before the DoR contract locked in a design built on a false assumption about this app's own query-parsing behaviour — matches this session's standing practice of verifying real system behaviour before committing a story/contract to it, rather than after implementation reveals the mismatch.
 **Made by:** Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A), found and corrected during `/definition-of-ready`, 2026-10-04.
+
+## RISK-ACCEPT: pre-existing baseline test failure, unrelated to this feature (2026-10-04, sptu-s1 branch-setup)
+
+**Context:** `/branch-setup`'s clean-baseline run for `sptu-s1` (`.worktrees/sptu-s1`) found 1 failing file out of 712: `tests/check-p3.5-validate-trace.js`'s `ps1-exits-0-on-valid-repo-with-ci-flag` test (`validate-trace.ps1 --ci` exits 1 with no stderr). Confirmed the identical failure exists on `master` itself (re-run directly in the main checkout, same result) — pre-existing, not introduced by this worktree or any change in this feature. The test concerns a PowerShell trace-validation script, entirely unrelated to `src/web-ui/` or the signals panel.
+**Decision:** Acknowledge as pre-existing and proceed with the inner coding loop for `sptu-s1` (and, by the same reasoning, the rest of this feature's stories) without attempting to fix it as part of this story's scope.
+**Rationale:** Per `/branch-setup`'s own protocol, a failing baseline must be investigated or explicitly acknowledged before proceeding — never silently ignored. This failure is outside this feature's own touch points and likely environment-specific (e.g. a local PowerShell/path difference) rather than a real regression; fixing it is out of scope for a signals-panel UX feature.
+**Made by:** Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A), found during `/branch-setup`, 2026-10-04.
