@@ -38641,7 +38641,7 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-10-04T18:28:30.448Z",
+          "updatedAt": "2026-10-04T18:29:15.415Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md",
           "branch": "feature/tvpf-s1",
@@ -38660,7 +38660,8 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft"
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/939"
         }
       ],
       "guardrails": []
