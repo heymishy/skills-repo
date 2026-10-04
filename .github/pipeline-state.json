@@ -38428,11 +38428,11 @@
       "id": "2026-10-04-signals-panel-triage-ux",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-04-signals-panel-triage-ux/discovery.md",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "name": "Signals Panel Triage UX",
       "track": "standard",
       "health": "green",
-      "updatedAt": "2026-10-04T03:16:49.098Z",
+      "updatedAt": "2026-10-04T05:37:34.159Z",
       "metrics": [
         {
           "id": "m1",
@@ -38465,7 +38465,61 @@
           "contributingStories": []
         }
       ],
-      "stories": []
+      "stories": [
+        {
+          "id": "sptu-s1",
+          "name": "Add /signals to the main navigation",
+          "stage": "definition",
+          "health": "green",
+          "complexity": 1,
+          "updatedAt": "2026-10-04T05:37:34.159Z"
+        },
+        {
+          "id": "sptu-s2",
+          "name": "Type/source filter for the signals panel",
+          "stage": "definition",
+          "health": "green",
+          "complexity": 2,
+          "updatedAt": "2026-10-04T05:37:34.159Z"
+        },
+        {
+          "id": "sptu-s3",
+          "name": "Make the signals panel sort order visible and explicit",
+          "stage": "definition",
+          "health": "green",
+          "complexity": 1,
+          "updatedAt": "2026-10-04T05:37:34.159Z"
+        },
+        {
+          "id": "sptu-s4",
+          "name": "Dismiss / mark-reviewed for the signals panel",
+          "stage": "definition",
+          "health": "green",
+          "complexity": 2,
+          "updatedAt": "2026-10-04T05:37:34.159Z"
+        }
+      ],
+      "slicingStrategy": "user-journey",
+      "guardrails": [
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of status",
+          "status": "not-assessed"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

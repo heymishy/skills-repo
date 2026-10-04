@@ -29,10 +29,14 @@ The `signal-seeding-improve-loop-closure` epic (`ep2-s1`/`ep2-s2`/`ep2-s3`, just
 
 ## MVP Scope
 
-The smallest validate-worthy slice addresses all 3 failure modes without full-blown saved views or bulk actions:
+**Scope addition (2026-10-04, at /definition):** a 4th item, nav discoverability, was added after the operator asked "I can't see a UI path to the feature — what's the nav flow?" during `/definition`. Direct investigation confirmed `/signals` has never had a sidebar nav entry across `ep2-s1`/`ep2-s2`/`ep2-s3` — the same "API shipped, UI never wired" gap this repo has fixed twice before (`pod-manager`, `admin-mock-gateway`). See `decisions.md`, 2026-10-04 "Nav gap fix" entry, and the epic's own Scope addition note.
+
+0. **Nav discoverability** — add `/signals` to the main sidebar nav so the page is reachable by clicking, not only by knowing the raw URL.
+
+The smallest validate-worthy slice addresses all 3 original failure modes without full-blown saved views or bulk actions:
 
 1. **Type/source filter** — operator can show/hide signals by type (e.g. hide all `parse-error`) and by source (`capture-log`, `decisions`, `pipeline-state`, etc.), solving the noise-dominance problem directly.
-2. **Recency sort** — newest-first as a selectable sort order (current insertion order remains the default; recency becomes an explicit option), so an operator can find "what happened lately" without paging deep into the list.
+2. **Recency sort** — newest-first as a selectable sort order (current insertion order remains the default; recency becomes an explicit option), so an operator can find "what happened lately" without paging deep into the list. **Correction (2026-10-04, at /definition):** direct code execution against this repo's real 5,340 signals found `getSignals()` already sorts descending by `timestamp` and has since `ep1-s1`'s first commit — "current insertion order remains the default" is factually wrong. The real gap is narrower: 87% of signals (4,647 of 5,340) carry no timestamp at all, so there's nothing for a sort to act on for the majority. Re-scoped to "make the existing sort order visible and explicit" rather than building new sort logic — see `decisions.md`, 2026-10-04 "Recency sort scope" entry, and story `sptu-s3`.
 3. **Dismiss / mark-reviewed** — a per-signal action that removes it from the default view (reversible, not permanent deletion — a "show dismissed" toggle remains available), so the list stops re-surfacing what's already been handled. Keyed by a stable derived hash (`source`+`type`+`text`), not `ep1-s1`'s own volatile `signal.id`; persisted in a new `workspace/dismissed-signals.json` file (resolved via `/clarify`, see Clarification log).
 
 **First-use bar:** an operator can filter out `parse-error` noise, sort by recency, and dismiss 10 real signals in under 2 minutes, without reading source code to figure out how.

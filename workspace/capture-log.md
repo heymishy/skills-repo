@@ -2233,3 +2233,21 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Real, pre-existing wuce-staging observation, unrelated to ep2-s3's own code: staging's own real workspace mount appears to be missing or incomplete for several subdirectories under /app/workspace/ -- proposals/, traces/, capture-log.md, results.tsv, suite.json, and others -- each producing a real parse-error signal (confirmed live via a direct staging /signals page check: multiple real ENOENT/EISDIR errors visible on page 1, e.g. \"proposals: ENOENT: no such file or directory, scandir '/app/workspace/proposals'\"). This repo's own local workspace does not have this gap (these directories/files exist locally). Not investigated further or fixed -- out of scope for ep2-s3's own pagination work, which correctly renders whatever getSignals() returns, errors included, by design. Worth a dedicated look at wuce-staging's own deployment/volume-mount configuration if someone wants that environment's own signal panel to be a cleaner, more representative preview of real production content."
   source: agent-auto
+
+- date: 2026-10-04
+  session-phase: definition (2026-10-04-signals-panel-triage-ux)
+  signal-type: gap
+  signal-text: "Real, confirmed gap found mid-/definition: /signals has never had a sidebar nav entry across ep2-s1/ep2-s2/ep2-s3 (confirmed in src/web-ui/utils/html-shell.js's NAV_ITEMS array) -- the route handler already passes active: 'signals' to renderShell, anticipating a nav row that was never added. Same 'API shipped, UI never wired' pattern this repo has fixed twice before (pod-manager/pmnv-s1, admin-mock-gateway/alrf-s7), surfaced this time by the operator's own direct question ('I can't see a UI path to the feature') rather than caught during review/DoD of the original stories. Added as sptu-s1, sequenced first in the new feature's own epic. Worth considering a lightweight DoD checklist item ('does every new route have a nav entry, or an explicit decision not to?') to catch this class of gap before merge rather than after."
+  source: agent-auto
+
+- date: 2026-10-04
+  session-phase: definition (2026-10-04-signals-panel-triage-ux)
+  signal-type: pattern
+  signal-text: "A discovery artefact's own factual claim about existing system behaviour ('current insertion order remains the default' for signal sort) was found wrong at /definition time via direct code execution: getSignals() has sorted descending by timestamp since ep1-s1's first commit. Only 13% of real signals (693/5,340) carry a timestamp; the other 87% have none and fall back to aggregation order -- a nuance neither the original discovery problem statement nor MVP scope item captured. Re-scoped the dependent story (sptu-s3) to 'make the existing order visible' rather than 'add new sort logic'. Reinforces a recurring lesson this session: verify a discovery/benefit-metric artefact's factual claims about current system behaviour via direct execution before using them to scope a story, even when the artefact was already operator-approved -- approval covers intent, not necessarily every factual premise."
+  source: agent-auto
+
+- date: 2026-10-04
+  session-phase: definition (2026-10-04-signals-panel-triage-ux)
+  signal-type: gap
+  signal-text: "architecture-guardrails.md's own Active ADR-017 ('Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated') directly contradicts /definition's own SKILL.md 'State update -- mandatory final step' instructions, which tell the operator to populate a nested feature.epics[].stories[] structure. Confirmed by checking real pipeline-state.json: newer features (e.g. the sibling 2026-09-28-weeb-ui-learnings-and-improvements, completed this session) correctly use flat feature.stories[], while many OLDER features still carry the legacy nested feature.epics[].stories[] shape ADR-017 says is not being migrated. Followed ADR-017 (the current, Active architectural decision) over the stale SKILL.md text for this feature's own pipeline-state.json write. /definition's SKILL.md should be corrected to match ADR-017 -- a good /improve candidate alongside the other two governance-CLI findings already logged this session (BOOLEAN_FIELDS gap, gate-advance AC-heading regex mismatch)."
+  source: agent-auto

@@ -20,6 +20,20 @@
 **Rationale:** Matches this repo's own established file-based governance-artefact convention (`capture-log.md`, `decisions.md`, `learnings.md`, etc. — each a dedicated, purpose-specific file). A dedicated file keeps dismiss-state reads/writes simple (one small JSON array/object) and avoids coupling its own read/write lifecycle to an unrelated file's own conventions (e.g. `capture-log.md`'s append-only, never-truncate rule, which doesn't fit a "remove an entry when un-dismissed" operation).
 **Made by:** Hamish King (operator decision via `/clarify`, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
 
+## Recency sort scope: make existing order visible, don't build new sort logic (2026-10-04)
+
+**Context:** During `/definition`, direct execution of `getSignals()` (`src/web-ui/modules/signals-aggregator.js`) against this repo's real 5,340 signals found it already applies `_sortSignals()` — a stable descending sort by `timestamp` — and has done so since `ep1-s1`'s first commit (`e396e67b`, #932). This contradicts `discovery.md`'s own Problem Statement #2 ("fixed, non-chronological order") and MVP Scope item 2 ("current insertion order remains the default"). The real picture: 693 of 5,340 signals (13%) carry a timestamp and are already sorted newest-first; the remaining 4,647 (87%, mostly `learnings`-sourced `note` signals) have no timestamp and fall back to plain aggregation order.
+**Decision:** Scope `sptu-s3` as "make the existing sort order visible and explicit" (a label stating the real behaviour, plus a visible "no date" marker on undated signals) — not as new sort logic, and not as extending `signals-aggregator.js`'s parsers to produce more timestamps (a separate, larger change to `ep1-s1`'s own territory).
+**Rationale:** Operator selected this option directly when presented with 3 choices (make existing order visible / extend timestamp extraction to more sources / drop the story and correct discovery instead). Smallest, most honest slice given the real data shape — avoids both silently shipping a misleading "sorted by recency" claim and over-scoping into `ep1-s1`'s own parser logic.
+**Made by:** Hamish King (operator decision during `/definition`, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
+
+## Nav gap fix: add /signals to NAV_ITEMS as this feature's Story 1 (2026-10-04)
+
+**Context:** The operator asked mid-`/definition`, "checking through UI, I can't see a UI path to the feature — what's the nav flow?" Direct investigation of `src/web-ui/utils/html-shell.js` confirmed `NAV_ITEMS` has never had a `/signals` entry across `ep2-s1`/`ep2-s2`/`ep2-s3` — `signals-panel.js`'s own `handleGetSignalsPanelHtml` already passes `active: 'signals'` to `renderShell`, anticipating a nav row that was never added. Same "API shipped, UI never wired" gap this repo fixed twice before (`pod-manager`/pmnv-s1, `admin-mock-gateway`/alrf-s7).
+**Decision:** Add the nav entry as `sptu-s1`, the first story in this feature's own epic (`signals-panel-triage-controls`), rather than as an untracked side-fix to the already-DoD-complete parent epic.
+**Rationale:** Operator selected this option directly over the alternative (a separate standalone retrospective chore). Keeps the fix traceable through this feature's own discovery/benefit-metric/DoR chain, and sequences it first since the other three stories' UX improvements are moot if the page can't be found.
+**Made by:** Hamish King (operator decision during `/definition`, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
+
 ## RISK-ACCEPT: unmeasured operator-usage assumption (2026-10-04)
 
 **Context:** `/clarify` surfaced that "operators will use filter/sort/dismiss regularly enough to justify the build" is based only on one operator's (this session's) own direct experience, not measured usage data.

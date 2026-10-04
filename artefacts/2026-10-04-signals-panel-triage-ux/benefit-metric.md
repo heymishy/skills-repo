@@ -58,9 +58,9 @@ This is a straightforward product UX improvement — it does not test a hypothes
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Time-to-triage | *(populated at /definition)* | Gap — no stories yet |
-| Metric 2 — Page-1 signal-to-noise ratio | *(populated at /definition)* | Gap — no stories yet |
-| Metric 3 — Dismiss retention | *(populated at /definition)* | Gap — no stories yet |
+| Metric 1 — Time-to-triage | `sptu-s1` (enables reaching the page at all), `sptu-s2` (filter step), `sptu-s3` (sort step), `sptu-s4` (dismiss step) — the full timed flow is filter→sort→dismiss×10, starting from nav discovery | Covered |
+| Metric 2 — Page-1 signal-to-noise ratio | `sptu-s2` (type/source filter) | Covered |
+| Metric 3 — Dismiss retention | `sptu-s4` (dismiss / mark-reviewed) | Covered |
 
 ---
 
