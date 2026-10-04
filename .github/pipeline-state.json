@@ -38496,10 +38496,10 @@
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:11:37.830Z",
+          "updatedAt": "2026-10-04T19:04:45.151Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
@@ -38513,7 +38513,8 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md",
+          "branch": "feature/sptu-s2"
         },
         {
           "id": "sptu-s3",
