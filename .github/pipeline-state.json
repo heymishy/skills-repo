@@ -38422,6 +38422,19 @@
       "track": "standard",
       "health": "amber",
       "updatedAt": "2026-10-03T05:12:46.028Z"
+    },
+    {
+      "slug": "2026-10-04-signals-panel-triage-ux",
+      "id": "2026-10-04-signals-panel-triage-ux",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-10-04-signals-panel-triage-ux/discovery.md",
+      "stage": "discovery",
+      "name": "Signals Panel Triage UX",
+      "track": "standard",
+      "health": "green",
+      "updatedAt": "2026-10-04T03:13:18.091Z",
+      "metrics": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
