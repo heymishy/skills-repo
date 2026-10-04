@@ -38428,11 +38428,11 @@
       "id": "2026-10-04-signals-panel-triage-ux",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-04-signals-panel-triage-ux/discovery.md",
-      "stage": "review",
+      "stage": "definition-of-ready",
       "name": "Signals Panel Triage UX",
       "track": "standard",
-      "health": "amber",
-      "updatedAt": "2026-10-04T06:02:36.918Z",
+      "health": "green",
+      "updatedAt": "2026-10-04T06:13:54.548Z",
       "metrics": [
         {
           "id": "m1",
@@ -38469,10 +38469,10 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T05:58:45.195Z",
+          "updatedAt": "2026-10-04T06:08:25.398Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38484,35 +38484,39 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s1-dor.md"
         },
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:00:00.399Z",
+          "updatedAt": "2026-10-04T06:11:37.830Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 11,
+            "totalTests": 12,
             "passing": 0
           },
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md"
         },
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T06:01:01.100Z",
+          "updatedAt": "2026-10-04T06:12:28.187Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
@@ -38524,15 +38528,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s3-dor.md"
         },
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "test-plan",
-          "health": "amber",
+          "stage": "definition-of-ready",
+          "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:02:36.918Z",
+          "updatedAt": "2026-10-04T06:13:54.548Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
@@ -38544,7 +38550,9 @@
           "acTotal": 7,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s4-dor.md"
         }
       ],
       "slicingStrategy": "user-journey",
@@ -38554,27 +38562,54 @@
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/",
           "status": "met",
-          "evidence": "No story introduces E2E tooling outside Playwright/tests/e2e/; no violation found at review.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-04T05:48:23.336Z"
+          "evidence": "No AC across sptu-s1..s4 required E2E tooling; confirmed at /test-plan Step 3a for every story.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
         },
         {
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
           "status": "met",
-          "evidence": "sptu-s1 AC4, sptu-s2 AC5, sptu-s4 AC6 each require keyboard operability for new controls.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-04T05:48:23.336Z"
+          "evidence": "sptu-s1 AC4, sptu-s2 AC5, sptu-s4 AC6 each verified via DoR-reviewed unit tests asserting no tabindex override.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
         },
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of status",
           "status": "met",
-          "evidence": "sptu-s2 AC5, sptu-s3 AC2 require text/icon indicators, not colour alone.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-04T05:48:23.336Z"
+          "evidence": "sptu-s2 AC5, sptu-s3 AC2 require text/icon indicators, confirmed in DoR-reviewed test plans.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
+        },
+        {
+          "id": "NFR-perf-signals-triage",
+          "category": "nfr",
+          "label": "Filter/sort/dismiss stay within the established <100ms render budget",
+          "status": "met",
+          "evidence": "Dedicated NFR tests named in sptu-s2/sptu-s3/sptu-s4 test plans, cross-referencing the ep1-s3/ep2-s1/ep2-s3 precedent.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
+        },
+        {
+          "id": "NFR-sec-signals-triage",
+          "category": "nfr",
+          "label": "No new attack surface; CSRF protection on new POST routes; dismissed-signals.json contains no raw signal content",
+          "status": "met",
+          "evidence": "sptu-s4 test plan adds dedicated CSRF-rejection/CSRF-success integration tests closing review finding 1-M1; sptu-s2 validates filter values against the real observed set.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
+        },
+        {
+          "id": "NFR-a11y-signals-triage",
+          "category": "nfr",
+          "label": "Keyboard navigation and colour-independent indicators across filter/sort/dismiss controls",
+          "status": "met",
+          "evidence": "Covered by MC-A11Y-01/02 evidence above.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-04T06:13:54.548Z"
         }
       ]
     }

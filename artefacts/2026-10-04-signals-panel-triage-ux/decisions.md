@@ -40,3 +40,17 @@
 **Decision:** Accept as a reasonable, low-cost bet rather than building a separate validation step first. Proceed to `/benefit-metric` and the rest of the pipeline without further usage validation.
 **Rationale:** The MVP itself is small — filter/sort/dismiss added to an already-shipped page, with no new infrastructure beyond one small JSON file. The cost of being wrong (low operator usage) is proportionally low; the cost of a separate validation phase (a whole extra discovery/build cycle before building the real thing) is disproportionate to the risk being managed.
 **Made by:** Hamish King (operator decision via `/clarify`, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
+
+## RISK-ACCEPT: W4 verification scripts not reviewed by a domain expert before DoR sign-off (2026-10-04)
+
+**Context:** `/definition-of-ready`'s W4 warning flags that each story's AC verification script (`sptu-s1` through `sptu-s4`) has not been reviewed by a separate domain expert before sign-off. This is the same standing item every prior story in the parent feature family (`ep1-s1`, `ep1-s2`, `ep2-s1`, `ep2-s2`, `ep2-s3`) carried through DoR, consistent with this being a solo-operator repo with no separate domain-expert role available.
+**Decision:** Acknowledge and proceed for all 4 stories (`sptu-s1`–`sptu-s4`) rather than block sign-off. The verification scripts remain available for a post-merge smoke-test read, which is the next point a second pair of eyes (even the same operator, fresh) can meaningfully review them.
+**Rationale:** Blocking on a reviewer role that doesn't exist in this delivery context would stall every story indefinitely — the same reasoning already applied and accepted across every prior story in this feature family.
+**Made by:** Hamish King (operator decision via `/definition-of-ready`, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
+
+## Correction: filter query-param mechanism is comma-separated, not repeated keys (2026-10-04)
+
+**Context:** `sptu-s2`'s own Architecture Constraints assumed `?hideType=parse-error&hideType=decision` (a repeated query key) would arrive as an array. At `/definition-of-ready`, direct code read of `server.js`'s `parseQuery` (`server.js:2030-2036`) found it does `result[key] = val` per entry — last-wins on a repeated key, never an array — and a repo-wide grep confirmed zero existing route anywhere treats any `req.query.*` field as array-shaped.
+**Decision:** Corrected the mechanism to a single comma-separated value per param (`?hideType=parse-error,decision`), split server-side. Updated `sptu-s2.md`'s Architecture Constraints and added a dedicated integration test to `sptu-s2-test-plan.md` verifying the real comma-split behaviour.
+**Rationale:** Caught before the DoR contract locked in a design built on a false assumption about this app's own query-parsing behaviour — matches this session's standing practice of verifying real system behaviour before committing a story/contract to it, rather than after implementation reveals the mismatch.
+**Made by:** Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A), found and corrected during `/definition-of-ready`, 2026-10-04.

@@ -11,6 +11,7 @@
 - `handleGetSignalsPanelHtml` (`src/web-ui/routes/signals-panel.js:28-32`) currently: `getSignals()` → `paginateSignals(signals, rawPage)` → `renderSignalsPanel(pagination.pageSignals, csrfToken, pagination)`. The filter must insert between the first two calls.
 - New pure module `src/web-ui/utils/filter-signals.js` (matching `paginate-signals.js`'s own precedent: no I/O, independently unit-testable), exporting `filterSignals(signals, { hideTypes, hideSources })`.
 - Toggle controls render as plain `<a href="/signals?...">` links — matching `ep2-s3`'s own Previous/Next precedent and this app's zero-client-JS convention — so keyboard operability (AC5) is native link-focus behaviour, not a custom widget needing a real sequential-focus-order test.
+- **Corrected at DoR (2026-10-04):** `hideType`/`hideSource` arrive as a single comma-separated string each, not a repeated query key — confirmed via direct read of `server.js`'s own `parseQuery` (last-wins on repeated keys, never an array) and a repo-wide grep confirming no route anywhere treats `req.query.*` as array-shaped. Added one dedicated integration test below for this real parsing behaviour.
 
 **E2E/browser-layout detection (Step 3a):** No AC in this story depends on CSS layout, drag-drop, or pointer coordinates. AC5's "individually focusable and operable" is satisfied by plain `<a>` elements — a DOM-structure assertion, not a real browser Tab-order walk. No E2E test required.
 
@@ -20,8 +21,8 @@
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | Hiding a type removes matches from the full list | 2 tests | 1 test | — | — | — | 🟢 |
-| AC2 | Hiding a source behaves the same; filters combine | 1 test | 1 test | — | — | — | 🟢 |
+| AC1 | Hiding a type removes matches from the full list | 2 tests | 2 tests | — | — | — | 🟢 |
+| AC2 | Hiding a source behaves the same; filters combine | 1 test | 2 tests | — | — | — | 🟢 |
 | AC3 | Filter state is visible and bookmarkable | — | 1 test | — | — | — | 🟢 |
 | AC4 | Filtering to zero results shows a clear empty state | 1 test | 1 test | — | — | — | 🟢 |
 | AC5 | Filter controls are keyboard-accessible | 1 test | — | — | — | — | 🟢 |
@@ -108,6 +109,14 @@ None.
 - **Precondition:** `setSignalsSource` returns 120 signals, 15 `parse-error`, spanning 3 pages
 - **Action:** Dispatch GET `/signals?hideType=parse-error`
 - **Expected result:** Response `200`; rendered position text reflects `105` total (not `120`); zero `data-signal-type="parse-error"` markers anywhere in the rendered page
+
+### Real route dispatch: GET /signals?hideType=parse-error,decision hides both comma-separated values
+
+- **Verifies:** AC1/AC2 (real query-parsing correctness, the corrected mechanism)
+- **Components involved:** `handleGetSignalsPanelHtml`'s comma-split parsing, `filterSignals`
+- **Precondition:** A fixture including signals of type `parse-error`, `decision`, and at least one other type
+- **Action:** Dispatch GET `/signals?hideType=parse-error,decision`
+- **Expected result:** Response `200`; zero signals of either `parse-error` or `decision` type appear on any page; signals of the third type still appear — proves the comma-split, not a repeated-key assumption, is what's actually implemented
 
 ### Real route dispatch: GET /signals?hideType=parse-error&hideSource=capture-log combines both filters
 

@@ -2269,3 +2269,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "sptu-s3's AC4 ('no functional change to signal order or content') and sptu-s1's AC3 ('no existing nav row or page is regressed') are both pure non-regression ACs with no new test of their own -- their test plans explicitly state they are verified by re-running ep2-s1/ep2-s3's (or check-b2-account-nav.js's) own existing suites unchanged, rather than inventing a new duplicate test. Recorded explicitly in each test plan's own Test Gaps and Risks / AC Coverage table rather than silently omitted, so /verify-completion knows to re-run the named existing suite, not just the new story's own test file."
   source: agent-auto
+
+- date: 2026-10-04
+  session-phase: definition-of-ready (2026-10-04-signals-panel-triage-ux, sptu-s2)
+  signal-type: gap
+  signal-text: "Found and corrected at DoR contract-review time: sptu-s2's own Architecture Constraints assumed a repeated query key (?hideType=parse-error&hideType=decision) would arrive as an array. Direct read of server.js's parseQuery (result[key]=val per entry, last-wins) plus a repo-wide grep of req.query. across every route confirmed this app has ZERO precedent for array-shaped query params -- every existing route treats req.query.* as a scalar string. Corrected to a single comma-separated value per param before the DoR contract locked it in, with a new dedicated integration test added to verify the real behaviour. Pattern worth repeating: /definition-of-ready's own Contract Proposal step is exactly the right moment to verify a story's assumed request-parsing mechanism against the real shared parsing code, before a coding agent builds against the wrong one."
+  source: agent-auto
