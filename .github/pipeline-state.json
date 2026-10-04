@@ -38624,14 +38624,14 @@
       "name": "Trace validation PS1 parity fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-setup",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-10-04T09:12:27.118Z",
+      "updatedAt": "2026-10-04T09:01:59.662Z",
       "stories": [
         {
           "id": "tvpf-s1",
           "name": "Fix validate-trace.ps1 discovery_approved false positive",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -38641,10 +38641,24 @@
           },
           "acTotal": 4,
           "acVerified": 0,
-          "updatedAt": "2026-10-04T09:12:27.118Z",
+          "updatedAt": "2026-10-04T09:14:15.995Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md",
-          "branch": "feature/tvpf-s1"
+          "branch": "feature/tvpf-s1",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC4 tests for the discovery_approved parity fix",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Fix Check-DiscoveryApproved to add approved-suppresses-draft logic",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            }
+          ]
         }
       ],
       "guardrails": []
