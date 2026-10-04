@@ -38469,10 +38469,10 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T07:06:12.171Z",
+          "updatedAt": "2026-10-04T07:53:30.724Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38482,7 +38482,7 @@
             "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -38501,7 +38501,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft"
         },
         {
           "id": "sptu-s2",
