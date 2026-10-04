@@ -38624,26 +38624,44 @@
       "name": "Trace validation PS1 parity fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "updatedAt": "2026-10-04T09:01:59.662Z",
       "stories": [
         {
           "id": "tvpf-s1",
           "name": "Fix validate-trace.ps1 discovery_approved false positive",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-10-04T09:01:59.662Z",
+          "acVerified": 4,
+          "updatedAt": "2026-10-04T18:29:15.415Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md",
+          "branch": "feature/tvpf-s1",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC4 tests for the discovery_approved parity fix",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Fix Check-DiscoveryApproved to add approved-suppresses-draft logic",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/939"
         }
       ],
       "guardrails": []

@@ -33,9 +33,15 @@
 
 ## Estimated touch points
 
-**Files:** `scripts/validate-trace.ps1` (modified), `tests/check-p3.5-validate-trace.js` (modified — 4 new tests added)
+**Files:** `scripts/validate-trace.ps1` (modified), `tests/check-p3.5-validate-trace.js` (modified — 4 new tests added), `tests/check-egsv-s1-env-gated-skip-visibility.js` (modified — see Amendment below)
 **Services:** none
 **APIs:** none — CLI script only
+
+---
+
+## Amendment (2026-10-05, during Task 2 implementation)
+
+**Added touch point:** `tests/check-egsv-s1-env-gated-skip-visibility.js`. Discovered that this unrelated file's own `p35SkipsAreTrackedSeparately` test hardcodes an exact count (`=== 2`) of "pwsh-unavailable skip blocks" in `check-p3.5-validate-trace.js`'s raw source — Task 1's 4 new tests legitimately grew that count to 6, breaking the hardcoded assertion (not a real regression; every skip block still correctly increments `skipped`). Loosened to `>= 2`, preserving the test's own real documented intent. See `decisions.md`, 2026-10-05 SCOPE NOTE entry.
 
 ---
 
