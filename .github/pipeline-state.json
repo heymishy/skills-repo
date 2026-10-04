@@ -38513,24 +38513,48 @@
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:11:37.830Z",
+          "updatedAt": "2026-10-04T20:00:52.583Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 0
+            "passing": 12
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md",
+          "branch": "feature/sptu-s2",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC6 tests for the type/source filter",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the pure filterSignals module",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Wire the filter into the route and view",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/940"
         },
         {
           "id": "sptu-s3",
