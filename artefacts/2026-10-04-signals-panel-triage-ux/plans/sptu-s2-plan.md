@@ -303,7 +303,7 @@ module.exports = { filterSignals };
 node tests/check-sptu-s2-signals-filter.js
 ```
 
-Expected output: the 5 unit tests (AC1 x2, AC2, AC5, NFR-Security) now pass; the 6 integration tests and the NFR-Performance test still fail (route/view not wired yet).
+Expected output: **corrected 2026-10-05, caught by the Task 2 implementer** — the originally-predicted split here was wrong. `filterSignals` is a pure function with no route/view dependency, so NFR-Performance (which only exercises `filterSignals` + `paginateSignals` directly) passes already. AC5 calls `renderSignalsPanel(...)` with a `filterState` argument and asserts on `sw-filter-toggle` markup that only exists once Task 3's `_filterBar` lands in `signals-panel-view.js` — it cannot pass until then. The real, correct split after Task 2: 6 passed (AC1 x2, AC2, NFR-Security, AC6, NFR-Performance), 6 failed (AC5 and the 5 route-dispatch integration tests — AC6 passes early since its own fixture has no filter params, so it never exercises the not-yet-wired filtering path at all).
 
 - [ ] **Step 3: Commit**
 
