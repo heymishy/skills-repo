@@ -38432,7 +38432,7 @@
       "name": "Signals Panel Triage UX",
       "track": "standard",
       "health": "amber",
-      "updatedAt": "2026-10-04T05:48:23.336Z",
+      "updatedAt": "2026-10-04T06:02:36.918Z",
       "metrics": [
         {
           "id": "m1",
@@ -38469,46 +38469,82 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T05:46:23.127Z",
+          "updatedAt": "2026-10-04T05:58:45.195Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md"
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T05:46:50.558Z",
+          "updatedAt": "2026-10-04T06:00:00.399Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md"
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T05:47:19.917Z",
+          "updatedAt": "2026-10-04T06:01:01.100Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md"
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "amber",
           "complexity": 2,
-          "updatedAt": "2026-10-04T05:48:05.038Z",
+          "updatedAt": "2026-10-04T06:02:36.918Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md"
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 14,
+            "passing": 0
+          },
+          "acTotal": 7,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "slicingStrategy": "user-journey",

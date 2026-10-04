@@ -2257,3 +2257,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "MEDIUM finding (1-M1, sptu-s4-review-1.md): the dismiss/mark-reviewed story specified a new state-changing POST action (Dismiss/Undismiss) without naming this app's own established CSRF middleware convention (_csrf.generateCsrfToken/csrfField, used by every other state-changing form already in signals-panel-view.js) in its Architecture Constraints or NFRs. Caught at /review, not left to surface later at implementation or DoD. Pattern worth watching for: any new story that adds a form/POST action to an existing server-rendered page should explicitly name the CSRF convention in Architecture Constraints, the same way D37's adapter rule is explicitly named -- otherwise it's easy for a story author (including this session) to spec the business logic (dismiss-key hashing, D37 wiring) in detail while silently omitting a cross-cutting security convention that isn't part of the new logic itself."
   source: agent-auto
+
+- date: 2026-10-04
+  session-phase: test-plan (2026-10-04-signals-panel-triage-ux, sptu-s4)
+  signal-type: decision
+  signal-text: "Closed review finding 1-M1 at /test-plan time rather than only acknowledging it in /decisions: sptu-s4's test plan adds two dedicated integration tests (CSRF-missing-rejected, CSRF-valid-succeeds) directly naming the real route (POST /signals/dismiss) and the real middleware (_csrf.generateCsrfToken). This is the second option the operator was offered ('have /test-plan write a CSRF-covering test directly') rather than a RISK-ACCEPT. Pattern worth repeating: a MEDIUM review finding about a missing cross-cutting convention is often cheaper to close by adding a named test at /test-plan than to carry forward as acknowledged risk."
+  source: agent-auto
+
+- date: 2026-10-04
+  session-phase: test-plan (2026-10-04-signals-panel-triage-ux)
+  signal-type: pattern
+  signal-text: "sptu-s3's AC4 ('no functional change to signal order or content') and sptu-s1's AC3 ('no existing nav row or page is regressed') are both pure non-regression ACs with no new test of their own -- their test plans explicitly state they are verified by re-running ep2-s1/ep2-s3's (or check-b2-account-nav.js's) own existing suites unchanged, rather than inventing a new duplicate test. Recorded explicitly in each test plan's own Test Gaps and Risks / AC Coverage table rather than silently omitted, so /verify-completion knows to re-run the named existing suite, not just the new story's own test file."
+  source: agent-auto
