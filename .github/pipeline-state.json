@@ -38445,18 +38445,25 @@
           "baseline": "Not yet established -- task is not completable at all today (no dismiss mechanism exists)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Metric 1 requires the full filter->sort->dismiss flow; only nav-discovery (sptu-s1) and filter (sptu-s2) legs exist so far -- sort (sptu-s3) and dismiss (sptu-s4) are unstarted.",
+          "contributingStories": [
+            "sptu-s1",
+            "sptu-s2",
+            "sptu-s3",
+            "sptu-s4"
+          ]
         },
         {
           "id": "m2",
           "name": "Page-1 signal-to-noise ratio",
           "target": "0% parse-error signals visible on page 1 after filtering",
           "baseline": "Not yet precisely established -- qualitatively observed as a majority of visible page-1 entries on real wuce-staging",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-10-05",
+          "evidence": "1->0 parse-error signals visible on page 1 after filtering, confirmed live against real local data on merged master, 2026-10-05 (integration-real-code tier -- no staging deployment exists for this web-UI). Target (0% visible) met; minimum validation signal (>=90% reduction) exceeded.",
+          "contributingStories": [
+            "sptu-s2"
+          ]
         },
         {
           "id": "m3",
@@ -38473,10 +38480,10 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T22:48:02.303Z",
+          "updatedAt": "2026-10-04T23:04:34.989Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38508,15 +38515,17 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/938"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/938",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T22:48:02.303Z",
+          "updatedAt": "2026-10-04T23:04:44.109Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
@@ -38554,7 +38563,9 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/940"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/940",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "sptu-s3",
