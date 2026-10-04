@@ -10,9 +10,9 @@
   To evolve: update this template, open a PR, tag BA lead + product lead.
 -->
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-09-13
-**Approved by:** Pending
+**Approved by:** Hamish King — Operator — 2026-10-04
 **Author:** Claude (agent)
 
 ---
@@ -51,9 +51,9 @@ Everything else identified in this discovery (session replay, surveys, person-pr
 
 ## Assumptions and Risks
 
-[ASSUMPTION] A single centralized error-capture wiring point (rather than per-route-handler additions) is technically feasible in this codebase's existing `server.js` request-handling structure — unconfirmed, requires /clarify before scope is locked at /definition.
-[ASSUMPTION] Adding a dollar amount to `checkout_completed` does not require any new Stripe-side plumbing (i.e. the amount is already available at the point that event is currently fired in `billing.js`) — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] The operator's PostHog plan tier supports whatever volume of new `$exception` events a global error handler might generate — unconfirmed; if error volume is unexpectedly high (e.g. a recurring bug fires exceptions repeatedly), this could have real cost/quota implications the operator should be aware of before this ships.
+~~[ASSUMPTION] A single centralized error-capture wiring point...~~ **Resolved via /clarify (2026-10-04):** confirmed — `server.js` already has exactly this structure: `createApp()`'s router-level `.catch()` (line 4446), plus top-level `process.on('unhandledRejection', ...)` and `process.on('uncaughtException', ...)` handlers (lines 4454-4459). All three currently only `console.error(...)` — none call `captureException()` yet. The MVP wires `captureException()` into all 3 existing handlers; no new per-route-handler pattern is needed.
+~~[ASSUMPTION] Adding a dollar amount to `checkout_completed`...~~ **Resolved via /clarify (2026-10-04):** confirmed — `handleGetBillingSuccess` (`billing.js`) already calls `stripeClient.retrieveCheckoutSession(sessionId)`, which hits the real, unfiltered Stripe SDK (`stripe.checkout.sessions.retrieve`). The returned session object already includes `amount_total` and `currency` — no new Stripe-side plumbing needed, just read two more fields from the session object already being fetched (currently only `session.metadata.planId` is read).
+~~[ASSUMPTION] The operator's PostHog plan tier supports...~~ **Resolved via /clarify (2026-10-04):** operator confirmed not worried about this at current solo-operator traffic scale — proceed without a pre-emptive rate-limit/dedup guard for the MVP. Revisit if PostHog ever flags usage or billing.
 
 **Risk if not built:** the operator continues to learn about real production bugs only when a user reports them or they happen to notice — for a solo operator, this is a real, current gap, not a hypothetical one.
 **Risk if built carelessly:** a global error handler that captures too aggressively (e.g. every expected/handled error, not just genuine unhandled exceptions) would itself become analytics noise, undermining the same "keep the signal clean" goal this session's `paes-s1`/`paes-s2` work just achieved for E2E traffic.
@@ -80,7 +80,7 @@ Everything else identified in this discovery (session replay, surveys, person-pr
 
 ## Approved By
 
-Pending
+Hamish King — Operator — 2026-10-04
 
 ---
 
@@ -93,6 +93,15 @@ This discovery contains 3 unconfirmed assumptions that affect scope and benefit 
 - The operator's PostHog plan tier supports whatever volume of new `$exception` events a global error handler might generate — unconfirmed; if error volume is unexpectedly high (e.g. a recurring bug fires exceptions repeatedly), this could have real cost/quota implications the operator should be aware of before this ships.
 
 These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification.
+
+---
+
+## Clarification log
+
+[2026-10-04] Clarified via /clarify:
+- Q: Is a single centralized error-capture wiring point technically feasible, rather than per-route-handler additions?  A: Yes — confirmed `server.js` already has this structure (router `.catch()`, `unhandledRejection`, `uncaughtException`, all currently only `console.error`); wire `captureException()` into all 3.
+- Q: Does adding a dollar amount to `checkout_completed` require new Stripe-side plumbing?  A: No — confirmed `handleGetBillingSuccess` already fetches the full Stripe checkout session object (which includes `amount_total`/`currency`), just needs to read two more fields from it.
+- Q: Does the operator's PostHog plan tier have headroom for new exception-event volume?  A: Not worried about it at current solo-operator scale — proceed without a pre-emptive rate-limit/dedup guard; revisit if PostHog flags usage/billing.
 
 ---
 

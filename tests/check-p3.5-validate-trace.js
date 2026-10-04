@@ -239,6 +239,161 @@ function hasPwsh() {
   pass(name);
 })();
 
+// ── Test: ps1 does not falsely flag an Approved feature (AC1) ─────────────────
+(function test_ps1_approved_suppresses_false_positive_draft_match() {
+  const name = 'ps1-discovery-approved-does-not-flag-approved-feature-with-status-draft-co-occurrence';
+  const ps1 = path.join(root, 'scripts', 'validate-trace.ps1');
+  if (!fs.existsSync(ps1)) {
+    fail(name, 'scripts/validate-trace.ps1 not found — skip');
+    return;
+  }
+  if (!hasPwsh()) {
+    process.stdout.write('      pwsh not available in this environment — skip\n');
+    skipped++;
+    return;
+  }
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'p3.5-ac1-test-'));
+  try {
+    fs.mkdirSync(path.join(tmpDir, 'scripts'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'artefacts', 'feat-approved-with-note'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, 'artefacts', 'feat-approved-with-note', 'discovery.md'),
+      '# Discovery\n\n**Status:** Approved\n\nSome note: status corrected from stale "Draft" earlier.\n',
+      'utf8'
+    );
+    const ps1Copy = path.join(tmpDir, 'scripts', 'validate-trace.ps1');
+    fs.copyFileSync(ps1, ps1Copy);
+
+    const result = cp.spawnSync(
+      'pwsh',
+      ['-NonInteractive', '-File', ps1Copy, '-check', 'discovery_approved'],
+      { cwd: tmpDir, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' }
+    );
+    if (result.status === 0) {
+      pass(name);
+    } else {
+      fail(name, 'expected exit 0 (no false positive), got ' + result.status + '. stdout: ' + (result.stdout || '').slice(-400));
+    }
+  } finally {
+    try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
+  }
+})();
+
+// ── Test: ps1 still flags a genuinely Draft feature (AC2) ─────────────────────
+(function test_ps1_genuinely_draft_feature_still_flagged() {
+  const name = 'ps1-discovery-approved-still-flags-genuinely-draft-feature';
+  const ps1 = path.join(root, 'scripts', 'validate-trace.ps1');
+  if (!fs.existsSync(ps1)) {
+    fail(name, 'scripts/validate-trace.ps1 not found — skip');
+    return;
+  }
+  if (!hasPwsh()) {
+    process.stdout.write('      pwsh not available in this environment — skip\n');
+    skipped++;
+    return;
+  }
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'p3.5-ac2-test-'));
+  try {
+    fs.mkdirSync(path.join(tmpDir, 'scripts'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'artefacts', 'feat-genuinely-draft'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, 'artefacts', 'feat-genuinely-draft', 'discovery.md'),
+      '# Discovery\n\n**Status:** Draft\n',
+      'utf8'
+    );
+    const ps1Copy = path.join(tmpDir, 'scripts', 'validate-trace.ps1');
+    fs.copyFileSync(ps1, ps1Copy);
+
+    const result = cp.spawnSync(
+      'pwsh',
+      ['-NonInteractive', '-File', ps1Copy, '-check', 'discovery_approved'],
+      { cwd: tmpDir, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' }
+    );
+    const out = (result.stdout || '') + (result.stderr || '');
+    if (result.status !== 0 && out.includes('feat-genuinely-draft')) {
+      pass(name);
+    } else {
+      fail(name, 'expected exit non-zero naming feat-genuinely-draft, got exit ' + result.status + '. output: ' + out.slice(-400));
+    }
+  } finally {
+    try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
+  }
+})();
+
+// ── Test: real repo's 2 known false positives are resolved (AC3) ──────────────
+(function test_ps1_real_repo_no_known_false_positives() {
+  const name = 'ps1-real-repo-discovery-approved-has-no-known-false-positives';
+  const ps1 = path.join(root, 'scripts', 'validate-trace.ps1');
+  if (!fs.existsSync(ps1)) {
+    fail(name, 'scripts/validate-trace.ps1 not found — skip');
+    return;
+  }
+  if (!hasPwsh()) {
+    process.stdout.write('      pwsh not available in this environment — skip\n');
+    skipped++;
+    return;
+  }
+  const result = cp.spawnSync(
+    'pwsh',
+    ['-NonInteractive', '-File', ps1, '-check', 'discovery_approved'],
+    { cwd: root, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' }
+  );
+  const out = (result.stdout || '') + (result.stderr || '');
+  if (out.includes('new-feature-2b74a292') || out.includes('new-feature-af17f555')) {
+    fail(name, 'known false positive still present: ' + out.slice(-400));
+  } else if (result.status === 0) {
+    pass(name);
+  } else {
+    fail(name, 'discovery_approved failed for a different, unexpected reason: ' + out.slice(-400));
+  }
+})();
+
+// ── Test: ps1 and sh produce the same discovery_approved verdict (AC4) ────────
+(function test_ps1_sh_parity_discovery_approved() {
+  const name = 'ps1-sh-parity-discovery-approved-same-verdict-on-real-repo';
+  const sh = path.join(root, 'scripts', 'validate-trace.sh');
+  if (!fs.existsSync(sh)) {
+    fail(name, 'scripts/validate-trace.sh not found');
+    return;
+  }
+  let bashAvailable = true;
+  try {
+    cp.execSync('bash -c "exit 0"', { stdio: 'ignore', timeout: 5000 });
+  } catch (_) {
+    bashAvailable = false;
+  }
+  if (!bashAvailable) {
+    process.stdout.write('      bash not available in this environment — skip (CI runs validate-trace.sh independently)\n');
+    skipped++;
+    return;
+  }
+  if (!hasPwsh()) {
+    process.stdout.write('      pwsh not available in this environment — skip\n');
+    skipped++;
+    return;
+  }
+  const shResult  = cp.spawnSync('bash', [sh, '--check', 'discovery_approved'], { cwd: root, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' });
+  // tvpf-s1: exit 126 is POSIX's "command invoked cannot execute" -- here it
+  // means validate-trace.sh's own internal python3 dependency resolved to a
+  // non-functional stub (e.g. the Windows Store app-execution-alias placeholder
+  // when no real Python is installed/on PATH), not a real check-logic mismatch.
+  // This is a local-environment limitation unrelated to the discovery_approved
+  // fix under test -- CI runs .sh on a real Linux environment with a working
+  // python3, providing real parity coverage there even when this local
+  // environment can't execute .sh at all. Skip gracefully rather than fail.
+  if (shResult.status === 126) {
+    process.stdout.write('      validate-trace.sh could not execute in this environment (exit 126 -- likely no working python3 on PATH) — skip (CI runs it independently)\n');
+    skipped++;
+    return;
+  }
+  const ps1Result = cp.spawnSync('pwsh', ['-NonInteractive', '-File', path.join(root, 'scripts', 'validate-trace.ps1'), '-check', 'discovery_approved'], { cwd: root, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' });
+  if (shResult.status === ps1Result.status) {
+    pass(name);
+  } else {
+    fail(name, 'verdict mismatch: sh exit=' + shResult.status + ', ps1 exit=' + ps1Result.status);
+  }
+})();
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
 console.log('check-p3.5-validate-trace: ' + passed + ' passed, ' + failed + ' failed' +

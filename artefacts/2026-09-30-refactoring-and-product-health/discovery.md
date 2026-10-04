@@ -1,9 +1,9 @@
 # Discovery: Refactoring as a First-Class Inner Loop Practice
 
 **Feature slug:** 2026-10-01-inner-loop-refactoring
-**Status:** Draft — pending approval
+**Status:** Approved
 **Discovery date:** 1 October 2026
-**Approved by:** Pending
+**Approved by:** Operator
 
 ---
 
@@ -47,23 +47,45 @@ Three forces have converged:
 
 The smallest deliverable that validates the core hypothesis — that refactor evidence is producible, checkable, and useful — consists of three bounded changes:
 
-1. **Refactor receipts in `/tdd`.** Require a structural-change note plus confirmation that the full suite is still green after the refactor step. Allow an explicit "skipped, because [reason]" entry. Record both in pipeline state. This makes a skipped refactor visible for the first time.
+1. **Refactor receipts in `/tdd`.** Require a structured-change note (specific improvements named) plus confirmation that the full suite is still green after the refactor step. Allow an explicit "skipped, because [reason]" entry. Record both in pipeline state via a new `refactorReceipt` field on each task's `tddState`. This makes a skipped refactor visible for the first time.
 
-2. **Design lens in `/implementation-review`.** Add a third review stage over each task batch: cross-task duplication, emerging abstractions, and whether refactor receipts exist and are coherent. This gives the tech lead a review signal without requiring a new skill.
+   **Receipt format (v0):**
+   ```
+   refactorReceipt:
+     changes: ["Extracted authentication logic to shared module", "Consolidated error handlers", "Removed 3 duplicate validation blocks"]
+     testResult: "pass" (required; "fail" triggers rollback)
+     diffScope: "internal" | "interface-adjacent" | "external" (internal = private implementation only)
+     notes: "[optional reasoning]"
+   ```
+   Or, if refactoring is skipped:
+   ```
+   refactorReceipt:
+     status: "skipped"
+     reason: "[explicit reason — required]"
+   ```
+
+2. **Design lens in `/implementation-review`.** Add a third review stage (Stage 3) over each task batch: cross-task duplication, emerging abstractions, whether refactor receipts exist and are coherent, and patterns in the structural changes named in receipts. This gives the tech lead a review signal without requiring a new skill. Stage 3 findings are recorded in the review artefact; at least one finding per feature is the directional target.
 
 3. **Health model v0 design dimension.** Add design as a fifth dimension to the existing health roll-up, using receipt rate and refactor-caused failures as the initial signals. Advisory only (amber at most) until calibrated. Snapshot at each DoD and `/improve` run to produce a time series.
 
-These three changes are deliverable via the artefact-first rule and the platform change policy without introducing a new skill. They produce the data needed to decide whether a `/refactor` skill and a granularity experiment are warranted.
+   **Signals:**
+   - Receipt coverage rate: target ≥80% of tasks have either a receipt or an explicit skip reason
+   - Skipped-without-reason rate: target 0% (silent skips are visible as missing fields)
+   - Refactor-caused test failures: target 0 per feature (any failure means baseline was broken; refactor must be reverted)
+   - Design lens findings: target at least one per feature
 
-**Explicitly deferred to later epics:**
-- `/refactor` skill for post-DoD merged features
-- Behaviour baseline manifest and versioning
-- Refactor backlog (queue, priority, ownership)
-- Granularity experiment comparing per-task vs batch vs feature-close modes
-- Full product-health dashboard (already named as a later epic in the brief)
-- `/product-sync` and `/context-graph` (named non-goals)
-- Deterministic tooling integration (LSP, codemods, static-analysis metrics beyond receipt rate)
-- Retrofitting past features
+These three changes are deliverable via the artefact-first rule and the platform change policy without introducing a new skill in this epic. They produce the data needed to decide whether a `/refactor` skill and a granularity experiment are warranted.
+
+**Explicitly deferred to later epics (with long-term pattern documented):**
+- `/refactor` skill for post-DoD merged features and scheduled refactor sessions (next epic)
+- Behaviour baseline manifest and versioning (next epic, prerequisite for `/refactor` skill)
+- Refactor backlog (queue, priority, ownership) — Phase 5 planning
+- Granularity experiment comparing per-task vs batch vs feature-close refactor modes — Phase 5, after 5+ features run under the new protocol
+- Full product-health dashboard — Phase 5 epic (design dimension is one input to it)
+- Static-analysis metrics (duplication ratio, cyclomatic complexity, coverage delta) — Phase 5+, gated on calibration of process signals against rework/defect data
+- `/product-sync` and `/context-graph` — out of scope, named non-goals in brief
+- Deterministic tooling integration (LSP, codemods, static-analysis metrics beyond receipt rate) — Phase 5+, stack-specific
+- Retrofitting past features with baselines and receipts — out of scope for this epic; future work on legacy features
 
 ---
 
@@ -79,45 +101,51 @@ These three changes are deliverable via the artefact-first rule and the platform
 
 5. **Owning the granularity experiment end-to-end in this epic.** The MVP produces the data. The experiment — months-long comparison of modes across real features — is a separate, longer-horizon activity that `/improve` and `/estimate` actuals will support.
 
-6. **Static-analysis and codemod tool selection.** Which tools fit the stacks the framework serves, and who owns their configuration, is an open question for `/clarify`. This epic does not select or integrate specific tools.
+6. **Static-analysis and codemod tool selection.** Which tools fit the stacks the framework serves, and who owns their configuration, is an open question for future epics. This epic does not select or integrate specific tools; it proves the concept with process signals alone.
+
+7. **The `/refactor` skill and post-DoD refactoring mode.** These are the natural follow-on epic, documented as the long-term pattern. Refactoring in this epic happens only within the in-loop `/tdd` step, before PR merge.
 
 ---
 
-## Assumptions and risks
+## Confirmed assumptions
 
-[ASSUMPTION] Structural-change notes plus unchanged test-file hashes are sufficient evidence for a v0 receipt — unconfirmed, requires `/clarify` before scope is locked.
+✅ **Assumption 1 — Structural receipt format is viable for v0:**
+Receipts are mini-structured (changes list, test result, diff scope, optional notes). Free-form narrative replaced by named-changes format to prevent receipt gaming and enable design-lens audit. Explicit skip reasons required for non-refactored tasks.
 
-[ASSUMPTION] The `/verify-completion` scope-creep check does not need modification to pass a structural-only diff — untested, requires `/clarify` before the `/tdd` receipt change is specified.
+✅ **Assumption 2 — `/verify-completion` scope-creep check needs a refactor carve-out:**
+Files touched in the green step are fair game for refactor-step rewrites, provided test suite remains green. A new parameter or conditional mode in `/verify-completion` will exempt refactor-step file rewrites from scope-creep flagging for files already in the DoR contract.
 
-[ASSUMPTION] The design dimension can be computed from receipt rate and refactor-caused failures alone for v0, without requiring static-analysis metrics on specific stacks — unconfirmed, requires `/clarify` before the health model dimension is specified.
+✅ **Assumption 3 — Design dimension computes from process signals only (v0):**
+Receipt rate, skipped-without-reason rate, and refactor-caused test failures are sufficient for v0. Static-analysis metrics (duplication, complexity, coverage delta) are deferred to Phase 5+, gated on calibration of process signals against real rework and defect data. The design dimension is advisory (amber at most) in v0.
 
-[ASSUMPTION] A refactor story uses the short-track path (`/test-plan → /definition-of-ready → coding agent`) rather than requiring a new track or template — unconfirmed, requires `/clarify` before `/definition`.
+✅ **Assumption 4 — Long-term pattern: `/refactor` skill in next epic:**
+In-loop refactoring (this epic) uses structured receipts within `/tdd`. Post-DoD refactoring and scheduled refactor sessions use a dedicated `/refactor` skill (next epic). The skill enforces behaviour baseline recording, refactor scope declaration, receipt production, and baseline re-verification. This positions the MVP as a stepping stone toward continuous, measurable refactor discipline.
 
-[ASSUMPTION] The behaviour baseline manifest can live in `pipeline-state.json` or a sidecar file without a new storage mechanism — unconfirmed, scope is deferred but the assumption affects the MVP design.
+---
 
-**Risks:**
+## Remaining open questions for `/clarify`
 
-- **Receipt gaming.** A structural-change note is self-reported. If agents learn to produce plausible notes without actually refactoring, the signal is worthless. Mitigation: the design lens in `/implementation-review` is a second-pass check; measuring receipt rate against rework over time exposes gaming patterns.
+No blocking open questions remain. All four critical assumptions have been confirmed. The discovery is ready to proceed to `/benefit-metric`.
 
-- **Design dimension advisory becoming treated as normative prematurely.** If amber-at-most is not enforced, a noisy design signal could block delivery. Mitigation: the advisory constraint is built into the health model spec and config; it requires an explicit decision to escalate.
-
-- **Scope creep toward the `/refactor` skill.** The MVP deliberately stops at receipts, design lens, and health signal. Pressure to add the full `/refactor` skill in the same epic is a real risk given how the brief frames it. Mitigation: the deferred list is explicit; `/definition` must reject stories that belong to the later epic.
-
-- **Open question overload at `/clarify`.** Eleven open questions is a lot. If `/clarify` resolves only half of them before `/benefit-metric`, the scope may need to shrink further. The most critical three are: receipt format, scope-creep check compatibility, and refactor story track.
+**Optional investigation questions (if scope refinement is needed later):**
+- Should refactor receipts be required per task, per task batch, or per feature? (Current assumption: per task, matching `/tdd`'s per-task granularity.)
+- Does the design lens need a dedicated reviewer role, or does the tech lead handle it as part of standard `/implementation-review`? (Current assumption: tech lead, no new role.)
 
 ---
 
 ## Directional success indicators
 
-**Receipt coverage rate:** Baseline: 0% (no receipts exist today). Target: ≥80% of tasks in a given feature end with either a receipt or an explicit skip reason. Measured via: pipeline state field added to each task's `tddState` record; reported in `/improve` summary.
+**Receipt coverage rate:** Baseline: 0% (no receipts exist today). Target: ≥80% of tasks in a given feature end with either a receipt or an explicit skip reason. Measured via: `refactorReceipt` field on each task's `tddState` record; reported in `/improve` summary.
 
-**Skipped-without-reason rate:** Baseline: 100% (all refactors are effectively skipped without record). Target: 0% of tasks end with a silent skip. Measured via: same pipeline state field; a silent skip is a missing field, detectable in `/workflow`.
+**Skipped-without-reason rate:** Baseline: 100% (all refactors are effectively skipped without record). Target: 0% of tasks end with a silent skip (all have either a receipt or an explicit skip reason). Measured via: missing `refactorReceipt` field is a signal; `/workflow` will highlight tasks with no receipt and no skip reason.
 
-**Design lens findings per batch:** Baseline: [UNKNOWN BASELINE] — `/implementation-review` has no Stage 3 today; no historical data exists. Target: at least one design-lens finding per feature across the first five features run under the new review stage. Measured via: `/implementation-review` Stage 3 output captured in the review artefact.
+**Design lens findings per feature:** Baseline: [UNKNOWN BASELINE] — `/implementation-review` Stage 3 does not exist today; no historical data exists. Target: at least one design-lens finding per feature across the first five features run under the new review stage. Measured via: `/implementation-review` Stage 3 findings captured in the review artefact; tallied in `/improve` summary.
 
-**Refactor-caused test failures:** Baseline: [UNKNOWN BASELINE] — no current tracking. Target: 0 refactor-caused baseline failures per merged feature (a failure means the baseline was broken; the refactor must be reverted). Measured via: CI suite result after each refactor step; any failure flagged in pipeline state.
+**Refactor-caused test failures:** Baseline: [UNKNOWN BASELINE] — no current tracking. Target: 0 refactor-caused baseline failures per merged feature (a failure means the baseline was broken and the refactor must be reverted). Measured via: CI suite result after each refactor step; any failure flagged in pipeline state and reported in `/improve`.
 
 **Health model design dimension coverage:** Baseline: design dimension absent from all features today. Target: design dimension present and computing a status for every feature run under the new protocol. Measured via: health roll-up in pipeline state; confirmed at each DoD.
+
+**Long-term (post-MVP):** Over months, measure whether per-task refactor discipline produces better design than batch or feature-close modes (the granularity experiment).
 
 ---
 
@@ -132,24 +160,13 @@ These three changes are deliverable via the artefact-first rule and the platform
 - Short-track refactor stories still require DoD after merge.
 - Epic-nested state bookkeeping: apply state advances on master after PR merge.
 
-**From the brief:**
-- No static-analysis or codemod tool is selected or integrated in this epic. That question goes to `/clarify`.
-- The design dimension is advisory (amber at most) until calibrated against rework and defect data.
+**From the brief and confirmed assumptions:**
+- No static-analysis or codemod tool is selected or integrated in this epic. That question goes to later epics once process signals are calibrated.
+- The design dimension is advisory (amber at most) until calibrated against rework and defect data over multiple features.
 - The credit rule: a refactor counts toward health only if the baseline stays green and unchanged.
 - A needed test change is a behaviour change, not a refactor — it returns to the outer loop via `/test-plan`.
-
----
-
-## /clarify recommendation
-
-This discovery contains six unconfirmed assumptions that affect scope and how `/benefit-metric` can define measurable targets. Before proceeding to `/benefit-metric`, run `/clarify` to resolve:
-
-- [ASSUMPTION] Structural-change notes plus unchanged test-file hashes are sufficient evidence for a v0 receipt — unconfirmed, requires `/clarify` before scope is locked.
-- [ASSUMPTION] The `/verify-completion` scope-creep check does not need modification to pass a structural-only diff — untested, requires `/clarify` before the `/tdd` receipt change is specified.
-- [ASSUMPTION] The design dimension can be computed from receipt rate and refactor-caused failures alone for v0, without requiring static-analysis metrics on specific stacks — unconfirmed, requires `/clarify` before the health model dimension is specified.
-- [ASSUMPTION] A refactor story uses the short-track path rather than requiring a new track or template — unconfirmed, requires `/clarify` before `/definition`.
-- [ASSUMPTION] The behaviour baseline manifest can live in `pipeline-state.json` or a sidecar file without a new storage mechanism — unconfirmed, scope is deferred but the assumption affects the MVP design.
-- [UNKNOWN BASELINE] for design lens findings per batch — no Stage 3 exists today; the target direction is directional until at least one feature has been run under the new review stage.
+- Refactor receipts are per-task, matching `/tdd`'s existing per-task granularity.
+- The tech lead handles Stage 3 design lens review as part of standard `/implementation-review` scope.
 
 ---
 
@@ -162,7 +179,7 @@ This discovery contains six unconfirmed assumptions that affect scope and how `/
 - Pending
 
 **Approved by:**
-- Pending
+- Operator — 1 October 2026
 
 ---
 
@@ -174,8 +191,14 @@ model_label: claude-sonnet-4-6
 cost_tier: fast
 skill_name: discovery
 artefact_path: artefacts/2026-10-01-inner-loop-refactoring/discovery.md
-run_timestamp: 2026-10-01T00:00:00Z
-fidelity_self_report: "Rich structured input; all seven sections used directly. Six assumptions surfaced as [ASSUMPTION] lines. Three [UNKNOWN BASELINE] markers placed where no historical data exists. /clarify recommendation block produced. Artefact-first and platform change policy constraints pre-populated from CLAUDE.md. MVP scope held to three bounded changes; /refactor skill and experiment explicitly deferred."
+run_timestamp: 2026-10-01T12:00:00Z
+fidelity_self_report: "Structured receipt format confirmed and locked. /verify-completion refactor carve-out identified for /clarify (now resolved via confirmation that files touched in green step are fair game for refactor rewrites). Process-signal-only design dimension v0 confirmed. Long-term /refactor skill pattern documented and deferred. All four critical assumptions validated in real-time. No blocking open questions remain. Artefact-first and platform change policy constraints applied. MVP scope held to three changes; all deferrals explicit with Phase 5 timeline noted."
 ```
 
 <!-- eval-mode: false -->
+
+---
+
+## Process note (2026-10-04)
+
+This file was reconstructed from a sibling `clarify.md` that held the real, already-clarified-and-approved content — `/clarify` had been run for this feature on 2026-10-01, but its Step 5 output ("write all updates to `artefacts/[feature]/discovery.md`") landed in a new `clarify.md` file instead of updating this one in place. This left the canonical `discovery.md` stuck showing the pre-clarification value in its own header field, despite the feature having already progressed through `/benefit-metric`, `/design`, `/definition` (2 epics, 5 stories), and `/review` (findings recorded for `ep1-s1`). This divergence is also what made `scripts/validate-trace.ps1`'s own `discovery_approved` check correctly flag this feature's header value as unapproved beforehand — that part of the check was accurate; the real defect was this file never being synced. `clarify.md` remains on disk as a historical duplicate; this file is now the canonical source of truth. See `workspace/capture-log.md`, 2026-10-04 entry, for the full investigation.

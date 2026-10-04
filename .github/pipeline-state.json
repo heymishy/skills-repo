@@ -34289,13 +34289,15 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "updatedAt": "2026-10-04T08:37:35.952Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "guardrails": []
+      "guardrails": [],
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-09-13-analytics-observability-gaps/discovery.md"
     },
     {
       "slug": "2026-09-13-repo-checkout-lazy-refresh",
@@ -34337,13 +34339,15 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-09-14T00:00:00.000Z",
+      "updatedAt": "2026-10-04T08:40:49.673Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "guardrails": []
+      "guardrails": [],
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-09-14-discovery-session-file-attachments/discovery.md"
     },
     {
       "slug": "2026-09-14-feature-slug-respects-display-name",
@@ -38415,7 +38419,7 @@
     {
       "slug": "2026-09-30-refactoring-and-product-health",
       "id": "2026-09-30-refactoring-and-product-health",
-      "discoveryStatus": "complete",
+      "discoveryStatus": "approved",
       "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md",
       "stage": "definition",
       "name": "Refactoring as a First-Class Inner Loop Practice",
@@ -38630,6 +38634,54 @@
           "assessedAt": "2026-10-04T06:13:54.548Z"
         }
       ]
+    },
+    {
+      "slug": "2026-10-04-trace-validation-ps1-parity-fix",
+      "id": "2026-10-04-trace-validation-ps1-parity-fix",
+      "name": "Trace validation PS1 parity fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-04T09:01:59.662Z",
+      "stories": [
+        {
+          "id": "tvpf-s1",
+          "name": "Fix validate-trace.ps1 discovery_approved false positive",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-10-04T18:29:15.415Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md",
+          "branch": "feature/tvpf-s1",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC4 tests for the discovery_approved parity fix",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Fix Check-DiscoveryApproved to add approved-suppresses-draft logic",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/939"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
