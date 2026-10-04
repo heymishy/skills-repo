@@ -174,8 +174,22 @@ function Check-DiscoveryApproved {
         if ($track -and $tracksWithoutDiscovery.Contains($track)) { continue }
         $discoveryPath = Join-Path $featureDir.FullName "discovery.md"
         if (-not (Test-Path $discoveryPath)) { continue }
-        $content = Get-Content $discoveryPath -Raw
-        if ($content -match '(?i)status.*draft') {
+        # tvpf-s1: per-line scan (not -Raw whole-file) matching validate-trace.sh's
+        # own exact semantics (lines 268-269: `for l in lines`). An `approved` match
+        # anywhere in the file suppresses a `draft` match, mirroring .sh's verdict
+        # logic (lines 474-480: draft only fails when approved_flag != "1"). Without
+        # this suppression, an already-Approved feature whose discovery.md contains
+        # an unrelated sentence where "status" and "Draft" co-occur (e.g. a
+        # retrospective note like `status corrected from stale "Draft"`) is falsely
+        # flagged — confirmed live against new-feature-2b74a292/af17f555, 2026-10-04.
+        $lines    = Get-Content $discoveryPath
+        $approved = $false
+        $draft    = $false
+        foreach ($line in $lines) {
+            if ($line -match '(?i)status.*approved') { $approved = $true }
+            if ($line -match '(?i)status.*draft')    { $draft    = $true }
+        }
+        if ($draft -and -not $approved) {
             Record-Fail "discovery_approved" "${feature}: discovery.md status is still Draft"
             Write-Fail "${feature}: discovery.md is still Draft"
             $unapproved++

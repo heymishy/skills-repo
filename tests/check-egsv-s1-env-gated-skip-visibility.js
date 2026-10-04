@@ -48,7 +48,15 @@ console.log('\n[egsv-s1] T1/T2 — check-p3.5-validate-trace.js (AC1)\n');
 test('p35SkipsAreTrackedSeparately', () => {
   assert(/let\s+skipped\s*=\s*0/.test(p35), 'expected a skipped counter declared');
   const skipBlocks = p35.match(/pwsh not available in this environment[^\n]*\n\s*skipped\+\+/g) || [];
-  assert(skipBlocks.length === 2, 'expected both pwsh-unavailable skip blocks to increment skipped, found ' + skipBlocks.length);
+  // tvpf-s1: loosened from an exact count (===2) to a floor (>=2) — the exact
+  // number of pwsh-unavailable skip blocks in check-p3.5-validate-trace.js is
+  // not a meaningful invariant on its own; it was just however many existed
+  // when egsv-s1 was written. The real property under test (every such block
+  // increments `skipped`, never `passed`) is what the two asserts below this
+  // one actually verify. A hardcoded ===2 broke the moment this file
+  // legitimately grew new tests (tvpf-s1 added 4), which is normal evolution,
+  // not a regression.
+  assert(skipBlocks.length >= 2, 'expected at least 2 pwsh-unavailable skip blocks to increment skipped, found ' + skipBlocks.length);
   assert(!/pwsh not available in this environment.{0,80}pass\(name\)/s.test(p35),
     'a pwsh-unavailable skip block still calls pass(name) instead of skipped++');
 });
