@@ -38469,10 +38469,10 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T06:29:37.581Z",
+          "updatedAt": "2026-10-04T06:39:46.455Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38487,7 +38487,21 @@
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s1-dor.md",
-          "branch": "feature/sptu-s1"
+          "branch": "feature/sptu-s1",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC4 tests for the signals nav entry",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Add the Signals entry to NAV_ITEMS",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s1-plan.md"
+            }
+          ]
         },
         {
           "id": "sptu-s2",
