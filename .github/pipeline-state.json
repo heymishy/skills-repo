@@ -38476,7 +38476,7 @@
           "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T07:54:39.361Z",
+          "updatedAt": "2026-10-04T22:48:02.303Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38507,7 +38507,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/938"
         },
         {
@@ -38516,7 +38516,7 @@
           "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T20:00:52.583Z",
+          "updatedAt": "2026-10-04T22:48:02.303Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
@@ -38553,7 +38553,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/940"
         },
         {
