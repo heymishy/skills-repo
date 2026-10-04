@@ -34289,13 +34289,15 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "updatedAt": "2026-10-04T08:37:35.952Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "guardrails": []
+      "guardrails": [],
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-09-13-analytics-observability-gaps/discovery.md"
     },
     {
       "slug": "2026-09-13-repo-checkout-lazy-refresh",
