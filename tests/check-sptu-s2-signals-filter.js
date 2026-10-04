@@ -153,9 +153,20 @@ function fakeReqRes(query) {
   await test('AC3: applied filters are visible on the page and survive a reload of the same URL', async function() {
     const fixture = makeSignals(10, { types: ['parse-error', 'gap'] });
     signalsRoutes.setSignalsSource(function() { return fixture; });
+    // sptu-s2 fix (found by the Task 3 implementer, 2026-10-05): a real
+    // browser reload reuses the SAME session (and therefore the SAME cached
+    // CSRF token, per middleware/csrf.js's own per-session caching) -- the
+    // original version of this test built two fully independent fakeReqRes()
+    // calls, each minting its own random CSRF token, so byte-identical
+    // comparison failed unconditionally regardless of filter correctness.
+    // Sharing one session object across both dispatches correctly simulates
+    // "the same browser tab, reloaded" rather than two unrelated visitors.
+    const sharedSession = { accessToken: 'tok', login: 'tester' };
     const first = fakeReqRes({ hideType: 'parse-error' });
+    first.req.session = sharedSession;
     await signalsRoutes.handleGetSignalsPanelHtml(first.req, first.res);
     const second = fakeReqRes({ hideType: 'parse-error' });
+    second.req.session = sharedSession;
     await signalsRoutes.handleGetSignalsPanelHtml(second.req, second.res);
     assert.strictEqual(first.res.body, second.res.body, 'expected identical output on reload');
     assert.ok(/Hiding:.*parse-error/.test(first.res.body), 'expected visible text naming the active filter');
