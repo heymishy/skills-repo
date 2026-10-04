@@ -38617,6 +38617,34 @@
           "assessedAt": "2026-10-04T06:13:54.548Z"
         }
       ]
+    },
+    {
+      "slug": "2026-10-04-trace-validation-ps1-parity-fix",
+      "id": "2026-10-04-trace-validation-ps1-parity-fix",
+      "name": "Trace validation PS1 parity fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-10-04T09:00:06.438Z",
+      "stories": [
+        {
+          "id": "tvpf-s1",
+          "name": "Fix validate-trace.ps1 discovery_approved false positive",
+          "stage": "test-plan",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-10-04T09:00:06.438Z"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
