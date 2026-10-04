@@ -63,18 +63,91 @@ function _paginationBar(pagination) {
   ].join('\n');
 }
 
+function _toggleHideValue(currentList, value) {
+  const idx = currentList.indexOf(value);
+  if (idx === -1) return currentList.concat([value]);
+  return currentList.slice(0, idx).concat(currentList.slice(idx + 1));
+}
+
+function _buildFilterUrl(hideTypes, hideSources) {
+  const params = [];
+  if (hideTypes.length) params.push('hideType=' + encodeURIComponent(hideTypes.join(',')));
+  if (hideSources.length) params.push('hideSource=' + encodeURIComponent(hideSources.join(',')));
+  return '/signals' + (params.length ? '?' + params.join('&') : '');
+}
+
+function _filterToggleLink(value, isHidden, nextUrl) {
+  const label = (isHidden ? 'Show ' : 'Hide ') + value;
+  return '<a href="' + escHtml(nextUrl) + '" class="sw-btn sw-filter-toggle' + (isHidden ? ' sw-filter-toggle--active' : '') + '">' +
+    (isHidden ? '✓ ' : '') + escHtml(label) + '</a>';
+}
+
+// sptu-s2: filter toggle bar -- plain <a> links (zero-client-JS convention,
+// matching ep2-s3's own Previous/Next precedent), so every control is
+// natively keyboard-focusable with no custom tabindex handling needed (AC5).
+function _filterBar(filterState) {
+  if (!filterState) return '';
+  const availableTypes = filterState.availableTypes || [];
+  const availableSources = filterState.availableSources || [];
+  const hideTypes = filterState.hideTypes || [];
+  const hideSources = filterState.hideSources || [];
+  if (availableTypes.length === 0 && availableSources.length === 0) return '';
+
+  const typeLinks = availableTypes.map(function(t) {
+    const isHidden = hideTypes.indexOf(t) !== -1;
+    return _filterToggleLink(t, isHidden, _buildFilterUrl(_toggleHideValue(hideTypes, t), hideSources));
+  }).join(' ');
+
+  const sourceLinks = availableSources.map(function(s) {
+    const isHidden = hideSources.indexOf(s) !== -1;
+    return _filterToggleLink(s, isHidden, _buildFilterUrl(hideTypes, _toggleHideValue(hideSources, s)));
+  }).join(' ');
+
+  // AC5 (accessibility): the ✓ glyph is a text character, not a colour-only
+  // cue -- the --active class also changes more than colour (see CSS), but
+  // this inline text marker is what guarantees colour is never the sole signal.
+  const activeSummary = (hideTypes.length || hideSources.length)
+    ? '<p class="sw-filter-summary">Hiding: ' + escHtml(hideTypes.concat(hideSources).join(', ')) +
+      ' — <a href="/signals">Clear filters</a></p>'
+    : '';
+
+  return [
+    '<div class="sw-filter-bar" style="margin-bottom:16px">',
+    '  <p class="sw-filter-bar-label">Filter by type:</p>',
+    '  <div class="sw-filter-bar-row" style="display:flex;flex-wrap:wrap;gap:6px">' + typeLinks + '</div>',
+    '  <p class="sw-filter-bar-label">Filter by source:</p>',
+    '  <div class="sw-filter-bar-row" style="display:flex;flex-wrap:wrap;gap:6px">' + sourceLinks + '</div>',
+    activeSummary,
+    '</div>'
+  ].join('\n');
+}
+
 /**
  * @param {Array<{id:string,source:string,type:string,text:string,timestamp:?string,cta:{label:string,skill:string}}>} signals -- already the current page's own slice
  * @param {string} csrfToken
- * @param {object} [pagination] -- ep2-s3: optional pagination metadata from paginateSignals(). Omitted -> renders exactly as before ep2-s3 (ep2-s1's own 7 existing test calls all omit it).
+ * @param {object} [pagination] -- ep2-s3: optional pagination metadata from paginateSignals(). Omitted -> renders exactly as before ep2-s3.
+ * @param {object} [filterState] -- sptu-s2: optional {availableTypes, availableSources, hideTypes, hideSources}. Omitted -> no filter bar, renders exactly as before sptu-s2 (ep2-s1's own 7 existing test calls all omit it).
  * @returns {string} HTML body content for the /signals panel page
  */
-function renderSignalsPanel(signals, csrfToken, pagination) {
+function renderSignalsPanel(signals, csrfToken, pagination, filterState) {
+  const filterBarHtml = _filterBar(filterState);
+  const hasActiveFilter = !!(filterState && ((filterState.hideTypes || []).length || (filterState.hideSources || []).length));
+
   if (!signals || signals.length === 0) {
+    if (hasActiveFilter) {
+      // sptu-s2 (AC4): distinct from ep2-s1's own "no signals in the
+      // workspace at all" message below -- this means signals EXIST but the
+      // current filter combination matches none of them.
+      return [
+        filterBarHtml,
+        '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals match the current filters</h1><p>Try clearing a filter to see more.</p><p><a href="/signals" class="sw-btn">Clear filters</a></p></div>'
+      ].join('\n');
+    }
     return '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>';
   }
   const items = signals.map(function(s) { return _signalItem(s, csrfToken); }).join('\n');
   return [
+    filterBarHtml,
     '<p class="sw-section-title">Improvement signals</p>',
     '<div class="signals-list" style="display:flex;flex-direction:column;gap:12px">',
     items,
