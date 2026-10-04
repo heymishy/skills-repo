@@ -38624,14 +38624,14 @@
       "name": "Trace validation PS1 parity fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "updatedAt": "2026-10-04T09:01:59.662Z",
       "stories": [
         {
           "id": "tvpf-s1",
           "name": "Fix validate-trace.ps1 discovery_approved false positive",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -38640,8 +38640,8 @@
             "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-10-04T18:18:49.779Z",
+          "acVerified": 4,
+          "updatedAt": "2026-10-04T18:28:30.448Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/dor/tvpf-s1-dor.md",
           "branch": "feature/tvpf-s1",
@@ -38658,7 +38658,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-10-04-trace-validation-ps1-parity-fix/plans/tvpf-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft"
         }
       ],
       "guardrails": []
