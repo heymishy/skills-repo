@@ -38419,7 +38419,7 @@
     {
       "slug": "2026-09-30-refactoring-and-product-health",
       "id": "2026-09-30-refactoring-and-product-health",
-      "discoveryStatus": "complete",
+      "discoveryStatus": "approved",
       "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md",
       "stage": "definition",
       "name": "Refactoring as a First-Class Inner Loop Practice",
