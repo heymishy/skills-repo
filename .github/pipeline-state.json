@@ -38469,17 +38469,17 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T06:39:46.455Z",
+          "updatedAt": "2026-10-04T07:06:12.171Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -38492,13 +38492,13 @@
             {
               "id": "task-1",
               "name": "Write failing AC1-AC4 tests for the signals nav entry",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Add the Signals entry to NAV_ITEMS",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s1-plan.md"
             }
           ]
