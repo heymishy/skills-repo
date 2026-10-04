@@ -38472,7 +38472,7 @@
           "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T07:53:30.724Z",
+          "updatedAt": "2026-10-04T07:54:39.361Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md",
@@ -38503,7 +38503,8 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft"
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/938"
         },
         {
           "id": "sptu-s2",
