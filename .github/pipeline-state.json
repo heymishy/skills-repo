@@ -34339,13 +34339,15 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-09-14T00:00:00.000Z",
+      "updatedAt": "2026-10-04T08:40:49.673Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "guardrails": []
+      "guardrails": [],
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-09-14-discovery-session-file-attachments/discovery.md"
     },
     {
       "slug": "2026-09-14-feature-slug-respects-display-name",

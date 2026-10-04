@@ -1,6 +1,6 @@
 # Discovery: Broader document/image attachment support for skill sessions
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Date:** 2026-09-14
 **Track:** Standard (this needs discovery → benefit-metric → definition, not short-track — see Complexity Rating)
 
@@ -21,22 +21,27 @@ Directly surfaced this session while auditing real production usage friction (al
 
 ## 4. MVP Scope
 
-Not yet defined — this is exactly what `/benefit-metric` and `/definition` need to resolve once this discovery is approved. Candidate shape, for the next stage to evaluate rather than treat as decided:
+**Resolved via /clarify (2026-10-04)** — narrowed and confirmed:
 
-1. Extend the existing `sdg.1` upload modal to accept a small additional set of formats (e.g. `.pdf`, `.png`, `.jpg`) alongside `.md`, still as a one-time pre-session gate.
-2. Separately, allow adding a reference file mid-conversation (not just before the first turn) — this is a materially different UI/UX surface (the existing modal is a one-time gate, not an in-chat affordance) and may warrant being split into its own follow-on story rather than bundled with (1).
+1. Extend the existing `sdg.1` upload modal to accept a small additional set of formats (e.g. `.pdf`, `.png`, `.jpg`) alongside `.md`, still as a one-time pre-session gate. The operator also types a short text description of each non-`.md` file at upload time — the model sees the description (injected into context the same way `.md` reference content is today), not automated OCR/extraction output.
+2. Uploaded binary files are stored outside git, in a non-git-tracked `workspace/attachments/`-style directory — not the git-backed artefact folder.
+3. Each upload is capped at a per-file size limit and verified by real file-type sniffing (magic bytes), not just the extension.
+4. Separately, allow adding a reference file mid-conversation (not just before the first turn) — this is a materially different UI/UX surface (the existing modal is a one-time gate, not an in-chat affordance) and may warrant being split into its own follow-on story rather than bundled with (1)-(3). The exact split is `/definition`'s job.
+
+Full automated OCR/text-extraction remains a real, named future enhancement (see Out of Scope) — deferred, not rejected.
 
 ## 5. Out of Scope
 
-- Deciding the MVP file-type list, storage backend, or parsing pipeline now — that is `/definition`'s job once benefit and constraints are clear.
+- Deciding the exact MVP file-type list or the mid-conversation (not just pre-session) upload UX now — that is `/definition`'s job once benefit and constraints are clear.
 - Any change to the existing `.md`-only, pre-session-gate behavior in this discovery document itself — no code changes are made by this artefact.
 - Video, audio, or any format requiring more than text-extraction/OCR-class processing.
+- **Automated OCR/text-extraction from images or PDFs** — resolved via `/clarify` (2026-10-04) to a narrower MVP (storage + operator-typed description); real extraction remains a named future enhancement once this smaller slice proves valuable.
 
 ## 6. Assumptions and Risks
 
-- **[ASSUMPTION]** Non-text formats (images, PDFs) will need a conversion/extraction step (OCR for images, text extraction for PDFs) before the content can be injected into an LLM prompt the same way `.md` files are today — this is a real new processing pipeline, not just a wider `accept=` attribute on the existing upload input.
-- **[ASSUMPTION]** Storing uploaded binary files (as opposed to today's plain-text `.md` reference files) may need a different storage decision than the current mechanism (which appears to write reference files directly into the repo checkout) — binary assets in a git-backed artefact folder have different size/history-bloat implications than small markdown files.
-- **[ASSUMPTION]** Accepting arbitrary uploaded files (especially images/PDFs from an operator's own machine) may need basic content-safety handling (file-type sniffing beyond the extension, a size cap per file and per session, possibly malware scanning) that the current `.md`-only path does not need at all, since it already restricts to UTF-8 text.
+~~[ASSUMPTION] Non-text formats will need a conversion/extraction step...~~ **Resolved via /clarify (2026-10-04):** No — MVP is narrowed to storage + a manual operator description, not automated OCR/text-extraction. The operator uploads the file and types a short description; the model sees the description, not extracted content. Full OCR/extraction deferred to a later follow-on if real usage shows it's needed.
+~~[ASSUMPTION] Storing uploaded binary files may need a different storage decision...~~ **Resolved via /clarify (2026-10-04):** Confirmed — uploaded files live outside git, in a new non-git-tracked `workspace/attachments/`-style directory, matching this repo's existing `workspace/` convention for operational (non-artefact) files. Not the git-backed artefact folder.
+~~[ASSUMPTION] Accepting arbitrary uploaded files may need basic content-safety handling...~~ **Resolved via /clarify (2026-10-04):** Confirmed — MVP requires a per-file size cap plus real file-type sniffing (magic-byte verification, not just trusting the extension), matching this app's existing security posture (e.g. the skill-name allowlist pattern in `web-ui-patterns.md`). No malware scanning in MVP.
 - **Risk:** if the underlying LLM/model call already has real per-call latency and reliability sensitivity (see `lasr-s1`, this same day), adding a new parsing/extraction step (e.g. an OCR call) introduces a new potential failure and latency point that needs its own reliability consideration, not just a feature-complete one.
 
 ## 7. Directional Success Indicators
@@ -67,4 +72,11 @@ Per this document's own Assumptions and Risks section, 3 `[ASSUMPTION]` items ar
 
 ## Approved By
 
-Pending
+Hamish King — Operator — 2026-10-04
+
+## Clarification log
+
+[2026-10-04] Clarified via /clarify:
+- Q: Is automated OCR/text-extraction needed for MVP, or would storage + a manual operator description suffice?  A: Narrower MVP — storage + operator-typed description. Full OCR/extraction deferred.
+- Q: Where should uploaded binary files live?  A: Outside git, in a non-git-tracked `workspace/attachments/`-style directory, not the git-backed artefact folder.
+- Q: What minimum content-safety handling is needed for MVP?  A: Per-file size cap + real file-type sniffing (magic bytes), matching this app's existing security posture. No malware scanning in MVP.
