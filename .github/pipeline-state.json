@@ -38496,10 +38496,10 @@
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T19:04:45.151Z",
+          "updatedAt": "2026-10-04T19:09:06.316Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md",
@@ -38514,7 +38514,27 @@
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s2-dor.md",
-          "branch": "feature/sptu-s2"
+          "branch": "feature/sptu-s2",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC6 tests for the type/source filter",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the pure filterSignals module",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Wire the filter into the route and view",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s2-plan.md"
+            }
+          ]
         },
         {
           "id": "sptu-s3",
