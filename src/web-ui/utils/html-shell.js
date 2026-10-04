@@ -60,6 +60,13 @@ const NAV_ITEMS = [
   // adminOnly and lives in the main section (pods are tenant/org-wide, not
   // product-scoped) rather than the account-settings section below.
   { id: 'pod-manager', label: 'Pod Manager', href: '/admin/pods/manager', icon: '⬡' },
+  // sptu-s1: /signals (ep2-s1) shipped with no nav entry at all -- the route
+  // already passes active: 'signals' to renderShell (signals-panel.js:39),
+  // anticipating this row. Same "API shipped, UI never wired" gap as
+  // pod-manager/admin-mock-gateway before their own fix. authGuard-only
+  // route (no requireAdmin), tenant/workspace-wide, so this lives in the
+  // main section, not the account-settings section below.
+  { id: 'signals', label: 'Signals', href: '/signals', icon: '◎' },
   // b2: account-level items, rendered in a visually distinct bottom section by
   // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
   // array, tagged `section: 'account'`, rather than a second untested array, so
