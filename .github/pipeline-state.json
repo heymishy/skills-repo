@@ -38428,11 +38428,11 @@
       "id": "2026-10-04-signals-panel-triage-ux",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-04-signals-panel-triage-ux/discovery.md",
-      "stage": "definition",
+      "stage": "review",
       "name": "Signals Panel Triage UX",
       "track": "standard",
-      "health": "green",
-      "updatedAt": "2026-10-04T05:37:34.159Z",
+      "health": "amber",
+      "updatedAt": "2026-10-04T05:48:23.336Z",
       "metrics": [
         {
           "id": "m1",
@@ -38469,34 +38469,46 @@
         {
           "id": "sptu-s1",
           "name": "Add /signals to the main navigation",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T05:37:34.159Z"
+          "updatedAt": "2026-10-04T05:46:23.127Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s1-review-1.md"
         },
         {
           "id": "sptu-s2",
           "name": "Type/source filter for the signals panel",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T05:37:34.159Z"
+          "updatedAt": "2026-10-04T05:46:50.558Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s2-review-1.md"
         },
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T05:37:34.159Z"
+          "updatedAt": "2026-10-04T05:47:19.917Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md"
         },
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "definition",
-          "health": "green",
+          "stage": "review",
+          "health": "amber",
           "complexity": 2,
-          "updatedAt": "2026-10-04T05:37:34.159Z"
+          "updatedAt": "2026-10-04T05:48:05.038Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md"
         }
       ],
       "slicingStrategy": "user-journey",
@@ -38505,19 +38517,28 @@
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No story introduces E2E tooling outside Playwright/tests/e2e/; no violation found at review.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-04T05:48:23.336Z"
         },
         {
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "sptu-s1 AC4, sptu-s2 AC5, sptu-s4 AC6 each require keyboard operability for new controls.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-04T05:48:23.336Z"
         },
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of status",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "sptu-s2 AC5, sptu-s3 AC2 require text/icon indicators, not colour alone.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-04T05:48:23.336Z"
         }
       ]
     }
