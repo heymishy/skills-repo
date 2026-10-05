@@ -38861,6 +38861,57 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-06-signals-panel-dismiss-race-and-metric1-spec",
+      "id": "2026-10-06-signals-panel-dismiss-race-and-metric1-spec",
+      "name": "Signals panel dismiss-race fix and Metric 1 timing spec",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-05T22:20:39.960Z",
+      "stories": [
+        {
+          "id": "spdr-s1",
+          "name": "Disable the Dismiss/Undismiss button on submit",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 1
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-10-05T22:20:39.960Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-signals-panel-dismiss-race-and-metric1-spec/dor/spdr-s1-dor.md",
+          "verifyStatus": "passed",
+          "prStatus": "open"
+        },
+        {
+          "id": "spdr-s2",
+          "name": "Automated Playwright timing spec for Metric 1",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 1
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-10-05T22:20:39.960Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-signals-panel-dismiss-race-and-metric1-spec/dor/spdr-s2-dor.md",
+          "verifyStatus": "passed",
+          "prStatus": "open"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
