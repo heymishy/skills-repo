@@ -61,10 +61,16 @@ async function handleGetSignalsPanelHtml(req, res) {
 
     const showDismissed = (req.query && req.query.showDismissed === 'true');
     const dismissedKeys = new Set();
-    allSignals.forEach(function(s) {
-      const k = _dismissedStore.deriveDismissKey(s);
-      if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
-    });
+    try {
+      allSignals.forEach(function(s) {
+        const k = _dismissedStore.deriveDismissKey(s);
+        if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
+      });
+    } catch (_) {
+      // Adapter not wired (D37 stub throw) or any other store failure --
+      // degrade to "nothing is dismissed" rather than a 500. See the SCOPE
+      // NOTE above and decisions.md's 2026-10-05 entry.
+    }
     const visibleSignals = showDismissed
       ? signals
       : signals.filter(function(s) { return !dismissedKeys.has(_dismissedStore.deriveDismissKey(s)); });
