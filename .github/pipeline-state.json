@@ -38570,10 +38570,10 @@
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-05T00:57:53.118Z",
+          "updatedAt": "2026-10-05T01:03:11.557Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
@@ -38583,7 +38583,7 @@
             "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -38607,7 +38607,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "sptu-s4",
