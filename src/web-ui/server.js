@@ -2661,18 +2661,28 @@ async function router(req, res) {
     for await (const chunk of req) { rawSignals += chunk; }
     let signalsBody = {};
     try { signalsBody = rawSignals ? JSON.parse(rawSignals) : {}; } catch (_) { signalsBody = {}; }
-    const count = Number.isInteger(signalsBody.count) && signalsBody.count > 0 ? signalsBody.count : 24;
 
-    const fixtureSignals = [];
-    for (let i = 0; i < count; i++) {
-      fixtureSignals.push({
-        id: 'e2e-fixture-signal-' + i,
-        source: 'e2e-fixture',
-        type: 'note',
-        text: 'E2E fixture signal #' + i,
-        timestamp: null,
-        cta: { label: 'Review fixture #' + i, skill: '/improve' },
-      });
+    // spdr-s2: optional `signals` array for full custom fixture control
+    // (type/timestamp mix), e.g. for Metric 1's own filter->sort->dismiss
+    // timing spec. Falls back to the original uniform-count generator when
+    // absent, so ep2-s1's and ep2-s3's own existing { count }-only callers
+    // are completely unaffected.
+    let fixtureSignals;
+    if (Array.isArray(signalsBody.signals)) {
+      fixtureSignals = signalsBody.signals;
+    } else {
+      const count = Number.isInteger(signalsBody.count) && signalsBody.count > 0 ? signalsBody.count : 24;
+      fixtureSignals = [];
+      for (let i = 0; i < count; i++) {
+        fixtureSignals.push({
+          id: 'e2e-fixture-signal-' + i,
+          source: 'e2e-fixture',
+          type: 'note',
+          text: 'E2E fixture signal #' + i,
+          timestamp: null,
+          cta: { label: 'Review fixture #' + i, skill: '/improve' },
+        });
+      }
     }
     const _signalsPanelForSeed = require('./routes/signals-panel');
     _signalsPanelForSeed.setSignalsSource(function() { return fixtureSignals; });

@@ -21,7 +21,12 @@ function _dismissControl(signal, csrfToken, isDismissedFlag, currentUrl) {
   const action = isDismissedFlag ? '/signals/undismiss' : '/signals/dismiss';
   const label = isDismissedFlag ? 'Undismiss' : 'Dismiss';
   return [
-    '<form method="POST" action="' + action + '" style="margin-top:6px">',
+    // spdr-s1: onsubmit disables this form's own submit button so a second
+    // click during the resulting page navigation reliably does nothing,
+    // closing a real timing race observed during a live Metric 1
+    // measurement (sptu-s3-dod.md, 2026-10-06) -- does not affect the first,
+    // legitimate submission or keyboard operability (sptu-s4 AC6).
+    '<form method="POST" action="' + action + '" style="margin-top:6px" onsubmit="this.querySelector(\'button\').disabled=true;">',
     '  ' + _csrf.csrfField(csrfToken),
     '  ' + _hiddenField('signalSource', signal.source),
     '  ' + _hiddenField('signalType', signal.type),
