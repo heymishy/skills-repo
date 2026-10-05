@@ -43,14 +43,18 @@ function _signalItem(signal, csrfToken, isDismissedFlag, currentUrl) {
   const isParseError = signal.type === 'parse-error';
   const itemStyle = 'display:flex;align-items:flex-start;justify-content:space-between;gap:16px' +
     (isParseError ? ';border-left:3px solid #b45309;background:rgba(180,83,9,0.08);padding-left:12px' : '');
+  const hasNoDate = signal.timestamp == null;
+  const noDateMarkerHtml = hasNoDate
+    ? '<span class="signal-no-date-marker">🕑 No date</span>'
+    : '';
   // sptu-s4: a text marker, not colour alone (AC6/NFR Accessibility).
   const dismissedMarkerHtml = isDismissedFlag ? '<span class="signal-dismissed-marker">✓ Dismissed</span>' : '';
 
   return [
-    '<div class="sw-card signal-item" data-signal-type="' + safeType + '"' + (isDismissedFlag ? ' data-signal-dismissed="true"' : '') + ' style="' + itemStyle + '">',
+    '<div class="sw-card signal-item" data-signal-id="' + escHtml(signal.id || '') + '" data-signal-type="' + safeType + '"' + (isDismissedFlag ? ' data-signal-dismissed="true"' : '') + ' style="' + itemStyle + '">',
     '  <div>',
     '    <div class="signal-source">' + safeSource + '</div>',
-    '    <div class="signal-type">' + safeType + '</div>' + (dismissedMarkerHtml ? ' ' + dismissedMarkerHtml : ''),
+    '    <div class="signal-type">' + safeType + '</div>' + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : '') + (dismissedMarkerHtml ? ' ' + dismissedMarkerHtml : ''),
     '    <div class="signal-text">' + safeText + '</div>',
     '  </div>',
     '  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">',
@@ -86,6 +90,15 @@ function _paginationBar(pagination) {
     '  <span>' + nextLink + '</span>',
     '</div>'
   ].join('\n');
+}
+
+// sptu-s3: makes the signals-aggregator's own existing recency sort
+// (already applied by getSignals()'s _sortSignals() since ep1-s1) visible
+// and honestly qualified -- most real signals (87% as measured 2026-10-04)
+// have no timestamp at all and are not actually sorted by recency, so the
+// copy must not claim an unqualified "sorted by recency" guarantee (AC3).
+function _sortOrderLabel() {
+  return '<p class="sw-sort-label">Sorted by most recent first for signals that have a date — signals with no date are shown last, in their original order</p>';
 }
 
 function _toggleHideValue(currentList, value) {
@@ -165,6 +178,7 @@ function _dismissToggleBar(showDismissed) {
  */
 function renderSignalsPanel(signals, csrfToken, pagination, filterState, dismissState) {
   const filterBarHtml = _filterBar(filterState);
+  const sortOrderLabelHtml = _sortOrderLabel();
   const hasActiveFilter = !!(filterState && ((filterState.hideTypes || []).length || (filterState.hideSources || []).length));
   const showDismissed = !!(dismissState && dismissState.showDismissed);
   const dismissedKeys = (dismissState && dismissState.dismissedKeys) || new Set();
@@ -178,11 +192,16 @@ function renderSignalsPanel(signals, csrfToken, pagination, filterState, dismiss
       // current filter combination matches none of them.
       return [
         filterBarHtml,
+        sortOrderLabelHtml,
         dismissToggleHtml,
         '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals match the current filters</h1><p>Try clearing a filter to see more.</p><p><a href="/signals" class="sw-btn">Clear filters</a></p></div>'
       ].join('\n');
     }
-    return [dismissToggleHtml, '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>'].join('\n');
+    return [
+      sortOrderLabelHtml,
+      dismissToggleHtml,
+      '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>'
+    ].join('\n');
   }
   const items = signals.map(function(s) {
     const key = deriveDismissKey(s);
@@ -191,6 +210,7 @@ function renderSignalsPanel(signals, csrfToken, pagination, filterState, dismiss
   }).join('\n');
   return [
     filterBarHtml,
+    sortOrderLabelHtml,
     dismissToggleHtml,
     '<p class="sw-section-title">Improvement signals</p>',
     '<div class="signals-list" style="display:flex;flex-direction:column;gap:12px">',
