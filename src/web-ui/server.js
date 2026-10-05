@@ -108,7 +108,7 @@ const { migratePodAssignmentsSchema }                                = require('
 const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSchema } = require('./modules/feature-collaborator-store'); // ep1-s3, ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
-const { handleGetSignalsPanelHtml }                                  = require('./routes/signals-panel');      // ep2-s1
+const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissSignal } = require('./routes/signals-panel');      // ep2-s1, sptu-s4
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -1240,6 +1240,19 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _signalsAggregator = require('./modules/signals-aggregator');
     _signalsAggregator.setFileReadAdapter(_signalsAggregator.createFsFileReadAdapter());
     console.log('[ep1-s1] signals-aggregator file-read adapter wired');
+  }
+
+  // sptu-s4 (signals-panel-triage-ux) — Wire real fs-backed adapter for the
+  // dismissed-signals store (D37 mandatory separate wiring task)
+  {
+    const _dismissedSignalsStore = require('./modules/dismissed-signals-store');
+    const _dismissedSignalsPath = _path.join(
+      process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..'),
+      'workspace',
+      'dismissed-signals.json'
+    );
+    _dismissedSignalsStore.setDismissedSignalsStore(_dismissedSignalsStore.createFsDismissedSignalsStoreAdapter(_dismissedSignalsPath));
+    console.log('[sptu-s4] dismissed-signals-store file-backed adapter wired');
   }
 
   // lab-s2.2 — Wire users DB adapter (D37 mandatory separate wiring task)
@@ -3065,6 +3078,16 @@ async function router(req, res) {
   } else if (pathname === '/signals' && req.method === 'GET') {
     authGuard(req, res, async () => {
       await handleGetSignalsPanelHtml(req, res);
+    });
+
+  } else if (pathname === '/signals/dismiss' && req.method === 'POST') {
+    authGuard(req, res, async () => {
+      await handlePostDismissSignal(req, res);
+    });
+
+  } else if (pathname === '/signals/undismiss' && req.method === 'POST') {
+    authGuard(req, res, async () => {
+      await handlePostUndismissSignal(req, res);
     });
 
   } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/commit-preview$/) && req.method === 'GET') {
