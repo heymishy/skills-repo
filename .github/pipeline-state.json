@@ -38615,10 +38615,10 @@
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-05T05:09:18.353Z",
+          "updatedAt": "2026-10-05T05:23:46.129Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
@@ -38628,7 +38628,7 @@
             "passing": 14
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -38664,7 +38664,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "slicingStrategy": "user-journey",
