@@ -29,7 +29,9 @@ function _parseHideParam(raw) {
 }
 
 function _safeSignalsRedirect(returnTo) {
-  if (typeof returnTo === 'string' && returnTo.indexOf('/signals') === 0) return returnTo;
+  if (typeof returnTo !== 'string') return '/signals';
+  if (returnTo.indexOf('\r') !== -1 || returnTo.indexOf('\n') !== -1) return '/signals';
+  if (returnTo === '/signals' || returnTo.indexOf('/signals/') === 0 || returnTo.indexOf('/signals?') === 0) return returnTo;
   return '/signals';
 }
 
@@ -66,10 +68,11 @@ async function handleGetSignalsPanelHtml(req, res) {
         const k = _dismissedStore.deriveDismissKey(s);
         if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
       });
-    } catch (_) {
+    } catch (err) {
       // Adapter not wired (D37 stub throw) or any other store failure --
       // degrade to "nothing is dismissed" rather than a 500. See the SCOPE
       // NOTE above and decisions.md's 2026-10-05 entry.
+      console.error('[sptu-s4] dismissed-signals-store unavailable, degrading to empty dismissed-set:', err && err.message || err);
     }
     const visibleSignals = showDismissed
       ? signals
@@ -120,8 +123,18 @@ async function handlePostDismissSignal(req, res) {
   const signal = { source: body.signalSource, type: body.signalType, text: body.signalText };
   const key = _dismissedStore.deriveDismissKey(signal);
   _dismissedStore.dismiss(key);
-  res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
-  res.end();
+  try {
+    res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
+    res.end();
+  } catch (_) {
+    // Defense in depth: if the redirect target somehow still produces an
+    // invalid header value (e.g. a future change to _safeSignalsRedirect
+    // reopens a gap), fall back to a known-safe target rather than hanging
+    // the connection. See the code-quality review that found this gap,
+    // 2026-10-05.
+    res.writeHead(302, { Location: '/signals' });
+    res.end();
+  }
 }
 
 async function handlePostUndismissSignal(req, res) {
@@ -131,8 +144,18 @@ async function handlePostUndismissSignal(req, res) {
   const signal = { source: body.signalSource, type: body.signalType, text: body.signalText };
   const key = _dismissedStore.deriveDismissKey(signal);
   _dismissedStore.undismiss(key);
-  res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
-  res.end();
+  try {
+    res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
+    res.end();
+  } catch (_) {
+    // Defense in depth: if the redirect target somehow still produces an
+    // invalid header value (e.g. a future change to _safeSignalsRedirect
+    // reopens a gap), fall back to a known-safe target rather than hanging
+    // the connection. See the code-quality review that found this gap,
+    // 2026-10-05.
+    res.writeHead(302, { Location: '/signals' });
+    res.end();
+  }
 }
 
 module.exports = {
