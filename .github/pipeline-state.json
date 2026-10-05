@@ -38615,24 +38615,59 @@
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:13:54.548Z",
+          "updatedAt": "2026-10-05T05:34:35.077Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 14,
-            "passing": 0
+            "passing": 14
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s4-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s4-dor.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC7 and CSRF tests for the signals dismiss story",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the dismissed-signals-store module (pure logic + fs adapter)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Implement the routes and view wiring (handler task)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Wire the real fs-backed adapter in server.js (D37 mandatory separate wiring task)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Final regression confirmation and PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/942"
         }
       ],
       "slicingStrategy": "user-journey",
@@ -38740,6 +38775,15 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-05-customer-journey-as-first-class",
+      "id": "2026-10-05-customer-journey-as-first-class",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md",
+      "name": "Customer Journey as First Class",
+      "health": "green",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
