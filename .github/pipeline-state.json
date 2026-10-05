@@ -38445,7 +38445,7 @@
           "baseline": "Not yet established -- task is not completable at all today (no dismiss mechanism exists)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Metric 1 requires the full filter->sort->dismiss flow; only nav-discovery (sptu-s1) and filter (sptu-s2) legs exist so far -- sort (sptu-s3) and dismiss (sptu-s4) are unstarted.",
+          "evidence": "Metric 1 requires the full filter->sort->dismiss flow. sptu-s1 (nav), sptu-s2 (filter), and sptu-s4 (dismiss) are all merged/DoD-complete; sptu-s3 (sort) is code-complete and verified but its PR (#941) is not yet merged. Measurement remains blocked on that merge.",
           "contributingStories": [
             "sptu-s1",
             "sptu-s2",
@@ -38470,10 +38470,12 @@
           "name": "Dismiss retention",
           "target": "100% of dismissed signals stay dismissed across reloads and new sessions",
           "baseline": "0% -- no dismiss mechanism exists today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-10-05",
+          "evidence": "Baseline 0% (no dismiss mechanism existed). Real dismiss/undismiss cycle confirmed live at /verify-completion against the real D37-wired fs-backed adapter; cross-instance real-file persistence confirmed by dedicated test (the automated proxy for a new session given this feature's solo-operator, single-session context). 100% retention on every check performed -- no partial-retention result observed.",
+          "contributingStories": [
+            "sptu-s4"
+          ]
         }
       ],
       "stories": [
@@ -38570,46 +38572,106 @@
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-04T06:12:28.187Z",
+          "updatedAt": "2026-10-05T01:12:14.369Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s3-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s3-dor.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC3 tests for sort-order label and no-date marker",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the sort-order label and the no-date marker",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Final regression confirmation and PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/941"
         },
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-04T06:13:54.548Z",
+          "updatedAt": "2026-10-05T09:47:16.303Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 14,
-            "passing": 0
+            "passing": 14
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s4-dor.md"
+          "dorArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/dor/sptu-s4-dor.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing AC1-AC7 and CSRF tests for the signals dismiss story",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the dismissed-signals-store module (pure logic + fs adapter)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Implement the routes and view wiring (handler task)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Wire the real fs-backed adapter in server.js (D37 mandatory separate wiring task)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Final regression confirmation and PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/942",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "slicingStrategy": "user-journey",
@@ -38714,6 +38776,49 @@
           "verifyStatus": "passed",
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/939"
+        }
+      ],
+      "guardrails": []
+    },
+    {
+      "slug": "2026-10-05-customer-journey-as-first-class",
+      "id": "2026-10-05-customer-journey-as-first-class",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md",
+      "name": "Customer Journey as First Class",
+      "health": "green",
+      "track": "standard",
+      "stage": "discovery"
+    },
+    {
+      "slug": "2026-10-06-dismiss-store-workspace-dir-fix",
+      "id": "2026-10-06-dismiss-store-workspace-dir-fix",
+      "name": "Dismiss store workspace dir fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-05T18:00:36.265Z",
+      "stories": [
+        {
+          "id": "dswf-s1",
+          "name": "Create parent dir before persist (dismissed-signals-store)",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 2
+          },
+          "acTotal": 4,
+          "acVerified": 3,
+          "updatedAt": "2026-10-05T18:28:44.688Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/943"
         }
       ],
       "guardrails": []

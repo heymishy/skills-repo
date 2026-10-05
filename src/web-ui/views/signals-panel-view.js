@@ -7,12 +7,32 @@
 // convention), which is expected, not a bug.
 const { escHtml } = require('../utils/html-shell');
 const _csrf = require('../middleware/csrf');
+const { deriveDismissKey } = require('../modules/dismissed-signals-store');
 
 function _hiddenField(name, value) {
   return '<input type="hidden" name="' + name + '" value="' + escHtml(value == null ? '' : String(value)) + '">';
 }
 
-function _signalItem(signal, csrfToken) {
+// sptu-s4: Dismiss/Undismiss as a plain <form> POST, matching the existing
+// CTA-form convention in this same file (zero client-JS, native keyboard
+// focusability -- AC6). The server recomputes the dismiss key from these raw
+// fields rather than trusting a client-submitted hash (DoR contract).
+function _dismissControl(signal, csrfToken, isDismissedFlag, currentUrl) {
+  const action = isDismissedFlag ? '/signals/undismiss' : '/signals/dismiss';
+  const label = isDismissedFlag ? 'Undismiss' : 'Dismiss';
+  return [
+    '<form method="POST" action="' + action + '" style="margin-top:6px">',
+    '  ' + _csrf.csrfField(csrfToken),
+    '  ' + _hiddenField('signalSource', signal.source),
+    '  ' + _hiddenField('signalType', signal.type),
+    '  ' + _hiddenField('signalText', signal.text),
+    '  ' + _hiddenField('returnTo', currentUrl || '/signals'),
+    '  <button type="submit" class="sw-btn">' + label + '</button>',
+    '</form>'
+  ].join('\n');
+}
+
+function _signalItem(signal, csrfToken, isDismissedFlag, currentUrl) {
   const safeText = escHtml(signal.text || '');
   const safeSource = escHtml(signal.source || '');
   const safeType = escHtml(signal.type || '');
@@ -27,22 +47,27 @@ function _signalItem(signal, csrfToken) {
   const noDateMarkerHtml = hasNoDate
     ? '<span class="signal-no-date-marker">🕑 No date</span>'
     : '';
+  // sptu-s4: a text marker, not colour alone (AC6/NFR Accessibility).
+  const dismissedMarkerHtml = isDismissedFlag ? '<span class="signal-dismissed-marker">✓ Dismissed</span>' : '';
 
   return [
-    '<div class="sw-card signal-item" data-signal-id="' + escHtml(signal.id || '') + '" data-signal-type="' + safeType + '" style="' + itemStyle + '">',
+    '<div class="sw-card signal-item" data-signal-id="' + escHtml(signal.id || '') + '" data-signal-type="' + safeType + '"' + (isDismissedFlag ? ' data-signal-dismissed="true"' : '') + ' style="' + itemStyle + '">',
     '  <div>',
     '    <div class="signal-source">' + safeSource + '</div>',
-    '    <div class="signal-type">' + safeType + '</div>' + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : ''),
+    '    <div class="signal-type">' + safeType + '</div>' + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : '') + (dismissedMarkerHtml ? ' ' + dismissedMarkerHtml : ''),
     '    <div class="signal-text">' + safeText + '</div>',
     '  </div>',
-    '  <form method="POST" action="/api/skills/' + safeSkillName + '/sessions" style="flex-shrink:0">',
-    '    ' + _csrf.csrfField(csrfToken),
-    '    ' + _hiddenField('signalSource', signal.source),
-    '    ' + _hiddenField('signalType', signal.type),
-    '    ' + _hiddenField('signalText', signal.text),
-    '    ' + _hiddenField('signalTimestamp', signal.timestamp),
-    '    <button type="submit" class="sw-btn sw-btn--primary">' + safeCtaLabel + '</button>',
-    '  </form>',
+    '  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">',
+    '    <form method="POST" action="/api/skills/' + safeSkillName + '/sessions">',
+    '      ' + _csrf.csrfField(csrfToken),
+    '      ' + _hiddenField('signalSource', signal.source),
+    '      ' + _hiddenField('signalType', signal.type),
+    '      ' + _hiddenField('signalText', signal.text),
+    '      ' + _hiddenField('signalTimestamp', signal.timestamp),
+    '      <button type="submit" class="sw-btn sw-btn--primary">' + safeCtaLabel + '</button>',
+    '    </form>',
+    '    ' + _dismissControl(signal, csrfToken, isDismissedFlag, currentUrl),
+    '  </div>',
     '</div>'
   ].join('\n');
 }
@@ -135,17 +160,30 @@ function _filterBar(filterState) {
   ].join('\n');
 }
 
+// sptu-s4 (AC3): plain <a> link, same zero-client-JS/keyboard-native
+// convention as the filter-bar toggles.
+function _dismissToggleBar(showDismissed) {
+  const href = showDismissed ? '/signals' : '/signals?showDismissed=true';
+  const label = showDismissed ? 'Hide dismissed' : 'Show dismissed';
+  return '<p class="sw-dismiss-toggle"><a href="' + href + '" class="sw-btn">' + escHtml(label) + '</a></p>';
+}
+
 /**
  * @param {Array<{id:string,source:string,type:string,text:string,timestamp:?string,cta:{label:string,skill:string}}>} signals -- already the current page's own slice
  * @param {string} csrfToken
  * @param {object} [pagination] -- ep2-s3: optional pagination metadata from paginateSignals(). Omitted -> renders exactly as before ep2-s3.
- * @param {object} [filterState] -- sptu-s2: optional {availableTypes, availableSources, hideTypes, hideSources}. Omitted -> no filter bar, renders exactly as before sptu-s2 (ep2-s1's own 7 existing test calls all omit it).
+ * @param {object} [filterState] -- sptu-s2: optional {availableTypes, availableSources, hideTypes, hideSources}. Omitted -> no filter bar, renders exactly as before sptu-s2.
+ * @param {object} [dismissState] -- sptu-s4: optional {showDismissed, dismissedKeys: Set<string>, currentUrl}. Omitted -> every item renders as not-dismissed, no toggle bar, matching every pre-sptu-s4 test call exactly.
  * @returns {string} HTML body content for the /signals panel page
  */
-function renderSignalsPanel(signals, csrfToken, pagination, filterState) {
+function renderSignalsPanel(signals, csrfToken, pagination, filterState, dismissState) {
   const filterBarHtml = _filterBar(filterState);
   const sortOrderLabelHtml = _sortOrderLabel();
   const hasActiveFilter = !!(filterState && ((filterState.hideTypes || []).length || (filterState.hideSources || []).length));
+  const showDismissed = !!(dismissState && dismissState.showDismissed);
+  const dismissedKeys = (dismissState && dismissState.dismissedKeys) || new Set();
+  const currentUrl = (dismissState && dismissState.currentUrl) || '/signals';
+  const dismissToggleHtml = _dismissToggleBar(showDismissed);
 
   if (!signals || signals.length === 0) {
     if (hasActiveFilter) {
@@ -155,18 +193,25 @@ function renderSignalsPanel(signals, csrfToken, pagination, filterState) {
       return [
         filterBarHtml,
         sortOrderLabelHtml,
+        dismissToggleHtml,
         '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals match the current filters</h1><p>Try clearing a filter to see more.</p><p><a href="/signals" class="sw-btn">Clear filters</a></p></div>'
       ].join('\n');
     }
     return [
       sortOrderLabelHtml,
+      dismissToggleHtml,
       '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>'
     ].join('\n');
   }
-  const items = signals.map(function(s) { return _signalItem(s, csrfToken); }).join('\n');
+  const items = signals.map(function(s) {
+    const key = deriveDismissKey(s);
+    const isDismissedFlag = dismissedKeys.has(key);
+    return _signalItem(s, csrfToken, isDismissedFlag, currentUrl);
+  }).join('\n');
   return [
     filterBarHtml,
     sortOrderLabelHtml,
+    dismissToggleHtml,
     '<p class="sw-section-title">Improvement signals</p>',
     '<div class="signals-list" style="display:flex;flex-direction:column;gap:12px">',
     items,
