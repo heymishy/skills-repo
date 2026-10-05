@@ -181,6 +181,20 @@ Promise.resolve()
     } finally { fs.rmSync(tmpDir, { recursive: true, force: true }); }
   }); })
 
+  // ── T11 — recordMetrics succeeds when workspaceDir does not exist yet (wswda-s1 AC1) ─
+  .then(function() { return test('T11: record-metrics-succeeds-when-workspace-dir-missing-wswda-s1-ac1', function() {
+    var nestedDir = path.join(os.tmpdir(), 'wswda-s1-sdg6-test-' + Date.now() + '-' + Math.random().toString(36).slice(2), 'nested');
+    assert.ok(!fs.existsSync(nestedDir), 'precondition: nested workspace dir must not exist yet');
+    try {
+      var mod = freshMetrics();
+      mod.recordMetrics(nestedDir, { featureSlug: 'f', stage: 'ideate', hasReferenceFiles: false, referenceFileCount: 0, referenceFileNames: [], calloutCount: 0, totalSections: 3 });
+      var filePath = path.join(nestedDir, 'strategy-metrics.json');
+      assert.ok(fs.existsSync(filePath), 'expected the metrics file to have been written despite the missing directory');
+      var parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      assert.strictEqual(parsed.metrics.length, 1);
+    } finally { fs.rmSync(path.dirname(nestedDir), { recursive: true, force: true }); }
+  }); })
+
   .then(function() {
     console.log('\n[sdg6-metrics-recording] Results: ' + passed + ' passed, ' + failed + ' failed');
     if (failures.length) { failures.forEach(function(f) { console.log('  FAILED: ' + f.name); }); process.exit(1); }

@@ -10,6 +10,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { writeFileEnsuringDir } = require('../utils/fs-safe-write');
 
 const {
   setAuditLogger: setFeatureListLogger
@@ -55,7 +56,7 @@ function _readIdeasFile() {
 }
 
 function _writeIdeasFile(data) {
-  fs.writeFileSync(IDEAS_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  writeFileEnsuringDir(IDEAS_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
 
 // idp-s1 — injectable ideas store (D37). Unlike the usual D37 pattern, the
@@ -1077,6 +1078,7 @@ module.exports = {
   escHtml,
   _deriveMatrixColumn,
   _buildGroupedFromTrace,
+  _writeIdeasFile,
   deriveSessionOrigin,
   sessionOriginBadgeMeta
 };
