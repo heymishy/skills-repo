@@ -38570,10 +38570,10 @@
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-05T00:05:17.716Z",
+          "updatedAt": "2026-10-05T00:17:02.242Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
