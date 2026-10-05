@@ -15,6 +15,7 @@
 
 var fs   = require('fs');
 var path = require('path');
+var writeFileEnsuringDir = require('../utils/fs-safe-write').writeFileEnsuringDir;
 
 var METRICS_FILENAME = 'strategy-metrics.json';
 
@@ -33,7 +34,7 @@ function _metricsPath(workspaceDir) {
 function initMetricsFile(workspaceDir) {
   var filePath = _metricsPath(workspaceDir);
   if (fs.existsSync(filePath)) return;
-  fs.writeFileSync(filePath, JSON.stringify({ metrics: [] }, null, 2), 'utf8');
+  writeFileEnsuringDir(filePath, JSON.stringify({ metrics: [] }, null, 2), 'utf8');
 }
 
 /**
@@ -96,7 +97,7 @@ function recordMetrics(workspaceDir, payload) {
     calloutRate:        rate
   });
 
-  fs.writeFileSync(filePath, JSON.stringify(current, null, 2), 'utf8');
+  writeFileEnsuringDir(filePath, JSON.stringify(current, null, 2), 'utf8');
 }
 
 /**
