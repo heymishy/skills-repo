@@ -5,6 +5,7 @@
 // precedent exactly: stub default throws, production adapter wired once in
 // server.js at startup.
 const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 
 // D37: default stub MUST throw, never return empty/null.
@@ -78,6 +79,13 @@ function createFsDismissedSignalsStoreAdapter(filePath) {
     return _cache;
   }
   function _persist() {
+    // dswf-s1: workspace/ is not in the Dockerfile's production COPY
+    // allowlist, so this file's own parent directory may not exist in any
+    // real deployed environment (confirmed via a real production ENOENT,
+    // 2026-10-05) -- create it defensively, matching the same
+    // mkdirSync({recursive:true})-before-write pattern already used in
+    // server.js and modules/reference-validator.js.
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, JSON.stringify(Array.from(_cache)), 'utf8');
   }
   return {
