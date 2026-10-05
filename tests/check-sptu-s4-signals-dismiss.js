@@ -28,6 +28,17 @@ function test(name, fn) {
   );
 }
 
+function useInMemoryDismissStore() {
+  store._resetDismissedSignalsStoreForTesting();
+  const mem = new Set();
+  store.setDismissedSignalsStore({
+    isDismissed: function(k) { return mem.has(k); },
+    dismiss: function(k) { mem.add(k); },
+    undismiss: function(k) { mem.delete(k); },
+  });
+  return mem;
+}
+
 function makeTempFilePath() {
   return path.join(os.tmpdir(), 'sptu-s4-dismissed-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.json');
 }
@@ -35,18 +46,12 @@ function makeTempFilePath() {
 const SIGNAL_A = { source: 'capture-log', type: 'gap', text: 'A real gap worth dismissing' };
 const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision worth dismissing' };
 
-// ---- Unit tests (store module, in-memory adapter) ----
+// ── Unit tests (store module, in-memory adapter) ──────────────────────────────
 
 (async function main() {
 
   await test('dismiss(key) then isDismissed(key) returns true for that key only', function() {
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
+    useInMemoryDismissStore();
     store.dismiss('keyA');
     assert.strictEqual(store.isDismissed('keyA'), true);
     assert.strictEqual(store.isDismissed('keyB'), false);
@@ -66,13 +71,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   });
 
   await test('Two signals with different source+type+text produce two different, individually-correct dismiss outcomes', function() {
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
+    useInMemoryDismissStore();
     const keyA = store.deriveDismissKey(SIGNAL_A);
     const keyB = store.deriveDismissKey(SIGNAL_B);
     assert.notStrictEqual(keyA, keyB, 'expected two distinct signals to derive two distinct keys');
@@ -119,7 +118,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     fs.unlinkSync(tmpPath);
   });
 
-  // ---- View / route-level tests require the view and routes to exist (Tasks 2-3) ----
+  // ── Integration tests (view / route-level; require the view and routes from Tasks 2-3) ──
   // The remaining tests below are written now (RED) and will pass once
   // Task 2 (store module -- already covered above) and Task 3 (routes + view
   // wiring) land. They are listed here so the full 14-test file exists
@@ -129,12 +128,12 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
 
   await test('Dismiss/Undismiss controls render as plain, focusable elements with no tabindex override', function() {
     const signals = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
-    const notDismissedHtml = renderSignalsPanel(signals, 'csrf-abc', undefined, undefined, { showDismissed: false, dismissedKeys: new Set() });
+    const notDismissedHtml = renderSignalsPanel(signals, 'csrf-abc', undefined, undefined, { showDismissed: false, dismissedKeys: new Set() }); // pagination, filterState unused for this AC
     assert.ok(/action="\/signals\/dismiss"/.test(notDismissedHtml), 'expected a Dismiss form action when not dismissed');
     assert.ok(!/tabindex/.test(notDismissedHtml), 'expected no tabindex override anywhere in the dismiss control markup');
 
     const key = store.deriveDismissKey(SIGNAL_A);
-    const dismissedHtml = renderSignalsPanel(signals, 'csrf-abc', undefined, undefined, { showDismissed: true, dismissedKeys: new Set([key]) });
+    const dismissedHtml = renderSignalsPanel(signals, 'csrf-abc', undefined, undefined, { showDismissed: true, dismissedKeys: new Set([key]) }); // pagination, filterState unused for this AC
     assert.ok(/action="\/signals\/undismiss"/.test(dismissedHtml), 'expected an Undismiss form action when dismissed and showDismissed is true');
     assert.ok(!/tabindex/.test(dismissedHtml), 'expected no tabindex override anywhere in the dismiss control markup');
   });
@@ -167,14 +166,8 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss removes the signal from the next GET /signals', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
-    const session = {};
+    useInMemoryDismissStore();
+    const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-1' });
 
     const dismissCall = fakeReqRes('POST', { _csrf: csrfToken, signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
@@ -182,7 +175,6 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     assert.ok(dismissCall.res.statusCode === 302 || dismissCall.res.statusCode === 303, 'expected a redirect after a successful dismiss');
 
     const getCall = fakeReqRes('GET', null, {}, session);
-    getCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(getCall.req, getCall.res);
     assert.ok(!getCall.res.body.includes(SIGNAL_A.text), 'expected the dismissed signal to no longer appear in the default view');
 
@@ -192,21 +184,14 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: "show dismissed" reveals a dismissed signal with a working Undismiss action', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
-    const session = {};
+    useInMemoryDismissStore();
+    const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-2' });
 
     const dismissCall = fakeReqRes('POST', { _csrf: csrfToken, signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
     await signalsPanelRoute.handlePostDismissSignal(dismissCall.req, dismissCall.res);
 
     const showDismissedCall = fakeReqRes('GET', null, { showDismissed: 'true' }, session);
-    showDismissedCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(showDismissedCall.req, showDismissedCall.res);
     assert.ok(showDismissedCall.res.body.includes(SIGNAL_A.text), 'expected the dismissed signal to reappear under showDismissed=true');
     assert.ok(/action="\/signals\/undismiss"/.test(showDismissedCall.res.body), 'expected an Undismiss action for the dismissed signal');
@@ -215,7 +200,6 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     await signalsPanelRoute.handlePostUndismissSignal(undismissCall.req, undismissCall.res);
 
     const defaultCall = fakeReqRes('GET', null, {}, session);
-    defaultCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(defaultCall.req, defaultCall.res);
     assert.ok(defaultCall.res.body.includes(SIGNAL_A.text), 'expected the signal back in the default view after undismiss');
 
@@ -231,14 +215,13 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
       { id: 's2', source: SIGNAL_B.source, type: SIGNAL_B.type, text: SIGNAL_B.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } },
     ];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    const session = {};
+    const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-3' });
 
     const dismissCall = fakeReqRes('POST', { _csrf: csrfToken, signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
     await signalsPanelRoute.handlePostDismissSignal(dismissCall.req, dismissCall.res);
 
     const getCall = fakeReqRes('GET', null, {}, session);
-    getCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(getCall.req, getCall.res);
     assert.ok(!getCall.res.body.includes(SIGNAL_A.text), 'expected signal A excluded');
     assert.ok(getCall.res.body.includes(SIGNAL_B.text), 'expected signal B NOT excluded -- proves real differentiation, not a blanket effect');
@@ -250,14 +233,8 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss without a valid CSRF token is rejected (closes review finding 1-M1)', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
-    const session = {};
+    useInMemoryDismissStore();
+    const session = { accessToken: 'tok', login: 'tester' };
 
     const noCsrfCall = fakeReqRes('POST', { signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
     await signalsPanelRoute.handlePostDismissSignal(noCsrfCall.req, noCsrfCall.res);
@@ -268,7 +245,6 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     assert.strictEqual(badCsrfCall.res.statusCode, 403, 'expected 403 for an invalid CSRF token');
 
     const getCall = fakeReqRes('GET', null, {}, session);
-    getCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(getCall.req, getCall.res);
     assert.ok(getCall.res.body.includes(SIGNAL_A.text), 'expected the signal NOT dismissed -- both rejected requests must have no effect');
 
@@ -278,14 +254,8 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss with a valid CSRF token succeeds', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set();
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
-    const session = {};
+    useInMemoryDismissStore();
+    const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-4' });
 
     const dismissCall = fakeReqRes('POST', { _csrf: csrfToken, signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
@@ -293,7 +263,6 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     assert.ok(dismissCall.res.statusCode === 302 || dismissCall.res.statusCode === 303, 'expected a redirect on success');
 
     const getCall = fakeReqRes('GET', null, {}, session);
-    getCall.req.session.accessToken = 'tok';
     await signalsPanelRoute.handleGetSignalsPanelHtml(getCall.req, getCall.res);
     assert.ok(!getCall.res.body.includes(SIGNAL_A.text), 'expected the signal dismissed');
 
@@ -317,6 +286,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     fs.unlinkSync(tmpPath);
   });
 
+  // ── NFR tests ──
   await test('NFR-Performance: dismissed-set lookup stays within the established <100ms render budget', function() {
     store._resetDismissedSignalsStoreForTesting();
     const dismissedSet = new Set();
@@ -332,12 +302,21 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     for (let i = 0; i < 5340; i++) {
       big.push({ id: 's' + i, source: 'capture-log', type: 'gap', text: 'signal number ' + i, timestamp: null, cta: { label: 'Review', skill: '/improve' } });
     }
-    const start = Date.now();
+
+    // Untimed warm-up pass over a small slice through the same pipeline, so
+    // JIT/GC costs are front-loaded outside the measurement window -- matches
+    // the sibling file's (check-sptu-s2-signals-filter.js) methodology.
+    const warmupSlice = big.slice(0, 100);
+    const warmupFiltered = filterSignals(warmupSlice, { hideTypes: [], hideSources: [] });
+    const warmupAfterDismiss = warmupFiltered.filter(function(s) { return !store.isDismissed(store.deriveDismissKey(s)); });
+    paginateSignals(warmupAfterDismiss, '1');
+
+    const start = process.hrtime.bigint();
     const afterTypeSource = filterSignals(big, { hideTypes: [], hideSources: [] });
     const afterDismiss = afterTypeSource.filter(function(s) { return !store.isDismissed(store.deriveDismissKey(s)); });
     paginateSignals(afterDismiss, '1');
-    const elapsed = Date.now() - start;
-    assert.ok(elapsed < 100, 'expected filterSignals + dismissed-filter + paginateSignals on 5,340 items to complete in under 100ms, took ' + elapsed + 'ms');
+    const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+    assert.ok(elapsedMs < 100, 'expected filterSignals + dismissed-filter + paginateSignals on 5,340 items to complete in under 100ms, took ' + elapsedMs.toFixed(2) + 'ms');
   });
 
   console.log('\n[sptu-s4-signals-dismiss] Results: ' + passed + ' passed, ' + failed + ' failed');
