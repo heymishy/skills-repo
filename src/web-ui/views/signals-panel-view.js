@@ -23,12 +23,16 @@ function _signalItem(signal, csrfToken) {
   const isParseError = signal.type === 'parse-error';
   const itemStyle = 'display:flex;align-items:flex-start;justify-content:space-between;gap:16px' +
     (isParseError ? ';border-left:3px solid #b45309;background:rgba(180,83,9,0.08);padding-left:12px' : '');
+  const hasNoDate = signal.timestamp == null;
+  const noDateMarkerHtml = hasNoDate
+    ? '<span class="signal-no-date-marker">🕑 No date</span>'
+    : '';
 
   return [
-    '<div class="sw-card signal-item" data-signal-type="' + safeType + '" style="' + itemStyle + '">',
+    '<div class="sw-card signal-item" data-signal-id="' + escHtml(signal.id || '') + '" data-signal-type="' + safeType + '" style="' + itemStyle + '">',
     '  <div>',
     '    <div class="signal-source">' + safeSource + '</div>',
-    '    <div class="signal-type">' + safeType + '</div>',
+    '    <div class="signal-type">' + safeType + '</div>' + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : ''),
     '    <div class="signal-text">' + safeText + '</div>',
     '  </div>',
     '  <form method="POST" action="/api/skills/' + safeSkillName + '/sessions" style="flex-shrink:0">',
@@ -61,6 +65,15 @@ function _paginationBar(pagination) {
     '  <span>' + nextLink + '</span>',
     '</div>'
   ].join('\n');
+}
+
+// sptu-s3: makes the signals-aggregator's own existing recency sort
+// (already applied by getSignals()'s _sortSignals() since ep1-s1) visible
+// and honestly qualified -- most real signals (87% as measured 2026-10-04)
+// have no timestamp at all and are not actually sorted by recency, so the
+// copy must not claim an unqualified "sorted by recency" guarantee (AC3).
+function _sortOrderLabel() {
+  return '<p class="sw-sort-label">Sorted by most recent first for signals that have a date — signals with no date are shown last, in their original order</p>';
 }
 
 function _toggleHideValue(currentList, value) {
@@ -131,6 +144,7 @@ function _filterBar(filterState) {
  */
 function renderSignalsPanel(signals, csrfToken, pagination, filterState) {
   const filterBarHtml = _filterBar(filterState);
+  const sortOrderLabelHtml = _sortOrderLabel();
   const hasActiveFilter = !!(filterState && ((filterState.hideTypes || []).length || (filterState.hideSources || []).length));
 
   if (!signals || signals.length === 0) {
@@ -140,14 +154,19 @@ function renderSignalsPanel(signals, csrfToken, pagination, filterState) {
       // current filter combination matches none of them.
       return [
         filterBarHtml,
+        sortOrderLabelHtml,
         '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals match the current filters</h1><p>Try clearing a filter to see more.</p><p><a href="/signals" class="sw-btn">Clear filters</a></p></div>'
       ].join('\n');
     }
-    return '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>';
+    return [
+      sortOrderLabelHtml,
+      '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>'
+    ].join('\n');
   }
   const items = signals.map(function(s) { return _signalItem(s, csrfToken); }).join('\n');
   return [
     filterBarHtml,
+    sortOrderLabelHtml,
     '<p class="sw-section-title">Improvement signals</p>',
     '<div class="signals-list" style="display:flex;flex-direction:column;gap:12px">',
     items,
