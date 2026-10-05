@@ -159,6 +159,20 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     assert.ok(!/tabindex/.test(dismissedHtml), 'expected no tabindex override anywhere in the dismiss control markup');
   });
 
+  await test('Dismiss/Undismiss form disables its own submit button on submit, closing a rapid-double-click race (spdr-s1 AC1)', function() {
+    const signals = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
+    const html = renderSignalsPanel(signals, 'csrf-abc', undefined, undefined, { showDismissed: false, dismissedKeys: new Set() });
+    const formMatch = html.match(/<form method="POST" action="\/signals\/dismiss"[^>]*>/);
+    assert.ok(formMatch, 'expected to find the Dismiss form opening tag');
+    assert.ok(/onsubmit="this\.querySelector\('button'\)\.disabled=true;"/.test(formMatch[0]), 'expected the Dismiss form to disable its own submit button on submit; got: ' + formMatch[0]);
+  });
+
+  // spdr-s1 AC2 (single-click path unchanged): covered by the pre-existing
+  // "Real route dispatch: POST /signals/dismiss removes the signal from the
+  // next GET /signals" test below continuing to pass unchanged -- the
+  // onsubmit attribute above is a client-side-only addition with no effect
+  // on server-side route dispatch for a single, legitimate submission.
+
   const signalsPanelRoute = require('../src/web-ui/routes/signals-panel');
   const _csrf = require('../src/web-ui/middleware/csrf');
 
