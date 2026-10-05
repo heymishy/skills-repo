@@ -38445,7 +38445,7 @@
           "baseline": "Not yet established -- task is not completable at all today (no dismiss mechanism exists)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Metric 1 requires the full filter->sort->dismiss flow; only nav-discovery (sptu-s1) and filter (sptu-s2) legs exist so far -- sort (sptu-s3) and dismiss (sptu-s4) are unstarted.",
+          "evidence": "Metric 1 requires the full filter->sort->dismiss flow. sptu-s1 (nav), sptu-s2 (filter), and sptu-s4 (dismiss) are all merged/DoD-complete; sptu-s3 (sort) is code-complete and verified but its PR (#941) is not yet merged. Measurement remains blocked on that merge.",
           "contributingStories": [
             "sptu-s1",
             "sptu-s2",
@@ -38470,10 +38470,12 @@
           "name": "Dismiss retention",
           "target": "100% of dismissed signals stay dismissed across reloads and new sessions",
           "baseline": "0% -- no dismiss mechanism exists today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-10-05",
+          "evidence": "Baseline 0% (no dismiss mechanism existed). Real dismiss/undismiss cycle confirmed live at /verify-completion against the real D37-wired fs-backed adapter; cross-instance real-file persistence confirmed by dedicated test (the automated proxy for a new session given this feature's solo-operator, single-session context). 100% retention on every check performed -- no partial-retention result observed.",
+          "contributingStories": [
+            "sptu-s4"
+          ]
         }
       ],
       "stories": [
@@ -38615,10 +38617,10 @@
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-05T09:44:42.486Z",
+          "updatedAt": "2026-10-05T09:47:16.303Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
@@ -38667,7 +38669,9 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/942"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/942",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "slicingStrategy": "user-journey",
