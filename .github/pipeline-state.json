@@ -38803,19 +38803,20 @@
         {
           "id": "dswf-s1",
           "name": "Create parent dir before persist (dismissed-signals-store)",
-          "stage": "branch-setup",
+          "stage": "verify-completion",
           "health": "green",
           "complexity": 1,
           "testPlan": {
             "status": "written",
             "totalTests": 2,
-            "passing": 0
+            "passing": 2
           },
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-10-05T18:12:08.718Z",
+          "acVerified": 3,
+          "updatedAt": "2026-10-05T18:26:54.665Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md",
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": []
