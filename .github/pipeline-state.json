@@ -38618,14 +38618,14 @@
           "stage": "subagent-execution",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-05T01:34:17.993Z",
+          "updatedAt": "2026-10-05T05:09:18.353Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 14,
-            "passing": 0
+            "passing": 14
           },
           "acTotal": 7,
           "acVerified": 0,
@@ -38637,31 +38637,31 @@
             {
               "id": "task-1",
               "name": "Write failing AC1-AC7 and CSRF tests for the signals dismiss story",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             },
             {
               "id": "task-2",
               "name": "Implement the dismissed-signals-store module (pure logic + fs adapter)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             },
             {
               "id": "task-3",
               "name": "Implement the routes and view wiring (handler task)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             },
             {
               "id": "task-4",
               "name": "Wire the real fs-backed adapter in server.js (D37 mandatory separate wiring task)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             },
             {
               "id": "task-5",
               "name": "Final regression confirmation and PR",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             }
           ]
