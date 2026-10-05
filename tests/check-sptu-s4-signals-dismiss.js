@@ -118,6 +118,27 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     fs.unlinkSync(tmpPath);
   });
 
+  await test('dismiss() succeeds and persists when the target file\'s directory does not exist yet (dswf-s1 AC1)', function() {
+    const nestedDir = path.join(os.tmpdir(), 'dswf-s1-test-' + Date.now() + '-' + Math.random().toString(36).slice(2), 'nested');
+    const nestedPath = path.join(nestedDir, 'dismissed-signals.json');
+    assert.ok(!fs.existsSync(nestedDir), 'precondition: nested directory must not exist yet');
+    const adapter = store.createFsDismissedSignalsStoreAdapter(nestedPath);
+    adapter.dismiss('some-key');
+    assert.ok(fs.existsSync(nestedPath), 'expected the file to have been written despite the missing parent directory');
+    const secondAdapter = store.createFsDismissedSignalsStoreAdapter(nestedPath);
+    assert.strictEqual(secondAdapter.isDismissed('some-key'), true, 'expected the write to have actually persisted the key');
+    fs.rmSync(path.dirname(nestedDir), { recursive: true, force: true });
+  });
+
+  await test('dismiss() behaves identically when the target directory already exists (dswf-s1 AC2)', function() {
+    const tmpPath = makeTempFilePath();
+    const adapter = store.createFsDismissedSignalsStoreAdapter(tmpPath);
+    adapter.dismiss('another-key');
+    assert.ok(fs.existsSync(tmpPath));
+    assert.strictEqual(adapter.isDismissed('another-key'), true);
+    fs.unlinkSync(tmpPath);
+  });
+
   // ── Integration tests (view / route-level; require the view and routes from Tasks 2-3) ──
   // The remaining tests below are written now (RED) and will pass once
   // Task 2 (store module -- already covered above) and Task 3 (routes + view
