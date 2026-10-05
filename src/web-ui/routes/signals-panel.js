@@ -10,6 +10,7 @@ const _csrf = require('../middleware/csrf');
 const { _getSkillsNavContext } = require('./skills');
 const { paginateSignals } = require('../utils/paginate-signals'); // ep2-s3
 const { filterSignals } = require('../utils/filter-signals'); // sptu-s2
+const _dismissedStore = require('../modules/dismissed-signals-store');
 
 let _signalsSourceOverride = null;
 function setSignalsSource(fn) { _signalsSourceOverride = fn; }
@@ -25,6 +26,11 @@ function _getRepoPath() {
 function _parseHideParam(raw) {
   if (!raw) return [];
   return String(raw).split(',').map(function(v) { return v.trim(); }).filter(Boolean);
+}
+
+function _safeSignalsRedirect(returnTo) {
+  if (typeof returnTo === 'string' && returnTo.indexOf('/signals') === 0) return returnTo;
+  return '/signals';
 }
 
 async function handleGetSignalsPanelHtml(req, res) {
@@ -53,9 +59,19 @@ async function handleGetSignalsPanelHtml(req, res) {
 
     const signals = filterSignals(allSignals, { hideTypes: hideTypes, hideSources: hideSources });
 
+    const showDismissed = (req.query && req.query.showDismissed === 'true');
+    const dismissedKeys = new Set();
+    allSignals.forEach(function(s) {
+      const k = _dismissedStore.deriveDismissKey(s);
+      if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
+    });
+    const visibleSignals = showDismissed
+      ? signals
+      : signals.filter(function(s) { return !dismissedKeys.has(_dismissedStore.deriveDismissKey(s)); });
+
     // ep2-s3: slice to a bounded page before rendering -- req.query.page is a
     // plain string or undefined (confirmed via server.js's own parseQuery).
-    const pagination = paginateSignals(signals, req.query && req.query.page);
+    const pagination = paginateSignals(visibleSignals, req.query && req.query.page);
     const csrfToken = await _csrf.generateCsrfToken(req);
     const _nav = await _getSkillsNavContext(req, null);
     const filterState = {
@@ -64,9 +80,10 @@ async function handleGetSignalsPanelHtml(req, res) {
       hideTypes: hideTypes,
       hideSources: hideSources
     };
+    const dismissState = { showDismissed: showDismissed, dismissedKeys: dismissedKeys, currentUrl: req.url };
     const html = renderShell({
       title: 'Improvement Signals',
-      bodyContent: renderSignalsPanel(pagination.pageSignals, csrfToken, pagination, filterState),
+      bodyContent: renderSignalsPanel(pagination.pageSignals, csrfToken, pagination, filterState, dismissState),
       user: { login: req.session.login || '' },
       active: 'signals',
       products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
@@ -90,4 +107,32 @@ async function handleGetSignalsPanelHtml(req, res) {
   }
 }
 
-module.exports = { handleGetSignalsPanelHtml, setSignalsSource, _resetSignalsSourceForTesting };
+async function handlePostDismissSignal(req, res) {
+  const csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  const body = req.body || {};
+  const signal = { source: body.signalSource, type: body.signalType, text: body.signalText };
+  const key = _dismissedStore.deriveDismissKey(signal);
+  _dismissedStore.dismiss(key);
+  res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
+  res.end();
+}
+
+async function handlePostUndismissSignal(req, res) {
+  const csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  const body = req.body || {};
+  const signal = { source: body.signalSource, type: body.signalType, text: body.signalText };
+  const key = _dismissedStore.deriveDismissKey(signal);
+  _dismissedStore.undismiss(key);
+  res.writeHead(302, { Location: _safeSignalsRedirect(body.returnTo) });
+  res.end();
+}
+
+module.exports = {
+  handleGetSignalsPanelHtml,
+  handlePostDismissSignal,
+  handlePostUndismissSignal,
+  setSignalsSource,
+  _resetSignalsSourceForTesting
+};
