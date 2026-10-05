@@ -38772,6 +38772,12 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-05-customer-journey-as-first-class",
+      "id": "2026-10-05-customer-journey-as-first-class",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
