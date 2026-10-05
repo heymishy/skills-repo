@@ -38789,6 +38789,36 @@
       "health": "green",
       "track": "standard",
       "stage": "discovery"
+    },
+    {
+      "slug": "2026-10-06-dismiss-store-workspace-dir-fix",
+      "id": "2026-10-06-dismiss-store-workspace-dir-fix",
+      "name": "Dismiss store workspace dir fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-05T18:00:36.265Z",
+      "stories": [
+        {
+          "id": "dswf-s1",
+          "name": "Create parent dir before persist (dismissed-signals-store)",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-10-05T18:00:36.267Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
