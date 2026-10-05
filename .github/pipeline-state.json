@@ -38833,14 +38833,14 @@
       "name": "Write-site workspace dir audit",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-05T20:43:25.285Z",
+      "updatedAt": "2026-10-05T21:49:57.048Z",
       "stories": [
         {
           "id": "wswda-s1",
           "name": "Create target directory before writing strategy-metrics and file-backed ideas data",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -38850,12 +38850,14 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-10-05T20:43:25.285Z",
+          "updatedAt": "2026-10-05T21:49:47.017Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-06-write-site-workspace-dir-audit/dor/wswda-s1-dor.md",
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/944"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/944",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
