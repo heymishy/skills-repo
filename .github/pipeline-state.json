@@ -38803,7 +38803,7 @@
         {
           "id": "dswf-s1",
           "name": "Create parent dir before persist (dismissed-signals-store)",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -38813,10 +38813,12 @@
           },
           "acTotal": 4,
           "acVerified": 3,
-          "updatedAt": "2026-10-05T18:26:54.665Z",
+          "updatedAt": "2026-10-05T18:28:44.688Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/943"
         }
       ],
       "guardrails": []
