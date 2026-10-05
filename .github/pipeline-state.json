@@ -38783,7 +38783,8 @@
       "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md",
       "name": "Customer Journey as First Class",
       "health": "green",
-      "track": "standard"
+      "track": "standard",
+      "stage": "discovery"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
