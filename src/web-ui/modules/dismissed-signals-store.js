@@ -21,10 +21,18 @@ function _resetDismissedSignalsStoreForTesting() {
 
 // Stable key -- source+type+text, NEVER signal.id (confirmed non-deterministic
 // for parse-error signals, ep1-s2-dod.md AC5 deviation). Node's built-in
-// crypto module only -- no new npm dependency.
+// crypto module only -- no new npm dependency. The separator is a real NUL
+// character built via String.fromCharCode(0) -- deliberately NOT a printable
+// character like a space, since a space (or any printable separator) can
+// appear inside source/type/text itself and create a real collision between
+// two different signals (e.g. source="a b", type="c" vs source="a",
+// type="b c" joined with a space both produce "a b c"). NUL cannot appear in
+// normal signal text, so this separator is collision-safe for AC4's own
+// "two distinct signals never collide" requirement.
+const _DISMISS_KEY_SEPARATOR = String.fromCharCode(0);
 function deriveDismissKey(signal) {
-  const raw = String((signal && signal.source) || '') + ' ' +
-              String((signal && signal.type) || '') + ' ' +
+  const raw = String((signal && signal.source) || '') + _DISMISS_KEY_SEPARATOR +
+              String((signal && signal.type) || '') + _DISMISS_KEY_SEPARATOR +
               String((signal && signal.text) || '');
   return crypto.createHash('sha256').update(raw, 'utf8').digest('hex');
 }
