@@ -38570,10 +38570,10 @@
         {
           "id": "sptu-s3",
           "name": "Make the signals panel sort order visible and explicit",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-05T01:03:11.557Z",
+          "updatedAt": "2026-10-05T01:12:14.369Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
@@ -38608,7 +38608,9 @@
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/941"
         },
         {
           "id": "sptu-s4",
