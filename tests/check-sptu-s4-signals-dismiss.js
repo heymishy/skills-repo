@@ -84,6 +84,12 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     const adapterCorrupt = store.createFsDismissedSignalsStoreAdapter(corruptPath);
     assert.strictEqual(adapterCorrupt.isDismissed('anyKey'), false);
     fs.unlinkSync(corruptPath);
+
+    const wrongShapePath = makeTempFilePath();
+    fs.writeFileSync(wrongShapePath, JSON.stringify({ not: 'an-array' }), 'utf8');
+    const adapterWrongShape = store.createFsDismissedSignalsStoreAdapter(wrongShapePath);
+    assert.strictEqual(adapterWrongShape.isDismissed('anyKey'), false);
+    fs.unlinkSync(wrongShapePath);
   });
 
   await test('NFR-Security: the persisted file stores only derived hash strings, never raw signal content', function() {

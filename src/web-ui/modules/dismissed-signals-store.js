@@ -26,9 +26,10 @@ function _resetDismissedSignalsStoreForTesting() {
 // character like a space, since a space (or any printable separator) can
 // appear inside source/type/text itself and create a real collision between
 // two different signals (e.g. source="a b", type="c" vs source="a",
-// type="b c" joined with a space both produce "a b c"). NUL cannot appear in
-// normal signal text, so this separator is collision-safe for AC4's own
-// "two distinct signals never collide" requirement.
+// type="b c" joined with a space both produce "a b c"). NUL is not expected to
+// appear in any of this repo's current signal sources, so this separator is
+// collision-safe for AC4's own "two distinct signals never collide"
+// requirement.
 const _DISMISS_KEY_SEPARATOR = String.fromCharCode(0);
 function deriveDismissKey(signal) {
   const raw = String((signal && signal.source) || '') + _DISMISS_KEY_SEPARATOR +
