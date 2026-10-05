@@ -38573,14 +38573,14 @@
           "stage": "subagent-execution",
           "health": "green",
           "complexity": 1,
-          "updatedAt": "2026-10-05T00:17:02.242Z",
+          "updatedAt": "2026-10-05T00:57:53.118Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s3-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -38592,19 +38592,19 @@
             {
               "id": "task-1",
               "name": "Write failing AC1-AC3 tests for sort-order label and no-date marker",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
             },
             {
               "id": "task-2",
               "name": "Implement the sort-order label and the no-date marker",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
             },
             {
               "id": "task-3",
               "name": "Final regression confirmation and PR",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s3-plan.md"
             }
           ]
