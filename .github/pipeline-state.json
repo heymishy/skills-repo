@@ -38615,10 +38615,10 @@
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-05T05:23:46.129Z",
+          "updatedAt": "2026-10-05T05:34:35.077Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
@@ -38665,7 +38665,9 @@
               "file": "artefacts/2026-10-04-signals-panel-triage-ux/plans/sptu-s4-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/942"
         }
       ],
       "slicingStrategy": "user-journey",
