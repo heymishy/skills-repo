@@ -31,6 +31,15 @@ const UNDATED_PARSE_ERROR = { id: 's4', source: 'parse-error', type: 'parse-erro
 
 (async function main() {
 
+  function blockFor(html, id) {
+    const marker = 'data-signal-id="' + id + '"';
+    const idx = html.indexOf(marker);
+    assert.ok(idx !== -1, 'expected to find a block for ' + id);
+    const rest = html.slice(idx);
+    const nextIdx = rest.indexOf('data-signal-id="', marker.length);
+    return nextIdx === -1 ? rest : rest.slice(0, nextIdx);
+  }
+
   await test('AC1: renderSignalsPanel includes a visible sort-order label', function() {
     const html = renderSignalsPanel([DATED_SIGNAL], 'csrf-abc');
     assert.ok(/sorted by.*recent/i.test(html), 'expected a label matching /sorted by.*recent/i');
@@ -38,27 +47,19 @@ const UNDATED_PARSE_ERROR = { id: 's4', source: 'parse-error', type: 'parse-erro
 
   await test('AC2: a signal with timestamp=null carries a distinct "no date" marker; a dated sibling does not', function() {
     const html = renderSignalsPanel([DATED_SIGNAL, UNDATED_SIGNAL], 'csrf-abc');
-    const datedBlock = html.split('data-signal-id="s2"')[0];
     assert.ok(html.includes('data-signal-id="s2"'), 'expected the undated signal to be identifiable by its own id attribute');
-    const undatedBlock = html.split('data-signal-id="s2"')[1].split('data-signal-id="s1"')[0] || html.split('data-signal-id="s2"')[1];
+    const datedBlock = blockFor(html, 's1');
+    const undatedBlock = blockFor(html, 's2');
     assert.ok(/no date/i.test(undatedBlock), 'expected the undated signal\'s own block to carry a "no date" marker');
     assert.ok(!/no date/i.test(datedBlock), 'expected the dated signal\'s block (before the undated one) to carry no "no date" marker');
   });
 
   await test('AC2: the "no date" marker and the parse-error marker are independent -- a signal can carry both, either, or neither', function() {
     const html = renderSignalsPanel([DATED_SIGNAL, UNDATED_SIGNAL, DATED_PARSE_ERROR, UNDATED_PARSE_ERROR], 'csrf-abc');
-    function blockFor(id) {
-      const marker = 'data-signal-id="' + id + '"';
-      const idx = html.indexOf(marker);
-      assert.ok(idx !== -1, 'expected to find a block for ' + id);
-      const rest = html.slice(idx);
-      const nextIdx = rest.indexOf('data-signal-id="', marker.length);
-      return nextIdx === -1 ? rest : rest.slice(0, nextIdx);
-    }
-    const datedNormal = blockFor('s1');
-    const undatedNormal = blockFor('s2');
-    const datedParseError = blockFor('s3');
-    const undatedParseError = blockFor('s4');
+    const datedNormal = blockFor(html, 's1');
+    const undatedNormal = blockFor(html, 's2');
+    const datedParseError = blockFor(html, 's3');
+    const undatedParseError = blockFor(html, 's4');
 
     assert.ok(!/no date/i.test(datedNormal), 'dated, non-parse-error: expected no "no date" marker');
     assert.ok(!datedNormal.includes('data-signal-type="parse-error"'), 'dated, non-parse-error: expected no parse-error marker');
@@ -84,4 +85,7 @@ const UNDATED_PARSE_ERROR = { id: 's4', source: 'parse-error', type: 'parse-erro
 
   console.log('\n[sptu-s3-signals-sort-visibility] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
-})();
+})().catch(function(err) {
+  console.error('[sptu-s3-signals-sort-visibility] Unexpected error:', err && err.stack || err);
+  process.exit(1);
+});
