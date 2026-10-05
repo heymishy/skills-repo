@@ -28,9 +28,9 @@ function test(name, fn) {
   );
 }
 
-function useInMemoryDismissStore() {
+function makeInMemoryDismissStore(seed) {
   store._resetDismissedSignalsStoreForTesting();
-  const mem = new Set();
+  const mem = new Set(seed || []);
   store.setDismissedSignalsStore({
     isDismissed: function(k) { return mem.has(k); },
     dismiss: function(k) { mem.add(k); },
@@ -51,27 +51,21 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
 (async function main() {
 
   await test('dismiss(key) then isDismissed(key) returns true for that key only', function() {
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     store.dismiss('keyA');
     assert.strictEqual(store.isDismissed('keyA'), true);
     assert.strictEqual(store.isDismissed('keyB'), false);
   });
 
   await test('undismiss(key) reverses a prior dismiss(key) and only that key', function() {
-    store._resetDismissedSignalsStoreForTesting();
-    const mem = new Set(['keyA', 'keyB']);
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return mem.has(k); },
-      dismiss: function(k) { mem.add(k); },
-      undismiss: function(k) { mem.delete(k); },
-    });
+    makeInMemoryDismissStore(['keyA', 'keyB']);
     store.undismiss('keyA');
     assert.strictEqual(store.isDismissed('keyA'), false);
     assert.strictEqual(store.isDismissed('keyB'), true);
   });
 
   await test('Two signals with different source+type+text produce two different, individually-correct dismiss outcomes', function() {
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     const keyA = store.deriveDismissKey(SIGNAL_A);
     const keyB = store.deriveDismissKey(SIGNAL_B);
     assert.notStrictEqual(keyA, keyB, 'expected two distinct signals to derive two distinct keys');
@@ -166,7 +160,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss removes the signal from the next GET /signals', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-1' });
 
@@ -184,7 +178,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: "show dismissed" reveals a dismissed signal with a working Undismiss action', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-2' });
 
@@ -233,7 +227,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss without a valid CSRF token is rejected (closes review finding 1-M1)', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     const session = { accessToken: 'tok', login: 'tester' };
 
     const noCsrfCall = fakeReqRes('POST', { signalSource: SIGNAL_A.source, signalType: SIGNAL_A.type, signalText: SIGNAL_A.text }, {}, session);
@@ -254,7 +248,7 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
   await test('Real route dispatch: POST /signals/dismiss with a valid CSRF token succeeds', async function() {
     const fixture = [{ id: 's1', source: SIGNAL_A.source, type: SIGNAL_A.type, text: SIGNAL_A.text, timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     signalsPanelRoute.setSignalsSource(function() { return fixture; });
-    useInMemoryDismissStore();
+    makeInMemoryDismissStore();
     const session = { accessToken: 'tok', login: 'tester' };
     const csrfToken = await _csrf.generateCsrfToken({ session: session, sessionId: 'sid-4' });
 
@@ -286,16 +280,11 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
     fs.unlinkSync(tmpPath);
   });
 
-  // ── NFR tests ──
+  // ── NFR tests ───────────────────────────────────────────────────────────────────────────
   await test('NFR-Performance: dismissed-set lookup stays within the established <100ms render budget', function() {
-    store._resetDismissedSignalsStoreForTesting();
-    const dismissedSet = new Set();
-    for (let i = 0; i < 500; i++) { dismissedSet.add('key-' + i); }
-    store.setDismissedSignalsStore({
-      isDismissed: function(k) { return dismissedSet.has(k); },
-      dismiss: function(k) { dismissedSet.add(k); },
-      undismiss: function(k) { dismissedSet.delete(k); },
-    });
+    const seedKeys = [];
+    for (let i = 0; i < 500; i++) { seedKeys.push('key-' + i); }
+    makeInMemoryDismissStore(seedKeys);
     const { filterSignals } = require('../src/web-ui/utils/filter-signals');
     const { paginateSignals } = require('../src/web-ui/utils/paginate-signals');
     const big = [];
@@ -303,9 +292,12 @@ const SIGNAL_B = { source: 'decisions', type: 'decision', text: 'A real decision
       big.push({ id: 's' + i, source: 'capture-log', type: 'gap', text: 'signal number ' + i, timestamp: null, cta: { label: 'Review', skill: '/improve' } });
     }
 
-    // Untimed warm-up pass over a small slice through the same pipeline, so
-    // JIT/GC costs are front-loaded outside the measurement window -- matches
-    // the sibling file's (check-sptu-s2-signals-filter.js) methodology.
+    // The process.hrtime.bigint() timing mechanism matches the sibling file's
+    // (check-sptu-s2-signals-filter.js) own approach. The untimed warm-up pass
+    // below is NOT part of that sibling's methodology -- it is an additional,
+    // deliberate improvement here to reduce JIT/GC flakiness, because this
+    // test's pipeline does strictly more work (hashing + Set lookup per
+    // signal) than the sibling's equivalent test.
     const warmupSlice = big.slice(0, 100);
     const warmupFiltered = filterSignals(warmupSlice, { hideTypes: [], hideSources: [] });
     const warmupAfterDismiss = warmupFiltered.filter(function(s) { return !store.isDismissed(store.deriveDismissKey(s)); });
