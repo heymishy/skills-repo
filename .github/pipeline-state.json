@@ -38615,10 +38615,10 @@
         {
           "id": "sptu-s4",
           "name": "Dismiss / mark-reviewed for the signals panel",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "complexity": 2,
-          "updatedAt": "2026-10-05T01:32:43.127Z",
+          "updatedAt": "2026-10-05T01:34:17.993Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-10-04-signals-panel-triage-ux/review/sptu-s4-review-1.md",
