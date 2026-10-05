@@ -60,11 +60,11 @@ None. The story's own Out of Scope items (extending `signals-aggregator.js` to p
 
 | Metric | Baseline available? | First signal measurable | Notes |
 |--------|--------------------|-----------------------|-------|
-| Metric 1 — Time-to-triage | ❌ | Not yet | `sptu-s1`/`sptu-s2`/`sptu-s3`/`sptu-s4` are now ALL merged, so the full filter→sort→dismiss×10 flow is finally code-complete end-to-end — but the real, live-timed measurement itself has not yet been performed. This is the next real step for this metric, not a blocker on this story's own DoD. |
+| Metric 1 — Time-to-triage | ❌ (none existed pre-feature — see benefit-metric.md) | ✅ 2026-10-06 | Real, live-timed filter→sort→dismiss×10 flow performed via Claude-in-Chrome against a locally-booted dev server (`NODE_ENV=test` + `WIRE_SKILL_ADAPTERS=true`, the same adapter-wiring mode `playwright.local.config.js` uses — only the GitHub OAuth step is bypassed via the server's own pre-seeded `e2e-tester` test session; all 10 dismissed signals are this repo's real, live `signals-aggregator` output, not fixture data) — **210.5s (3m 30.5s) wall-clock**, confirmed by `Date.now()` deltas at the exact start/end of the interaction. |
 
-**Metric 1 — Signal: not-yet-measured**
-**Evidence note:** All 4 contributing stories are merged as of 2026-10-06; the real timed flow measurement itself is still outstanding — tracked as a follow-up action below, not part of this story's own scope.
-**Date measured:** null
+**Metric 1 — Signal: minimum-validation-signal-met, target-missed**
+**Evidence note:** 210.5s is under the 5-minute minimum validation signal but over the 2-minute target. **Methodology caveat (read before acting on this number):** this measurement was captured via scripted browser automation (Claude-in-Chrome), not an unassisted human operator or a dedicated E2E timing harness — it includes per-step screenshot-confirm round-trips and two deliberate 1s waits inserted after observing that clicking "Dismiss" again before the prior request's page reload landed silently dropped the click (2 of 12 dismiss-button clicks needed a retry for this reason; final persisted count independently confirmed as exactly 10 via `[data-signal-dismissed="true"]`). None of that overhead would be present for a real human clicking at natural speed, so this number is a conservative upper bound, not a clean proxy — the underlying interaction is 11 clicks total (1 filter + 10 dismiss) with no typing, which a human would very plausibly complete under 2 minutes. Recorded honestly rather than discarded or silently adjusted; a real unassisted-operator stopwatch run remains the cleaner way to close this out if the 2-minute target itself needs defending, named below as a further optional follow-up.
+**Date measured:** 2026-10-06
 
 ---
 
@@ -72,7 +72,7 @@ None. The story's own Out of Scope items (extending `signals-aggregator.js` to p
 
 **COMPLETE**
 
-**Follow-up actions:** Perform Metric 1's own real, live-timed filter→sort→dismiss×10 measurement now that all 4 contributing stories are merged — owner: next session/operator action, not blocking this story's own DoD.
+**Follow-up actions:** Metric 1's own real, live-timed measurement is now performed (see Metric Signal above, 2026-10-06). Optional further follow-up, not blocking: an unassisted-human-operator stopwatch run (or a dedicated Playwright timing spec) would remove this measurement's own automation-overhead caveat and give a cleaner read against the 2-minute target specifically — owner: next session/operator action if the 2-minute target itself is ever disputed or needs defending.
 
 ---
 
@@ -80,6 +80,7 @@ None. The story's own Out of Scope items (extending `signals-aggregator.js` to p
 
 1. This story's own PR developed a real merge conflict with `sptu-s4`/`dswf-s1` after they merged first (both branches independently extend `_signalItem`/`renderSignalsPanel` in the same file). Resolved by combining both features' markup rather than picking a side — documented in `decisions.md`'s "Merge conflict resolution" entry (2026-10-06), verified via a conflict-marker scan, a full local test run, and a fresh CI run (8/8 checks) before merging. No functional loss on either side.
 2. AC1's live-rendered label is now independently confirmed in two genuinely different environments (local dev server at `/verify-completion`, real authenticated `wuce-staging` post-merge) — the second check was incidental (performed while re-verifying `dswf-s1`'s own fix) but is real, additional evidence worth recording here rather than discarding.
+3. **Metric 1's own real-timed measurement run (2026-10-06) surfaced a minor, real UX-adjacent timing artifact, not a correctness bug**: clicking "Dismiss" again before the prior dismiss's page reload had landed silently dropped the second click (observed twice across 12 click attempts). This did not corrupt any state — the eventual click always succeeded and the final dismissed-count was independently verified as exactly 10 — but it is worth naming as a possible `/improve` candidate: either a brief client-side disable-on-click for the Dismiss button, or an optimistic-UI removal before the server round-trip completes, would remove this friction for a real fast-clicking operator. Not acted on unilaterally; logged here for visibility only.
 
 ---
 
