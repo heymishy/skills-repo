@@ -547,15 +547,23 @@ function _safeSignalsRedirect(returnTo) {
 }
 ```
 
-Extend `handleGetSignalsPanelHtml`: after the existing `const signals = filterSignals(allSignals, { hideTypes, hideSources });` line, add the dismissed-set composition (same pre-pagination integration point, not a second parallel filtering path):
+Extend `handleGetSignalsPanelHtml`: after the existing `const signals = filterSignals(allSignals, { hideTypes, hideSources });` line, add the dismissed-set composition (same pre-pagination integration point, not a second parallel filtering path).
+
+> **SCOPE NOTE (added 2026-10-05, caught by the Task 3 implementer, decision logged in `decisions.md`):** the dismissed-set computation below MUST be wrapped in a try/catch. `dismissed-signals-store.js`'s D37 stub correctly throws when unwired — but this same `handleGetSignalsPanelHtml` function is also called directly by pre-existing tests (`check-ep2-s1-signals-panel.js`, `check-sptu-s2-signals-filter.js`) that have no reason to wire a dismiss-store adapter. Without the try/catch, those callers get an unhandled throw → the route's own catch-all turns it into a 500, regressing two previously-green test suites (confirmed via a stash round-trip: both were fully green immediately before this change). On any caught error, treat the dismissed-set as empty and proceed — this matches AC7's own "corrupt/missing file degrades gracefully" philosophy, just extended to also cover "adapter not wired."
 
 ```javascript
     const showDismissed = (req.query && req.query.showDismissed === 'true');
     const dismissedKeys = new Set();
-    allSignals.forEach(function(s) {
-      const k = _dismissedStore.deriveDismissKey(s);
-      if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
-    });
+    try {
+      allSignals.forEach(function(s) {
+        const k = _dismissedStore.deriveDismissKey(s);
+        if (_dismissedStore.isDismissed(k)) dismissedKeys.add(k);
+      });
+    } catch (_) {
+      // Adapter not wired (D37 stub throw) or any other store failure --
+      // degrade to "nothing is dismissed" rather than a 500. See the SCOPE
+      // NOTE above and decisions.md's 2026-10-05 entry.
+    }
     const visibleSignals = showDismissed
       ? signals
       : signals.filter(function(s) { return !dismissedKeys.has(_dismissedStore.deriveDismissKey(s)); });
