@@ -38780,7 +38780,10 @@
       "slug": "2026-10-05-customer-journey-as-first-class",
       "id": "2026-10-05-customer-journey-as-first-class",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md"
+      "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/discovery.md",
+      "name": "Customer Journey as First Class",
+      "health": "green",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
