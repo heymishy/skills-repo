@@ -38798,14 +38798,14 @@
       "name": "Dismiss store workspace dir fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-05T18:00:36.265Z",
+      "updatedAt": "2026-10-05T19:14:05.579Z",
       "stories": [
         {
           "id": "dswf-s1",
           "name": "Create parent dir before persist (dismissed-signals-store)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -38814,13 +38814,15 @@
             "passing": 2
           },
           "acTotal": 4,
-          "acVerified": 3,
-          "updatedAt": "2026-10-05T18:28:44.688Z",
+          "acVerified": 4,
+          "updatedAt": "2026-10-05T19:13:20.321Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-06-dismiss-store-workspace-dir-fix/dor/dswf-s1-dor.md",
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/943"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/943",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
