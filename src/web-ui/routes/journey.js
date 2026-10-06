@@ -111,6 +111,7 @@ function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root
 // DB writes, which is the actual justification for the exception.
 var _featureEditsPool = null;
 function setFeatureEditsPool(pool) { _featureEditsPool = pool; }
+var { getTenantLocalDateString } = require('../modules/person-locale'); // fstf-s1
 
 // ---------------------------------------------------------------------------
 // Journey home helpers
@@ -526,7 +527,11 @@ async function handlePostJourney(req, res) {
       return;
     }
 
-    var today       = new Date().toISOString().slice(0, 10);
+    // fstf-s1: operator's own saved timezone (si-s2's people.timezone),
+    // falling back to UTC (today's prior behaviour) when unset/unresolvable
+    // -- see modules/person-locale.js for why this is a plain fail-open
+    // lookup, not a D37 adapter.
+    var today       = await getTenantLocalDateString(_featureEditsPool, req.session.tenantId);
     var featureSlug = today + '-' + _slugify(featureName);
     var repoRoot    = getRepoRoot(req);
 
