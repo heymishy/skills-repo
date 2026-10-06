@@ -38957,26 +38957,29 @@
       "name": "Signals panel label clarity fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-10-06T08:23:27.394Z",
+      "updatedAt": "2026-10-06T08:37:17.953Z",
       "stories": [
         {
           "id": "splc-s1",
           "name": "Collapse redundant source/type labels on signal cards",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0
+            "passing": 3
           },
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-10-06T08:23:02.913Z",
+          "acVerified": 4,
+          "updatedAt": "2026-10-06T08:37:22.197Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-06-signals-panel-label-clarity/dor/splc-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-06-signals-panel-label-clarity/dor/splc-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/947",
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": []
