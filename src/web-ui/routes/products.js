@@ -1,5 +1,6 @@
 'use strict';
 
+var { getTenantLocalDateString } = require('../modules/person-locale'); // fstf-s1
 var _posthog = require('../modules/posthog-server');
 var _posthogClientSnippet = require('../modules/posthog-client-snippet'); // rpiw-s1
 var _productDraft = require('../adapters/product-draft');
@@ -3730,8 +3731,13 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   // consistent with handlePostJourney (routes/journey.js) -- fall back to
   // the opaque hash-based slug only when no usable name was given.
   var _slugifiedDisplayName = displayName ? require('./journey')._slugify(displayName) : '';
+  // fstf-s1: operator's own saved timezone, UTC fallback -- see
+  // modules/person-locale.js and routes/journey.js's identical use.
+  var _localDateForSlug = _slugifiedDisplayName
+    ? await getTenantLocalDateString(pool, tenantId)
+    : null;
   var featureSlug = _slugifiedDisplayName
-    ? (new Date().toISOString().slice(0, 10) + '-' + _slugifiedDisplayName)
+    ? (_localDateForSlug + '-' + _slugifiedDisplayName)
     : ('new-feature-' + journeyId.slice(0, 8));
   _journeyStore.setJourneyFields(journeyId, {
     featureSlug: featureSlug,

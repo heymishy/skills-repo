@@ -38916,6 +38916,38 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-06-feature-slug-timezone-fix",
+      "id": "2026-10-06-feature-slug-timezone-fix",
+      "name": "Feature slug timezone fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-06T05:40:46.046Z",
+      "stories": [
+        {
+          "id": "fstf-s1",
+          "name": "Generate the feature-slug date prefix in the operator own saved timezone",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 2,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-10-06T05:40:46.046Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-feature-slug-timezone-fix/dor/fstf-s1-dor.md",
+          "verifyStatus": "passed",
+          "prStatus": "open"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
