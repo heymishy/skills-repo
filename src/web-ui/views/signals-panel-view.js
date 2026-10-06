@@ -54,12 +54,20 @@ function _signalItem(signal, csrfToken, isDismissedFlag, currentUrl) {
     : '';
   // sptu-s4: a text marker, not colour alone (AC6/NFR Accessibility).
   const dismissedMarkerHtml = isDismissedFlag ? '<span class="signal-dismissed-marker">✓ Dismissed</span>' : '';
+  // splc-s1: source and type were always rendered as two separate stacked
+  // lines, which for parse-error signals are the literal identical string
+  // twice (source===type by construction in _makeSignal('parse-error',
+  // 'parse-error', ...)) and for every other signal are two unexplained
+  // internal taxonomy codes competing with signal.text for visual weight.
+  // One line when redundant, one combined line otherwise.
+  const signalLabelHtml = safeSource === safeType
+    ? '<div class="signal-label">' + safeType + '</div>'
+    : '<div class="signal-label">' + safeSource + ' · ' + safeType + '</div>';
 
   return [
     '<div class="sw-card signal-item" data-signal-id="' + escHtml(signal.id || '') + '" data-signal-type="' + safeType + '"' + (isDismissedFlag ? ' data-signal-dismissed="true"' : '') + ' style="' + itemStyle + '">',
     '  <div>',
-    '    <div class="signal-source">' + safeSource + '</div>',
-    '    <div class="signal-type">' + safeType + '</div>' + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : '') + (dismissedMarkerHtml ? ' ' + dismissedMarkerHtml : ''),
+    '    ' + signalLabelHtml + (noDateMarkerHtml ? ' ' + noDateMarkerHtml : '') + (dismissedMarkerHtml ? ' ' + dismissedMarkerHtml : ''),
     '    <div class="signal-text">' + safeText + '</div>',
     '  </div>',
     '  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">',
