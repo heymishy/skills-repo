@@ -38923,14 +38923,14 @@
       "name": "Feature slug timezone fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-06T05:40:46.046Z",
+      "updatedAt": "2026-10-06T05:50:26.041Z",
       "stories": [
         {
           "id": "fstf-s1",
           "name": "Generate the feature-slug date prefix in the operator own saved timezone",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
           "testPlan": {
@@ -38940,11 +38940,13 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-10-06T05:40:46.046Z",
+          "updatedAt": "2026-10-06T05:50:25.859Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-06-feature-slug-timezone-fix/dor/fstf-s1-dor.md",
           "verifyStatus": "passed",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
