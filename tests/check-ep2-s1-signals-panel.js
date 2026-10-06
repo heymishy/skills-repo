@@ -71,6 +71,28 @@ const PARSE_ERROR_FIXTURE = { id: 's3', source: 'parse-error', type: 'parse-erro
     assert.ok(!normalSignalBlock.includes('border-left:3px solid'), 'expected the parse-error-only inline style to not appear before the parse-error item itself');
   });
 
+  await test('splc-s1 AC1: source/type collapse to a single label line when identical (parse-error signals)', function() {
+    const html = renderSignalsPanel([PARSE_ERROR_FIXTURE], 'csrf-abc');
+    const labelMatches = html.match(/<div class="signal-label">([^<]*)<\/div>/g) || [];
+    assert.strictEqual(labelMatches.length, 1, 'expected exactly one .signal-label div, not two stacked label divs -- got ' + labelMatches.length);
+    assert.strictEqual(labelMatches[0], '<div class="signal-label">parse-error</div>', 'expected the single label line to read "parse-error" once, not "parse-error parse-error" or similar -- got ' + labelMatches[0]);
+  });
+
+  await test('splc-s1 AC2: source and type render combined on one line when they differ', function() {
+    const signal = FIXTURE_SIGNALS[1]; // pipeline-state / feature-status
+    const html = renderSignalsPanel([signal], 'csrf-abc');
+    assert.ok(html.includes('pipeline-state · feature-status'), 'expected source and type combined on a single label line, not two separate stacked divs');
+    assert.ok(!html.includes('class="signal-source"'), 'expected the old separate .signal-source div to be gone');
+    assert.ok(!html.includes('class="signal-type"'), 'expected the old separate .signal-type div to be gone');
+  });
+
+  await test('splc-s1 AC3: data-signal-type attribute unchanged for both collapsed and combined cases', function() {
+    const htmlCollapsed = renderSignalsPanel([PARSE_ERROR_FIXTURE], 'csrf-abc');
+    assert.ok(htmlCollapsed.includes('data-signal-type="parse-error"'), 'expected data-signal-type unchanged for the collapsed (source===type) case');
+    const htmlCombined = renderSignalsPanel([FIXTURE_SIGNALS[1]], 'csrf-abc');
+    assert.ok(htmlCombined.includes('data-signal-type="feature-status"'), 'expected data-signal-type unchanged for the combined (source!==type) case');
+  });
+
   await test('Security: signal text is escaped via escHtml (no raw HTML injection)', function() {
     const malicious = [{ id: 's4', source: 'test', type: 'note', text: '<script>alert(1)</script>', timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
     const html = renderSignalsPanel(malicious, 'csrf-abc');

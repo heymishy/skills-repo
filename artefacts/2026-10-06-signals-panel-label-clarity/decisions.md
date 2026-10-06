@@ -19,3 +19,12 @@
 **Context:** Earlier in this same investigation, a Claude-in-Chrome ref-based click on a filter-toggle link appeared not to navigate, and a screenshot was misread as showing an "active" filtered state (actually just the `parse-error` cards' permanent orange-left-border styling, which also happens to always sort to the top of the signal list). This was reported to the operator as a real bug ("filter buttons don't compose") and the operator initially agreed to bundle a fix for it into this story.
 **Decision:** Retracted before scoping this story. Re-tested via direct `window.location.href` checks (bypassing the browser-automation tool's own click/URL-reporting, which lagged the real DOM): `Hide feature-status` then `Hide note` correctly composed to `?hideType=feature-status%2Cnote`. No code change needed; this story's scope is the label-redundancy fix only.
 **Made by:** Claude Sonnet 5 (session_01J4KGY2CbjT8BupyvLZcpFK), 2026-10-06. See also `workspace/capture-log.md`'s own retraction entry, same date.
+
+## RISK-ACCEPT: 2 pre-existing, unrelated full-suite failures found during Task 1's regression run (2026-10-06)
+
+**Context:** `npm test`'s full-suite run for `splc-s1` (`.worktrees/splc-s1`, branched from `origin/master`) found 2 failing files, both confirmed pre-existing and unrelated by re-running the identical commands against the unmodified main checkout:
+1. `tests/check-p3.5-validate-trace.js` — `ps1-real-repo-discovery-approved-has-no-known-false-positives` / `ps1-exits-0-on-valid-repo-with-ci-flag` fail because `2026-10-05-customer-journey-as-first-class`'s `discovery.md` genuinely still says `Status: Draft` — the exact same pre-existing condition already RISK-ACCEPTed in `dswf-s1`'s own `decisions.md` (2026-10-06).
+2. `tests/check-workspace-state.js` — `cycle.discovery` block is missing from `workspace/state.json`, a pre-existing schema gap confirmed present on master before this story's own branch point; `splc-s1` does not touch `workspace/state.json`.
+**Decision:** Acknowledge both as pre-existing/unrelated and proceed with `splc-s1`'s own verification and PR without attempting to fix either — both are out of this story's scope (a view-layer label-rendering fix).
+**Rationale:** Consistent with this session's own established RISK-ACCEPT pattern for pre-existing, unrelated baseline failures (`dswf-s1`, `wswda-s1`, `sptu-s1`/`sptu-s3`/`sptu-s4`'s own branch-setup/regression entries).
+**Made by:** Claude Sonnet 5 (session_01J4KGY2CbjT8BupyvLZcpFK), found during the full-suite regression run, 2026-10-06.
