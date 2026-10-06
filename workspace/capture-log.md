@@ -2329,3 +2329,27 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: "Root-caused a real operator-reported bug (a feature's artefact page showing 'No artefacts found' despite real completed work) by going past the UI entirely into direct, read-only production-database queries (fly ssh console running a small Node script that reused the app's own already-configured DATABASE_URL -- the credential itself was never seen or extracted), after the UI's own aggregate /journeys list proved independently broken (every entry renders with a blank id/name -- a separate real bug, not fixed, named as a follow-up) and could not be used to cross-check. Confirmed the real root cause (UTC vs. the operator's own local-timezone day boundary in feature-slug date generation) with the exact incident timestamp, then fixed it short-track by reusing an already-existing but previously-unused piece of infrastructure (si-s2's own people.timezone column) rather than building new timezone-capture plumbing. Pattern worth repeating: when a UI-level investigation plateaus (especially when the UI itself is suspected of being unreliable), a narrowly-scoped, read-only, credential-blind direct database query via the app's own already-running process can resolve ambiguity that no amount of further UI clicking would."
   source: agent-auto
+
+- date: 2026-10-06
+  session-phase: idle (post-fstf-s1 checkpoint, ad-hoc investigation)
+  signal-type: gap
+  signal-text: "Operator perceived 'hundreds' of parse-error signals on the production /signals panel; real count is 8 (7 known workspace/ ENOENT entries + 1 newly-found bug). Root cause of the perception: parse-error signals are stamped with the current time at every request, so they always sort to the very top of the 4,776-entry list ahead of all older, real pipeline-state signals -- easy to overestimate volume from a glance at the top of the page. Separately found a real bug: signals-aggregator.js's reference/ parser (lines ~133-145) assumes every entry in a feature's reference/ dir is a file and calls readFile on it directly; it throws EISDIR instead of skipping when it hits a subdirectory (observed: artefacts/2026-09-18-design-system-adoption/reference/uploads/). Operator chose to log-only this session, not fix. Needs an isDirectory guard (skip, don't error) before this is picked up as a short-track story."
+  source: agent-auto
+
+- date: 2026-10-06
+  session-phase: idle (post-fstf-s1 checkpoint, ad-hoc investigation)
+  signal-type: gap
+  signal-text: "Signals panel type/source filter buttons (Hide feature-status / Hide note / Hide parse-error / Hide <source>) do not compose -- each click replaces the URL's filter query param instead of adding to it, so only one type filter and one source filter can be active at a time. Found incidentally while verifying the real parse-error count on production (skills-framework.fly.dev/signals). Not fixed, no story opened."
+  source: agent-auto
+
+- date: 2026-10-06
+  session-phase: idle (post-fstf-s1 checkpoint, ad-hoc investigation)
+  signal-type: assumption-invalidated
+  signal-text: "Retraction of the same day's earlier capture-log entry claiming the signals panel's type/source filter buttons don't compose. Re-tested properly via direct window.location.href checks (not the browser-automation tool's click+URL reporting, which gave false-positive 'filtered' results from a click that never actually navigated, compounded by parse-error cards' permanent orange-border styling looking identical to a filtered view at a glance). Ground truth: clicking Hide feature-status then Hide note correctly composed to ?hideType=feature-status%2Cnote. No bug here -- filterSignals/_filterBar/_buildFilterUrl all work as designed. Lesson: Claude-in-Chrome's read_page/tabs_context_mcp URL metadata can lag the real DOM after a ref-based click; verify via javascript_tool's window.location.href when a navigation's success is load-bearing for a finding."
+  source: agent-auto
+
+- date: 2026-10-06
+  session-phase: idle (post-fstf-s1 checkpoint, ad-hoc investigation)
+  signal-type: gap
+  signal-text: "Operator asked whether sessions launched from a signal's Review CTA (default skill: /improve) start on Sonnet or Haiku. Confirmed via src/web-ui/config/model-routing.js: /improve is in neither DEFAULT_SONNET_SKILLS (['discovery','ideate']) nor DRIFT_GUARD_SONNET_SKILLS (the 8 governance-critical skills forced to Sonnet via WUCE_MODEL_OVERRIDE_<SKILL> Fly secrets), so it resolves to the Haiku default -- this appears deliberate per the module's own documented per-skill routing design, not a bug. However, no eval evidence specific to /improve exists in workspace/experiments/EXPERIMENTS-SUMMARY.md -- the cited Haiku-is-fine evidence (EXP-006/007R/004/016/037/038) covers 'gate skills' (review, test-plan, etc.), not /improve's own more open-ended signal-triage/proposal-synthesis task. Same category of gap wuar-s1 already found once for benefit-metric/decisions/definition-of-done before they were added to the drift-guard list. Operator chose to queue this as a follow-up after splc-s1, not investigate immediately. Needs: either an eval run for /improve on Haiku vs Sonnet, or a scoped decision to add it to DRIFT_GUARD_SONNET_SKILLS / give it a WUCE_MODEL_OVERRIDE_IMPROVE secret."
+  source: agent-auto

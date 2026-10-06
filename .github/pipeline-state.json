@@ -38950,6 +38950,36 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-06-signals-panel-label-clarity",
+      "id": "2026-10-06-signals-panel-label-clarity",
+      "name": "Signals panel label clarity fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-06T08:23:27.394Z",
+      "stories": [
+        {
+          "id": "splc-s1",
+          "name": "Collapse redundant source/type labels on signal cards",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-10-06T08:23:02.913Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-06-signals-panel-label-clarity/dor/splc-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
