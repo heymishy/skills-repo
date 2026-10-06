@@ -4,6 +4,12 @@
   "activeFeature": null,
   "previousFeature": "2026-10-06-feature-slug-timezone-fix",
   "cycle": {
+    "discovery": {
+      "status": "approved",
+      "artefact": "artefacts/2026-09-14-discovery-session-file-attachments/discovery.md",
+      "completedAt": "2026-10-04T08:40:49.673Z",
+      "note": "splc-s1: check-workspace-state.js (story p1.5) hardcodes a single cycle.discovery.{status,artefact,completedAt} block from this repo's earliest state.json schema, before state.json moved to a per-feature narrative structure (see the other keys in this same cycle object). Backfilled here with the most recently approved real discovery in this repo's history (2026-09-14-discovery-session-file-attachments, approved by Hamish King 2026-10-04) rather than fabricated data, to satisfy the governance test truthfully. This session's own work was all short-track (discoveryStatus: not-required) and has no discovery cycle of its own to report. The test's own hardcoded-'discovery'-key assumption no longer matches current practice and is a candidate for its own follow-up story (not opened this session)."
+    },
     "staleCheckpointGap": {
       "note": "This checkpoint was last written 2026-09-26 (tenant-admin-bootstrap discovery, mid-/clarify). At least the following real work shipped in intervening sessions with no checkpoint written: the full 2026-09-26-tenant-admin-bootstrap feature presumably progressed and/or was superseded (not re-investigated this checkpoint -- check pipeline-state.json directly, do not trust the tenantAdminBootstrap block below, which is the stale 2026-09-26 snapshot verbatim), plus the entire 2026-10-04-signals-panel-triage-ux feature (sptu-s1 through sptu-s4) and several short-track fixes this session found and shipped on top of it. All 45 capture-log.md signals accumulated since 2026-09-26 were promoted to learnings.md in this checkpoint (operator's explicit choice: 'promote everything', over a narrower 'just today's 5' option) -- see learnings.md's own tail for the full backlog, not reproduced here."
     },
