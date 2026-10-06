@@ -38790,7 +38790,7 @@
       "name": "Customer Journey as First Class",
       "health": "green",
       "track": "standard",
-      "stage": "discovery"
+      "stage": "benefit-metric"
     },
     {
       "slug": "2026-10-06-dismiss-store-workspace-dir-fix",
