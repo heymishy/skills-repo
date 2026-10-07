@@ -38812,10 +38812,13 @@
             {
               "slug": "ep1-s2",
               "name": "Add and name stages: POST route, inline name entry, and stage card rendering",
-              "stage": "definition",
-              "health": "amber",
+              "stage": "review",
+              "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T19:42:37.013Z"
+              "updatedAt": "2026-10-07T23:12:32.187Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s2-review-1.md"
             },
             {
               "slug": "ep1-s3",
