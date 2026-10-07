@@ -39090,6 +39090,41 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-08-turn-progress-ux",
+      "id": "2026-10-08-turn-progress-ux",
+      "name": "Turn progress UX fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-07T18:25:32.740Z",
+      "stories": [
+        {
+          "id": "tpux-s1",
+          "name": "Show visible progress during hidden continuation turns, and auto-recover from the in-flight still-processing guard",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 2,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-10-07T18:25:32.740Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-08-turn-progress-ux/dor/tpux-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/951",
+          "verifyStatus": "passed",
+          "dodStatus": "not-started",
+          "releaseReady": false
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
