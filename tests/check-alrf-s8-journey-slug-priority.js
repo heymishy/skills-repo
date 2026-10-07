@@ -25,6 +25,7 @@ const fs   = require('fs');
 const os   = require('os');
 const path = require('path');
 const ROUTES_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
+const JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
 
 // The streaming handler auto-saves the artefact to real disk via _getRepoPath()
 // (COPILOT_REPO_PATH || CLAUDE_REPO_PATH || the real repo root). Point it at a
@@ -129,6 +130,81 @@ async function run() {
     );
     const session = routes._getHtmlSession(sid);
     eq(session.artefactPath, 'artefacts/2026-07-10-mock-fixture-feature/discovery.md', 'AC4: streaming path falls back to the marker when session.featureSlug is unset');
+  }
+
+  // ── wuai-s1 AC1: storyId resolved from the artefact's own Story field when it names a known story ──
+  console.log('\n  wuai-s1 AC1 -- htmlSubmitTurn: storyId resolved from the artefact\'s own "**Story:**" field, not the stale session.currentStoryId');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    const jStore = require(JOURNEY_STORE_PATH);
+    const dorFixture =
+      '---ARTEFACT-START---\n# Definition of Ready — ep5-s1: Database migration\n\n**Feature:** wuai-test-feature\n**Story:** ep5-s1\n\nContent.\n---ARTEFACT-END---\n---SLUG---\nwuai-test-feature';
+    routes.setSkillTurnExecutorAdapter(function() { return Promise.resolve({ text: dorFixture, usage: {} }); });
+    const journey = jStore.createJourney('wuai-test-feature');
+    jStore.setStoryList(journey.journeyId, ['ep1-s1', 'ep5-s1']);
+    const sid = 'test-wuai-s1-a-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'definition-of-ready', sessionPath: '/tmp/t', systemPrompt: '# dor', turns: [],
+      artefactContent: null, artefactPath: null, done: false
+    });
+    routes.linkSessionToJourney(sid, journey.journeyId); // sets currentStoryId = 'ep1-s1' (index 0) -- the stale pointer
+    await routes.htmlSubmitTurn('definition-of-ready', sid, 'hello', 'fake-tok');
+    const session = routes._getHtmlSession(sid);
+    eq(session.artefactPath, 'artefacts/wuai-test-feature/dor/ep5-s1-dor.md', 'wuai-s1 AC1: saved under the story the content actually names (ep5-s1), not the stale pointer (ep1-s1)');
+  }
+
+  // ── wuai-s1 AC2: falls back to session.currentStoryId when the Story field is absent or names an unknown story ──
+  console.log('\n  wuai-s1 AC2 -- htmlSubmitTurn: falls back to session.currentStoryId when the Story field is absent/unknown');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    const jStore = require(JOURNEY_STORE_PATH);
+    const noFieldFixture =
+      '---ARTEFACT-START---\n# Definition of Ready\n\nNo Story field here.\n---ARTEFACT-END---\n---SLUG---\nwuai-test-feature';
+    routes.setSkillTurnExecutorAdapter(function() { return Promise.resolve({ text: noFieldFixture, usage: {} }); });
+    const journey = jStore.createJourney('wuai-test-feature');
+    jStore.setStoryList(journey.journeyId, ['ep1-s1', 'ep5-s1']);
+    const sid = 'test-wuai-s1-b-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'definition-of-ready', sessionPath: '/tmp/t', systemPrompt: '# dor', turns: [],
+      artefactContent: null, artefactPath: null, done: false
+    });
+    routes.linkSessionToJourney(sid, journey.journeyId); // currentStoryId = 'ep1-s1'
+    await routes.htmlSubmitTurn('definition-of-ready', sid, 'hello', 'fake-tok');
+    const session = routes._getHtmlSession(sid);
+    eq(session.artefactPath, 'artefacts/wuai-test-feature/dor/ep1-s1-dor.md', 'wuai-s1 AC2a: no Story field -> falls back to session.currentStoryId');
+
+    // Second case: Story field present but names a story NOT in the journey's storyList
+    const unknownStoryFixture =
+      '---ARTEFACT-START---\n# Definition of Ready\n\n**Story:** not-a-real-story\n---ARTEFACT-END---\n---SLUG---\nwuai-test-feature';
+    routes.setSkillTurnExecutorAdapter(function() { return Promise.resolve({ text: unknownStoryFixture, usage: {} }); });
+    const sid2 = 'test-wuai-s1-b2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid2, {
+      skillName: 'definition-of-ready', sessionPath: '/tmp/t', systemPrompt: '# dor', turns: [],
+      artefactContent: null, artefactPath: null, done: false
+    });
+    routes.linkSessionToJourney(sid2, journey.journeyId);
+    await routes.htmlSubmitTurn('definition-of-ready', sid2, 'hello', 'fake-tok');
+    const session2 = routes._getHtmlSession(sid2);
+    eq(session2.artefactPath, 'artefacts/wuai-test-feature/dor/ep1-s1-dor.md', 'wuai-s1 AC2b: Story field names an unknown story -> falls back to session.currentStoryId, never trusts the unvalidated value');
+  }
+
+  // ── wuai-s1 AC3: no linked journey -> Story field is never consulted, behaviour fully unchanged ──
+  console.log('\n  wuai-s1 AC3 -- htmlSubmitTurn: standalone session (no journeyId) ignores the Story field entirely');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    const dorFixture =
+      '---ARTEFACT-START---\n# Definition of Ready\n\n**Story:** ep9-s9\n---ARTEFACT-END---\n---SLUG---\nwuai-test-feature';
+    routes.setSkillTurnExecutorAdapter(function() { return Promise.resolve({ text: dorFixture, usage: {} }); });
+    const sid = 'test-wuai-s1-c-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'definition-of-ready', sessionPath: '/tmp/t', systemPrompt: '# dor', turns: [],
+      artefactContent: null, artefactPath: null, done: false, featureSlug: 'wuai-test-feature',
+      currentStoryId: 'manual-s1' // set directly, as a standalone/CLI-style session would be
+      // journeyId intentionally absent
+    });
+    await routes.htmlSubmitTurn('definition-of-ready', sid, 'hello', 'fake-tok');
+    const session = routes._getHtmlSession(sid);
+    eq(session.artefactPath, 'artefacts/wuai-test-feature/dor/manual-s1-dor.md', 'wuai-s1 AC3: no journey linked -> the Story field (ep9-s9) is never consulted, session.currentStoryId wins exactly as before');
   }
 
   delete process.env.COPILOT_REPO_PATH;

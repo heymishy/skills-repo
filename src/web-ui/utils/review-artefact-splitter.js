@@ -54,17 +54,34 @@ function extractField(block, field, fallback) {
  * read from whatever the captured value actually says (a trailing
  * parenthetical or other decoration does not prevent a match), not from
  * position or formatting alone.
+ * wuai-s1: a block can contain MORE THAN ONE "**Verdict:**" line when the
+ * model second-guesses itself mid-generation -- e.g. an initial line like
+ * "FAIL (...PASS threshold met...)" (ambiguous: contains both words)
+ * immediately followed by a clean, self-corrected "PASS". Scanning from the
+ * END of the block backwards and returning the first line that resolves
+ * unambiguously means a model's own final answer wins over an earlier,
+ * superseded one -- matching real output observed on ep1-s2 where the
+ * review's own "## Overall Verdict" summary table independently confirmed
+ * PASS was the intended result all along.
  * @param {string} block
  * @returns {'PASS'|'FAIL'|null}
  */
 function extractVerdict(block) {
-  const raw = extractField(block, 'Verdict', '');
-  if (!raw) return null;
-  const isFail = /\bFAIL\b/i.test(raw);
-  const isPass = /\bPASS\b/i.test(raw);
-  if (isFail && !isPass) return 'FAIL';
-  if (isPass && !isFail) return 'PASS';
-  return null; // both or neither present -- genuinely ambiguous, do not guess
+  const re = new RegExp(fieldRegex('Verdict').source, 'gim');
+  const raws = [];
+  let m;
+  while ((m = re.exec(block)) !== null) {
+    raws.push(m[1].trim());
+  }
+  for (let i = raws.length - 1; i >= 0; i--) {
+    const raw = raws[i];
+    if (!raw) continue;
+    const isFail = /\bFAIL\b/i.test(raw);
+    const isPass = /\bPASS\b/i.test(raw);
+    if (isFail && !isPass) return 'FAIL';
+    if (isPass && !isFail) return 'PASS';
+  }
+  return null; // every matching line is ambiguous (both or neither present) -- do not guess
 }
 
 /**
