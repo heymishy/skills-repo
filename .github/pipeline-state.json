@@ -39050,6 +39050,36 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-07-sse-connection-hardening",
+      "id": "2026-10-07-sse-connection-hardening",
+      "name": "SSE connection hardening",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-07T08:49:07.382Z",
+      "stories": [
+        {
+          "id": "sch-s1",
+          "name": "Shorten keepalive + anti-buffering headers across all 3 SSE endpoints",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 2,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-10-07T08:49:07.382Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-07-sse-connection-hardening/dor/sch-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
