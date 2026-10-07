@@ -4126,7 +4126,23 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     // for any non-auth failure — covers a Fly auto-suspend mid-request drop
     // without risking an infinite retry loop or retrying a dead auth session.
     '      if(!expired && !_isRetry) {',
-    '        setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true); }, 2000);',
+    '        setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true, (_inFlightRetryCount || 0) + 1); }, 2000);',
+    '        return;',
+    '      }',
+    // tpux-s2: a network-level failure (this .catch() block -- the fetch
+    // itself could not reach the server) that outlasts srar-s1's single
+    // 2s-delayed retry used to dead-end here immediately, even though the
+    // turn frequently finishes successfully server-side within a longer
+    // window (confirmed live, 2026-10-07: llm_complete + artefact_auto_saved
+    // both logged ~44s after a client disconnect the single retry never
+    // recovered from). Keep retrying quietly, reusing the same cap/cadence
+    // tpux-s1 already established for the sibling evt.inFlight case --
+    // unlike that case, do NOT auto-reload on exhaustion: reaching here at
+    // all means the server was never confirmed reachable, so forcing a
+    // reload could replace today's in-app error with a dead browser
+    // connection page instead. Fall through to the unchanged message below.
+    '      if(!expired && (_inFlightRetryCount || 0) < 12) {',
+    '        setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true, (_inFlightRetryCount || 0) + 1); }, 5000);',
     '        return;',
     '      }',
     '      var msg = expired',

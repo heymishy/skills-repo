@@ -131,6 +131,51 @@ async function run() {
       'AC5: thinkingDiv/streamDiv are still cleared for a non-inFlight error');
   }
 
+  // Isolate the network-level .catch() handler for tpux-s2's ACs -- slicing
+  // forward from its own start naturally excludes the earlier evt.inFlight
+  // branch's own reload()/retry code above it in source order.
+  const catchStart = fnBody.indexOf('.catch(function(err)');
+  ok(catchStart !== -1, 'precondition: .catch(function(err) handler found');
+  const catchBlock = fnBody.slice(catchStart);
+
+  // ── tpux-s2 AC1: first retry still fires at 2000ms, unchanged ──
+  console.log('\n  tpux-s2 AC1 -- first network-level retry still fires at 2000ms (srar-s1\'s original tuned value, unchanged)');
+  {
+    ok(catchBlock.indexOf('setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true, (_inFlightRetryCount || 0) + 1); }, 2000);') !== -1,
+      'tpux-s2 AC1: first-retry branch still schedules at 2000ms, now also incrementing the shared retry counter');
+  }
+
+  // ── tpux-s2 AC2: subsequent retries fire at 5000ms, under the cap ──
+  console.log('\n  tpux-s2 AC2 -- subsequent network-level retries fire at 5000ms, gated by the same 12-attempt cap');
+  {
+    ok(catchBlock.indexOf('if(!expired && (_inFlightRetryCount || 0) < 12)') !== -1,
+      'tpux-s2 AC2: a second retry branch exists, gated on the shared retry-count cap of 12');
+    ok(catchBlock.indexOf('setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true, (_inFlightRetryCount || 0) + 1); }, 5000);') !== -1,
+      'tpux-s2 AC2: that branch schedules a retry at 5000ms, reusing the same attemptId, incrementing the counter');
+  }
+
+  // ── tpux-s2 AC3: at the cap, no further retry, no reload, unchanged dead-end ──
+  console.log('\n  tpux-s2 AC3 -- at the retry cap: falls through to the unchanged dead-end message, never calls window.location.reload()');
+  {
+    ok(catchBlock.indexOf('window.location.reload()') === -1,
+      'tpux-s2 AC3: this .catch() block never calls window.location.reload() -- exhaustion falls through to the existing message instead');
+    ok(catchBlock.indexOf('"Error — please try again."') !== -1,
+      'tpux-s2 AC3: the existing dead-end message text is still present and reachable');
+    ok(catchBlock.indexOf('submitBtn.disabled = false') !== -1,
+      'tpux-s2 AC3: the submit button is still re-enabled once retries are exhausted');
+  }
+
+  // ── tpux-s2 AC4: session-expired is completely unaffected ──
+  console.log('\n  tpux-s2 AC4 -- session-expired still short-circuits before any retry logic, unchanged');
+  {
+    const expiredIdx = catchBlock.indexOf('var expired = err && err.message === "session-expired"');
+    const firstRetryIdx = catchBlock.indexOf('if(!expired && !_isRetry)');
+    ok(expiredIdx !== -1 && firstRetryIdx !== -1 && expiredIdx < firstRetryIdx,
+      'tpux-s2 AC4: the expired check is computed before either retry branch, unchanged from today');
+    ok(catchBlock.indexOf('Session expired') !== -1,
+      'tpux-s2 AC4: the session-expired message text is still present');
+  }
+
   delete process.env.COPILOT_REPO_PATH;
   fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 
