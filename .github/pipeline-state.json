@@ -39020,6 +39020,36 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-07-improve-skill-model-default",
+      "id": "2026-10-07-improve-skill-model-default",
+      "name": "Improve skill model default fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-07T08:19:23.254Z",
+      "stories": [
+        {
+          "id": "imd-s1",
+          "name": "Default /improve to Sonnet, matching the /ideate precedent",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-10-07T08:19:23.254Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-07-improve-skill-model-default/dor/imd-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
