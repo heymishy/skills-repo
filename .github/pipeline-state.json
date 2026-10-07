@@ -39099,7 +39099,7 @@
       "discoveryStatus": "not-required",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-10-07T18:25:32.740Z",
+      "updatedAt": "2026-10-07T18:40:21.562Z",
       "stories": [
         {
           "id": "tpux-s1",
@@ -39114,7 +39114,7 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "updatedAt": "2026-10-07T18:25:32.740Z",
+          "updatedAt": "2026-10-07T18:40:21.562Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-08-turn-progress-ux/dor/tpux-s1-dor.md",
           "prStatus": "open",

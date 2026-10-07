@@ -3920,7 +3920,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '    foot.appendChild(wrap);',
     '  }',
     '',
-    '  function sendTurn(answer, _isContinuation, _attemptId, _isRetry) {',
+    '  function sendTurn(answer, _isContinuation, _attemptId, _isRetry, _inFlightRetryCount) {',
     '    if(submitBtn) submitBtn.disabled = true;',
     '    // Always show thinking dots — continuation turns still take time and need user feedback.',
     '    var thinkingDiv = appendBubble("assistant", \'<span class="sw-thinking"><span class="sw-dot"></span><span class="sw-dot"></span><span class="sw-dot"></span></span>\');',
@@ -3966,7 +3966,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '            try {',
     '              var evt = JSON.parse(payload);',
     '              if(evt.reasoningChunk) {',
-    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    // tpux-s1: a continuation turn's own stream bubble is hidden (see
+    // streamDiv.style.display = "none" above) -- removing the one visible
+    // progress signal the instant content starts arriving left the screen
+    // completely blank for the remainder of a potentially 30-170s turn.
+    // Keep the dots up for continuation turns; the unconditional cleanup at
+    // result.done / evt.error still removes them when the turn finishes.
+    '                if(thinkingDiv && !_isContinuation) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                // Continuation turns are invisible — skip the reasoning block too.',
     '                if(!reasoningEl && !_isContinuation) {',
     '                  reasoningEl = document.createElement("details");',
@@ -3988,7 +3994,8 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '                scrollToBottom();',
     '              }',
     '              if(evt.chunk) {',
-    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    // tpux-s1: see the reasoningChunk handler's own comment above.
+    '                if(thinkingDiv && !_isContinuation) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                if(reasoningEl) {',
     '                  var rs = reasoningEl.querySelector("summary");',
     '                  if(rs) rs.textContent = "Thought (" + Math.round(reasoningLen/4) + " tokens)";',
@@ -4000,7 +4007,8 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '                scrollToBottom();',
     '              }',
     '              if(evt.draftChunk) {',
-    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    // tpux-s1: see the reasoningChunk handler's own comment above.
+    '                if(thinkingDiv && !_isContinuation) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                partialDraft += evt.draftChunk;',
     '                updateDraftPanel(partialDraft);',
     '              }',
@@ -4073,6 +4081,27 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '                handleLensComplete();',
     '              }',
     '              if(evt.error) {',
+    // tpux-s1: the in-flight guard (tsdg-s1) legitimately fires whenever a
+    // retry lands while the original attempt is still genuinely running --
+    // most often this very function's own single network-retry below,
+    // reusing the same attemptId. The old behaviour treated this exactly
+    // like a real error: dead-end red text, submit re-enabled, and the
+    // only way to see the real (successful) outcome was a manual refresh.
+    // Quietly retry instead, reusing the same attemptId, for up to the
+    // server\'s own 60s staleness window (12 x 5000ms) -- once the real
+    // attempt completes, the very next retry lands on the existing
+    // evt.resumed branch above and reloads. Past that window, reload
+    // anyway rather than leaving a message the operator has to act on.',
+    '                if(evt.inFlight) {',
+    '                  if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    '                  if(streamDiv)   { streamDiv.remove();   streamDiv = null; }',
+    '                  if((_inFlightRetryCount || 0) < 12) {',
+    '                    setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, _isRetry, (_inFlightRetryCount || 0) + 1); }, 5000);',
+    '                  } else {',
+    '                    window.location.reload();',
+    '                  }',
+    '                  return;',
+    '                }',
     '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                if(streamDiv)   { streamDiv.remove();   streamDiv = null; }',
     '                if(reasoningEl) {',
@@ -4973,7 +5002,11 @@ async function handlePostTurnStreamHtml(req, res) {
   // generation's output silently overwrote the first's already-saved
   // artefact via artefact_auto_amended.
   if (session._lastAttempt && session._lastAttempt.status === 'in-flight' && (Date.now() - session._lastAttempt.startedAt) < 60000) {
-    res.write('data: ' + JSON.stringify({ error: 'This turn is still processing — please wait a moment and try again.' }) + '\n\n');
+    // tpux-s1: inFlight lets the client tell this apart from a genuine
+    // error -- it quietly retries (reusing the same attemptId) instead of
+    // showing a dead-end message, since the original attempt is almost
+    // certainly still running and will complete successfully.
+    res.write('data: ' + JSON.stringify({ error: 'This turn is still processing — please wait a moment and try again.', inFlight: true }) + '\n\n');
     clearInterval(_keepaliveInterval);
     res.end();
     return;
