@@ -172,6 +172,32 @@ async function run() {
     ok(session._lastAttempt.attemptId === 'attempt-original' && session._lastAttempt.startedAt === originalStartedAt, 'tsdg-s1 AC1: the original in-flight attempt is left undisturbed, not overwritten by the retry attemptId');
   }
 
+  // ── tpux-s1 AC2: the in-flight guard's SSE payload includes inFlight: true ──
+  console.log('\n  tpux-s1 AC2 -- in-flight guard SSE payload includes inFlight: true so the client can quietly retry');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    let llmCalls = 0;
+    routes.setSkillTurnExecutorStreamAdapter(function() {
+      llmCalls++;
+      return Promise.resolve({ text: 'x', usage: {} });
+    });
+    const sid = 'test-tpux-s1-a-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'review', sessionPath: '/tmp/t', systemPrompt: '# review', turns: [],
+      artefactContent: null, artefactPath: null, done: false, featureSlug: 'tpux-repro-feature',
+      _lastAttempt: { attemptId: 'attempt-original', status: 'in-flight', startedAt: Date.now() }
+    });
+    const res = mockRes();
+    await routes.handlePostTurnStreamHtml(
+      { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'review', id: sid }, body: { answer: 'hi', attemptId: 'attempt-retry' } },
+      res
+    );
+    eq(llmCalls, 0, 'tpux-s1 AC2: LLM executor still not called (regression check, same guard as tsdg-s1 AC1)');
+    eq(res._events.length, 1, 'tpux-s1 AC2: exactly one event written');
+    eq(res._events[0].inFlight, true, 'tpux-s1 AC2: SSE payload includes inFlight: true');
+    ok(typeof res._events[0].error === 'string' && res._events[0].error.indexOf('still processing') !== -1, 'tpux-s1 AC2: the error text itself is unchanged');
+  }
+
   // ── tsdg-s1 AC2: a DIFFERENT attemptId proceeds when the existing in-flight entry is stale (>=60s) ──
   console.log('\n  tsdg-s1 AC2 -- a DIFFERENT attemptId proceeds normally when the existing in-flight entry is stale (>=60s)');
   {
