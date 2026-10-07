@@ -27,7 +27,14 @@
 // baking in the wrong literal.
 const { getActiveModel } = require('../../modules/skill-turn-executor');
 
-const DEFAULT_SONNET_SKILLS = ['discovery', 'ideate'];
+// imd-s1: /improve has strictly weaker eval evidence than /ideate's own
+// EXP-044 result ("no Haiku/Sonnet gap ... eval gap noted in scorecard" --
+// inconclusive, not a clean "Haiku is fine") -- /ideate was still kept on
+// Sonnet despite that. /improve has no dedicated eval at all, and its own
+// task (synthesizing patterns across thousands of heterogeneous real
+// signals into an actionable proposal) is at least as open-ended and
+// judgment-heavy. Same conservative-absent-evidence default applies.
+const DEFAULT_SONNET_SKILLS = ['discovery', 'ideate', 'improve'];
 const HAIKU_BLOCKED_SKILLS = ['discovery'];
 
 // psrc-verify-s3: the 5 governance-critical skills that ship via

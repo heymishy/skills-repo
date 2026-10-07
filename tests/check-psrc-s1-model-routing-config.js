@@ -46,6 +46,21 @@ function run() {
     ok(HAIKU_BLOCKED_SKILLS.indexOf('discovery') !== -1, 'AC1: HAIKU_BLOCKED_SKILLS exported and unchanged from pre-change list');
   }
 
+  // imd-s1 AC1/AC2: improve defaults to Sonnet, matching the /ideate precedent.
+  {
+    const env = {};
+    ok(!/haiku/.test(getModelForSkill('improve', env)), 'imd-s1 AC1: improve defaults to a non-Haiku model with no overrides');
+    ok(DEFAULT_SONNET_SKILLS.indexOf('improve') !== -1, 'imd-s1 AC2: DEFAULT_SONNET_SKILLS contains improve');
+    ok(DEFAULT_SONNET_SKILLS.indexOf('discovery') !== -1 && DEFAULT_SONNET_SKILLS.indexOf('ideate') !== -1,
+      'imd-s1 AC2: discovery and ideate remain present in DEFAULT_SONNET_SKILLS (regression)');
+  }
+
+  // imd-s1 AC3: a per-skill override still takes precedence for improve.
+  {
+    const env = { WUCE_MODEL_OVERRIDE_IMPROVE: 'claude-opus-4-8' };
+    eq(getModelForSkill('improve', env), 'claude-opus-4-8', 'imd-s1 AC3: WUCE_MODEL_OVERRIDE_IMPROVE still takes precedence over the new Sonnet default');
+  }
+
   // AC1b: WUCE_HAIKU_MODEL still overrides the Haiku model id for non-Sonnet skills.
   {
     const env = { WUCE_HAIKU_MODEL: 'claude-haiku-custom' };
