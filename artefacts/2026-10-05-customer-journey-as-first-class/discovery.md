@@ -1,6 +1,6 @@
 # Discovery: Customer Journey as First-Class Entity
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2026-10-05
 **Feature slug:** 2026-10-05-customer-journey-as-first-class
 
@@ -122,7 +122,7 @@ This discovery contains 4 unconfirmed assumptions that affect scope and benefit 
 - Pending
 
 **Approved By:**
-- Pending
+- Hamish King — Product Owner / Operator — 2026-10-08
 
 ---
 
