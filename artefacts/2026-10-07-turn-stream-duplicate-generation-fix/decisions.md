@@ -1,0 +1,22 @@
+# Decisions: Turn-stream duplicate-generation fix
+
+## Short-track exemption (2026-10-07)
+
+**Context:** While investigating a live, operator-reported "Error — please try again." during `/review` on a large feature, correlating `flyctl logs` against PostHog's `$ai_generation` events revealed a real, confirmed defect: a dropped SSE connection followed by a resubmit (with a genuinely different `attemptId`) started a second, fully independent, fully-billed LLM generation while the original was still running — not just a UX annoyance, but a real duplicate-cost, duplicate-credit-deduction, and data-overwrite defect.
+**Decision:** Handled as a short-track story (`/test-plan → /definition-of-ready → coding agent`), per CLAUDE.md's own short-track path for "bugs, small fixes, bounded refactors" — the fix itself is a small, precisely-scoped broadening of an existing concurrency guard (`srar-s1`), not a new feature requiring discovery/benefit-metric/definition/review, even though its real-world impact (cost, credits, data correctness) is significant.
+**Rationale:** Matches this session's own established precedent (`dswf-s1`, `wswda-s1`, `spdr-s1`/`spdr-s2`, `splc-s1`, all 2026-10-06/07) for a real, root-caused, narrowly-scoped bug found mid-session, fixed via the governed short-track path. The operator explicitly asked for "a proper fix, regardless of size" rather than a quick patch — this story's scope reflects that: a full root-cause investigation, a full "check it doesn't occur elsewhere" audit (documented as AC4), and a precise, minimal code change, rather than a larger architectural rewrite of the retry/reconnect system (explicitly named out of scope).
+**Made by:** Hamish King (operator decision, "Do proper fix, regardless of size. And check this doesn't occur elsewhere"), recorded by Claude Sonnet 5 (session_019v6gX4zKJBHbQHj75whQQU), 2026-10-07.
+
+## Scope decision: broaden the existing guard, do not redesign the retry/reconnect architecture (2026-10-07)
+
+**Context:** Two fixes were possible: (a) broaden the existing `srar-s1` in-flight guard to block any new `attemptId` while a non-stale in-flight attempt already exists for the session (regardless of attemptId match); or (b) a larger redesign where a reconnecting client actually waits for and receives the *original* in-flight generation's eventual result (rather than being told "still processing, try again later").
+**Decision:** Option (a) only. Option (b) is named explicitly out of scope in the story.
+**Rationale:** Option (a) directly and completely closes the real defect (duplicate billing, duplicate credit deduction, artefact overwrite) with a minimal, well-understood, low-risk change to an existing, already-tested guard. Option (b) would be a genuine UX improvement (the operator would see their original turn's real result instead of a "please wait" message) but requires redesigning how the server relays a still-running generation's eventual output to a *new* incoming connection — a materially larger change with its own design questions (e.g. does the new connection's own response stream attach to the original's in-progress output, or only receive it on completion?) that goes beyond what this specific cost/correctness defect requires to be fixed.
+**Made by:** Claude Sonnet 5 (session_019v6gX4zKJBHbQHj75whQQU), 2026-10-07.
+
+## Audit finding: no equivalent defect found elsewhere (2026-10-07)
+
+**Context:** Per the operator's explicit request ("check this doesn't occur elsewhere"), every SSE-producing endpoint in this codebase was enumerated (`grep -rl "text/event-stream" src/web-ui`) and every turn-submission code path was checked.
+**Finding:** Exactly two SSE endpoints exist. `journey.js`'s two (presence-stream, artefact-merge-broadcast) do no billable or state-mutating work — pure read/broadcast, naturally idempotent under duplication. The separate non-streaming `/turn` endpoint (`handlePostTurnHtml`) already uses a correct, non-vulnerable `journey.turnInProgress`-before-any-work guard, unrelated to and unaffected by the `attemptId`-matching flaw this story fixes.
+**Decision:** No further code change scoped beyond `tsdg-s1`'s own fix to `handlePostTurnStreamHtml`'s guard. This finding is recorded as AC4 in the story (a documented-audit AC, not a runtime test) rather than left as unstated narrative.
+**Made by:** Claude Sonnet 5 (session_019v6gX4zKJBHbQHj75whQQU), 2026-10-07.

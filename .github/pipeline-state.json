@@ -38985,6 +38985,36 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-07-turn-stream-duplicate-generation-fix",
+      "id": "2026-10-07-turn-stream-duplicate-generation-fix",
+      "name": "Turn-stream duplicate-generation fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-07T07:43:13.862Z",
+      "stories": [
+        {
+          "id": "tsdg-s1",
+          "name": "Broaden in-flight turn guard to block a different attemptId, not just a matching one",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 2,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-10-07T07:43:13.862Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-07-turn-stream-duplicate-generation-fix/dor/tsdg-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
