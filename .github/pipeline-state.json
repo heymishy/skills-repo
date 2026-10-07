@@ -38801,13 +38801,12 @@
               "slug": "ep1-s1",
               "name": "Create journey entity: POST route, Postgres insert, and journey canvas shell",
               "stage": "review",
-              "health": "red",
+              "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T20:19:12.135Z",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-1.md",
-              "blocker": "Unresolved review HIGH findings (1-H1: malformed user story; 1-H2: AC3 does not actually test cross-tenant isolation) -- see review/ep1-s1-review-1.md. Must be fixed and re-reviewed before /test-plan."
+              "updatedAt": "2026-10-07T23:33:28.571Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-2.md"
             },
             {
               "slug": "ep1-s2",
@@ -38864,13 +38863,12 @@
               "slug": "ep2-s2",
               "name": "Feature-to-stage mapping: save mapping with metric key selection",
               "stage": "review",
-              "health": "red",
+              "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-07T20:19:12.135Z",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-1.md",
-              "blocker": "Unresolved review HIGH finding (6-H1: AC4 describes a database-internals implementation detail, not observable behaviour) -- see review/ep2-s2-review-1.md. Must be fixed and re-reviewed before /test-plan."
+              "updatedAt": "2026-10-07T23:33:28.571Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-2.md"
             },
             {
               "slug": "ep2-s3",
@@ -38985,7 +38983,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-07T23:09:36.858Z",
+      "updatedAt": "2026-10-07T23:33:28.571Z",
       "stories": []
     },
     {

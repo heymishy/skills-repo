@@ -5,8 +5,8 @@
 **Domain:** web-ui
 ## User Story
 As a **Outer loop practitioner (PO / SME / discovery lead)**,
-I want **tenant-scoped record, I need a POST route that creates a journey in Postgres and redirects to a canvas shell page at `/journeys/:id`**,
-So that **journey canvases have a durable**.
+I want **to create a new journey by submitting a name, which creates a tenant-scoped record in Postgres and takes me to its canvas shell page**,
+So that **I have a persistent, tenant-isolated journey record to build stages on**.
 ## Benefit Linkage
 M1 — Journey adoption — this story creates the journey record that M1 counts.
 ## Architecture Constraints
@@ -22,15 +22,15 @@ Given I submit a journey creation form with no name,
 When the POST handler processes the request,
 Then a 400 response is returned and no record is inserted.
 
-Given another tenant's `tenantId` is used in the request,
+Given a POST request includes a `tenantId` field in its body that differs from the authenticated session's `tenantId`,
 When the POST handler processes the request,
-Then the insert uses only the session `tenantId` — no cross-tenant insert is possible.
+Then the inserted record's `tenant_id` is the session's `tenantId` — the request body's `tenantId` value is never used, so a caller cannot insert a journey under a different tenant's ID. (Cross-tenant READ/UPDATE/DELETE protection for this and other journey routes is covered by ep5-s2's own adversarial test suite, not duplicated here — this AC covers the write-path tenant-spoofing guard only.)
 
 Given I am redirected to `/journeys/:id` after creation,
 When the canvas shell page renders,
 Then the journey name is displayed and the stage area shows the empty state "No stages yet. Add your first stage."
 ## Out of Scope
-Stage creation (ep1-s2), feature mapping (ep2-s2), journey list page (ep4-s1), database migration script (ep5-s1 — this story assumes the tables already exist).
+Stage creation (ep1-s2), feature mapping (ep2-s2), journey list page (ep4-s1), database migration script (ep5-s1 — this story assumes the tables already exist), cross-tenant READ/UPDATE/DELETE protection for journey routes (ep5-s2's own adversarial suite).
 ## NFRs
 `tenantId` set on every insert per ADR-025. Injectable adapter pattern (D37) for Postgres calls. No new npm runtime dependencies.
 ## Complexity Rating

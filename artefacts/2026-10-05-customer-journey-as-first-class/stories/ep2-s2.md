@@ -26,9 +26,9 @@ Given I confirm without selecting any metric keys,
 When the mapping is saved,
 Then a `feature_journey_stage_mappings` record is inserted with `metric_keys: []` — a feature can be mapped without metric keys.
 
-Given a mapping already exists for this feature + stage combination,
-When I attempt to add a duplicate mapping,
-Then the existing mapping is updated (upsert on `journey_stage_id` + `feature_slug`) rather than creating a duplicate record.
+Given I map the same feature to the same stage a second time (a mapping already exists for this feature + stage combination),
+When the save completes,
+Then the stage shows exactly one mapping for that feature — not two — and its saved metric keys reflect the most recent selection.
 
 Given a cross-tenant `journey_stage_id` is used in the request,
 When the insert is processed,
