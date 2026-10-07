@@ -39309,6 +39309,41 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-08-web-ui-outer-loop-artefact-integrity",
+      "id": "2026-10-08-web-ui-outer-loop-artefact-integrity",
+      "name": "Web UI outer-loop artefact integrity fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-07T20:13:46.674Z",
+      "stories": [
+        {
+          "id": "wuai-s1",
+          "name": "Fix storyId drift in Web UI DoR/test-plan artefact saves, and prefer the last unambiguous verdict line in review-artefact-splitter",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 2,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 7,
+          "acVerified": 7,
+          "updatedAt": "2026-10-07T20:13:46.674Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-08-web-ui-outer-loop-artefact-integrity/dor/wuai-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/952",
+          "verifyStatus": "passed",
+          "dodStatus": "not-started",
+          "releaseReady": false
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
