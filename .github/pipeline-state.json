@@ -39027,14 +39027,14 @@
       "name": "Improve skill model default fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-07T17:42:31.012Z",
+      "updatedAt": "2026-10-07T17:51:53.862Z",
       "stories": [
         {
           "id": "imd-s1",
           "name": "Default /improve to Sonnet, matching the /ideate precedent",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39044,12 +39044,14 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-10-07T17:42:24.999Z",
+          "updatedAt": "2026-10-07T17:51:48.621Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-07-improve-skill-model-default/dor/imd-s1-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/950",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
@@ -39060,14 +39062,14 @@
       "name": "SSE connection hardening",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-07T09:06:15.439Z",
+      "updatedAt": "2026-10-07T17:51:53.861Z",
       "stories": [
         {
           "id": "sch-s1",
           "name": "Shorten keepalive + anti-buffering headers across all 3 SSE endpoints",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
           "testPlan": {
@@ -39077,12 +39079,14 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-10-07T09:06:10.400Z",
+          "updatedAt": "2026-10-07T17:51:48.474Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-07-sse-connection-hardening/dor/sch-s1-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/949",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
