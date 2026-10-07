@@ -38790,7 +38790,7 @@
       "name": "Customer Journey as First Class",
       "health": "green",
       "track": "standard",
-      "stage": "branch-complete",
+      "stage": "review",
       "epics": [
         {
           "slug": "journey-entity-and-stage-management",
@@ -38949,10 +38949,10 @@
             {
               "slug": "ep5-s1",
               "name": "Database migration: create journeys, journey_stages, and feature_journey_stage_mappings tables",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T21:55:25.382Z",
+              "updatedAt": "2026-10-07T23:09:25.586Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s1-review-1.md",
@@ -38962,9 +38962,11 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s1-dor.md",
-              "prStatus": "open",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/954",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep5-s2",
@@ -38980,7 +38982,8 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-07T22:42:58.484Z"
+      "updatedAt": "2026-10-07T23:09:36.858Z",
+      "stories": []
     },
     {
       "slug": "2026-10-06-dismiss-store-workspace-dir-fix",
@@ -39287,9 +39290,9 @@
       "name": "Turn progress UX fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-07T21:36:11.808Z",
+      "updatedAt": "2026-10-07T23:09:36.858Z",
       "stories": [
         {
           "id": "tpux-s1",
@@ -39316,7 +39319,7 @@
         {
           "id": "tpux-s2",
           "name": "Extend the quiet-retry budget to network-level turn failures",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39326,14 +39329,14 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-10-07T21:36:11.808Z",
+          "updatedAt": "2026-10-07T23:09:18.539Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-08-turn-progress-ux/dor/tpux-s2-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/953",
           "verifyStatus": "passed",
-          "dodStatus": "not-started",
-          "releaseReady": false
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
