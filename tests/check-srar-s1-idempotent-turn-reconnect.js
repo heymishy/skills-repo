@@ -143,6 +143,60 @@ async function run() {
     ok(typeof res._events[0].error === 'string' && res._events[0].error.indexOf('still processing') !== -1, 'AC3: distinct "still processing" error event');
   }
 
+  // ── tsdg-s1 AC1: a DIFFERENT attemptId while another is in-flight (<60s) -> also blocked ──
+  console.log('\n  tsdg-s1 AC1 -- a DIFFERENT attemptId while another is in-flight (<60s): also blocked, no concurrent LLM call');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    let llmCalls = 0;
+    routes.setSkillTurnExecutorStreamAdapter(function() {
+      llmCalls++;
+      return Promise.resolve({ text: 'x', usage: {} });
+    });
+    const sid = 'test-tsdg-s1-a-' + Math.random().toString(36).slice(2);
+    const originalStartedAt = Date.now();
+    routes._setHtmlSession(sid, {
+      skillName: 'review', sessionPath: '/tmp/t', systemPrompt: '# review', turns: [],
+      artefactContent: null, artefactPath: null, done: false, featureSlug: 'tsdg-repro-feature',
+      _lastAttempt: { attemptId: 'attempt-original', status: 'in-flight', startedAt: originalStartedAt }
+    });
+    const res = mockRes();
+    await routes.handlePostTurnStreamHtml(
+      { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'review', id: sid }, body: { answer: 'hi', attemptId: 'attempt-retry' } },
+      res
+    );
+    eq(llmCalls, 0, 'tsdg-s1 AC1: LLM executor NOT called for a different attemptId while another is genuinely in-flight (this is the production bug -- the old guard called it once)');
+    eq(res._events.length, 1, 'tsdg-s1 AC1: exactly one event written');
+    ok(typeof res._events[0].error === 'string' && res._events[0].error.indexOf('still processing') !== -1, 'tsdg-s1 AC1: distinct "still processing" error event');
+    const session = routes._getHtmlSession(sid);
+    ok(session._lastAttempt.attemptId === 'attempt-original' && session._lastAttempt.startedAt === originalStartedAt, 'tsdg-s1 AC1: the original in-flight attempt is left undisturbed, not overwritten by the retry attemptId');
+  }
+
+  // ── tsdg-s1 AC2: a DIFFERENT attemptId proceeds when the existing in-flight entry is stale (>=60s) ──
+  console.log('\n  tsdg-s1 AC2 -- a DIFFERENT attemptId proceeds normally when the existing in-flight entry is stale (>=60s)');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    let llmCalls = 0;
+    routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+      llmCalls++;
+      onFirstChunk(0);
+      onChunk('Fresh after stale?');
+      return Promise.resolve({ text: 'Fresh after stale?', usage: {} });
+    });
+    const sid = 'test-tsdg-s1-b-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'review', sessionPath: '/tmp/t', systemPrompt: '# review', turns: [],
+      artefactContent: null, artefactPath: null, done: false, featureSlug: 'tsdg-repro-feature-2',
+      _lastAttempt: { attemptId: 'attempt-stale-original', status: 'in-flight', startedAt: Date.now() - 61000 }
+    });
+    await routes.handlePostTurnStreamHtml(
+      { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'review', id: sid }, body: { answer: 'hi', attemptId: 'attempt-fresh' } },
+      mockRes()
+    );
+    eq(llmCalls, 1, 'tsdg-s1 AC2: LLM executor IS called when the existing in-flight entry is stale, for a different attemptId too');
+    const session = routes._getHtmlSession(sid);
+    ok(session._lastAttempt.attemptId === 'attempt-fresh' && session._lastAttempt.status === 'complete', 'tsdg-s1 AC2: _lastAttempt updated to the new attemptId, complete, after the fresh attempt finishes');
+  }
+
   // ── AC4: stale in-flight (>60s) -> treated as fresh ──
   console.log('\n  AC4 -- stale in-flight attemptId (>60s old): treated as a fresh attempt');
   {

@@ -4946,21 +4946,33 @@ async function handlePostTurnStreamHtml(req, res) {
   // forever. No attemptId in the request body (older/other callers) skips
   // this guard entirely.
   var _attemptId = (body && typeof body.attemptId === 'string' && body.attemptId) ? body.attemptId : null;
-  if (_attemptId && session._lastAttempt && session._lastAttempt.attemptId === _attemptId) {
-    if (session._lastAttempt.status === 'complete') {
-      res.write('data: ' + JSON.stringify({ done: true, resumed: true }) + '\n\n');
-      clearInterval(_keepaliveInterval);
-      res.end();
-      return;
-    }
-    if (session._lastAttempt.status === 'in-flight' && (Date.now() - session._lastAttempt.startedAt) < 60000) {
-      res.write('data: ' + JSON.stringify({ error: 'This turn is still processing — please wait a moment and try again.' }) + '\n\n');
-      clearInterval(_keepaliveInterval);
-      res.end();
-      return;
-    }
-    // stale in-flight (>60s) -- fall through and treat as a fresh attempt.
+  if (_attemptId && session._lastAttempt && session._lastAttempt.attemptId === _attemptId && session._lastAttempt.status === 'complete') {
+    res.write('data: ' + JSON.stringify({ done: true, resumed: true }) + '\n\n');
+    clearInterval(_keepaliveInterval);
+    res.end();
+    return;
   }
+  // tsdg-s1: broadened in-flight guard -- block ANY new turn request (not
+  // just one sharing the identical attemptId) from starting a second
+  // concurrent LLM call whenever this session already has a non-stale
+  // in-flight attempt. The attemptId-match-only guard this replaces let a
+  // genuinely different attemptId -- e.g. a manual resubmit after the
+  // client's own single auto-retry (which reuses the SAME attemptId,
+  // see srar-s1 above) already failed -- sail straight past it and start a
+  // second, fully independent LLM call while the first was still running.
+  // Confirmed live (2026-10-07, /review on an 18-artefact feature): two
+  // independent ~100s generations ran concurrently for one logical turn,
+  // both billed, the tenant's credit balance debited twice, and the second
+  // generation's output silently overwrote the first's already-saved
+  // artefact via artefact_auto_amended.
+  if (session._lastAttempt && session._lastAttempt.status === 'in-flight' && (Date.now() - session._lastAttempt.startedAt) < 60000) {
+    res.write('data: ' + JSON.stringify({ error: 'This turn is still processing — please wait a moment and try again.' }) + '\n\n');
+    clearInterval(_keepaliveInterval);
+    res.end();
+    return;
+  }
+  // stale in-flight (>=60s), or no in-flight entry at all -- fall through
+  // and treat this request as a fresh attempt.
   if (_attemptId) {
     session._lastAttempt = { attemptId: _attemptId, status: 'in-flight', startedAt: Date.now() };
   }
