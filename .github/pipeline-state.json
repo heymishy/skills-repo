@@ -39284,9 +39284,9 @@
       "name": "Turn progress UX fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-done",
+      "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-10-07T19:27:01.284Z",
+      "updatedAt": "2026-10-07T21:35:21.426Z",
       "stories": [
         {
           "id": "tpux-s1",
@@ -39309,6 +39309,28 @@
           "verifyStatus": "passed",
           "dodStatus": "complete",
           "releaseReady": true
+        },
+        {
+          "id": "tpux-s2",
+          "name": "Extend the quiet-retry budget to network-level turn failures",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-10-07T21:35:21.426Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-08-turn-progress-ux/dor/tpux-s2-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/953",
+          "verifyStatus": "passed",
+          "dodStatus": "not-started",
+          "releaseReady": false
         }
       ],
       "guardrails": []
