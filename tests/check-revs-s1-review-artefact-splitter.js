@@ -111,5 +111,79 @@ test('splitReviewArtefact: CRLF version produces identical results to the LF ver
   assert.ok(results[0].content.includes('AC count below minimum'));
 });
 
+console.log('\n  wuai-s1 AC4 -- a self-corrected block (ambiguous FAIL line, then a clean PASS line) resolves to PASS, not null');
+test('splitReviewArtefact: self-corrected verdict uses the last unambiguous line', function() {
+  const selfCorrected = [
+    '# Review Report',
+    '',
+    '## Story: ep1-s2',
+    '',
+    '### HIGH findings',
+    '',
+    'None.',
+    '',
+    '### MEDIUM findings',
+    '',
+    'None.',
+    '',
+    '### LOW findings',
+    '',
+    'None.',
+    '',
+    '**Verdict:** FAIL (re-scoring: PASS threshold met on all criteria after all)',
+    '',
+    '**Verdict:** PASS'
+  ].join('\n');
+  const results = splitReviewArtefact(selfCorrected, function() { return 1; });
+  const s2 = results.find(function(r) { return r.storySlug === 'ep1-s2'; });
+  assert.ok(s2, 'ep1-s2 must produce a split result, not be skipped as unparseable');
+  assert.ok(s2.content.includes('**Outcome:** PASS'));
+});
+
+console.log('\n  wuai-s1 AC5 -- a single verdict line still resolves exactly as before');
+test('splitReviewArtefact: single verdict line is unchanged', function() {
+  const results = splitReviewArtefact(TWO_STORY_REVIEW, function() { return 1; });
+  const s1 = results.find(function(r) { return r.storySlug === 'ep1-s1'; });
+  assert.ok(s1.content.includes('**Outcome:** PASS'));
+});
+
+console.log('\n  wuai-s1 AC6 -- every verdict line ambiguous still returns null and still warns (asf-s1 fail-safe preserved)');
+test('splitReviewArtefact: all-ambiguous verdict lines are skipped, not guessed', function() {
+  const allAmbiguous = [
+    '# Review Report',
+    '',
+    '## Story: ep9-s1',
+    '',
+    '### HIGH findings',
+    '',
+    'None.',
+    '',
+    '### MEDIUM findings',
+    '',
+    'None.',
+    '',
+    '### LOW findings',
+    '',
+    'None.',
+    '',
+    '**Verdict:** FAIL (but note PASS was close on some criteria)',
+    '',
+    '**Verdict:** PASS (though FAIL was flagged earlier for one criterion)'
+  ].join('\n');
+  const origWarn = console.warn;
+  let warned = false;
+  console.warn = function(msg) {
+    if (String(msg).indexOf('review_split_verdict_unparseable') !== -1) warned = true;
+  };
+  let results;
+  try {
+    results = splitReviewArtefact(allAmbiguous, function() { return 1; });
+  } finally {
+    console.warn = origWarn;
+  }
+  assert.strictEqual(results.length, 0, 'no split result when every verdict line is genuinely ambiguous');
+  assert.ok(warned, 'the unparseable-verdict warning must still fire');
+});
+
 console.log('\n[revs-s1-review-artefact-splitter] Results: ' + passed + ' passed, ' + failed + ' failed\n');
 process.exit(failed > 0 ? 1 : 0);

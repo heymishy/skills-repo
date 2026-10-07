@@ -2389,6 +2389,36 @@ function computeArtefactSavePath(slug, skillName, storyId) {
   return 'artefacts/' + slug + '/' + skillName + '.md';
 }
 
+// wuai-s1: session.currentStoryId is set once, at journey-link time
+// (linkSessionToJourney, below), from journey.storyList[journey.currentStoryIndex].
+// journey.currentStoryIndex is never advanced anywhere in this file, so that
+// value goes stale the moment a content-heavy skill (test-plan,
+// definition-of-ready) auto-continues to a DIFFERENT story than whichever one
+// was current when the session first linked -- including a non-sequential
+// skip-ahead, which a model legitimately does when earlier stories are
+// blocked by unresolved review findings. computeArtefactSavePath's storyId
+// argument must reflect the story the model actually just wrote about, not
+// a frozen pointer -- otherwise every subsequent story in the same session
+// silently overwrites the same file. The artefact's own "**Story:** <id>"
+// header field is the only reliable ground truth once stories can be
+// skipped non-sequentially; it is trusted only after being validated
+// against the linked journey's own known storyList, so unrelated prose can
+// never be mistaken for a real story ID.
+var _STORY_FIELD_RE = /^#{0,6}\s*\*{0,2}Story\*{0,2}:\*{0,2}\s*(\S+)/im;
+
+function resolveArtefactStoryId(artefactContent, fallbackStoryId, journeyId) {
+  if (!artefactContent) return fallbackStoryId;
+  var m = artefactContent.match(_STORY_FIELD_RE);
+  if (!m) return fallbackStoryId;
+  var parsedId = m[1].trim();
+  if (!journeyId) return fallbackStoryId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey || !Array.isArray(journey.storyList) || journey.storyList.indexOf(parsedId) === -1) {
+    return fallbackStoryId;
+  }
+  return parsedId;
+}
+
 /**
  * Compute the Step 1 story-list summary for content-heavy skills by reading the
  * filesystem directly — no LLM call required.
@@ -2693,7 +2723,7 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
     // session's real featureSlug must always win over the response's own
     // ---SLUG--- marker (see that comment for the full rationale).
     var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
-    session.artefactPath = computeArtefactSavePath(slug, session.skillName, session.currentStoryId);
+    session.artefactPath = computeArtefactSavePath(slug, session.skillName, resolveArtefactStoryId(session.artefactContent, session.currentStoryId, session.journeyId));
     session.done = true;
     // ntpg-s1: durably persist this stage's conversation turns, mirroring
     // handlePostTurnStreamHtml's own dsh-s1 write exactly -- dsh-s1's AC1 was
@@ -5491,7 +5521,7 @@ async function handlePostTurnStreamHtml(req, res) {
     // or CLI usage), where session.featureSlug is never set and the model
     // deciding the slug is the intended, only mechanism.
     var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
-    session.artefactPath = computeArtefactSavePath(slug, (session.skillName || skillName), session.currentStoryId);
+    session.artefactPath = computeArtefactSavePath(slug, (session.skillName || skillName), resolveArtefactStoryId(session.artefactContent, session.currentStoryId, session.journeyId));
     session.done = true;
 
     // Auto-save artefact to disk
