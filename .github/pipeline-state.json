@@ -39321,7 +39321,7 @@
       "discoveryStatus": "not-required",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-10-07T20:16:48.558Z",
+      "updatedAt": "2026-10-07T20:19:48.886Z",
       "stories": [
         {
           "id": "wuai-s1",
@@ -39336,7 +39336,7 @@
           },
           "acTotal": 7,
           "acVerified": 7,
-          "updatedAt": "2026-10-07T20:16:48.558Z",
+          "updatedAt": "2026-10-07T20:19:48.886Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-08-web-ui-outer-loop-artefact-integrity/dor/wuai-s1-dor.md",
           "prStatus": "open",
