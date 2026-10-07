@@ -38790,7 +38790,191 @@
       "name": "Customer Journey as First Class",
       "health": "green",
       "track": "standard",
-      "stage": "test-plan"
+      "stage": "definition-of-ready",
+      "epics": [
+        {
+          "slug": "journey-entity-and-stage-management",
+          "name": "Journey Entity and Stage Management",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep1-s1",
+              "name": "Create journey entity: POST route, Postgres insert, and journey canvas shell",
+              "stage": "review",
+              "health": "red",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-1.md"
+            },
+            {
+              "slug": "ep1-s2",
+              "name": "Add and name stages: POST route, inline name entry, and stage card rendering",
+              "stage": "definition",
+              "health": "amber",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z"
+            },
+            {
+              "slug": "ep1-s3",
+              "name": "Stage side panel: edit all optional attributes",
+              "stage": "review",
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s3-review-1.md"
+            },
+            {
+              "slug": "ep1-s4",
+              "name": "Drag-and-drop stage reorder with keyboard alternative",
+              "stage": "review",
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md"
+            }
+          ]
+        },
+        {
+          "slug": "feature-mapping-and-delivery-view",
+          "name": "Feature Mapping and Delivery View",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep2-s1",
+              "name": "Feature picker: read pipeline-state.json and render feature list in modal",
+              "stage": "review",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s1-review-1.md"
+            },
+            {
+              "slug": "ep2-s2",
+              "name": "Feature-to-stage mapping: save mapping with metric key selection",
+              "stage": "review",
+              "health": "red",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-1.md"
+            },
+            {
+              "slug": "ep2-s3",
+              "name": "Delivery view: feature and metric annotation rows on stage cards",
+              "stage": "review",
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s3-review-1.md"
+            }
+          ]
+        },
+        {
+          "slug": "journey-health-and-customer-experience-views",
+          "name": "Journey Health and Customer Experience Views",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep3-s1",
+              "name": "Customer experience view: emotion, pain points, opportunities annotation rows",
+              "stage": "review",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md"
+            },
+            {
+              "slug": "ep3-s2",
+              "name": "Journey health indicators: per-stage health state and summary bar",
+              "stage": "review",
+              "health": "red",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s2-review-1.md"
+            }
+          ]
+        },
+        {
+          "slug": "navigation-entry-points-and-journey-list",
+          "name": "Navigation, Entry Points, and Journey List",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep4-s1",
+              "name": "Journey list page: index of all journeys for the tenant",
+              "stage": "review",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s1-review-1.md"
+            },
+            {
+              "slug": "ep4-s2",
+              "name": "Navigation and entry points: Journeys nav link and product page link",
+              "stage": "review",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md"
+            }
+          ]
+        },
+        {
+          "slug": "database-migration-and-tenant-isolation-hardening",
+          "name": "Database Migration and Tenant Isolation Hardening",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep5-s1",
+              "name": "Database migration: create journeys, journey_stages, and feature_journey_stage_mappings tables",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep5-s1-test-plan.md"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s1-dor.md"
+            },
+            {
+              "slug": "ep5-s2",
+              "name": "Tenant isolation hardening: adversarial path and cross-tenant guard tests for journey routes",
+              "stage": "review",
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s2-review-1.md"
+            }
+          ]
+        }
+      ],
+      "updatedAt": "2026-10-07T19:42:37.013Z"
     },
     {
       "slug": "2026-10-06-dismiss-store-workspace-dir-fix",
