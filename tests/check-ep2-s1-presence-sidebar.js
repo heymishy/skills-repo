@@ -49,6 +49,32 @@ testCollaboratorsPresenceHandlerExists()
   .then(() => console.log('  ok - all 3 new handlers exported'))
   .catch((err) => { console.error('  FAIL - testCollaboratorsPresenceHandlerExists:', err.message); process.exitCode = 1; });
 
+// sch-s1 AC3: presence-stream SSE response includes X-Accel-Buffering: no
+async function testPresenceStreamIncludesAntiBufferingHeader() {
+  const jStore = require('../src/web-ui/modules/journey-store');
+  const journeyId = jStore.createJourney('sch-s1-presence-feature').journeyId;
+  const capturedHeaders = {};
+  const closeHandlers = [];
+  const res = {
+    writeHead: function (code, headers) { Object.assign(capturedHeaders, headers || {}); },
+    write: function () {},
+    // Capture the real close handler (rather than a no-op) and fire it
+    // below -- handleGetJourneyPresenceStream's own broadcast interval is
+    // not unref()'d, so leaving it uncleared would hang this test process.
+    on: function (event, handler) { if (event === 'close') closeHandlers.push(handler); }
+  };
+  await journeyRoute.handleGetJourneyPresenceStream(
+    { session: { accessToken: 'tok', login: 'hamish' }, params: { journeyId: journeyId } },
+    res
+  );
+  assert.strictEqual(capturedHeaders['X-Accel-Buffering'], 'no', 'expected X-Accel-Buffering: no on the presence-stream response');
+  assert.strictEqual(capturedHeaders['Content-Type'], 'text/event-stream', 'pre-existing Content-Type header must be unchanged');
+  closeHandlers.forEach(function (h) { h(); }); // simulate disconnect, clears the handler's own interval
+}
+testPresenceStreamIncludesAntiBufferingHeader()
+  .then(() => console.log('  ok - sch-s1 AC3: presence-stream includes X-Accel-Buffering: no'))
+  .catch((err) => { console.error('  FAIL - testPresenceStreamIncludesAntiBufferingHeader:', err.message); process.exitCode = 1; });
+
 // tests/check-ep2-s1-presence-sidebar.js — Part 3
 // Full render-path assertion (sidebar container + script tag present in
 // HTML output) is exercised by the E2E test (Task 6) against a real

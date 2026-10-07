@@ -3819,7 +3819,10 @@ async function handleGetJourneyPresenceStream(req, res, pool) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    'Connection': 'keep-alive',
+    // sch-s1: defensive anti-buffering hint, matching skills.js's own
+    // turn-stream handler -- see that file's own comment for rationale.
+    'X-Accel-Buffering': 'no'
   });
 
   async function broadcast() {
@@ -3874,12 +3877,33 @@ async function handleGetArtefactMergeStream(req, res) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    'Connection': 'keep-alive',
+    // sch-s1: defensive anti-buffering hint, matching skills.js's own
+    // turn-stream handler -- see that file's own comment for rationale.
+    'X-Accel-Buffering': 'no'
   });
+
+  // sch-s1: this stream is deliberately event-driven (per the comment on
+  // this function above), so without a keepalive it can sit completely
+  // silent for however long nobody else edits the same shared artefact --
+  // a worse exposure than the turn-stream handler's own (previously 15s,
+  // now 5s) periodic keepalive. .unref() is required here: unlike
+  // skills.js's turn-stream interval (cleared at several explicit
+  // res.end() call sites, backstopped by its own test file's
+  // process.exit()), this handler's own test file does not call
+  // process.exit() and would otherwise hang on this interval if a test
+  // never fires the stored close handler.
+  var _mergeKeepaliveInterval = setInterval(function() {
+    try { res.write(':\n\n'); } catch (_) {}
+  }, 5000);
+  if (typeof _mergeKeepaliveInterval.unref === 'function') { _mergeKeepaliveInterval.unref(); }
 
   broadcastModule.subscribe(key, res);
   if (typeof res.on === 'function') {
-    res.on('close', function () { broadcastModule.unsubscribe(key, res); });
+    res.on('close', function () {
+      clearInterval(_mergeKeepaliveInterval);
+      broadcastModule.unsubscribe(key, res);
+    });
   }
 }
 

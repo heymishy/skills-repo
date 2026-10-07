@@ -42,7 +42,8 @@ function mockRes() {
   const events = [];
   return {
     _events: events,
-    writeHead: function() {},
+    _headers: null,
+    writeHead: function(code, headers) { this._headers = headers || {}; },
     write: function(chunk) {
       const m = String(chunk).match(/^data: (.+)\n\n$/);
       if (m) { try { events.push(JSON.parse(m[1])); } catch (_) {} }
@@ -221,6 +222,39 @@ async function run() {
     eq(llmCalls, 1, 'AC4: LLM executor IS called for a stale (>60s) in-flight duplicate');
     const session = routes._getHtmlSession(sid);
     ok(session._lastAttempt.status === 'complete', 'AC4: _lastAttempt updated to complete after the fresh attempt finishes');
+  }
+
+  // ── sch-s1 AC1: turn-stream keepalive interval is 5000ms ──
+  console.log('\n  sch-s1 AC1 -- turn-stream keepalive interval is 5000ms');
+  {
+    const src = fs.readFileSync(ROUTES_PATH, 'utf8');
+    const m = src.match(/_keepaliveInterval = setInterval\(function\(\) \{[\s\S]*?\}, (\d+)\)/);
+    ok(!!m, 'sch-s1 AC1: keepalive setInterval literal found in source');
+    if (m) eq(m[1], '5000', 'sch-s1 AC1: keepalive interval is 5000ms (reduced from 15000ms)');
+  }
+
+  // ── sch-s1 AC2: turn-stream SSE response includes X-Accel-Buffering: no ──
+  console.log('\n  sch-s1 AC2 -- turn-stream SSE response includes X-Accel-Buffering: no');
+  {
+    const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+      onFirstChunk(0);
+      onChunk('Header check?');
+      return Promise.resolve({ text: 'Header check?', usage: {} });
+    });
+    const sid = 'test-sch-s1-a-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+      artefactContent: null, artefactPath: null, done: false, featureSlug: 'sch-s1-repro-feature'
+    });
+    const res = mockRes();
+    await routes.handlePostTurnStreamHtml(
+      { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'hi' } },
+      res
+    );
+    ok(res._headers && res._headers['X-Accel-Buffering'] === 'no', 'sch-s1 AC2: X-Accel-Buffering: no header present');
+    ok(res._headers && res._headers['Content-Type'] === 'text/event-stream', 'sch-s1 AC2: pre-existing Content-Type header unchanged');
+    ok(res._headers && res._headers['Connection'] === 'keep-alive', 'sch-s1 AC2: pre-existing Connection header unchanged');
   }
 
   // ── AC5: no attemptId field -> unchanged behaviour, guard never engaged ──

@@ -4906,9 +4906,13 @@ async function handlePostTurnStreamHtml(req, res) {
   }
 
   res.writeHead(200, {
-    'Content-Type':  'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection':    'keep-alive'
+    'Content-Type':      'text/event-stream',
+    'Cache-Control':     'no-cache',
+    'Connection':        'keep-alive',
+    // sch-s1: defensive anti-buffering hint for any intermediary (reverse
+    // proxy, gateway) that honours it -- costs nothing if unneeded, protects
+    // against unknown buffering layers in the chain.
+    'X-Accel-Buffering': 'no'
   });
   _turnLog.info({ event: 'sse_open' }, 'SSE stream opened');
 
@@ -4925,11 +4929,14 @@ async function handlePostTurnStreamHtml(req, res) {
     });
   }
 
-  // SSE keepalive — send a comment every 15s so browsers/proxies don't drop the connection
+  // SSE keepalive — send a comment every 5s so browsers/proxies don't drop the connection
   // during long model responses where no chunks are emitted for extended periods.
+  // sch-s1: shortened from 15s -- real production disconnects observed at
+  // 5.1s-51.8s (no single fixed timeout fits), so sending real bytes more
+  // often reduces the idle-looking window regardless of the exact cause.
   var _keepaliveInterval = setInterval(function() {
     try { res.write(':\n\n'); } catch (_) {}
-  }, 15000);
+  }, 5000);
 
   // srar-s1: idempotent reconnect guard. Fly's auto_stop_machines='suspend'
   // can freeze a genuinely in-flight request mid-turn and later resume it in
