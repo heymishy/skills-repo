@@ -38992,14 +38992,14 @@
       "name": "Turn-stream duplicate-generation fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-07T07:56:53.510Z",
+      "updatedAt": "2026-10-07T08:12:20.876Z",
       "stories": [
         {
           "id": "tsdg-s1",
           "name": "Broaden in-flight turn guard to block a different attemptId, not just a matching one",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
           "testPlan": {
@@ -39009,12 +39009,14 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-10-07T07:56:59.945Z",
+          "updatedAt": "2026-10-07T08:12:15.946Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-07-turn-stream-duplicate-generation-fix/dor/tsdg-s1-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/948",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
