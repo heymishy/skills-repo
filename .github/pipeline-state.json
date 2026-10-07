@@ -39057,26 +39057,29 @@
       "name": "SSE connection hardening",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-10-07T08:49:07.382Z",
+      "updatedAt": "2026-10-07T09:06:15.439Z",
       "stories": [
         {
           "id": "sch-s1",
           "name": "Shorten keepalive + anti-buffering headers across all 3 SSE endpoints",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0
+            "passing": 6
           },
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-10-07T08:49:07.382Z",
+          "acVerified": 5,
+          "updatedAt": "2026-10-07T09:06:10.400Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-07-sse-connection-hardening/dor/sch-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-07-sse-connection-hardening/dor/sch-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/949",
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": []
