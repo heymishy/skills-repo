@@ -418,6 +418,49 @@ async function testCrossTenantWriteIsRejected() {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
+// sch-s1 AC4: merge-broadcast SSE response includes X-Accel-Buffering: no,
+// and a new keepalive interval exists where none did before -- source-text
+// inspection for the interval's own safety properties (.unref(), cleared
+// on close), matching the test plan's own stated evidence type (triggering
+// a real 5s timer in a unit test is impractical).
+async function testMergeStreamIncludesHeaderAndKeepalive() {
+  const r = freshRequire();
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ep2-s4-test-'));
+  const fixture = seedJourneyStage(r, tmpDir, 'sch-s1-merge-header', 'discovery', 'content\n');
+
+  const sseRes = makeRes();
+  await r.j.handleGetArtefactMergeStream(makeReq({
+    params: { journeyId: fixture.journeyId, stageName: 'discovery' },
+    session: { accessToken: 'tok', login: 'observer', tenantId: 'test-tenant' }
+  }), sseRes);
+
+  await test('sch-s1 AC4: merge-stream response includes X-Accel-Buffering: no', function () {
+    assert.strictEqual(sseRes._headers['X-Accel-Buffering'], 'no');
+    assert.strictEqual(sseRes._headers['Content-Type'], 'text/event-stream', 'pre-existing header unchanged');
+  });
+
+  // Simulate disconnect -- exercises the new interval's own clearInterval
+  // path (real safety behaviour, not just reading the source).
+  sseRes._closeHandlers.forEach(function (h) { h(); });
+
+  const journeySrc = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/routes/journey.js'), 'utf8');
+  const handlerStart = journeySrc.indexOf('async function handleGetArtefactMergeStream');
+  const handlerEnd = journeySrc.indexOf('\n}', handlerStart) + 2;
+  const handlerBody = journeySrc.slice(handlerStart, handlerEnd);
+  await test('sch-s1 AC4: a new 5000ms keepalive setInterval exists in handleGetArtefactMergeStream', function () {
+    assert.ok(/setInterval\(function\(\) \{[\s\S]*?\}, 5000\)/.test(handlerBody), 'expected a new setInterval(..., 5000) call in the handler body');
+  });
+  await test('sch-s1 AC4: the new interval is .unref()\'d (test-hang safety)', function () {
+    assert.ok(/_mergeKeepaliveInterval\.unref/.test(handlerBody), 'expected .unref() called on the new interval');
+  });
+  await test('sch-s1 AC4: the new interval is cleared on the existing close handler, alongside unsubscribe', function () {
+    assert.ok(/clearInterval\(_mergeKeepaliveInterval\)/.test(handlerBody), 'expected clearInterval for the new interval');
+    assert.ok(/clearInterval\(_mergeKeepaliveInterval\)[\s\S]*?unsubscribe/.test(handlerBody), 'expected clearInterval to run before/alongside unsubscribe in the same close handler');
+  });
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+}
+
 async function main() {
   console.log('\n[ep2-s4-integration] Task 5 -- real save->merge->broadcast->attribution round trip');
   await testFirstSaveIsPlainSaveNotMerge();
@@ -425,6 +468,7 @@ async function main() {
   await testEmptyContentRejectedWith400();
   await testLegacyFormEncodedPathStillWorksUnchanged();
   await testCrossTenantWriteIsRejected();
+  await testMergeStreamIncludesHeaderAndKeepalive();
 
   console.log('\n[ep2-s4-integration] ' + (passed + failed) + ' run, ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length > 0) {
