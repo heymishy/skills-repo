@@ -39027,26 +39027,29 @@
       "name": "Improve skill model default fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-10-07T08:19:23.254Z",
+      "updatedAt": "2026-10-07T17:42:31.012Z",
       "stories": [
         {
           "id": "imd-s1",
           "name": "Default /improve to Sonnet, matching the /ideate precedent",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0
+            "passing": 3
           },
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-10-07T08:19:23.254Z",
+          "acVerified": 4,
+          "updatedAt": "2026-10-07T17:42:24.999Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-07-improve-skill-model-default/dor/imd-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-07-improve-skill-model-default/dor/imd-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/950",
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": []
