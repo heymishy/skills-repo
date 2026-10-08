@@ -10,7 +10,7 @@ So that **I can reach the journey canvas from natural points in the product UI**
 ## Benefit Linkage
 M1 — Journey adoption — discoverability of the journey canvas drives the adoption metric; without visible entry points, M1 cannot reach its target.
 ## Architecture Constraints
-Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before adding nav items. No new npm runtime dependencies. **Route note (see decisions.md D8):** the "Journeys" nav link targets `/customer-journeys` (the list page from `ep4-s1`), not `/journeys` — that plain path is already owned by an unrelated, live platform feature.
+`architecture-guardrails.md`'s own named anti-pattern guardrail "Ad-hoc cross-cutting surface changes without a story (shadow changes)" applies directly — it explicitly names navigation structure/`html-shell.js` as a shared surface module requiring a story for any change, even a small one; this story is that required artefact for the `NAV_ITEMS` change. Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before adding nav items. No new npm runtime dependencies. **Route note (see decisions.md D8):** the "Journeys" nav link targets `/customer-journeys` (the list page from `ep4-s1`), not `/journeys` — that plain path is already owned by an unrelated, live platform feature.
 ## Dependencies
 ep4-s1
 ## Acceptance Criteria
