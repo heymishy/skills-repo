@@ -38845,13 +38845,20 @@
             {
               "slug": "ep1-s3",
               "name": "Stage side panel: edit all optional attributes",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "updatedAt": "2026-10-08T07:43:20.249Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s3-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep1-s3-test-plan.md"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s3-dor.md"
             },
             {
               "slug": "ep1-s4",
