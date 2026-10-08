@@ -109,10 +109,12 @@ const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSch
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
 const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissSignal } = require('./routes/signals-panel');      // ep2-s1, sptu-s4
-// cj-ep1-s1: customer journey entity creation (2026-10-05-customer-journey-as-first-class) --
-// NOT the same "ep1-s1" as line 105's migratePodsSchema above, a completely unrelated
-// feature that happens to reuse the same generic story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas }                 = require('./routes/journeys');
+// cj-ep1-s1/cj-ep1-s2: customer journey entity creation + stage add
+// (2026-10-05-customer-journey-as-first-class) -- NOT the same "ep1-s1"/"ep1-s2"
+// as line 105's migratePodsSchema or line 110's signals-panel above, two
+// completely unrelated features that happen to reuse the same generic
+// story-slug shorthand.
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -3942,6 +3944,16 @@ async function router(req, res) {
     // cj-ep1-s1 — journey canvas shell (2026-10-05-customer-journey-as-first-class)
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetJourneyCanvas(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages$/) && req.method === 'POST') {
+    // cj-ep1-s2 — add a named stage to a journey (2026-10-05-customer-journey-as-first-class)
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostJourneyStage(req, res, null, _pshPool);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
     // psh-s4 — product view: list features for one product with stage + health
