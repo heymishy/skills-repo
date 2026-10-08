@@ -39061,10 +39061,10 @@
             {
               "slug": "ep4-s2",
               "name": "Navigation and entry points: Journeys nav link and product page link",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T23:14:59.179Z",
+              "updatedAt": "2026-10-08T23:33:36.338Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md",
@@ -39078,7 +39078,27 @@
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep4-s2-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep4-s2-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "\"Journeys\" nav link (AC1, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "\"View journey\" product-page link (AC2, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Correct two pan-s1-era regression tests (unplanned)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s2-plan.md"
+                }
+              ]
             }
           ]
         },
