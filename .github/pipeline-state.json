@@ -38867,10 +38867,10 @@
             {
               "slug": "ep1-s4",
               "name": "Drag-and-drop stage reorder with keyboard alternative",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T19:30:39.160Z",
+              "updatedAt": "2026-10-08T19:42:14.513Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md",
@@ -38929,7 +38929,9 @@
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/962"
             }
           ]
         },
