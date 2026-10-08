@@ -38845,10 +38845,10 @@
             {
               "slug": "ep1-s3",
               "name": "Stage side panel: edit all optional attributes",
-              "stage": "dor-signed-off",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T07:43:20.249Z",
+              "updatedAt": "2026-10-08T08:02:09.906Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s3-review-1.md",
@@ -38858,7 +38858,9 @@
                 "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep1-s3-test-plan.md"
               },
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s3-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s3-dor.md",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/960"
             },
             {
               "slug": "ep1-s4",
