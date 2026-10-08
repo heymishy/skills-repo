@@ -39469,7 +39469,7 @@
         {
           "id": "csb-s1",
           "name": "Wire customer_journey_stages boot-time table creation",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39479,9 +39479,11 @@
           },
           "acTotal": 2,
           "acVerified": 0,
-          "updatedAt": "2026-10-08T06:49:54.746Z",
+          "updatedAt": "2026-10-08T07:02:01.262Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-08-journey-stages-boot-wiring-gap/dor/csb-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-08-journey-stages-boot-wiring-gap/dor/csb-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/959"
         }
       ],
       "guardrails": []
