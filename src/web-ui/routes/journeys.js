@@ -637,4 +637,177 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder };
+/**
+ * GET /customer-journeys — list all journeys for the tenant (ep4-s1).
+ * Deliberately NOT /journeys -- that plain path is already owned by the
+ * unrelated, live platform feature handleJourneys (routes/journey.js,
+ * singular file, bee.2's skill-session first-run screen). See
+ * decisions.md D8.
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handleGetCustomerJourneysList(req, res, _next, pool) {
+  var tenantId = req.session && req.session.tenantId;
+
+  // ADR-025 -- tenant scoping on the list query itself (AC5).
+  var jr = await pool.query(
+    `SELECT cj.id, cj.name, cj.description, cj.product_id, p.name AS product_name
+     FROM customer_journeys cj
+     LEFT JOIN products p ON cj.product_id = p.product_id
+     WHERE cj.tenant_id = $1
+     ORDER BY cj.created_at DESC`,
+    [tenantId]
+  );
+  var journeys = jr.rows || [];
+
+  // Stage counts via a second, simpler query rather than one mega-join --
+  // matches this codebase's own existing style (see handlePostJourneyStage's
+  // own separate MAX(position) query).
+  var stageCounts = {};
+  if (journeys.length) {
+    var ids = journeys.map(function(j) { return j.id; });
+    var sr = await pool.query(
+      `SELECT journey_id, COUNT(*) AS stage_count FROM customer_journey_stages WHERE journey_id = ANY($1) GROUP BY journey_id`,
+      [ids]
+    );
+    sr.rows.forEach(function(r) { stageCounts[r.journey_id] = Number(r.stage_count); });
+  }
+
+  // Product picker data for the "New journey" modal -- same query already
+  // used elsewhere in products.js for tenant-scoped product lists.
+  var pr = await pool.query(`SELECT product_id, name FROM products WHERE tenant_id = $1`, [tenantId]);
+  var products = pr.rows || [];
+
+  function truncate(text, max) {
+    if (!text) return '';
+    return text.length > max ? text.slice(0, max) + '…' : text;
+  }
+
+  var journeysHtml = journeys.length
+    ? journeys.map(function(j) {
+        var stageCount = stageCounts[j.id] || 0;
+        return (
+          '<div class="sw-journey-list-card" data-journey-id="' + escHtml(j.id) + '">' +
+            '<a href="/journeys/' + escHtml(j.id) + '" class="sw-journey-list-name">' + escHtml(j.name) + '</a>' +
+            (j.description
+              ? '<p class="sw-journey-list-desc">' + escHtml(truncate(j.description, 140)) + '</p>'
+              : '') +
+            '<span class="sw-journey-list-product">' + escHtml(j.product_name || 'No product') + '</span>' +
+            '<span class="sw-journey-list-stage-count">' + stageCount + ' stage' + (stageCount === 1 ? '' : 's') + '</span>' +
+          '</div>'
+        );
+      }).join('')
+    : '<p class="sw-journey-list-empty">No journeys yet. Create your first journey.</p>';
+
+  var csrfToken = await _csrf.generateCsrfToken(req);
+  var productsJson = JSON.stringify(products);
+
+  // ep4-s1 -- "New journey" modal, reusing products.js's own ep4s1-pods-modal
+  // dialog/focus-restore pattern (role="dialog" aria-modal="true",
+  // initial-focus-on-open, Escape-to-close, captured trigger element).
+  var modalHtml =
+    '<div id="sw-new-journey-modal" class="sw-new-journey-modal" role="dialog" aria-modal="true" aria-labelledby="sw-new-journey-modal-title" aria-hidden="true">' +
+      '<div class="sw-new-journey-modal-header">' +
+        '<h2 id="sw-new-journey-modal-title">New journey</h2>' +
+        '<button type="button" id="sw-new-journey-modal-close" aria-label="Close">✕</button>' +
+      '</div>' +
+      '<label class="sw-new-journey-field">Name' +
+        '<input type="text" id="sw-new-journey-name" required>' +
+      '</label>' +
+      '<label class="sw-new-journey-field">Description' +
+        '<textarea id="sw-new-journey-description"></textarea>' +
+      '</label>' +
+      '<label class="sw-new-journey-field">Product' +
+        '<select id="sw-new-journey-product">' +
+          '<option value="">No product</option>' +
+          products.map(function(p) { return '<option value="' + escHtml(p.product_id) + '">' + escHtml(p.name) + '</option>'; }).join('') +
+        '</select>' +
+      '</label>' +
+      '<span id="sw-new-journey-error" class="sw-new-journey-error" aria-live="polite"></span>' +
+      '<button type="button" id="sw-new-journey-submit">Create journey</button>' +
+    '</div>' +
+    '<style>' +
+      '.sw-new-journey-modal{display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);width:400px;max-width:90vw;' +
+        'background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;z-index:100;' +
+        'box-shadow:0 8px 32px rgba(0,0,0,0.24)}' +
+      '.sw-new-journey-modal--open{display:block}' +
+      '.sw-new-journey-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}' +
+      '.sw-new-journey-field{display:block;font-size:13px;color:var(--ink-2);margin-bottom:14px}' +
+      '.sw-new-journey-field input,.sw-new-journey-field textarea,.sw-new-journey-field select{display:block;width:100%;margin-top:6px;' +
+        'background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:13px}' +
+      '.sw-new-journey-error{display:block;font-size:12px;color:var(--danger);margin-bottom:8px}' +
+      '.sw-journey-list-card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}' +
+      '.sw-journey-list-name{font-size:15px;font-weight:600;color:var(--ink)}' +
+      '.sw-journey-list-desc{font-size:13px;color:var(--ink-2);margin:4px 0}' +
+      '.sw-journey-list-product,.sw-journey-list-stage-count{font-size:12px;color:var(--ink-2);margin-right:12px}' +
+    '</style>';
+
+  var bodyContent =
+    '<div class="sw-journey-list">' +
+      '<h1>Journeys</h1>' +
+      '<button type="button" id="sw-new-journey-btn">New journey</button>' +
+      '<div class="sw-journey-list-items">' + journeysHtml + '</div>' +
+    '</div>' +
+    modalHtml +
+    '<script>(function(){' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
+      'var modal=document.getElementById("sw-new-journey-modal");' +
+      'var openBtn=document.getElementById("sw-new-journey-btn");' +
+      'var closeBtn=document.getElementById("sw-new-journey-modal-close");' +
+      'var submitBtn=document.getElementById("sw-new-journey-submit");' +
+      'var errorEl=document.getElementById("sw-new-journey-error");' +
+      'var triggerEl=null;' +
+      'function openModal(){' +
+        'triggerEl=document.activeElement;' +
+        'modal.classList.add("sw-new-journey-modal--open");' +
+        'modal.setAttribute("aria-hidden","false");' +
+        'document.getElementById("sw-new-journey-name").focus();' +
+      '}' +
+      'function closeModal(){' +
+        'modal.classList.remove("sw-new-journey-modal--open");' +
+        'modal.setAttribute("aria-hidden","true");' +
+        'if(triggerEl&&typeof triggerEl.focus==="function")triggerEl.focus();' +
+      '}' +
+      'if(openBtn)openBtn.addEventListener("click",openModal);' +
+      'if(closeBtn)closeBtn.addEventListener("click",closeModal);' +
+      'document.addEventListener("keydown",function(evt){' +
+        'if(modal.classList.contains("sw-new-journey-modal--open")&&evt.key==="Escape")closeModal();' +
+      '});' +
+      'if(submitBtn){' +
+        'submitBtn.addEventListener("click",function(){' +
+          'var name=document.getElementById("sw-new-journey-name").value.trim();' +
+          'var description=document.getElementById("sw-new-journey-description").value.trim();' +
+          'var productId=document.getElementById("sw-new-journey-product").value||null;' +
+          'if(!name){errorEl.textContent="Name is required";return;}' +
+          // ep4-s1 -- POST /journeys (ep1-s1, unchanged) responds with a real
+          // 302 redirect on success, which fetch() auto-follows -- the
+          // success-path response body is the canvas page's HTML, not JSON.
+          // r.redirected/r.url must be checked BEFORE any .json() call, or a
+          // successful creation looks like a parse-error failure.
+          'fetch("/journeys",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,description:description,productId:productId,_csrf:csrfToken})})' +
+            '.then(function(r){' +
+              'if(r.redirected){window.location.href=r.url;return;}' +
+              'return r.json().then(function(j){throw new Error((j&&j.error)||"Request failed");});' +
+            '})' +
+            '.catch(function(e){errorEl.textContent=e.message;});' +
+        '});' +
+      '}' +
+    '})()<\/script>';
+
+  if (res.status) {
+    res.status(200).json({ bodyContent: bodyContent, journeys: journeys }); // test mock path
+  } else {
+    var html = await renderShellWithNav(pool, tenantId, {
+      title: 'Journeys',
+      bodyContent: bodyContent,
+      active: 'journeys',
+      user: req.session
+    });
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+  }
+}
+
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList };

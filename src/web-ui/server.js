@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -3962,6 +3962,12 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handlePostProductConfirm(req, res, null, _pshPool, null);
     });
+
+  } else if (pathname === '/customer-journeys' && req.method === 'GET') {
+    // cj-ep4-s1 — journey list page (2026-10-05-customer-journey-as-first-class).
+    // Deliberately NOT /journeys -- that plain path is already owned by the
+    // unrelated, live handleJourneys route above (see decisions.md D8).
+    authGuard(req, res, async () => { await handleGetCustomerJourneysList(req, res, null, _pshPool); });
 
   } else if (pathname === '/journeys' && req.method === 'POST') {
     // cj-ep1-s1 — create a new customer journey (2026-10-05-customer-journey-as-first-class)
