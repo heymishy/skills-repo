@@ -39498,6 +39498,36 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-08-stage-panel-initial-focus-fix",
+      "id": "2026-10-08-stage-panel-initial-focus-fix",
+      "name": "Stage panel initial focus fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-10-08T08:47:23.342Z",
+      "stories": [
+        {
+          "id": "pfi-s1",
+          "name": "Fix stage side panel initial focus target and E2E spec labels",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "artefact": "artefacts/2026-10-08-stage-panel-initial-focus-fix/test-plans/pfi-s1-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "updatedAt": "2026-10-08T08:47:23.342Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-08-stage-panel-initial-focus-fix/dor/pfi-s1-dor.md"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
