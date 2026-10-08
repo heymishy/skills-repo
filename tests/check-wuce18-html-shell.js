@@ -102,7 +102,13 @@ console.log('\nT2 — renderShell nav contains the real nav links');
 console.log('\nT3 — renderShell nav has descriptive link text');
 {
   const output = renderShell({ title: 'T', bodyContent: '', user: { login: 'alice' } });
-  ok(!output.includes('>Journeys<'), 'T3.1: "Journeys" nav item removed (pan-s1)');
+  // ep4-s2: pan-s1's own removed 'journey' NAV_ITEMS row (the OLD,
+  // product-duplicate skill-session journeys concept) is NOT re-introduced
+  // -- but "Journeys" is now a legitimate, different, tenant-wide entry
+  // (customer_journeys, /customer-journeys) matching the pod-manager/signals
+  // precedent. This assertion now confirms the correct NEW target, not the
+  // absence of the label.
+  ok(output.includes('>Journeys<') && output.includes('href="/customer-journeys"'), 'T3.1: "Journeys" nav item targets /customer-journeys (ep4-s2, not the pan-s1-removed old journey concept)');
   ok(!output.includes('>Run a Skill<'), 'T3.2: "Run a Skill" nav item removed (pan-s1)');
   ok(output.includes('>Org board<'), 'T3.3: "Org board" text');
 }

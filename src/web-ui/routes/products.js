@@ -1113,7 +1113,12 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod) {
+// ep4-s2: firstJourneyId is appended as the LAST parameter (not inserted
+// anywhere else) -- 18 existing test files call this function directly with
+// positional arguments, and JS does not enforce arity, so inserting this
+// argument mid-signature would silently misalign every one of those calls'
+// existing arguments onto the wrong parameters.
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1396,6 +1401,11 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
         '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
         '<a href="/products/' + _escapeHtml(productId) + '/guardrails" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Standards</a>' +
+        // ep4-s2 -- omitted entirely (not disabled/placeholder) when the
+        // product has no associated customer journey (AC3).
+        (firstJourneyId
+          ? '<a href="/journeys/' + _escapeHtml(firstJourneyId) + '" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">View journey</a>'
+          : '') +
         '<div style="position:relative">' +
           '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
           '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
@@ -2880,6 +2890,15 @@ async function handleGetProductView(req, res, _next, pool) {
     return;
   }
   var productName = prodRow.name;
+  // ep4-s2 -- the product's own tenant ownership is already verified above,
+  // so this query (scoped by product_id) is tenant-safe by construction.
+  // Earliest journey only (AC2's own "first associated journey" wording) --
+  // multiple-journey-link UI is explicit story Out of Scope.
+  var firstJourneyRow = (await _pool.query(
+    'SELECT id FROM customer_journeys WHERE product_id = $1 ORDER BY created_at ASC LIMIT 1',
+    [productId]
+  )).rows[0];
+  var firstJourneyId = firstJourneyRow ? firstJourneyRow.id : null;
   var rollupRow = (await _pool.query(
     'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
@@ -2983,7 +3002,7 @@ async function handleGetProductView(req, res, _next, pool) {
     // ep1-s2 (Task 6, 3d): fetch the product's current default pod for the
     // "Pod & Team" section's initial (non-AJAX) render.
     var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }

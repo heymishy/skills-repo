@@ -67,6 +67,17 @@ const NAV_ITEMS = [
   // route (no requireAdmin), tenant/workspace-wide, so this lives in the
   // main section, not the account-settings section below.
   { id: 'signals', label: 'Signals', href: '/signals', icon: '◎' },
+  // ep4-s2: /customer-journeys (ep4-s1) shipped with no nav entry at all --
+  // same "API shipped, UI never wired" gap as pod-manager/signals before
+  // their own fix. NOT /journeys -- that plain path is already owned by the
+  // unrelated handleJourneys route (see decisions.md D8). A customer journey
+  // can have product_id = null (confirmed by ep1-s1's own schema and
+  // ep4-s1's own "No product" fallback), so this is a genuinely tenant-wide
+  // feature -- matches the pod-manager/signals precedent exactly, not a
+  // reversion of pan-s1's own removal of the OLD, product-duplicate
+  // 'journey' nav row (see artefacts/2026-10-05-customer-journey-as-first-class/
+  // test-plans/ep4-s2-test-plan.md for the full grounding).
+  { id: 'journeys', label: 'Journeys', href: '/customer-journeys', icon: '⤳' },
   // b2: account-level items, rendered in a visually distinct bottom section by
   // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
   // array, tagged `section: 'account'`, rather than a second untested array, so
