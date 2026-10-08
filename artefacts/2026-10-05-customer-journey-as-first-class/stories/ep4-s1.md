@@ -5,16 +5,16 @@
 **Domain:** web-ui
 ## User Story
 As a **Outer loop practitioner (PO / SME / discovery lead)**,
-I want **a journey list page at `/journeys` that shows all journeys scoped to my tenant**,
+I want **a journey list page at `/customer-journeys` that shows all journeys scoped to my tenant**,
 So that **I can navigate to an existing journey or create a new one**.
 ## Benefit Linkage
 M1 — Journey adoption — the list page is the primary entry point for creating and accessing journeys; it is the mechanism by which M1 is measured.
 ## Architecture Constraints
-ADR-025 — all journey records returned must be scoped by `tenantId`; cross-tenant records must never appear. ADR-027 — list page is app code in `src/web-ui/routes/journeys.js`. Design system reference for UI components. No new npm runtime dependencies.
+ADR-025 — all journey records returned must be scoped by `tenantId`; cross-tenant records must never appear. ADR-027 — list page is app code in `src/web-ui/routes/journeys.js`. Design system reference for UI components. No new npm runtime dependencies. **Route note (found at /test-plan grounding, 2026-10-09, see decisions.md D8):** the list page lives at `/customer-journeys`, not the originally-drafted `/journeys` — that plain path is already owned by an unrelated, live platform feature (`handleJourneys` in `routes/journey.js`, the skill-session "first-run empty-state" screen). This mirrors `ep5-s3`'s own D4 precedent of renaming the new feature's own identifiers rather than colliding with a pre-existing platform concept.
 ## Dependencies
 ep1-s1
 ## Acceptance Criteria
-**AC1:** Given I navigate to `/journeys`,
+**AC1:** Given I navigate to `/customer-journeys`,
 When the page renders,
 Then I see a list of all journeys scoped to my `tenantId`, each showing the journey name, optional description (truncated if long), the associated product name (or "No product" if `product_id` is null), and the count of stages.
 
