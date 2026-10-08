@@ -38800,10 +38800,10 @@
             {
               "slug": "ep1-s1",
               "name": "Create journey entity: POST route, Postgres insert, and journey canvas shell",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T04:36:42.993Z",
+              "updatedAt": "2026-10-08T05:04:33.221Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-2.md",
@@ -38814,9 +38814,11 @@
                 "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep1-s1-test-plan.md"
               },
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s1-dor.md",
-              "prStatus": "open",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/956",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep1-s2",
