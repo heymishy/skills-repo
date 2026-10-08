@@ -133,6 +133,13 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('(boot) customer_journeys table creation is wired into server.js, matching the credits/tenant_plan convention');
   } catch (e) { fail('(boot) customer_journeys table creation is wired into server.js, matching the credits/tenant_plan convention', e); }
 
+  // csb-s1 AC1 — customer_journey_stages table creation wired into server.js's boot sequence
+  try {
+    const serverSrc = fs.readFileSync(path.join(__dirname, '../src/web-ui/server.js'), 'utf8');
+    assert(/CREATE TABLE IF NOT EXISTS customer_journey_stages/i.test(serverSrc), 'customer_journey_stages table creation not found in server.js boot sequence');
+    pass('csb-s1 AC1: customer_journey_stages table creation is wired into server.js, matching the customer_journeys convention');
+  } catch (e) { fail('csb-s1 AC1: customer_journey_stages table creation is wired into server.js, matching the customer_journeys convention', e); }
+
   console.log(`\n[ep1-s1-journey-create] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exit(1);
 })();

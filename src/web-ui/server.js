@@ -524,6 +524,38 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journeys_tenant_id ON customer_journeys(tenant_id)`);
     }).then(function() { console.log('customer_journeys table ready'); })
       .catch(function(err) { console.error('customer_journeys table migration failed:', err.message); });
+    // csb-s1 — Auto-migrate customer_journey_stages table (D37: no new adapter
+    // wiring -- queried through the same _creditsPool already wired above).
+    // SQL copied verbatim from scripts/migrate-schema-journeys.js (not present
+    // in the deployed image -- see the customer_journeys comment above for why
+    // this inline statement is the only way the table gets created in a
+    // genuinely fresh environment). This table is ep1-s2's own dependency --
+    // that story shipped without wiring it, relying on ep5-s3's one-time
+    // manual script run against staging/production instead.
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS customer_journey_stages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        journey_id UUID NOT NULL REFERENCES customer_journeys(id) ON DELETE CASCADE,
+        tenant_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        position INTEGER NOT NULL,
+        description TEXT,
+        customer_actions TEXT,
+        touchpoints TEXT,
+        channel TEXT,
+        emotion TEXT,
+        pain_points TEXT,
+        opportunities TEXT,
+        moment_of_truth BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `).then(function() {
+      return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_journey_id ON customer_journey_stages(journey_id)`);
+    }).then(function() {
+      return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_tenant_id ON customer_journey_stages(tenant_id)`);
+    }).then(function() { console.log('customer_journey_stages table ready'); })
+      .catch(function(err) { console.error('customer_journey_stages table migration failed:', err.message); });
     // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list
     // admin-seeding block that used to live here were removed entirely (AC1) --
     // the real admin-bootstrap mechanism is tab-s1's login-time grant plus
