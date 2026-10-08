@@ -39505,14 +39505,14 @@
       "name": "Stage panel initial focus fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-08T08:47:23.342Z",
+      "updatedAt": "2026-10-08T17:53:09.207Z",
       "stories": [
         {
           "id": "pfi-s1",
           "name": "Fix stage side panel initial focus target and E2E spec labels",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39522,11 +39522,13 @@
           },
           "acTotal": 3,
           "acVerified": 0,
-          "updatedAt": "2026-10-08T08:58:15.429Z",
+          "updatedAt": "2026-10-08T17:52:14.049Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-08-stage-panel-initial-focus-fix/dor/pfi-s1-dor.md",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/961"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/961",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
