@@ -38867,10 +38867,10 @@
             {
               "slug": "ep1-s4",
               "name": "Drag-and-drop stage reorder with keyboard alternative",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T18:32:36.606Z",
+              "updatedAt": "2026-10-08T18:51:20.060Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md",
