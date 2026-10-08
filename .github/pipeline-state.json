@@ -39416,14 +39416,14 @@
       "name": "Journeys CSRF guard gap fix",
       "track": "short",
       "discoveryStatus": "not-required",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-08T05:26:19.719Z",
+      "updatedAt": "2026-10-08T05:51:47.834Z",
       "stories": [
         {
           "id": "jcg-s1",
           "name": "Add the missing CSRF guard to POST /journeys",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39433,12 +39433,14 @@
           },
           "acTotal": 3,
           "acVerified": 3,
-          "updatedAt": "2026-10-08T05:26:19.719Z",
+          "updatedAt": "2026-10-08T05:51:38.704Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-08-journeys-csrf-guard-gap/dor/jcg-s1-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/957",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": []
