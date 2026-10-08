@@ -14,25 +14,26 @@ ADR-025 — all journey records returned must be scoped by `tenantId`; cross-ten
 ## Dependencies
 ep1-s1
 ## Acceptance Criteria
-Given I navigate to `/journeys`,
+**AC1:** Given I navigate to `/journeys`,
 When the page renders,
 Then I see a list of all journeys scoped to my `tenantId`, each showing the journey name, optional description (truncated if long), the associated product name (or "No product" if `product_id` is null), and the count of stages.
 
-Given no journeys exist for my tenant,
+**AC2:** Given no journeys exist for my tenant,
 When the page renders,
 Then I see the empty state message "No journeys yet. Create your first journey." with a prominent "New journey" call to action.
 
-Given I click "New journey",
+**AC3:** Given I click "New journey",
 When the creation form or modal opens,
 Then I can enter a journey name (required), optional description, and optionally associate a product from a picker of existing products for my tenant.
 
-Given I submit a valid new journey (name provided),
+**AC4:** Given I submit a valid new journey (name provided),
 When the creation completes,
 Then the journey record is saved to `customer_journeys` scoped to my `tenantId` and I am redirected to `/journeys/:id`.
 
-Given another tenant's journey ID is used in the request,
+**AC5:** Given another tenant's journey ID is used in the request,
 When the request is processed,
 Then a 403 response is returned and no journey data is returned.
+
 ## Out of Scope
 Journey deletion (deferred), journey search/filter (deferred for MVP), cross-org journey sharing.
 ## NFRs

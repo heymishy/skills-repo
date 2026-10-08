@@ -14,21 +14,22 @@ Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/
 ## Dependencies
 ep4-s1
 ## Acceptance Criteria
-Given I am on any page in the web UI,
+**AC1:** Given I am on any page in the web UI,
 When the main navigation renders,
 Then a "Journeys" link is visible and navigates to `/journeys`.
 
-Given I am on a product detail page and that product has at least one associated journey,
+**AC2:** Given I am on a product detail page and that product has at least one associated journey,
 When the product detail page renders,
 Then a "View journey" link is displayed that navigates to `/journeys/:id` for the first associated journey (ordered by `created_at` ascending).
 
-Given I am on a product detail page and that product has no associated journeys,
+**AC3:** Given I am on a product detail page and that product has no associated journeys,
 When the product detail page renders,
 Then no "View journey" link is shown (no broken link, no empty placeholder).
 
-Given the "Journeys" nav link is rendered,
+**AC4:** Given the "Journeys" nav link is rendered,
 When a keyboard user navigates the main nav,
 Then the "Journeys" link is reachable and activatable via keyboard alone (WCAG 2.1 AA).
+
 ## Out of Scope
 Multiple journey links on a product page (only first journey linked in MVP), journey creation from the product detail page.
 ## NFRs

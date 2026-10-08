@@ -14,19 +14,19 @@ ADR-025 (application-layer tenant_id scoping) — `tenantId` from `req.session.t
 ## Dependencies
 ep5-s1
 ## Acceptance Criteria
-Given I submit a valid journey creation form (name provided, `tenantId` from session),
+**AC1:** Given I submit a valid journey creation form (name provided, `tenantId` from session),
 When the POST handler processes the request,
 Then a `customer_journeys` record is inserted into Postgres with `id` (UUID), `tenant_id`, `name`, `description` (nullable), `product_id` (nullable), `created_at`, `updated_at`, and the response redirects to `/journeys/:id`.
 
-Given I submit a journey creation form with no name,
+**AC2:** Given I submit a journey creation form with no name,
 When the POST handler processes the request,
 Then a 400 response is returned and no record is inserted.
 
-Given a POST request includes a `tenantId` field in its body that differs from the authenticated session's `tenantId`,
+**AC3:** Given a POST request includes a `tenantId` field in its body that differs from the authenticated session's `tenantId`,
 When the POST handler processes the request,
 Then the inserted record's `tenant_id` is the session's `tenantId` — the request body's `tenantId` value is never used, so a caller cannot insert a journey under a different tenant's ID. (Cross-tenant READ/UPDATE/DELETE protection for this and other journey routes is covered by ep5-s2's own adversarial test suite, not duplicated here — this AC covers the write-path tenant-spoofing guard only.)
 
-Given I am redirected to `/journeys/:id` after creation,
+**AC4:** Given I am redirected to `/journeys/:id` after creation,
 When the canvas shell page renders,
 Then the journey name is displayed and the stage area shows the empty state "No stages yet. Add your first stage."
 ## Out of Scope

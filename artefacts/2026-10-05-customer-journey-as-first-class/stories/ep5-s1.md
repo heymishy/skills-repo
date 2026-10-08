@@ -14,25 +14,26 @@ Migration follows existing `migrate-schema-*.js` naming convention. ADR-025 — 
 ## Dependencies
 None
 ## Acceptance Criteria
-Given the migration script is run against a Postgres database,
+**AC1:** Given the migration script is run against a Postgres database,
 When the migration completes,
 Then the `customer_journeys` table exists with columns: `id` (UUID PK), `tenant_id` (text, not null), `name` (text, not null), `description` (text, nullable), `product_id` (UUID, nullable, FK → products), `created_at` (timestamptz), `updated_at` (timestamptz). (Renamed from `journeys` by ep5-s3 to avoid a collision with the platform's own pre-existing `journeys` table — see decisions.md D4.)
 
-Given the migration script is run,
+**AC2:** Given the migration script is run,
 When the migration completes,
 Then the `customer_journey_stages` table exists with all columns from the design artefact: `id`, `journey_id`, `tenant_id`, `name`, `position`, `description`, `customer_actions`, `touchpoints`, `channel`, `emotion`, `pain_points`, `opportunities`, `moment_of_truth`, `created_at`, `updated_at`.
 
-Given the migration script is run,
+**AC3:** Given the migration script is run,
 When the migration completes,
 Then the `feature_customer_journey_stage_mappings` table exists with columns: `id`, `journey_stage_id`, `journey_id`, `tenant_id`, `feature_slug`, `metric_keys` (JSONB, default `[]`), `created_at`.
 
-Given the migration is run on a database that already has data,
+**AC4:** Given the migration is run on a database that already has data,
 When the migration completes,
 Then existing data is unaffected and the migration is idempotent (safe to run twice without error).
 
-Given the migration script is run,
+**AC5:** Given the migration script is run,
 When the migration completes,
 Then indexes exist on: `customer_journeys(tenant_id)`, `customer_journey_stages(journey_id)`, `customer_journey_stages(tenant_id)`, `feature_customer_journey_stage_mappings(journey_stage_id)`, `feature_customer_journey_stage_mappings(tenant_id)`.
+
 ## Out of Scope
 Seed data, rollback script, migration for future columns not in MVP scope.
 ## NFRs

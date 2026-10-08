@@ -14,21 +14,22 @@ ADR-016 (two-file state authority) — `pipeline-state.json` is read-only here; 
 ## Dependencies
 ep1-s2, ep5-s1
 ## Acceptance Criteria
-Given I click "Map feature" on a stage card or in the Delivery view,
+**AC1:** Given I click "Map feature" on a stage card or in the Delivery view,
 When the feature picker modal opens,
 Then it displays a list of features from `pipeline-state.json` (all features for the tenant's repo), each showing the feature name and slug.
 
-Given the feature list is long,
+**AC2:** Given the feature list is long,
 When the modal renders,
 Then a filter/search input is available to narrow features by name or slug.
 
-Given `pipeline-state.json` cannot be read (file not found or parse error),
+**AC3:** Given `pipeline-state.json` cannot be read (file not found or parse error),
 When the modal attempts to load,
 Then an error state is shown: "Features could not be loaded. Check that pipeline-state.json exists." — no modal crash.
 
-Given I close the modal without selecting a feature,
+**AC4:** Given I close the modal without selecting a feature,
 When the modal closes,
 Then no mapping is created and the canvas is unchanged.
+
 ## Out of Scope
 Metric key selection (ep2-s2), saving the mapping (ep2-s2), Delivery view annotation rows (ep2-s3).
 ## NFRs

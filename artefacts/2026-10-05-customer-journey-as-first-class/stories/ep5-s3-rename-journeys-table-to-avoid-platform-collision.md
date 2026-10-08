@@ -16,21 +16,22 @@ M1 — Journey adoption — a migration that silently no-ops means `journeys` (a
 ## Dependencies
 ep5-s1 (merged — this story corrects it)
 ## Acceptance Criteria
-Given `scripts/migrate-schema-journeys.js` is run against a Postgres database that already has the platform's own `journeys` table (the realistic case in every real environment),
+**AC1:** Given `scripts/migrate-schema-journeys.js` is run against a Postgres database that already has the platform's own `journeys` table (the realistic case in every real environment),
 When the migration completes,
 Then a `customer_journeys` table exists with the schema `ep5-s1` originally specified (just under the new name), and the platform's own pre-existing `journeys` table is completely untouched.
 
-Given the migration is run,
+**AC2:** Given the migration is run,
 When it completes,
 Then `customer_journey_stages` and `feature_customer_journey_stage_mappings` exist with their own `ep5-s1`-specified columns, FK constraints (with cascade delete), and named indexes, all referencing the renamed tables correctly.
 
-Given the migration is run twice,
+**AC3:** Given the migration is run twice,
 When the second run completes,
 Then it is still idempotent — no error, no duplicate schema objects — exactly as `ep5-s1` already verified, just against the new names.
 
-Given `artefacts/2026-10-05-customer-journey-as-first-class/design.md`, `benefit-metric.md`, and every story file's own literal SQL table/column references,
+**AC4:** Given `artefacts/2026-10-05-customer-journey-as-first-class/design.md`, `benefit-metric.md`, and every story file's own literal SQL table/column references,
 When they are reviewed,
 Then every reference to the old `journeys`/`journey_stages`/`feature_journey_stage_mappings` table/FK identifiers is updated to the new names, while prose uses of "journey"/"journeys" as a concept are left unchanged.
+
 ## Out of Scope
 Any change to the platform's own `journeys` table (`journey-store-pg.js`) — it is correct and unrelated; this story works around it, not with it. Any change to route handlers or UI — none have been implemented yet, so there is nothing else to update.
 ## NFRs

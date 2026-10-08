@@ -14,21 +14,22 @@ View toggle is client-side (no server round-trip). Emotion display must use colo
 ## Dependencies
 ep1-s3, ep2-s3
 ## Acceptance Criteria
-Given I switch to the Customer experience view on the journey canvas,
+**AC1:** Given I switch to the Customer experience view on the journey canvas,
 When the view renders,
 Then each stage card shows annotation rows for: emotion (chip/badge using the stage's `emotion` enum value, or "Not set"), pain points (text or "Not set"), and opportunities (text or "Not set").
 
-Given a stage has no emotion, pain points, or opportunities set,
+**AC2:** Given a stage has no emotion, pain points, or opportunities set,
 When the Customer experience view renders for that stage,
 Then all three annotation rows show "Not set" — no rows are hidden or omitted.
 
-Given I switch between Canvas, Customer experience, and Delivery views,
+**AC3:** Given I switch between Canvas, Customer experience, and Delivery views,
 When the view toggle is activated,
 Then annotation rows show or hide via CSS class without a server round-trip, consistent with ep2-s3 view toggle behaviour.
 
-Given an emotion value is displayed,
+**AC4:** Given an emotion value is displayed,
 When the annotation row renders,
 Then the emotion is shown using both a colour chip and a text label (not colour alone, per MC-A11Y-02).
+
 ## Out of Scope
 Health state indicators (ep3-s2), Delivery view annotation rows (ep2-s3), editing stage attributes from the canvas view (editing is via the side panel per ep1-s3).
 ## NFRs

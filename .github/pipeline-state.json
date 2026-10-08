@@ -38800,13 +38800,20 @@
             {
               "slug": "ep1-s1",
               "name": "Create journey entity: POST route, Postgres insert, and journey canvas shell",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T23:33:28.571Z",
+              "updatedAt": "2026-10-08T04:22:15.290Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s1-review-2.md",
+              "dorStatus": "signed-off",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep1-s1-test-plan.md"
+              },
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s1-dor.md"
             },
             {
               "slug": "ep1-s2",

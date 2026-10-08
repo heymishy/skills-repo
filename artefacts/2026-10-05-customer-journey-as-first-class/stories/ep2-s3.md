@@ -14,21 +14,22 @@ View toggle is client-side (no server round-trip) per the design decision in `de
 ## Dependencies
 ep2-s2
 ## Acceptance Criteria
-Given I switch to the Delivery view on the journey canvas,
+**AC1:** Given I switch to the Delivery view on the journey canvas,
 When the view renders,
 Then each stage card shows annotation rows listing: the names and slugs of all mapped features (or "No features mapped" if none), and for each feature the selected metric keys and their values from `pipeline-state.json` (or "No metrics selected" if `metric_keys` is empty).
 
-Given a mapped feature no longer exists in `pipeline-state.json`,
+**AC2:** Given a mapped feature no longer exists in `pipeline-state.json`,
 When the Delivery view renders that stage,
 Then the feature is shown as "⚠️ Feature not found (slug)" with a remove affordance — no crash, no silent omission.
 
-Given I switch between Canvas, Customer experience, and Delivery views,
+**AC3:** Given I switch between Canvas, Customer experience, and Delivery views,
 When the view toggle is activated,
 Then annotation rows show or hide via CSS class without a server round-trip.
 
-Given the Delivery view renders metric values,
+**AC4:** Given the Delivery view renders metric values,
 When a metric key has no recorded value in `pipeline-state.json`,
 Then the metric row shows "No value recorded" — not blank, not an error.
+
 ## Out of Scope
 Editing mappings from the Delivery view (deferred), removing mappings (deferred for MVP), health indicators (ep3-s2), customer experience annotation rows (ep3-s1).
 ## NFRs

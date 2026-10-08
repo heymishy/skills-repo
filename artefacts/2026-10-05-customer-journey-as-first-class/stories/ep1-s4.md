@@ -14,21 +14,22 @@ No new npm runtime dependencies — drag-and-drop must be implemented using the 
 ## Dependencies
 ep1-s2
 ## Acceptance Criteria
-Given I drag a stage card to a new position in the sequence,
+**AC1:** Given I drag a stage card to a new position in the sequence,
 When I drop it,
 Then a PATCH request updates the `position` values of all affected stages in a single Postgres transaction, and the canvas re-renders the stages in the new order.
 
-Given a drop fails (network error),
+**AC2:** Given a drop fails (network error),
 When the error response is received,
 Then the stage cards revert to their pre-drag order (optimistic UI rollback) and a toast error "Stage order not saved — please try again" is shown.
 
-Given I want to reorder stages without drag-and-drop,
+**AC3:** Given I want to reorder stages without drag-and-drop,
 When I use the keyboard alternative (e.g. up/down controls on the stage card or reorder controls in the side panel),
 Then I can move a stage earlier or later in the sequence and the order is persisted.
 
-Given the reorder is complete,
+**AC4:** Given the reorder is complete,
 When the canvas re-renders,
 Then the updated stage sequence is reflected in the stage cards' visual order.
+
 ## Out of Scope
 Parallel stage structures (deferred per design decisions), undoing a reorder beyond the rollback-on-error behaviour.
 ## NFRs

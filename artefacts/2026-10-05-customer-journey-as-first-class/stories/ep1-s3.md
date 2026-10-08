@@ -14,25 +14,26 @@ ADR-025 — all `customer_journey_stages` updates scoped to `tenantId`. Side pan
 ## Dependencies
 ep1-s2
 ## Acceptance Criteria
-Given I click a stage card,
+**AC1:** Given I click a stage card,
 When the side panel opens,
 Then the panel displays editable fields for: description (textarea), customer actions (textarea), touchpoints (textarea), channel (select: web, mobile, in-person, phone, email, other), emotion (select: positive, neutral, negative, mixed), pain points (textarea), opportunities (textarea), moment of truth (toggle/checkbox).
 
-Given I edit a field and move focus away (blur),
+**AC2:** Given I edit a field and move focus away (blur),
 When autosave fires,
 Then a PATCH request updates the `customer_journey_stages` record for that field and a success indicator is shown briefly.
 
-Given I toggle "moment of truth" on,
+**AC3:** Given I toggle "moment of truth" on,
 When the stage card re-renders,
 Then a visible moment-of-truth indicator (icon + label) appears on the stage card.
 
-Given the side panel is open,
+**AC4:** Given the side panel is open,
 When I press Escape,
 Then the side panel closes and focus returns to the stage card that opened it.
 
-Given the side panel is open,
+**AC5:** Given the side panel is open,
 When a keyboard user navigates within the panel,
 Then focus is trapped inside the panel until it is closed (WCAG 2.1 AA focus management).
+
 ## Out of Scope
 View mode annotation rows (ep3-s1 and ep2-s3), health indicators (ep3-s2), feature mapping from the side panel (ep2-s2).
 ## NFRs

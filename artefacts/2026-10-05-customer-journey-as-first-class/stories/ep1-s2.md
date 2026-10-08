@@ -14,21 +14,22 @@ ADR-025 — `tenantId` set on every `customer_journey_stages` insert. Stage `pos
 ## Dependencies
 ep1-s1, ep5-s1
 ## Acceptance Criteria
-Given I click "+ Add stage" on the journey canvas,
+**AC1:** Given I click "+ Add stage" on the journey canvas,
 When the new stage card renders,
 Then a new stage card appears at the end of the sequence with an inline name field in focus.
 
-Given I type a name and submit (Enter or blur),
+**AC2:** Given I type a name and submit (Enter or blur),
 When the POST handler saves the stage,
 Then a `customer_journey_stages` record is inserted with `journey_id`, `tenant_id`, `name`, `position` (appended at end), `created_at`, `updated_at`, and the stage card renders with the saved name.
 
-Given I submit with no name (blank),
+**AC3:** Given I submit with no name (blank),
 When the handler processes the request,
 Then a 400 response is returned, no record is inserted, and the inline field shows an error state.
 
-Given the stage is saved,
+**AC4:** Given the stage is saved,
 When the canvas re-renders,
 Then the stage card shows the stage name and a "Edit stage" affordance.
+
 ## Out of Scope
 Stage attribute editing beyond name (ep1-s3), drag-and-drop reorder (ep1-s4), health indicators (ep3-s2), feature mapping (ep2-s2).
 ## NFRs
