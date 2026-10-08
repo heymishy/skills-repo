@@ -38845,10 +38845,10 @@
             {
               "slug": "ep1-s3",
               "name": "Stage side panel: edit all optional attributes",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T08:02:09.906Z",
+              "updatedAt": "2026-10-08T18:02:55.550Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s3-review-1.md",
@@ -38859,8 +38859,10 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s3-dor.md",
-              "prStatus": "open",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/960"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/960",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep1-s4",
