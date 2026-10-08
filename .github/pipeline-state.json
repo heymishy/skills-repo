@@ -39512,7 +39512,7 @@
         {
           "id": "pfi-s1",
           "name": "Fix stage side panel initial focus target and E2E spec labels",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 1,
           "testPlan": {
@@ -39522,9 +39522,11 @@
           },
           "acTotal": 3,
           "acVerified": 0,
-          "updatedAt": "2026-10-08T08:47:23.342Z",
+          "updatedAt": "2026-10-08T08:58:15.429Z",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-10-08-stage-panel-initial-focus-fix/dor/pfi-s1-dor.md"
+          "dorArtefact": "artefacts/2026-10-08-stage-panel-initial-focus-fix/dor/pfi-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/961"
         }
       ],
       "guardrails": []
