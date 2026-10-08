@@ -16,7 +16,7 @@ ep5-s1
 ## Acceptance Criteria
 Given I submit a valid journey creation form (name provided, `tenantId` from session),
 When the POST handler processes the request,
-Then a `journeys` record is inserted into Postgres with `id` (UUID), `tenant_id`, `name`, `description` (nullable), `product_id` (nullable), `created_at`, `updated_at`, and the response redirects to `/journeys/:id`.
+Then a `customer_journeys` record is inserted into Postgres with `id` (UUID), `tenant_id`, `name`, `description` (nullable), `product_id` (nullable), `created_at`, `updated_at`, and the response redirects to `/journeys/:id`.
 
 Given I submit a journey creation form with no name,
 When the POST handler processes the request,

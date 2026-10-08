@@ -28,7 +28,7 @@ Then I can enter a journey name (required), optional description, and optionally
 
 Given I submit a valid new journey (name provided),
 When the creation completes,
-Then the journey record is saved to `journeys` scoped to my `tenantId` and I am redirected to `/journeys/:id`.
+Then the journey record is saved to `customer_journeys` scoped to my `tenantId` and I am redirected to `/journeys/:id`.
 
 Given another tenant's journey ID is used in the request,
 When the request is processed,

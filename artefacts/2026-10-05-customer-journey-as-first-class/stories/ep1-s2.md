@@ -10,7 +10,7 @@ So that **I can build out the skeleton of a journey**.
 ## Benefit Linkage
 M1 — Journey adoption — stages are the substance of a journey; without stages a journey is an empty shell with no M2 or M3 signal.
 ## Architecture Constraints
-ADR-025 — `tenantId` set on every `journey_stages` insert. Stage `position` column is an integer ordinal; new stages are appended at `max(position) + 1`. No new npm runtime dependencies.
+ADR-025 — `tenantId` set on every `customer_journey_stages` insert. Stage `position` column is an integer ordinal; new stages are appended at `max(position) + 1`. No new npm runtime dependencies.
 ## Dependencies
 ep1-s1, ep5-s1
 ## Acceptance Criteria
@@ -20,7 +20,7 @@ Then a new stage card appears at the end of the sequence with an inline name fie
 
 Given I type a name and submit (Enter or blur),
 When the POST handler saves the stage,
-Then a `journey_stages` record is inserted with `journey_id`, `tenant_id`, `name`, `position` (appended at end), `created_at`, `updated_at`, and the stage card renders with the saved name.
+Then a `customer_journey_stages` record is inserted with `journey_id`, `tenant_id`, `name`, `position` (appended at end), `created_at`, `updated_at`, and the stage card renders with the saved name.
 
 Given I submit with no name (blank),
 When the handler processes the request,

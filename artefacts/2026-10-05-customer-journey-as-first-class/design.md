@@ -18,9 +18,9 @@
 
 ### Overview
 
-The feature introduces a `journeys` entity as a first-class tenant-scoped resource in the existing Postgres-backed web UI. It follows the established adapter pattern (ADR-025 application-layer multi-tenancy, ADR-026 reuse-existing-entities, ADR-027 live features are app code not skills).
+The feature introduces a `customer_journeys` entity as a first-class tenant-scoped resource in the existing Postgres-backed web UI. It follows the established adapter pattern (ADR-025 application-layer multi-tenancy, ADR-026 reuse-existing-entities, ADR-027 live features are app code not skills).
 
-The journey canvas is a new web UI page served by `src/web-ui/server.js`, backed by new route handlers under `src/web-ui/routes/journeys.js`. Journey data is stored in three new Postgres tables (`journeys`, `journey_stages`, `feature_journey_stage_mappings`). No new npm dependencies are introduced.
+The journey canvas is a new web UI page served by `src/web-ui/server.js`, backed by new route handlers under `src/web-ui/routes/journeys.js`. Journey data is stored in three new Postgres tables (`customer_journeys`, `customer_journey_stages`, `feature_customer_journey_stage_mappings`) — prefixed `customer_*` because a plain `journeys` table already exists (the platform's own outer-loop session persistence, `src/web-ui/adapters/journey-store-pg.js`); see decisions.md D4. No new npm dependencies are introduced.
 
 ---CANVAS-JSON: {"type":"system-architecture","title":"As designed: System architecture","content":{"mermaid":"flowchart TD\n    Browser[\"Browser — Journey Canvas\"]\n    Server[\"src/web-ui/server.js\"]\n    Routes[\"src/web-ui/routes/journeys.js\"]\n    JourneyStore[\"src/web-ui/adapters/journey-store-pg.js (extended)\"]\n    Postgres[(\"Postgres\")]\n    PipelineState[\".github/pipeline-state.json (read-only)\"]\n    Browser --> Server\n    Server --> Routes\n    Routes --> JourneyStore\n    JourneyStore --> Postgres\n    Routes --> PipelineState"}}---
 
@@ -35,7 +35,7 @@ The journey canvas is a new web UI page served by `src/web-ui/server.js`, backed
 
 Three new Postgres tables, all scoped by `tenantId`:
 
-**`journeys`**
+**`customer_journeys`**
 - `id` (UUID PK)
 - `tenant_id` (FK → tenants)
 - `name` (text, required)
@@ -43,9 +43,9 @@ Three new Postgres tables, all scoped by `tenantId`:
 - `product_id` (FK → products, nullable — a journey may span multiple products or be product-agnostic)
 - `created_at`, `updated_at`
 
-**`journey_stages`**
+**`customer_journey_stages`**
 - `id` (UUID PK)
-- `journey_id` (FK → journeys)
+- `journey_id` (FK → customer_journeys)
 - `tenant_id` (FK → tenants)
 - `name` (text, required)
 - `position` (integer — ordinal for drag-and-drop ordering; rebalanced on reorder)
@@ -59,18 +59,18 @@ Three new Postgres tables, all scoped by `tenantId`:
 - `moment_of_truth` (boolean, default false)
 - `created_at`, `updated_at`
 
-**`feature_journey_stage_mappings`**
+**`feature_customer_journey_stage_mappings`**
 - `id` (UUID PK)
-- `journey_stage_id` (FK → journey_stages)
-- `journey_id` (FK → journeys)
+- `journey_stage_id` (FK → customer_journey_stages)
+- `journey_id` (FK → customer_journeys)
 - `tenant_id` (FK → tenants)
 - `feature_slug` (text — matches `pipeline-state.json` feature slug; not a FK, as pipeline-state.json is not a DB table)
 - `metric_keys` (JSONB array — which DoD metric keys from that feature are surfaced at this stage)
 - `created_at`
 
-No changes to `pipeline-state.json` schema. No `journeyStageId` field on feature records. The association lives entirely in `feature_journey_stage_mappings`.
+No changes to `pipeline-state.json` schema. No `journeyStageId` field on feature records. The association lives entirely in `feature_customer_journey_stage_mappings`.
 
----CANVAS-JSON: {"type":"data-model","title":"As designed: Data model","content":{"mermaid":"erDiagram\n    JOURNEYS {\n        uuid id PK\n        text tenant_id FK\n        text name\n        text description\n        uuid product_id FK\n        timestamptz created_at\n        timestamptz updated_at\n    }\n    JOURNEY_STAGES {\n        uuid id PK\n        uuid journey_id FK\n        text tenant_id FK\n        text name\n        integer position\n        text description\n        text customer_actions\n        text touchpoints\n        text channel\n        text emotion\n        text pain_points\n        text opportunities\n        boolean moment_of_truth\n        timestamptz created_at\n        timestamptz updated_at\n    }\n    FEATURE_JOURNEY_STAGE_MAPPINGS {\n        uuid id PK\n        uuid journey_stage_id FK\n        uuid journey_id FK\n        text tenant_id FK\n        text feature_slug\n        jsonb metric_keys\n        timestamptz created_at\n    }\n    PRODUCTS {\n        uuid id PK\n        text tenant_id FK\n        text name\n    }\n    JOURNEYS }o--|| PRODUCTS : \"scoped to (optional)\"\n    JOURNEY_STAGES }|--|| JOURNEYS : \"belongs to\"\n    FEATURE_JOURNEY_STAGE_MAPPINGS }|--|| JOURNEY_STAGES : \"maps to\"\n    FEATURE_JOURNEY_STAGE_MAPPINGS }|--|| JOURNEYS : \"scoped to\""}}---
+---CANVAS-JSON: {"type":"data-model","title":"As designed: Data model","content":{"mermaid":"erDiagram\n    CUSTOMER_JOURNEYS {\n        uuid id PK\n        text tenant_id FK\n        text name\n        text description\n        uuid product_id FK\n        timestamptz created_at\n        timestamptz updated_at\n    }\n    CUSTOMER_JOURNEY_STAGES {\n        uuid id PK\n        uuid journey_id FK\n        text tenant_id FK\n        text name\n        integer position\n        text description\n        text customer_actions\n        text touchpoints\n        text channel\n        text emotion\n        text pain_points\n        text opportunities\n        boolean moment_of_truth\n        timestamptz created_at\n        timestamptz updated_at\n    }\n    FEATURE_CUSTOMER_JOURNEY_STAGE_MAPPINGS {\n        uuid id PK\n        uuid journey_stage_id FK\n        uuid journey_id FK\n        text tenant_id FK\n        text feature_slug\n        jsonb metric_keys\n        timestamptz created_at\n    }\n    PRODUCTS {\n        uuid id PK\n        text tenant_id FK\n        text name\n    }\n    CUSTOMER_JOURNEYS }o--|| PRODUCTS : \"scoped to (optional)\"\n    CUSTOMER_JOURNEY_STAGES }|--|| CUSTOMER_JOURNEYS : \"belongs to\"\n    FEATURE_CUSTOMER_JOURNEY_STAGE_MAPPINGS }|--|| CUSTOMER_JOURNEY_STAGES : \"maps to\"\n    FEATURE_CUSTOMER_JOURNEY_STAGE_MAPPINGS }|--|| CUSTOMER_JOURNEYS : \"scoped to\""}}---
 
 ### Hosting / runtime
 
@@ -134,7 +134,7 @@ View mode is a client-side toggle — no server round-trip required; annotation 
 1. From the Delivery view (or stage side panel), operator clicks "Map feature" on a stage
 2. Feature picker modal — list of features from `pipeline-state.json` (filterable by name/slug); operator selects one or more
 3. After selecting a feature, operator optionally selects which DoD metric keys from that feature are relevant to this stage (metric picker, populated from feature's DoD record)
-4. Mapping saved to `feature_journey_stage_mappings`
+4. Mapping saved to `feature_customer_journey_stage_mappings`
 
 **Journey health view:**
 - Health state per stage is computed at render time: ✅ (≥1 feature mapped AND ≥1 metric attached) / ⚠️ (features mapped but no metrics, or metrics attached but no features) / ❌ (no features, no metrics)
@@ -177,7 +177,7 @@ Per product/constraints.md #9 and the design system reference (`artefacts/2026-0
 | Predefined canvas views (Canvas / Customer experience / Delivery) + individual attribute toggles | Maps to real practitioner workflows; gives three immediately useful modes without requiring everyone to build their own view from scratch |
 | All stage attributes except Name are optional | Supports progressive enrichment; a stage can be created with just a name and filled in over time |
 | Feature-to-stage mapping stored in Postgres join table, not `pipeline-state.json` | Keeps delivery state (pipeline-state.json) independent from business-context associations (ADR-016); join table is queryable and tenant-scoped |
-| `product_id` on `journeys` is nullable | A journey may span multiple products or be product-agnostic; forced product association would be too restrictive for cross-product journeys |
+| `product_id` on `customer_journeys` is nullable | A journey may span multiple products or be product-agnostic; forced product association would be too restrictive for cross-product journeys |
 | No new npm runtime dependencies | Per product/constraints.md #11 |
 
 ### Deferred to definition

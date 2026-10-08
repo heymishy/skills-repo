@@ -26,7 +26,7 @@ Architecture constraints: ADR-025 (application-layer tenant_id scoping) — `ten
 
 Given I submit a valid journey creation form (name provided, `tenantId` from session),
 When the POST handler processes the request,
-Then a `journeys` record is inserted into Postgres with `id` (UUID), `tenant_id`, `name`, `description` (nullable), `product_id` (nullable), `created_at`, `updated_at`, and the response redirects to `/journeys/:id`.
+Then a `customer_journeys` record is inserted into Postgres with `id` (UUID), `tenant_id`, `name`, `description` (nullable), `product_id` (nullable), `created_at`, `updated_at`, and the response redirects to `/journeys/:id`.
 
 Given I submit a journey creation form with no name,
 When the POST handler processes the request,
@@ -54,7 +54,7 @@ So that I can build out the skeleton of a journey, I need to add stages via an "
 
 Benefit linkage: M1 — Journey adoption — stages are the substance of a journey; without stages a journey is an empty shell with no M2 or M3 signal.
 
-Architecture constraints: ADR-025 — `tenantId` set on every `journey_stages` insert. Stage `position` column is an integer ordinal; new stages are appended at `max(position) + 1`. No new npm runtime dependencies.
+Architecture constraints: ADR-025 — `tenantId` set on every `customer_journey_stages` insert. Stage `position` column is an integer ordinal; new stages are appended at `max(position) + 1`. No new npm runtime dependencies.
 
 Given I click "+ Add stage" on the journey canvas,
 When the new stage card renders,
@@ -62,7 +62,7 @@ Then a new stage card appears at the end of the sequence with an inline name fie
 
 Given I type a name and submit (Enter or blur),
 When the POST handler saves the stage,
-Then a `journey_stages` record is inserted with `journey_id`, `tenant_id`, `name`, `position` (appended at end), `created_at`, `updated_at`, and the stage card renders with the saved name.
+Then a `customer_journey_stages` record is inserted with `journey_id`, `tenant_id`, `name`, `position` (appended at end), `created_at`, `updated_at`, and the stage card renders with the saved name.
 
 Given I submit with no name (blank),
 When the handler processes the request,
@@ -86,7 +86,7 @@ So that I can enrich a stage beyond its name, I need a side panel that opens whe
 
 Benefit linkage: M3 — Journey-level metric coverage — pain points, opportunities, and emotion attributes are surfaced in health views; richer stages support more meaningful metric attribution.
 
-Architecture constraints: ADR-025 — all `journey_stages` updates scoped to `tenantId`. Side panel must trap focus when open; Escape closes it (WCAG 2.1 AA). Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before implementing the side panel component.
+Architecture constraints: ADR-025 — all `customer_journey_stages` updates scoped to `tenantId`. Side panel must trap focus when open; Escape closes it (WCAG 2.1 AA). Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before implementing the side panel component.
 
 Given I click a stage card,
 When the side panel opens,
@@ -94,7 +94,7 @@ Then the panel displays editable fields for: description (textarea), customer ac
 
 Given I edit a field and move focus away (blur),
 When autosave fires,
-Then a PATCH request updates the `journey_stages` record for that field and a success indicator is shown briefly.
+Then a PATCH request updates the `customer_journey_stages` record for that field and a success indicator is shown briefly.
 
 Given I toggle "moment of truth" on,
 When the stage card re-renders,
@@ -198,9 +198,9 @@ Domain: web-ui
 
 So that a stage reflects which features contribute to it and which metrics are relevant, I need to select a feature from the picker, optionally choose metric keys from that feature's DoD record, and save the mapping.
 
-Benefit linkage: M2 — Feature-to-stage mapping adoption — this story creates the `feature_journey_stage_mappings` record that M2 counts. M3 — Journey-level metric coverage — metric key selection is the mechanism that populates stage-level metric data.
+Benefit linkage: M2 — Feature-to-stage mapping adoption — this story creates the `feature_customer_journey_stage_mappings` record that M2 counts. M3 — Journey-level metric coverage — metric key selection is the mechanism that populates stage-level metric data.
 
-Architecture constraints: ADR-025 — `tenantId` set on every `feature_journey_stage_mappings` insert. ADR-016 — `pipeline-state.json` read-only (metric keys sourced from DoD record, not written back). No new npm runtime dependencies.
+Architecture constraints: ADR-025 — `tenantId` set on every `feature_customer_journey_stage_mappings` insert. ADR-016 — `pipeline-state.json` read-only (metric keys sourced from DoD record, not written back). No new npm runtime dependencies.
 
 Given I select a feature in the feature picker modal,
 When the feature is selected,
@@ -208,11 +208,11 @@ Then a metric key picker is shown listing available DoD metric keys from that fe
 
 Given I select one or more metric keys and confirm,
 When the mapping is saved,
-Then a `feature_journey_stage_mappings` record is inserted with `journey_stage_id`, `journey_id`, `tenant_id`, `feature_slug`, `metric_keys` (JSONB array of selected keys), `created_at`.
+Then a `feature_customer_journey_stage_mappings` record is inserted with `journey_stage_id`, `journey_id`, `tenant_id`, `feature_slug`, `metric_keys` (JSONB array of selected keys), `created_at`.
 
 Given I confirm without selecting any metric keys,
 When the mapping is saved,
-Then a `feature_journey_stage_mappings` record is inserted with `metric_keys: []` — a feature can be mapped without metric keys.
+Then a `feature_customer_journey_stage_mappings` record is inserted with `metric_keys: []` — a feature can be mapped without metric keys.
 
 Given a mapping already exists for this feature + stage combination,
 When I attempt to add a duplicate mapping,
@@ -383,7 +383,7 @@ Then I can enter a journey name (required), optional description, and optionally
 
 Given I submit a valid new journey (name provided),
 When the creation completes,
-Then the journey record is saved to `journeys` scoped to my `tenantId` and I am redirected to `/journeys/:id`.
+Then the journey record is saved to `customer_journeys` scoped to my `tenantId` and I am redirected to `/journeys/:id`.
 
 Given another tenant's journey ID is used in the request,
 When the request is processed,
@@ -429,7 +429,7 @@ Scope stability: Stable
 
 ## Epic 5 — Database Migration and Tenant Isolation Hardening
 
-Goal: The three new Postgres tables (`journeys`, `journey_stages`, `feature_journey_stage_mappings`) are created via an idempotent migration script, and all journey routes are covered by adversarial tenant isolation tests verifying that cross-tenant access is structurally impossible. This epic is the foundational prerequisite for all other epics and the security backstop for the entire feature.
+Goal: The three new Postgres tables (`customer_journeys`, `customer_journey_stages`, `feature_customer_journey_stage_mappings`) are created via an idempotent migration script, and all journey routes are covered by adversarial tenant isolation tests verifying that cross-tenant access is structurally impossible. This epic is the foundational prerequisite for all other epics and the security backstop for the entire feature.
 Out of scope:
 - All journey canvas functionality (Epics 1–4)
 - Rollback scripts (deferred)
@@ -452,15 +452,15 @@ Architecture constraints: Migration follows existing `migrate-schema-*.js` namin
 
 Given the migration script is run against a Postgres database,
 When the migration completes,
-Then the `journeys` table exists with columns: `id` (UUID PK), `tenant_id` (text, not null), `name` (text, not null), `description` (text, nullable), `product_id` (UUID, nullable, FK → products), `created_at` (timestamptz), `updated_at` (timestamptz).
+Then the `customer_journeys` table exists with columns: `id` (UUID PK), `tenant_id` (text, not null), `name` (text, not null), `description` (text, nullable), `product_id` (UUID, nullable, FK → products), `created_at` (timestamptz), `updated_at` (timestamptz).
 
 Given the migration script is run,
 When the migration completes,
-Then the `journey_stages` table exists with all columns from the design artefact: `id`, `journey_id`, `tenant_id`, `name`, `position`, `description`, `customer_actions`, `touchpoints`, `channel`, `emotion`, `pain_points`, `opportunities`, `moment_of_truth`, `created_at`, `updated_at`.
+Then the `customer_journey_stages` table exists with all columns from the design artefact: `id`, `journey_id`, `tenant_id`, `name`, `position`, `description`, `customer_actions`, `touchpoints`, `channel`, `emotion`, `pain_points`, `opportunities`, `moment_of_truth`, `created_at`, `updated_at`.
 
 Given the migration script is run,
 When the migration completes,
-Then the `feature_journey_stage_mappings` table exists with columns: `id`, `journey_stage_id`, `journey_id`, `tenant_id`, `feature_slug`, `metric_keys` (JSONB, default `[]`), `created_at`.
+Then the `feature_customer_journey_stage_mappings` table exists with columns: `id`, `journey_stage_id`, `journey_id`, `tenant_id`, `feature_slug`, `metric_keys` (JSONB, default `[]`), `created_at`.
 
 Given the migration is run on a database that already has data,
 When the migration completes,

@@ -66,7 +66,7 @@ Practitioners create and edit journeys (naming stages, adding descriptive text) 
 A single feature can be associated with multiple stages across one or more journeys. A "checkout redesign" can touch both "browse" and "purchase" stages; a cross-product feature can map to stages in multiple journeys.
 
 **Journey-feature mappings live in Postgres, not pipeline-state.json:**
-The association between features and journey stages is stored as a join table (`feature_journey_stage_mappings`, scoped by `tenantId`). `pipeline-state.json` remains delivery-evidence-focused and does not track journey context. This separation keeps the delivery state independent from business-context associations.
+The association between features and journey stages is stored as a join table (`feature_customer_journey_stage_mappings`, scoped by `tenantId`). `pipeline-state.json` remains delivery-evidence-focused and does not track journey context. This separation keeps the delivery state independent from business-context associations.
 
 ---
 
@@ -85,12 +85,12 @@ The association between features and journey stages is stored as a join table (`
 **Journeys created per active product:**
 Baseline: 0 (no journey entity exists today).
 Target: ≥1 journey created per active product within 4 weeks of release.
-Measured via: count of journey records in the `journeys` table per tenant.
+Measured via: count of journey records in the `customer_journeys` table per tenant.
 
 **New features mapped to a journey stage before definition:**
 Baseline: 0% (no mapping mechanism exists).
 Target: ≥50% of new features have a journey-stage association at DoR sign-off within 8 weeks of release.
-Measured via: presence of a `feature_journey_stage_mappings` record for each feature at `dorStatus: signed-off`.
+Measured via: presence of a `feature_customer_journey_stage_mappings` record for each feature at `dorStatus: signed-off`.
 
 **Metrics attached to journey stages:**
 Baseline: 0 (metrics are currently stored at the feature level only).
