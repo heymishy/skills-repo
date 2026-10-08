@@ -2407,3 +2407,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: "ep1-s4's reorder endpoint is PATCH /journeys/:id/stages-order (no slash before 'order') rather than /journeys/:id/stages/order, specifically to avoid colliding with the existing dispatch regex /^/journeys/[^/]+/stages/[^/]+$/ (ep1-s3's PATCH /journeys/:id/stages/:stageId), which would otherwise treat the literal 'order' as a stageId value. Also: this is the second transactional (pool.connect/BEGIN/COMMIT/ROLLBACK) handler in the codebase, modeled directly on tenant-admin-bootstrap.js's bootstrapTenantAdminIfNeeded -- that file is now the reference pattern for any future single-transaction multi-row write."
   source: agent-auto
+
+- date: 2026-10-09
+  session-phase: ep1-s4 /definition-of-ready
+  signal-type: gap
+  signal-text: "ep1-s4's story artefact Architecture Constraints section was authored without a named ADR/guardrail reference (only prose constraints: no new npm deps, single-transaction requirement, WCAG keyboard alt) -- the automated H9 gate (src/enforcement/cli-outer-loop.js) requires the body to match /ADR-d+|guardrail|constraint/i and blocked on first run (exit 7). Fixed by citing ADR-025 (tenant_id scoping), which genuinely applies since the new handler scopes every UPDATE by tenant_id -- not a fabricated citation, but a real omission from /definition time. Also: the parent epic's own epics/journey-entity-and-stage-management.md declares 'Human Oversight Level: High', but ep1-s1/ep1-s2/ep1-s3's own DoRs all recorded oversight as Medium (while still requiring and recording named sign-off in practice, which is actually High-tier behaviour). ep1-s4's DoR corrects this to High, matching the epic file literally."
+  source: agent-auto

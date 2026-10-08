@@ -10,7 +10,7 @@ So that **I can arrange stages in the correct customer sequence**.
 ## Benefit Linkage
 M1 — Journey adoption — stage ordering is essential for a journey to be meaningful; without it practitioners cannot represent their intended customer flow.
 ## Architecture Constraints
-No new npm runtime dependencies — drag-and-drop must be implemented using the browser's native HTML5 drag-and-drop API or an equivalent zero-dependency approach. Position rebalancing on drop: update all affected `position` values in a single transaction. WCAG 2.1 AA — keyboard alternative required (up/down controls or reorder via side panel).
+ADR-025 — all `customer_journey_stages` position updates scoped to `tenantId` (matching `ep1-s1`/`ep1-s2`/`ep1-s3`'s own handlers in this file). No new npm runtime dependencies — drag-and-drop must be implemented using the browser's native HTML5 drag-and-drop API or an equivalent zero-dependency approach. Position rebalancing on drop: update all affected `position` values in a single transaction. WCAG 2.1 AA — keyboard alternative required (up/down controls or reorder via side panel).
 ## Dependencies
 ep1-s2
 ## Acceptance Criteria
