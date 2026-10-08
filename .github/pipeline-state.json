@@ -38823,10 +38823,10 @@
             {
               "slug": "ep1-s2",
               "name": "Add and name stages: POST route, inline name entry, and stage card rendering",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T06:08:04.065Z",
+              "updatedAt": "2026-10-08T06:28:30.801Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s2-review-1.md",
@@ -38838,7 +38838,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s2-dor.md",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/958",
-              "prStatus": "open"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep1-s3",
