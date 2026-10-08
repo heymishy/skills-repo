@@ -39014,20 +39014,20 @@
             {
               "slug": "ep4-s1",
               "name": "Journey list page: index of all journeys for the tenant",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T21:09:10.087Z",
+              "updatedAt": "2026-10-08T21:12:28.290Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s1-review-1.md",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -39051,7 +39051,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "ep4-s2",
