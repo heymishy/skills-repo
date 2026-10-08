@@ -175,6 +175,83 @@ async function handlePatchJourneyStage(req, res, _next, pool) {
 }
 
 /**
+ * PATCH /journeys/:id/stages-order — reorder all stages in one transaction.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePatchJourneyStagesOrder(req, res, _next, pool) {
+  // ep1-s4 -- CSRF guard first, mandatory from first implementation per
+  // jcg-s1/ep1-s2/ep1-s3's own precedent.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageIds = (req.body && req.body.stageIds) || [];
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  // Journey ownership check BEFORE anything else -- 404, not 403, for a
+  // cross-tenant journey id, matching every other handler in this file.
+  var jr = await pool.query(
+    `SELECT id FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
+    [journeyId, tenantId]
+  );
+  if (!jr.rows[0]) { notFound('journey not found'); return; }
+
+  // ep1-s4 -- the submitted stageIds array MUST be an EXACT set match
+  // against the journey's real stages (no missing id, no extra id, no id
+  // from a different journey/tenant). Checked BEFORE opening any
+  // transaction -- a rejected request never calls pool.connect() at all.
+  var sr = await pool.query(
+    `SELECT id FROM customer_journey_stages WHERE journey_id = $1`,
+    [journeyId]
+  );
+  var realIds = sr.rows.map(function(r) { return r.id; });
+  var sameSize = realIds.length === stageIds.length;
+  var sameSet = sameSize && realIds.every(function(id) { return stageIds.indexOf(id) !== -1; });
+  if (!sameSet) { badRequest('stageIds must match the journey\'s existing stages exactly'); return; }
+
+  // Single-transaction position rebalance -- matches the story's own
+  // Architecture Constraints (ADR-025 tenant scoping + explicit single-
+  // transaction requirement). Reuses tenant-admin-bootstrap.js's
+  // bootstrapTenantAdminIfNeeded pattern verbatim (see decisions.md D6):
+  // pool.connect() -> BEGIN -> N UPDATEs -> COMMIT, ROLLBACK on error,
+  // release() in finally. pg.Pool.query() alone gives no cross-statement
+  // atomicity guarantee, so a per-row pool.query() loop would NOT satisfy
+  // this requirement.
+  var client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (var i = 0; i < stageIds.length; i++) {
+      await client.query(
+        'UPDATE customer_journey_stages SET position = $1, updated_at = NOW() WHERE id = $2 AND journey_id = $3 AND tenant_id = $4',
+        [i, stageIds[i], journeyId, tenantId]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* best-effort */ }
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  if (res.status) { res.status(200).json({ id: journeyId, stageIds: stageIds }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: journeyId, stageIds: stageIds })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -211,17 +288,40 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<path d="M5 17V3"/><path d="M5 3h9l-3 3.5L14 10H5"/>' +
     '</svg>';
 
+  // ep1-s4 -- 12x12/20x20-viewBox/1.5px-stroke icons per DESIGN.md's own
+  // icon spec, not unicode glyphs (rule 5 explicitly disallows those in
+  // new work) -- matches MOMENT_OF_TRUTH_ICON's own precedent above.
+  var ARROW_UP_ICON =
+    '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M10 16V4M4 9l6-6 6 6"/>' +
+    '</svg>';
+  var ARROW_DOWN_ICON =
+    '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M10 4v12M4 11l6 6 6-6"/>' +
+    '</svg>';
+
   // AC4: each saved stage renders with its name, an "Edit stage" affordance
   // that opens the side panel (ep1-s3's own scope), and -- when applicable --
   // a visible moment-of-truth indicator.
   var stagesHtml = stages.length
-    ? stages.map(function(s) {
+    ? stages.map(function(s, idx) {
+        var isFirst = idx === 0;
+        var isLast = idx === stages.length - 1;
+        // ep1-s4 -- up/down keyboard-accessible reorder alternative, only
+        // rendered when there is more than one stage to reorder against.
+        var reorderControls = stages.length > 1
+          ? '<span class="sw-stage-reorder-controls">' +
+              '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="up"' + (isFirst ? ' disabled' : '') + ' aria-label="Move stage up">' + ARROW_UP_ICON + '</button>' +
+              '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="down"' + (isLast ? ' disabled' : '') + ' aria-label="Move stage down">' + ARROW_DOWN_ICON + '</button>' +
+            '</span>'
+          : '';
         return (
-          '<div class="sw-stage-card" data-stage-id="' + escHtml(s.id) + '">' +
+          '<div class="sw-stage-card" data-stage-id="' + escHtml(s.id) + '" draggable="true">' +
             '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
             (s.moment_of_truth
               ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
               : '') +
+            reorderControls +
             '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
           '</div>'
         );
@@ -292,6 +392,12 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-panel-saved{display:none;font-size:12px;color:var(--success)}' +
       '.sw-stage-panel-saved--visible{display:inline}' +
       '.sw-stage-moment-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;color:var(--warn)}' +
+      '.sw-stage-card{cursor:grab}' +
+      '.sw-stage-reorder-controls{display:inline-flex;gap:2px;margin-left:8px;vertical-align:middle}' +
+      '.sw-stage-move{background:none;border:1px solid var(--line);border-radius:4px;padding:2px;color:var(--ink-2);cursor:pointer;display:inline-flex}' +
+      '.sw-stage-move:disabled{opacity:0.35;cursor:default}' +
+      '.sw-stage-reorder-error{display:none;font-size:12px;color:var(--danger);margin-top:8px}' +
+      '.sw-stage-reorder-error--visible{display:block}' +
       '@media (max-width:768px){.sw-stage-panel{width:100vw}}' +
     '</style>';
 
@@ -304,6 +410,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
       '</div>' +
+      '<span id="sw-stage-reorder-error" class="sw-stage-reorder-error" aria-live="polite"></span>' +
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
     '</div>' +
     panelHtml +
@@ -395,6 +502,72 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'openPanel(link.getAttribute("data-stage-id"));' +
         '});' +
       '}' +
+      // ep1-s4 -- drag-and-drop + keyboard reorder, sharing one submit
+      // path (submitOrder). Native HTML5 drag-and-drop is kanban-view.js's
+      // own existing convention in this codebase, reused here, not
+      // reinvented (dataTransfer.setData/getData shape matches it).
+      'var reorderError=document.getElementById("sw-stage-reorder-error");' +
+      'function getStageIds(){' +
+        'return Array.prototype.slice.call(list.querySelectorAll(".sw-stage-card")).map(function(c){return c.getAttribute("data-stage-id");});' +
+      '}' +
+      'function reorderDom(orderIds){' +
+        'orderIds.forEach(function(id){' +
+          'var card=list.querySelector(\'.sw-stage-card[data-stage-id="\'+id+\'"]\');' +
+          'if(card)list.appendChild(card);' +
+        '});' +
+      '}' +
+      'function submitOrder(newOrderIds){' +
+        'var snapshot=getStageIds();' +
+        'reorderDom(newOrderIds);' +
+        'submitJson("/journeys/"+journeyId+"/stages-order","PATCH",{stageIds:newOrderIds,_csrf:csrfToken})' +
+          '.catch(function(){' +
+            'reorderDom(snapshot);' +
+            'if(reorderError){' +
+              'reorderError.textContent="Stage order not saved — please try again";' +
+              'reorderError.classList.add("sw-stage-reorder-error--visible");' +
+              'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+            '}' +
+          '});' +
+      '}' +
+      'if(list){' +
+        'list.addEventListener("dragstart",function(ev){' +
+          'var card=ev.target.closest&&ev.target.closest(".sw-stage-card");' +
+          'if(!card)return;' +
+          'ev.dataTransfer.setData("text/plain",card.getAttribute("data-stage-id"));' +
+          'ev.dataTransfer.effectAllowed="move";' +
+        '});' +
+        'list.addEventListener("dragover",function(ev){' +
+          'if(!ev.target.closest||!ev.target.closest(".sw-stage-card"))return;' +
+          'ev.preventDefault();' +
+        '});' +
+        'list.addEventListener("drop",function(ev){' +
+          'ev.preventDefault();' +
+          'var draggedId=ev.dataTransfer.getData("text/plain");' +
+          'if(!draggedId)return;' +
+          'var targetCard=ev.target.closest&&ev.target.closest(".sw-stage-card");' +
+          'var ids=getStageIds();' +
+          'var fromIdx=ids.indexOf(draggedId);' +
+          'if(fromIdx===-1)return;' +
+          'ids.splice(fromIdx,1);' +
+          'var toIdx=targetCard?ids.indexOf(targetCard.getAttribute("data-stage-id")):ids.length;' +
+          'if(toIdx===-1)toIdx=ids.length;' +
+          'ids.splice(toIdx,0,draggedId);' +
+          'submitOrder(ids);' +
+        '});' +
+        'list.addEventListener("click",function(ev){' +
+          'var btn=ev.target.closest&&ev.target.closest(".sw-stage-move");' +
+          'if(!btn||btn.disabled)return;' +
+          'var id=btn.getAttribute("data-stage-id");' +
+          'var direction=btn.getAttribute("data-direction");' +
+          'var ids=getStageIds();' +
+          'var idx=ids.indexOf(id);' +
+          'if(idx===-1)return;' +
+          'var swapIdx=direction==="up"?idx-1:idx+1;' +
+          'if(swapIdx<0||swapIdx>=ids.length)return;' +
+          'var tmp=ids[idx];ids[idx]=ids[swapIdx];ids[swapIdx]=tmp;' +
+          'submitOrder(ids);' +
+        '});' +
+      '}' +
       'if(panelClose)panelClose.addEventListener("click",closePanel);' +
       // AC5 -- a genuine keyboard focus trap: Tab past the last focusable
       // element wraps to the first, Shift+Tab before the first wraps to the
@@ -464,4 +637,4 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder };
