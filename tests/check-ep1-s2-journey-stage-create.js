@@ -41,7 +41,7 @@ function makeMockPool(opts) {
       if (/INSERT INTO customer_journey_stages/i.test(sql)) {
         return { rows: [{ id: 'new-stage-id' }] };
       }
-      if (/SELECT id, name, position FROM customer_journey_stages/i.test(sql)) {
+      if (/FROM customer_journey_stages WHERE journey_id/i.test(sql)) {
         return { rows: opts.stages || [] };
       }
       return { rows: [] };

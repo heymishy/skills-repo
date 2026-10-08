@@ -10,6 +10,13 @@ var { renderShellWithNav } = require('./products');
 var { escHtml } = require('../utils/html-shell');
 var _csrf = require('../middleware/csrf'); // jcg-s1 -- CSRF guard, matching every other mutating form handler in this app
 
+// ep1-s3 -- allowlist of customer_journey_stages columns the side panel may
+// PATCH. Never interpolate a client-supplied field name into SQL without
+// checking it against this list first.
+var STAGE_PATCH_FIELDS = ['description', 'customer_actions', 'touchpoints', 'channel', 'emotion', 'pain_points', 'opportunities', 'moment_of_truth'];
+var STAGE_CHANNEL_VALUES = ['web', 'mobile', 'in-person', 'phone', 'email', 'other'];
+var STAGE_EMOTION_VALUES = ['positive', 'neutral', 'negative', 'mixed'];
+
 /**
  * POST /journeys — create a new journey, tenant-scoped.
  * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
@@ -106,6 +113,68 @@ async function handlePostJourneyStage(req, res, _next, pool) {
 }
 
 /**
+ * PATCH /journeys/:id/stages/:stageId — autosave one optional stage attribute.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePatchJourneyStage(req, res, _next, pool) {
+  // ep1-s3 -- CSRF guard first, mandatory from first implementation per jcg-s1/ep1-s2's own precedent.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var field = req.body && req.body.field;
+  var value = req.body ? req.body.value : undefined;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  // Journey ownership check BEFORE any update -- 404, not 403, for a
+  // cross-tenant journey id, matching handlePostJourneyStage's own policy.
+  var jr = await pool.query(
+    `SELECT id FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
+    [journeyId, tenantId]
+  );
+  if (!jr.rows[0]) { notFound('journey not found'); return; }
+
+  // Stage ownership check -- the stage must belong to THIS journey, not just
+  // any journey the tenant owns.
+  var sr = await pool.query(
+    `SELECT id FROM customer_journey_stages WHERE id = $1 AND journey_id = $2`,
+    [stageId, journeyId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // field validated against a fixed allowlist -- never interpolate an
+  // unchecked client-supplied column name into SQL.
+  if (STAGE_PATCH_FIELDS.indexOf(field) === -1) { badRequest('invalid field'); return; }
+  if (field === 'channel' && STAGE_CHANNEL_VALUES.indexOf(value) === -1) { badRequest('invalid channel value'); return; }
+  if (field === 'emotion' && STAGE_EMOTION_VALUES.indexOf(value) === -1) { badRequest('invalid emotion value'); return; }
+  if (field === 'moment_of_truth') { value = !!value; }
+
+  // field is one of the fixed STAGE_PATCH_FIELDS checked above -- safe to
+  // use as the column name here.
+  await pool.query(
+    'UPDATE customer_journey_stages SET ' + field + ' = $1, updated_at = NOW() WHERE id = $2 AND journey_id = $3 AND tenant_id = $4',
+    [value, stageId, journeyId, tenantId]
+  );
+
+  if (res.status) { res.status(200).json({ id: stageId, field: field, value: value }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: stageId, field: field, value: value })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -129,25 +198,102 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }
 
   var sr = await pool.query(
-    `SELECT id, name, position FROM customer_journey_stages WHERE journey_id = $1 ORDER BY position ASC`,
+    `SELECT id, name, position, description, customer_actions, touchpoints, channel, emotion, pain_points, opportunities, moment_of_truth
+     FROM customer_journey_stages WHERE journey_id = $1 ORDER BY position ASC`,
     [journeyId]
   );
   var stages = sr.rows || [];
 
-  // AC4: each saved stage renders with its name and an "Edit stage" affordance
-  // (not wired to anything yet -- stage-detail editing is ep1-s3's own scope).
+  // ep1-s3 -- 20x20/1.5px-stroke icon per DESIGN.md's own icon spec, not a
+  // unicode glyph (DESIGN.md rule 5 explicitly disallows those in new work).
+  var MOMENT_OF_TRUTH_ICON =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M5 17V3"/><path d="M5 3h9l-3 3.5L14 10H5"/>' +
+    '</svg>';
+
+  // AC4: each saved stage renders with its name, an "Edit stage" affordance
+  // that opens the side panel (ep1-s3's own scope), and -- when applicable --
+  // a visible moment-of-truth indicator.
   var stagesHtml = stages.length
     ? stages.map(function(s) {
         return (
           '<div class="sw-stage-card" data-stage-id="' + escHtml(s.id) + '">' +
             '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
-            '<a href="#" class="sw-stage-edit">Edit stage</a>' +
+            (s.moment_of_truth
+              ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
+              : '') +
+            '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
           '</div>'
         );
       }).join('')
     : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>';
 
   var csrfToken = await _csrf.generateCsrfToken(req);
+
+  // Full stage data embedded for the side panel to populate from, keyed by
+  // id, client-side -- avoids a second round-trip when the panel opens.
+  var stageDataJson = JSON.stringify(stages);
+
+  // ep1-s3 -- side panel markup. No existing DESIGN.md layout pattern matches
+  // a click-to-open side panel exactly; this reuses html-shell.js's own
+  // off-canvas-drawer precedent for the <768px behaviour and
+  // products.js's ep4s1-pods-modal for the dialog/focus-restore structure,
+  // extended with a genuine Tab-cycling focus trap (AC5) that neither
+  // existing precedent implements.
+  var panelHtml =
+    '<div id="sw-stage-panel" class="sw-stage-panel" role="dialog" aria-modal="true" aria-labelledby="sw-stage-panel-title" aria-hidden="true">' +
+      '<div class="sw-stage-panel-header">' +
+        '<h2 id="sw-stage-panel-title">Edit stage</h2>' +
+        '<button type="button" id="sw-stage-panel-close" aria-label="Close stage panel">✕</button>' +
+      '</div>' +
+      '<label class="sw-stage-panel-field">Description' +
+        '<textarea id="sw-stage-field-description" data-field="description"></textarea>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Customer actions' +
+        '<textarea id="sw-stage-field-customer_actions" data-field="customer_actions"></textarea>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Touchpoints' +
+        '<textarea id="sw-stage-field-touchpoints" data-field="touchpoints"></textarea>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Channel' +
+        '<select id="sw-stage-field-channel" data-field="channel">' +
+          '<option value="">—</option>' +
+          STAGE_CHANNEL_VALUES.map(function(v) { return '<option value="' + v + '">' + v + '</option>'; }).join('') +
+        '</select>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Emotion' +
+        '<select id="sw-stage-field-emotion" data-field="emotion">' +
+          '<option value="">—</option>' +
+          STAGE_EMOTION_VALUES.map(function(v) { return '<option value="' + v + '">' + v + '</option>'; }).join('') +
+        '</select>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Pain points' +
+        '<textarea id="sw-stage-field-pain_points" data-field="pain_points"></textarea>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field">Opportunities' +
+        '<textarea id="sw-stage-field-opportunities" data-field="opportunities"></textarea>' +
+      '</label>' +
+      '<label class="sw-stage-panel-field sw-stage-panel-field--checkbox">' +
+        '<input type="checkbox" id="sw-stage-field-moment_of_truth" data-field="moment_of_truth"> Moment of truth' +
+      '</label>' +
+      '<span id="sw-stage-panel-saved" class="sw-stage-panel-saved" aria-live="polite"></span>' +
+    '</div>' +
+    '<style>' +
+      '.sw-stage-panel{display:none;position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100vw;' +
+        'background:var(--surface);border-left:1px solid var(--line);padding:20px;overflow-y:auto;z-index:100;' +
+        'box-shadow:-4px 0 24px rgba(0,0,0,0.18)}' +
+      '.sw-stage-panel--open{display:block}' +
+      '.sw-stage-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}' +
+      '.sw-stage-panel-field{display:block;font-size:13px;color:var(--ink-2);margin-bottom:14px}' +
+      '.sw-stage-panel-field textarea,.sw-stage-panel-field select{display:block;width:100%;margin-top:6px;' +
+        'background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:13px}' +
+      '.sw-stage-panel-field textarea:focus,.sw-stage-panel-field select:focus{border-color:var(--accent);outline:none}' +
+      '.sw-stage-panel-field--checkbox{display:flex;align-items:center;gap:8px}' +
+      '.sw-stage-panel-saved{display:none;font-size:12px;color:var(--success)}' +
+      '.sw-stage-panel-saved--visible{display:inline}' +
+      '.sw-stage-moment-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;color:var(--warn)}' +
+      '@media (max-width:768px){.sw-stage-panel{width:100vw}}' +
+    '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
   // pure client-side DOM behaviour, no server round-trip until save (RISK-ACCEPT,
@@ -160,11 +306,19 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '</div>' +
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
     '</div>' +
+    panelHtml +
     '<script>(function(){' +
       'var journeyId=' + JSON.stringify(journey.id) + ';' +
       'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
+      'var stageData={};' +
+      (stageDataJson) + '.forEach(function(s){stageData[s.id]=s;});' +
       'var list=document.getElementById("sw-journey-stages");' +
       'var addBtn=document.getElementById("sw-add-stage-btn");' +
+      'var panel=document.getElementById("sw-stage-panel");' +
+      'var panelClose=document.getElementById("sw-stage-panel-close");' +
+      'var panelSaved=document.getElementById("sw-stage-panel-saved");' +
+      'var panelTriggerEl=null,panelStageId=null;' +
+      'var panelFields=["description","customer_actions","touchpoints","channel","emotion","pain_points","opportunities","moment_of_truth"];' +
       'function submitJson(url,method,payload){' +
         'return fetch(url,{method:method,headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})' +
           '.then(function(r){' +
@@ -199,6 +353,94 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'input.addEventListener("blur",save);' +
         '});' +
       '}' +
+      // AC1 (interaction) -- clicking a stage card's "Edit stage" affordance
+      // opens the panel, populated from the embedded stage data, with focus
+      // moved inside it.
+      'function getFocusable(){' +
+        'return Array.prototype.slice.call(panel.querySelectorAll("textarea,select,input,button")).filter(function(el){return !el.disabled;});' +
+      '}' +
+      'function openPanel(stageId){' +
+        'var s=stageData[stageId];if(!s)return;' +
+        'panelStageId=stageId;' +
+        'panelTriggerEl=document.activeElement;' +
+        'panelFields.forEach(function(f){' +
+          'var el=document.getElementById("sw-stage-field-"+f);' +
+          'if(!el)return;' +
+          'if(f==="moment_of_truth"){el.checked=!!s[f];}else{el.value=s[f]||"";}' +
+        '});' +
+        'panel.classList.add("sw-stage-panel--open");' +
+        'panel.setAttribute("aria-hidden","false");' +
+        'var focusables=getFocusable();' +
+        'if(focusables.length)focusables[0].focus();' +
+      '}' +
+      'function closePanel(){' +
+        'panel.classList.remove("sw-stage-panel--open");' +
+        'panel.setAttribute("aria-hidden","true");' +
+        'panelStageId=null;' +
+        // AC4 -- focus returns to the stage card/link that opened the panel.
+        'if(panelTriggerEl&&typeof panelTriggerEl.focus==="function")panelTriggerEl.focus();' +
+      '}' +
+      'if(list){' +
+        'list.addEventListener("click",function(ev){' +
+          'var link=ev.target.closest&&ev.target.closest(".sw-stage-edit");' +
+          'if(!link)return;' +
+          'ev.preventDefault();' +
+          'openPanel(link.getAttribute("data-stage-id"));' +
+        '});' +
+      '}' +
+      'if(panelClose)panelClose.addEventListener("click",closePanel);' +
+      // AC5 -- a genuine keyboard focus trap: Tab past the last focusable
+      // element wraps to the first, Shift+Tab before the first wraps to the
+      // last. (products.js's own ep4s1-pods-modal explicitly does NOT do
+      // this -- this story's own AC5 requires the real thing.)
+      'document.addEventListener("keydown",function(evt){' +
+        'if(!panel.classList.contains("sw-stage-panel--open"))return;' +
+        'if(evt.key==="Escape"){closePanel();return;}' +
+        'if(evt.key!=="Tab")return;' +
+        'var focusables=getFocusable();' +
+        'if(!focusables.length)return;' +
+        'var first=focusables[0],last=focusables[focusables.length-1];' +
+        'if(evt.shiftKey&&document.activeElement===first){evt.preventDefault();last.focus();}' +
+        'else if(!evt.shiftKey&&document.activeElement===last){evt.preventDefault();first.focus();}' +
+      '});' +
+      // AC2 -- autosave on blur (per-field PATCH), with a brief in-place
+      // success indicator -- no page reload, so the panel stays open across
+      // edits to multiple fields.
+      'panelFields.forEach(function(f){' +
+        'var el=document.getElementById("sw-stage-field-"+f);' +
+        'if(!el)return;' +
+        'function save(){' +
+          'if(!panelStageId)return;' +
+          'var value=f==="moment_of_truth"?el.checked:el.value;' +
+          'submitJson("/journeys/"+journeyId+"/stages/"+panelStageId,"PATCH",{field:f,value:value,_csrf:csrfToken})' +
+            '.then(function(){' +
+              'stageData[panelStageId][f]=value;' +
+              'panelSaved.textContent="Saved";' +
+              'panelSaved.classList.add("sw-stage-panel-saved--visible");' +
+              'setTimeout(function(){panelSaved.classList.remove("sw-stage-panel-saved--visible");},1500);' +
+              // AC3 -- toggling moment_of_truth updates THAT stage card's own
+              // visible indicator in place, without a page reload.
+              'if(f==="moment_of_truth"){' +
+                'var card=list.querySelector(\'.sw-stage-card[data-stage-id="\'+panelStageId+\'"]\');' +
+                'if(card){' +
+                  'var badge=card.querySelector(".sw-stage-moment-badge");' +
+                  'if(value&&!badge){' +
+                    'var span=document.createElement("span");' +
+                    'span.className="sw-stage-moment-badge";' +
+                    'span.innerHTML=' + JSON.stringify(MOMENT_OF_TRUTH_ICON) + '+" Moment of truth";' +
+                    'card.insertBefore(span,card.querySelector(".sw-stage-edit"));' +
+                  '}else if(!value&&badge){badge.remove();}' +
+                '}' +
+              '}' +
+            '})' +
+            '.catch(function(e){' +
+              'panelSaved.textContent="Error: "+e.message;' +
+              'panelSaved.classList.add("sw-stage-panel-saved--visible");' +
+            '});' +
+        '}' +
+        'el.addEventListener("blur",save);' +
+        'if(f==="moment_of_truth")el.addEventListener("change",save);' +
+      '});' +
     '})()<\/script>';
 
   if (res.status) {
@@ -215,4 +457,4 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage };
