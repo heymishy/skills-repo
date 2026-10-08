@@ -38823,13 +38823,20 @@
             {
               "slug": "ep1-s2",
               "name": "Add and name stages: POST route, inline name entry, and stage card rendering",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T23:12:32.187Z",
+              "updatedAt": "2026-10-08T05:56:06.078Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s2-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep1-s2-test-plan.md"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s2-dor.md"
             },
             {
               "slug": "ep1-s3",
