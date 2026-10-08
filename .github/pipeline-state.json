@@ -39409,6 +39409,39 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-08-journeys-csrf-guard-gap",
+      "id": "2026-10-08-journeys-csrf-guard-gap",
+      "name": "Journeys CSRF guard gap fix",
+      "track": "short",
+      "discoveryStatus": "not-required",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-10-08T05:26:19.719Z",
+      "stories": [
+        {
+          "id": "jcg-s1",
+          "name": "Add the missing CSRF guard to POST /journeys",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "updatedAt": "2026-10-08T05:26:19.719Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-08-journeys-csrf-guard-gap/dor/jcg-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/957",
+          "verifyStatus": "passed"
+        }
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
