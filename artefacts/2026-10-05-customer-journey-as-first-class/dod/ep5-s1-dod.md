@@ -74,11 +74,14 @@ No metrics tracked — this is a pure schema-migration story with no user-facing
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE WITH DEVIATIONS** (superseded — see update below)
 
-**Follow-up actions (blocking before this migration is actually run against staging or production):**
-1. **Run `node scripts/migrate-schema-journeys.js` against a real staging/Neon `DATABASE_URL`, then run `DATABASE_URL=... node tests/check-ep5-s1-migration.js` against the same instance**, before any downstream story (ep1-s1, ep1-s2, etc.) that depends on these tables actually existing is implemented. This is the single most important unresolved item from this story — the migration has never been executed against a real database.
-2. If that real run surfaces any further schema issues beyond the `products(product_id)` fix already made, correct them in a follow-up commit/PR, not silently — this DoD's own honesty about AC1-AC5 being unverified is specifically so this doesn't get missed.
+**Update, 2026-10-08:** follow-up action 1 below surfaced a real, more serious defect before it could even be attempted as originally written — `journeys` collided with a pre-existing platform table (see `ep5-s3`, which renamed all 3 tables to `customer_journeys`/`customer_journey_stages`/`feature_customer_journey_stage_mappings`). The renamed migration has since been verified live against real `wuce-staging` Postgres (see `ep5-s3-dod.md`'s own updated AC Coverage and Outcome). This story's own AC table above is left unchanged as an accurate record of what was true about *this* PR's own content at merge time — the working, verified migration is `ep5-s3`'s, not this one's.
+
+**Follow-up actions:** None remaining — see `ep5-s3-dod.md`.
+
+~~1. Run `node scripts/migrate-schema-journeys.js` against a real staging/Neon `DATABASE_URL`...~~ (superseded by `ep5-s3`'s rename; completed there)
+~~2. If that real run surfaces any further schema issues...~~ (it did — the table-name collision itself; fixed in `ep5-s3`)
 
 ---
 

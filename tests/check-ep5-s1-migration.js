@@ -21,6 +21,16 @@
 // every real environment -- the one check ep5-s1 itself never performed.
 //
 // Run: DATABASE_URL=postgres://... node tests/check-ep5-s1-migration.js
+//
+// *** NEVER point DATABASE_URL at a shared/real (staging or production)
+// *** database when running this file. Its own setup/cleanup below
+// *** deliberately DROPs journeys/artefacts to give itself a clean slate --
+// *** correct for a throwaway test database, but destructive against any
+// *** environment where those tables hold real data (confirmed live,
+// *** 2026-10-08: wuce-staging's real journeys table has 8297 rows). To
+// *** verify this migration against a real/shared database, use a separate,
+// *** purpose-built read-only-plus-pure-additive-migration script instead
+// *** (see ep5-s3-dod.md's own DoD Observation #4) -- never this file.
 
 let passed = 0;
 let failed = 0;
