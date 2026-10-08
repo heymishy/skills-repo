@@ -38867,13 +38867,22 @@
             {
               "slug": "ep1-s4",
               "name": "Drag-and-drop stage reorder with keyboard alternative",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "updatedAt": "2026-10-08T18:12:16.168Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true"
             }
           ]
         },
