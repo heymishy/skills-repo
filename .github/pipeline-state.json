@@ -38867,10 +38867,10 @@
             {
               "slug": "ep1-s4",
               "name": "Drag-and-drop stage reorder with keyboard alternative",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T18:51:20.060Z",
+              "updatedAt": "2026-10-08T18:56:50.833Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md",
@@ -38884,7 +38884,51 @@
               "hasLayoutDependentGaps": "true",
               "e2eToolingRequired": "true",
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s4-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s4-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Backend reorder handler: happy path, CSRF, cross-tenant, stageIds-set validation",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Backend atomicity: mid-transaction failure rolls back",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire PATCH /journeys/:id/stages-order dispatch in server.js",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Stage card markup: draggable, up/down move buttons, boundary disabling",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Client script: drag/drop wiring, shared submitOrder, rollback+toast",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "AC4: canvas re-render reflects new position order",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "E2E spec: real drag reorder and failure rollback (written, not executed)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep1-s4-plan.md"
+                }
+              ]
             }
           ]
         },
