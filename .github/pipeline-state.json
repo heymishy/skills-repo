@@ -39061,13 +39061,22 @@
             {
               "slug": "ep4-s2",
               "name": "Navigation and entry points: Journeys nav link and product page link",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "updatedAt": "2026-10-08T22:49:54.623Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false"
             }
           ]
         },
