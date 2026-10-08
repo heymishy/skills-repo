@@ -39061,10 +39061,10 @@
             {
               "slug": "ep4-s2",
               "name": "Navigation and entry points: Journeys nav link and product page link",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T23:04:26.388Z",
+              "updatedAt": "2026-10-08T23:14:59.179Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md",
