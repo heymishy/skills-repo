@@ -34,6 +34,7 @@
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 (backend) | Valid ordered stageIds array updates all positions in one transaction (BEGIN…COMMIT), scoped by journey/tenant | 1 test | — | — | — | — | 🟢 |
 | AC1 (backend security) | A stageId not belonging to this journey is rejected before any UPDATE, zero BEGIN/COMMIT | 1 test | — | — | — | — | 🟢 |
+| AC1 (backend security) | A stageIds array missing one of the journey's real stages is rejected (added during implementation — 12th unit test, beyond this plan's original count) | 1 test | — | — | — | — | 🟢 |
 | AC1 (backend security) | CSRF missing/mismatched is rejected | 1 test | — | — | — | — | 🟢 |
 | AC1 (backend security) | Cross-tenant journey id is rejected (404) | 1 test | — | — | — | — | 🟢 |
 | AC1 (atomicity) | A mid-transaction DB failure triggers ROLLBACK — zero of the attempted position updates persist | 1 test | — | — | — | — | 🟢 |
