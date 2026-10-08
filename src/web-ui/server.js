@@ -109,6 +109,10 @@ const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSch
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
 const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissSignal } = require('./routes/signals-panel');      // ep2-s1, sptu-s4
+// cj-ep1-s1: customer journey entity creation (2026-10-05-customer-journey-as-first-class) --
+// NOT the same "ep1-s1" as line 105's migratePodsSchema above, a completely unrelated
+// feature that happens to reuse the same generic story-slug shorthand.
+const { handlePostJourneys, handleGetJourneyCanvas }                 = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -494,6 +498,30 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('credit_audit_log table ready'); })
       .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
+    // ep1-s1 — Auto-migrate customer_journeys table (D37: no new adapter wiring --
+    // queried through the same _creditsPool already wired above). SQL copied
+    // verbatim from scripts/migrate-schema-journeys.js (that script is not
+    // present in the deployed image at all -- see Dockerfile's own explicit
+    // COPY allowlist -- so this inline statement is the only way the table
+    // actually gets created in a genuinely fresh real environment; staging and
+    // production already have it from this session's own manual verification
+    // runs, but a new environment would not without this). Named customer_journeys,
+    // not journeys, to avoid colliding with the platform's own pre-existing
+    // journeys table (journey-store-pg.js) -- see ep5-s3 decisions.md D4.
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS customer_journeys (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        product_id UUID REFERENCES products(product_id),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `).then(function() {
+      return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journeys_tenant_id ON customer_journeys(tenant_id)`);
+    }).then(function() { console.log('customer_journeys table ready'); })
+      .catch(function(err) { console.error('customer_journeys table migration failed:', err.message); });
     // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list
     // admin-seeding block that used to live here were removed entirely (AC1) --
     // the real admin-bootstrap mechanism is tab-s1's login-time grant plus
@@ -3900,6 +3928,20 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handlePostProductConfirm(req, res, null, _pshPool, null);
     });
+
+  } else if (pathname === '/journeys' && req.method === 'POST') {
+    // cj-ep1-s1 — create a new customer journey (2026-10-05-customer-journey-as-first-class)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostJourneys(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+$/) && req.method === 'GET') {
+    // cj-ep1-s1 — journey canvas shell (2026-10-05-customer-journey-as-first-class)
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetJourneyCanvas(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
     // psh-s4 — product view: list features for one product with stage + health
