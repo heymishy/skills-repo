@@ -161,4 +161,4 @@ Oversight level: High
 
 **Oversight level:** High (per the parent epic's own "Human Oversight Level: High" declaration — `artefacts/2026-10-05-customer-journey-as-first-class/epics/journey-entity-and-stage-management.md`; corrected here from `ep1-s3`'s own DoR, which recorded "Medium" even though it also required and recorded named sign-off in practice — see DoD Observation below)
 **Sign-off required:** Yes (High oversight — named human sign-off required before assigning to the coding agent)
-**Signed off by:** _[pending]_
+**Signed off by:** Hamish King — Platform Owner — 2026-10-09

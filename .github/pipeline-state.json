@@ -38870,7 +38870,7 @@
               "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T18:22:24.600Z",
+              "updatedAt": "2026-10-08T18:32:36.606Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep1-s4-review-1.md",
@@ -38883,7 +38883,7 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": "true",
               "e2eToolingRequired": "true",
-              "dorStatus": "not-started",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep1-s4-dor.md"
             }
           ]
