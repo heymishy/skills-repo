@@ -39014,10 +39014,10 @@
             {
               "slug": "ep4-s1",
               "name": "Journey list page: index of all journeys for the tenant",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T21:12:28.290Z",
+              "updatedAt": "2026-10-08T21:13:34.761Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s1-review-1.md",
@@ -39052,7 +39052,9 @@
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/963"
             },
             {
               "slug": "ep4-s2",
