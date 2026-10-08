@@ -29,6 +29,22 @@ function makeMockPool(existingJourneys) {
   };
 }
 
+// jcg-s1 -- mock res now also carries writeHead/end (the pair csrfGuard's
+// own 403 path uses), alongside the existing status/json test-mock interface.
+function makeMockRes() {
+  return {
+    status: function(c) { this._s = c; return this; },
+    json: function(b) { this._b = b; },
+    writeHead: function(c, headers) { this._s = c; this._headers = headers; },
+    end: function(b) { this._b = b; },
+    _s: 200, _b: null, _headers: null
+  };
+}
+
+// jcg-s1 -- a valid session/_csrf pair, matching csrfGuard's own
+// body._csrf === req.session.csrfToken check.
+const REAL_CSRF = 'jcg-s1-real-token';
+
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
 function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err}`); failed++; }
@@ -36,11 +52,34 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 (async function() {
   const { handlePostJourneys, handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
 
+  // jcg-s1 AC1 — no/mismatched CSRF token is rejected with 403, no insert
+  try {
+    const pool = makeMockPool([]);
+    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, body: { name: 'My Journey' } }; // no _csrf field
+    const res = makeMockRes();
+    await handlePostJourneys(req, res, null, pool);
+    assert(res._s === 403, `Expected 403, got ${res._s}`);
+    const ins = pool._ops.find(op => /INSERT INTO customer_journeys/i.test(op.sql));
+    assert(!ins, 'INSERT should not have been called when _csrf is missing');
+    pass('jcg-s1 AC1: POST /journeys with no _csrf field returns 403 and does not insert');
+  } catch (e) { fail('jcg-s1 AC1: POST /journeys with no _csrf field returns 403 and does not insert', e); }
+
+  try {
+    const pool = makeMockPool([]);
+    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, body: { name: 'My Journey', _csrf: 'wrong-token' } };
+    const res = makeMockRes();
+    await handlePostJourneys(req, res, null, pool);
+    assert(res._s === 403, `Expected 403, got ${res._s}`);
+    const ins = pool._ops.find(op => /INSERT INTO customer_journeys/i.test(op.sql));
+    assert(!ins, 'INSERT should not have been called when _csrf does not match the session token');
+    pass('jcg-s1 AC1: POST /journeys with a mismatched _csrf field returns 403 and does not insert');
+  } catch (e) { fail('jcg-s1 AC1: POST /journeys with a mismatched _csrf field returns 403 and does not insert', e); }
+
   // AC1 — valid submission inserts customer_journeys record, redirects
   try {
     const pool = makeMockPool([]);
-    const req = { session: { tenantId: 'org-1' }, body: { name: 'My Journey' } };
-    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, body: { name: 'My Journey', _csrf: REAL_CSRF } };
+    const res = makeMockRes();
     await handlePostJourneys(req, res, null, pool);
     const ins = pool._ops.find(op => /INSERT INTO customer_journeys/i.test(op.sql));
     assert(ins, 'No INSERT into customer_journeys');
@@ -53,8 +92,8 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // AC2 — missing name -> 400, no insert
   try {
     const pool = makeMockPool([]);
-    const req = { session: { tenantId: 'org-1' }, body: { name: '' } };
-    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, body: { name: '', _csrf: REAL_CSRF } };
+    const res = makeMockRes();
     await handlePostJourneys(req, res, null, pool);
     assert(res._s === 400, `Expected 400, got ${res._s}`);
     const ins = pool._ops.find(op => /INSERT INTO customer_journeys/i.test(op.sql));
@@ -65,8 +104,8 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // AC3 — request body tenantId is never used
   try {
     const pool = makeMockPool([]);
-    const req = { session: { tenantId: 'org-A' }, body: { name: 'Spoofed', tenantId: 'org-B' } };
-    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    const req = { session: { tenantId: 'org-A', csrfToken: REAL_CSRF }, body: { name: 'Spoofed', tenantId: 'org-B', _csrf: REAL_CSRF } };
+    const res = makeMockRes();
     await handlePostJourneys(req, res, null, pool);
     const ins = pool._ops.find(op => /INSERT INTO customer_journeys/i.test(op.sql));
     assert(ins, 'No INSERT into customer_journeys');
@@ -75,11 +114,11 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC3: request body tenantId is never used for the insert, only session tenantId');
   } catch (e) { fail('AC3: request body tenantId is never used for the insert, only session tenantId', e); }
 
-  // AC4 — canvas shell renders journey name and empty state
+  // AC4 — canvas shell renders journey name and empty state (GET, read-only -- no CSRF needed)
   try {
     const pool = makeMockPool([{ id: 'j1', tenant_id: 'org-1', name: 'My Journey', description: null }]);
     const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
-    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    const res = makeMockRes();
     await handleGetJourneyCanvas(req, res, null, pool);
     assert(res._s === 200, `Expected 200, got ${res._s}`);
     assert(res._b && res._b.bodyContent.includes('My Journey'), 'journey name not in rendered content');

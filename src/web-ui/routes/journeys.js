@@ -8,6 +8,7 @@
 
 var { renderShellWithNav } = require('./products');
 var { escHtml } = require('../utils/html-shell');
+var _csrf = require('../middleware/csrf'); // jcg-s1 -- CSRF guard, matching every other mutating form handler in this app
 
 /**
  * POST /journeys — create a new journey, tenant-scoped.
@@ -18,6 +19,11 @@ var { escHtml } = require('../utils/html-shell');
  * @param {object} pool
  */
 async function handlePostJourneys(req, res, _next, pool) {
+  // jcg-s1 -- CSRF guard first, matching handlePostProductModule/handlePostGuardrailsForm.
+  // csrfGuard reads and caches the body itself; req.body is set by it, no separate read needed.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
   var tenantId = req.session && req.session.tenantId;
   var name = (req.body && req.body.name || '').trim();
   var description = (req.body && req.body.description) || null;
