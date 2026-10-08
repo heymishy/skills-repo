@@ -39014,10 +39014,10 @@
             {
               "slug": "ep4-s1",
               "name": "Journey list page: index of all journeys for the tenant",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T20:58:10.937Z",
+              "updatedAt": "2026-10-08T21:09:10.087Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s1-review-1.md",
@@ -39031,7 +39031,27 @@
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep4-s1-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep4-s1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Journey list query + rendering (AC1, AC2, AC5, stage count, product resolution)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "\"New journey\" modal (AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire GET /customer-journeys dispatch in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep4-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "ep4-s2",
