@@ -38979,11 +38979,33 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s2-review-1.md"
+            },
+            {
+              "slug": "ep5-s3",
+              "name": "Rename journeys/journey_stages tables to customer_journeys/customer_journey_stages to avoid platform-table collision",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 1,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep5-s3-test-plan.md",
+                "totalTests": 3
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "updatedAt": "2026-10-08T00:03:03.183Z",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s3-dor.md",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/955",
+              "verifyStatus": "passed",
+              "dodStatus": "not-started",
+              "releaseReady": false
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-07T23:33:28.571Z",
+      "updatedAt": "2026-10-08T00:03:03.183Z",
       "stories": []
     },
     {
