@@ -75,20 +75,27 @@ withAuth('stage panel opens with focus inside it, traps Tab/Shift+Tab, and Escap
   const panel = page.locator('#sw-stage-panel');
   await expect(panel, 'AC1: panel becomes visible on open').toHaveClass(/sw-stage-panel--open/);
 
-  // AC1: focus landed inside the panel (the first focusable field).
-  const firstField = page.locator('#sw-stage-field-description');
-  await expect(firstField).toBeFocused();
+  // AC1: focus landed on the description field -- the panel's first EDITABLE
+  // field, which openPanel() targets explicitly (pfi-s1). This is NOT the
+  // same element as the Tab-trap's own DOM-order-first element below (the
+  // close button, which comes before the fields in the markup) -- initial
+  // focus and the trap's wrap points are independent concerns.
+  const descriptionField = page.locator('#sw-stage-field-description');
+  await expect(descriptionField).toBeFocused();
 
-  // AC5: Tab from the LAST focusable element wraps to the first.
-  const lastField = page.locator('#sw-stage-panel-close');
-  await lastField.focus();
+  // AC5: the trap's own true DOM order is close button (first) ... moment_of_truth
+  // checkbox (last) -- confirmed live against real staging data (pfi-s1's own
+  // story). Tab from the true last wraps to the true first.
+  const domFirst = page.locator('#sw-stage-panel-close');
+  const domLast = page.locator('#sw-stage-field-moment_of_truth');
+  await domLast.focus();
   await page.keyboard.press('Tab');
-  await expect(firstField, 'AC5: Tab past the last element wraps to the first').toBeFocused();
+  await expect(domFirst, 'AC5: Tab past the last element wraps to the first').toBeFocused();
 
-  // AC5: Shift+Tab from the FIRST focusable element wraps to the last.
-  await firstField.focus();
+  // AC5: Shift+Tab from the true first wraps to the true last.
+  await domFirst.focus();
   await page.keyboard.press('Shift+Tab');
-  await expect(lastField, 'AC5: Shift+Tab before the first element wraps to the last').toBeFocused();
+  await expect(domLast, 'AC5: Shift+Tab before the first element wraps to the last').toBeFocused();
 
   // AC4: Escape closes the panel and returns focus to the triggering element.
   await page.keyboard.press('Escape');

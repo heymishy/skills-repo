@@ -370,8 +370,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         '});' +
         'panel.classList.add("sw-stage-panel--open");' +
         'panel.setAttribute("aria-hidden","false");' +
-        'var focusables=getFocusable();' +
-        'if(focusables.length)focusables[0].focus();' +
+        // pfi-s1 -- focus the first EDITABLE field explicitly, not
+        // getFocusable()[0] -- the close button is first in DOM order
+        // (it is in the panel header, before the field labels), so
+        // getFocusable()[0] would land focus there instead of on
+        // something the user can actually edit. The Tab-trap logic
+        // below is unaffected -- it still uses true DOM order (close
+        // first, moment_of_truth last) and is correct as-is.
+        'var firstField=document.getElementById("sw-stage-field-description");' +
+        'if(firstField)firstField.focus();' +
       '}' +
       'function closePanel(){' +
         'panel.classList.remove("sw-stage-panel--open");' +
