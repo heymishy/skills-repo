@@ -34,9 +34,9 @@ Given health state indicators are displayed,
 When a screen reader or keyboard user focuses a stage card,
 Then the health state is communicated via both a visual icon and an accessible label (not colour alone, per MC-A11Y-02).
 
-Given health state is computed,
-When the underlying feature mappings or metric keys change (add, remove, update),
-Then the health state indicator updates to reflect the current state without requiring a full page reload.
+Given a feature mapping is added, removed, or its metric keys updated on a stage,
+When that save completes and the Delivery view re-renders (the same server round-trip the save action itself already triggers — consistent with this story's own "server-side at render time" architecture constraint, not a separate client-side reactivity mechanism),
+Then the stage's health indicator and the summary bar reflect the new state in that render — no additional manual refresh beyond the save action itself is needed.
 ## Out of Scope
 PostHog-derived health signals (out of scope per discovery), journey-level aggregated health score across multiple journeys, automated alerts when health degrades.
 ## NFRs
