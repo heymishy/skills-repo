@@ -39014,10 +39014,10 @@
             {
               "slug": "ep4-s1",
               "name": "Journey list page: index of all journeys for the tenant",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T20:47:18.557Z",
+              "updatedAt": "2026-10-08T20:58:10.937Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s1-review-1.md",
