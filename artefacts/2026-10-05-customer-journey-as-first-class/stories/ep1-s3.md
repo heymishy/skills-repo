@@ -10,7 +10,7 @@ So that **I can enrich a stage beyond its name**.
 ## Benefit Linkage
 M3 — Journey-level metric coverage — pain points, opportunities, and emotion attributes are surfaced in health views; richer stages support more meaningful metric attribution.
 ## Architecture Constraints
-ADR-025 — all `journey_stages` updates scoped to `tenantId`. Side panel must trap focus when open; Escape closes it (WCAG 2.1 AA). Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before implementing the side panel component.
+ADR-025 — all `customer_journey_stages` updates scoped to `tenantId`. Side panel must trap focus when open; Escape closes it (WCAG 2.1 AA). Design system reference (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`) must be consulted before implementing the side panel component.
 ## Dependencies
 ep1-s2
 ## Acceptance Criteria
@@ -20,7 +20,7 @@ Then the panel displays editable fields for: description (textarea), customer ac
 
 Given I edit a field and move focus away (blur),
 When autosave fires,
-Then a PATCH request updates the `journey_stages` record for that field and a success indicator is shown briefly.
+Then a PATCH request updates the `customer_journey_stages` record for that field and a success indicator is shown briefly.
 
 Given I toggle "moment of truth" on,
 When the stage card re-renders,

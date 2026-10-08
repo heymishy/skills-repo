@@ -36,7 +36,7 @@ Phase 5 active delivery — web UI workstreams. This feature adds a journey canv
 
 ### Metric 1 — Journey adoption (Tier 1 product metric)
 
-**What we are measuring:** Count of journey records created in the `journeys` table, scoped to real active products (excluding test/fake products and the generic 'no product' product) within the operator's tenant.
+**What we are measuring:** Count of journey records created in the `customer_journeys` table, scoped to real active products (excluding test/fake products and the generic 'no product' product) within the operator's tenant.
 
 **Baseline:** 0 — no journey entity exists today.
 
@@ -44,7 +44,7 @@ Phase 5 active delivery — web UI workstreams. This feature adds a journey canv
 
 **Minimum validation signal:** ≥1 journey created within 4 weeks of release. Below this threshold: investigate whether the journey canvas is discoverable in the product UI and whether the creation flow has friction preventing completion.
 
-**Measurement approach:** Query the `journeys` table filtered by `tenantId`, excluding known test/fake product IDs and the 'no product' record. Count distinct journey records with a `createdAt` date after the release date. Measured weekly by the metric owner.
+**Measurement approach:** Query the `customer_journeys` table filtered by `tenantId`, excluding known test/fake product IDs and the 'no product' record. Count distinct journey records with a `createdAt` date after the release date. Measured weekly by the metric owner.
 
 **Metric owner:** Hamish King — Platform Owner
 

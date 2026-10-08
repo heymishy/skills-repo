@@ -6,7 +6,7 @@
 
 ## Goal
 
-The three new Postgres tables (`journeys`, `journey_stages`, `feature_journey_stage_mappings`) are created via an idempotent migration script, and all journey routes are covered by adversarial tenant isolation tests verifying that cross-tenant access is structurally impossible. This epic is the foundational prerequisite for all other epics and the security backstop for the entire feature.
+The three new Postgres tables (`customer_journeys`, `customer_journey_stages`, `feature_customer_journey_stage_mappings`) are created via an idempotent migration script, and all journey routes are covered by adversarial tenant isolation tests verifying that cross-tenant access is structurally impossible. This epic is the foundational prerequisite for all other epics and the security backstop for the entire feature.
 
 ## Out of Scope
 

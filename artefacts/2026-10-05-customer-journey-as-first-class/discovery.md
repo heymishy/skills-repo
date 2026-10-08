@@ -78,7 +78,7 @@ A journey is its own entity — it is not a child of a feature or a product, tho
 **Journeys created per active product:**
 Baseline: 0 (no journey entity exists today).
 Target: ≥1 journey created per active product within 4 weeks of release.
-Measured via: count of journey records in the `journeys` table per tenant.
+Measured via: count of journey records in the `customer_journeys` table per tenant.
 
 **New features mapped to a journey stage before definition:**
 Baseline: 0% (no mapping mechanism exists).
