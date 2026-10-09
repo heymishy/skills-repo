@@ -38945,10 +38945,10 @@
             {
               "slug": "ep2-s1",
               "name": "Feature picker: read pipeline-state.json and render feature list in modal",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T01:46:58.980Z",
+              "updatedAt": "2026-10-09T02:49:19.870Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s1-review-1.md",
@@ -38961,7 +38961,28 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Read pipeline-state.json and render the feature list (AC1, AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Client-side filter input (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Close/Escape handling with no server call (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
+                }
+              ],
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s1-dor.md"
             },
             {
               "slug": "ep2-s2",
