@@ -30,7 +30,7 @@
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Delivery view shows mapped features + selected metric keys/values per stage, or "No features mapped"/"No metrics selected" | 2 tests | 1 test | — | — | — | 🟢 |
 | AC2 | A mapped feature no longer in `pipeline-state.json` shows "⚠️ Feature not found (slug)" + a Remove affordance, no crash | 1 test | 1 test | — | — | — | 🟢 |
-| AC3 | Canvas/Customer experience/Delivery view toggle shows/hides annotation rows via CSS class, no server round-trip | — | — | — | — | — | 🟢 (jsdom behavioral) |
+| AC3 | Canvas/Customer experience/Delivery view toggle shows/hides annotation rows via CSS class, no server round-trip | 1 test | — | — | — | — | 🟢 (jsdom behavioral) |
 | AC4 | A selected metric key with no recorded value shows "No value recorded" | 1 test | — | — | — | — | 🟢 |
 | (new route) | `DELETE .../feature-mappings/:mappingId` — ownership check, 404-not-403 cross-tenant, deletes exactly the one row | — | 2 tests | — | — | — | 🟢 |
 | (shape) | New `DELETE` route regex does not collide with existing `/stages`/`/feature-mappings` regexes | 1 test | — | — | — | — | 🟢 |
@@ -87,6 +87,13 @@ None.
 - **Action:** Mock mapping `{ feature_slug: 'feat-b', metric_keys: [] }`
 - **Expected result:** The annotation row for `feat-b` shows the exact text "No metrics selected"
 - **Edge case:** Yes
+
+### Switching the view toggle shows/hides annotation rows via CSS class with no fetch call
+
+- **Verifies:** AC3
+- **Action:** Render the canvas (real script extraction + jsdom, same technique as `check-ep2-s1-feature-picker.js`/`check-ep2-s2-feature-mapping-save.js`), stub `window.fetch` to record calls, click the "Delivery" view-toggle button, then click "Canvas"
+- **Expected result:** After clicking "Delivery", the canvas root element's class list includes `sw-journey-canvas--view-delivery` and a `.sw-stage-annotations--delivery` block is visible (computed/inline style, not `display:none`); after clicking "Canvas", the class reverts and the annotation block is hidden again. Zero `fetch` calls recorded throughout — confirming the toggle never hits the network
+- **Edge case:** No
 
 ---
 

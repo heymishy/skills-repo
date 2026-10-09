@@ -85,7 +85,7 @@ Story: Delivery view: feature and metric annotation rows on stage cards -- artef
 Test plan: artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep2-s3-test-plan.md
 
 Goal:
-Make every test in the test plan pass (9 tests: 2 unit, 7 integration).
+Make every test in the test plan pass (9 tests: 3 unit, 6 integration).
 No E2E spec is required for this story (AC3's view toggle is a pure CSS-class
 swap, covered by a jsdom behavioral test). Do not add scope, behaviour, or
 structure beyond what the tests and ACs specify.
