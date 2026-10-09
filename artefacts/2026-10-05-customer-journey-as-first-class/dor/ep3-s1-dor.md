@@ -83,7 +83,7 @@ Story: Customer experience view: emotion, pain points, opportunities annotation 
 Test plan: artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep3-s1-test-plan.md
 
 Goal:
-Make every test in the test plan pass (4 tests: 3 unit, 1 jsdom behavioral).
+Make every test in the test plan pass (3 tests: 2 unit, 1 jsdom behavioral; the first test covers both AC1 and AC4 together).
 No E2E spec is required for this story. Do not add scope, behaviour, or
 structure beyond what the tests and ACs specify.
 

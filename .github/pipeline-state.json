@@ -39071,13 +39071,13 @@
               "stage": "branch-setup",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T22:52:08.474Z",
+              "updatedAt": "2026-10-09T22:53:41.683Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
+                "totalTests": 3,
                 "passing": 0
               },
               "acTotal": 4,
