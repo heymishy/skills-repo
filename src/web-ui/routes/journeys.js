@@ -538,6 +538,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     }).join('');
   }
 
+  // ep3-s1 -- builds one stage's Customer experience annotation markup:
+  // emotion (colour chip + text label, MC-A11Y-02 -- never colour alone),
+  // pain points, opportunities. All three rows always render, "Not set"
+  // when the underlying column is null -- never omitted (AC2).
+  function buildCustomerExperienceAnnotations(s) {
+    var emotionHtml = s.emotion
+      ? '<span class="sw-stage-emotion-chip sw-stage-emotion-chip--' + escHtml(s.emotion) + '">' + escHtml(s.emotion) + '</span>'
+      : 'Not set';
+    return (
+      '<p class="sw-stage-cx-row"><strong>Emotion:</strong> ' + emotionHtml + '</p>' +
+      '<p class="sw-stage-cx-row"><strong>Pain points:</strong> ' + (s.pain_points ? escHtml(s.pain_points) : 'Not set') + '</p>' +
+      '<p class="sw-stage-cx-row"><strong>Opportunities:</strong> ' + (s.opportunities ? escHtml(s.opportunities) : 'Not set') + '</p>'
+    );
+  }
+
   // AC4: each saved stage renders with its name, an "Edit stage" affordance
   // that opens the side panel (ep1-s3's own scope), and -- when applicable --
   // a visible moment-of-truth indicator.
@@ -565,6 +580,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           '</div>' +
           '<div class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + escHtml(s.id) + '">' +
             buildDeliveryAnnotations(s.id) +
+          '</div>' +
+          '<div class="sw-stage-annotations sw-stage-annotations--customer-experience" data-stage-id="' + escHtml(s.id) + '">' +
+            buildCustomerExperienceAnnotations(s) +
           '</div>'
         );
       }).join('')
@@ -730,6 +748,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-canvas-view-toggle-btn{background:none;border:1px solid var(--line);border-radius:6px;' +
         'padding:6px 12px;font-size:13px;color:var(--ink-2);cursor:pointer}' +
       '.sw-canvas-view-toggle-btn--active{background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}' +
+      '.sw-journey-canvas--view-customer-experience .sw-stage-annotations--customer-experience{display:block}' +
+      '.sw-stage-cx-row{margin:4px 0}' +
+      '.sw-stage-emotion-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff}' +
+      '.sw-stage-emotion-chip--positive{background:var(--success)}' +
+      '.sw-stage-emotion-chip--negative{background:var(--danger)}' +
+      '.sw-stage-emotion-chip--mixed{background:var(--warn)}' +
+      '.sw-stage-emotion-chip--neutral{background:var(--ink-2)}' +
     '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
