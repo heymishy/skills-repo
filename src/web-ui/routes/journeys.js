@@ -340,6 +340,53 @@ async function handlePostFeatureMapping(req, res, _next, pool) {
 }
 
 /**
+ * DELETE /journeys/:id/stages/:stageId/feature-mappings/:mappingId —
+ * remove one feature-to-stage mapping by its own id. Scoped narrowly to
+ * the Delivery view's "Remove" affordance on a feature-not-found warning
+ * row (decisions.md D16) -- the general case of editing/removing a VALID
+ * mapping remains deferred.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handleDeleteFeatureMapping(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var mappingId = req.params && req.params.mappingId;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+
+  // ep2-s3 -- same ownership-check-before-mutation / 404-not-403 cross-tenant
+  // policy as handlePostFeatureMapping (decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // Single-statement delete, no transaction needed -- matches this file's
+  // own convention of only wrapping multi-row writes in BEGIN/COMMIT (D6).
+  await pool.query(
+    `DELETE FROM feature_customer_journey_stage_mappings WHERE id = $1 AND journey_stage_id = $2`,
+    [mappingId, stageId]
+  );
+
+  if (res.status) { res.status(200).json({ id: mappingId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: mappingId })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -884,6 +931,32 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           '});' +
         '});' +
       '});' +
+      // ep2-s3 AC2/D16 -- Remove button on a feature-not-found warning row:
+      // a delegated click handler on `list` (reuses submitJson, same
+      // convention as every other mutating action in this script block).
+      'if(list){' +
+        'list.addEventListener("click",function(ev){' +
+          'var btn=ev.target.closest&&ev.target.closest(".sw-feature-mapping-remove");' +
+          'if(!btn)return;' +
+          'var mappingId=btn.getAttribute("data-mapping-id");' +
+          'var stageId=btn.getAttribute("data-stage-id");' +
+          'submitJson("/journeys/"+journeyId+"/stages/"+stageId+"/feature-mappings/"+mappingId,"DELETE",{_csrf:csrfToken})' +
+            '.then(function(){' +
+              'var row=btn.closest(".sw-feature-mapping-row");' +
+              'if(row)row.remove();' +
+            '})' +
+            '.catch(function(){' +
+              // Reuses the EXISTING reorderError banner (declared above,
+              // already used by submitOrder's own catch handler) rather
+              // than introducing a new UX convention/DOM element.
+              'if(reorderError){' +
+                'reorderError.textContent="Could not remove mapping — please try again";' +
+                'reorderError.classList.add("sw-stage-reorder-error--visible");' +
+                'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+              '}' +
+            '});' +
+        '});' +
+      '}' +
       // AC5 -- a genuine keyboard focus trap: Tab past the last focusable
       // element wraps to the first, Shift+Tab before the first wraps to the
       // last. (products.js's own ep4s1-pods-modal explicitly does NOT do
@@ -1251,4 +1324,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping };

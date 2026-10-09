@@ -40,6 +40,55 @@ function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
   };
 }
 
+/**
+ * @param {object} opts
+ * @param {object} [opts.stageRow] {id, journeyId, tenantId} -- the real, tenant-owned stage.
+ *   Omit (or mismatch params) to simulate a cross-tenant/not-found stage.
+ */
+function makeDeleteMockPool(opts) {
+  opts = opts || {};
+  var stageRow = opts.stageRow;
+  var deleteCalls = [];
+  return {
+    query: function(sql, params) {
+      var s = String(sql).trim();
+      if (/^SELECT cjs\.id FROM customer_journey_stages/.test(s)) {
+        var match = stageRow && stageRow.id === params[0] && stageRow.journeyId === params[1] && stageRow.tenantId === params[2];
+        return Promise.resolve({ rows: match ? [{ id: stageRow.id }] : [] });
+      }
+      if (/^DELETE FROM feature_customer_journey_stage_mappings/.test(s)) {
+        deleteCalls.push({ sql: s, params: params });
+        return Promise.resolve({ rows: [] });
+      }
+      return Promise.resolve({ rows: [] });
+    },
+    _state: function() { return { deleteCalls: deleteCalls }; }
+  };
+}
+
+// Deviation from the plan's literal makeDeleteReqRes: handleDeleteFeatureMapping
+// (per the plan itself) calls _csrf.csrfGuard first, which short-circuits on an
+// already-set req.body rather than reading the request stream (the mock req
+// here is a plain object, not a real EventEmitter -- calling req.on would throw
+// "req.on is not a function"). session.csrfToken + a matching body._csrf is the
+// established convention this codebase already uses for every other mutating
+// handler's own test mock (see check-ep1-s3-stage-panel.js, and
+// check-ep2-s2-feature-mapping-save.js's own makeMappingReqRes).
+var DELETE_CSRF = 'delete-test-csrf-token';
+function makeDeleteReqRes() {
+  var req = {
+    session: { tenantId: 't1', csrfToken: DELETE_CSRF },
+    params: { id: 'j1', stageId: 's1', mappingId: 'map-1' },
+    body: { _csrf: DELETE_CSRF }
+  };
+  var res = {
+    status: function(c) { this._s = c; return this; },
+    json: function(b) { this._b = b; },
+    _s: 200, _b: null
+  };
+  return { req: req, res: res };
+}
+
 function makeMockReqRes() {
   var req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
   var res = {
@@ -240,6 +289,98 @@ function buildDom(bodyContent) {
     assert.strictEqual(fetchCalls.length, 0, 'expected ZERO fetch calls -- the view toggle must never hit the network');
     pass('AC3 -- the view toggle shows/hides annotation rows via CSS class with no server round-trip');
   } catch (e) { fail('AC3 -- the view toggle shows/hides annotation rows via CSS class with no server round-trip', e); }
+
+  try {
+    var pool = makeDeleteMockPool({ stageRow: { id: 's1', journeyId: 'j1', tenantId: 't1' } });
+    var { req, res } = makeDeleteReqRes();
+    await journeys.handleDeleteFeatureMapping(req, res, null, pool);
+    var st = pool._state();
+    assert.strictEqual(res._s, 200, 'expected a 200 response');
+    assert.strictEqual(st.deleteCalls.length, 1, 'expected exactly one DELETE');
+    assert.strictEqual(st.deleteCalls[0].params[0], 'map-1', 'expected the DELETE to target the mapping id');
+    pass('(new route) -- removing an orphaned mapping deletes exactly the one targeted row');
+  } catch (e) { fail('(new route) -- removing an orphaned mapping deletes exactly the one targeted row', e); }
+
+  try {
+    // Same mock-pool/features setup as the AC2 markup test above (ghost-feature
+    // mapping on stage s1) -- but this time we actually click the real Remove
+    // button in a jsdom DOM, not just assert on the markup/handler in isolation.
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'ghost-feature', metric_keys: [] }]
+    );
+    var bodyContent = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+    var fetchCalls = [];
+    win.fetch = function(url, opts) { fetchCalls.push({ url: url, opts: opts }); return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    var removeBtn = win.document.querySelector('.sw-feature-mapping-remove');
+    assert.ok(removeBtn, 'expected a Remove button to exist in the rendered DOM');
+    removeBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call');
+    assert.strictEqual(fetchCalls[0].url, '/journeys/j1/stages/s1/feature-mappings/map-1', 'expected the fetch URL to target the exact mapping');
+    assert.strictEqual(fetchCalls[0].opts.method, 'DELETE', 'expected the fetch to use method DELETE');
+    assert.strictEqual(win.document.querySelector('.sw-feature-mapping-row'), null, 'expected the mapping row to be removed from the DOM after a successful delete');
+    pass('(new route, E2E) -- clicking Remove fires a DELETE fetch for the exact mapping and removes the row from the DOM on success');
+  } catch (e) { fail('(new route, E2E) -- clicking Remove fires a DELETE fetch for the exact mapping and removes the row from the DOM on success', e); }
+
+  try {
+    // Same setup as above, but the fetch resolves as a failure -- the row
+    // must NOT be removed, and the shared reorderError banner must show
+    // feedback instead of failing silently.
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'ghost-feature', metric_keys: [] }]
+    );
+    var bodyContent = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+    win.fetch = function() { return Promise.resolve({ ok: false, json: function() { return Promise.resolve({ error: 'Request failed' }); } }); };
+
+    var removeBtn = win.document.querySelector('.sw-feature-mapping-remove');
+    assert.ok(removeBtn, 'expected a Remove button to exist in the rendered DOM');
+    removeBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.ok(win.document.querySelector('.sw-feature-mapping-row'), 'expected the mapping row to STILL be present in the DOM after a failed delete');
+    var reorderError = win.document.getElementById('sw-stage-reorder-error');
+    assert.ok(reorderError, 'expected the shared reorderError banner element to exist');
+    assert.ok(reorderError.classList.contains('sw-stage-reorder-error--visible'), 'expected the shared reorderError banner to become visible on a failed delete (no silent failure)');
+    assert.ok(reorderError.textContent.length > 0, 'expected the shared reorderError banner to contain a user-visible message');
+    pass('(new route, E2E) -- a failed Remove delete leaves the row in place and shows visible error feedback, not a silent failure');
+  } catch (e) { fail('(new route, E2E) -- a failed Remove delete leaves the row in place and shows visible error feedback, not a silent failure', e); }
+
+  try {
+    // stageRow's own tenantId ('org-2') does not match the requester's session tenantId ('t1')
+    var pool = makeDeleteMockPool({ stageRow: { id: 's1', journeyId: 'j1', tenantId: 'org-2' } });
+    var { req, res } = makeDeleteReqRes();
+    await journeys.handleDeleteFeatureMapping(req, res, null, pool);
+    var st = pool._state();
+    assert.strictEqual(res._s, 404, 'expected a 404 response for a cross-tenant stage (not 403 -- see decisions.md D13)');
+    assert.strictEqual(st.deleteCalls.length, 0, 'expected ZERO deletes -- ownership must be checked before any mutation');
+    pass('(new route) -- a cross-tenant mapping delete returns 404, not 403, with no deletion');
+  } catch (e) { fail('(new route) -- a cross-tenant mapping delete returns 404, not 403, with no deletion', e); }
+
+  try {
+    var src = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/server.js'), 'utf8');
+    assert.ok(src.indexOf('feature-mappings') !== -1, 'expected a dispatch entry referencing feature-mappings');
+    var postOnlyRegex = /^\/journeys\/[^/]+\/stages\/[^/]+\/feature-mappings$/;
+    assert.ok(!postOnlyRegex.test('/journeys/j1/stages/s1/feature-mappings/map-1'), 'expected the existing POST feature-mappings regex to NOT match the new DELETE path (which has a 4th segment)');
+    pass('(shape) -- the new DELETE feature-mappings route does not collide with the existing POST route');
+  } catch (e) { fail('(shape) -- the new DELETE feature-mappings route does not collide with the existing POST route', e); }
 
   console.log('\n[ep2-s3-delivery-view] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exitCode = 1;
