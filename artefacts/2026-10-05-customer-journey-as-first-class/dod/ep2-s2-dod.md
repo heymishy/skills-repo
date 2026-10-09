@@ -13,9 +13,9 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ✅ | Selecting a feature shows a metric-key picker (checkbox per `feature.metricKeys` entry) or "No metrics recorded". `check-ep2-s2-feature-mapping-save.js` (shape test + jsdom behavioral test: real click on a feature-picker item → real sub-view/checkbox DOM assertions, reading the real-case `.sw-feature-picker-slug`/`.sw-feature-picker-name` text content, not the lowercased filter attributes) | `unit` only | Not live-verified on staging — see Outcome/RISK-ACCEPT below |
-| AC2 | ✅ | Confirming with metric keys selected inserts a complete mapping row (6 columns). `check-ep2-s2-feature-mapping-save.js` (integration test against `makeMappingMockPool`, asserts `BEGIN`→`SELECT...FOR UPDATE`→`INSERT`→`COMMIT` and all 6 inserted columns) | `unit`/`integration` only | Not live-verified on staging |
-| AC3 | ✅ | Confirming with zero metric keys selected inserts `metric_keys: []`. `check-ep2-s2-feature-mapping-save.js` (integration test, same mock-pool harness) | `unit`/`integration` only | Not live-verified on staging |
+| AC1 | ✅ | Selecting a feature shows a metric-key picker (checkbox per `feature.metricKeys` entry) or "No metrics recorded". `check-ep2-s2-feature-mapping-save.js` (shape test + jsdom behavioral test) + **real staging confirmation (2026-10-10):** `wuce-staging.fly.dev`, opened an existing journey (`chrome-verify-1791448856542`), clicked "Map feature" on the "Buy" stage, confirmed the modal lists the real live feature set, selected "Skills Infrastructure and Schema-Migration Pipeline Tracks" and confirmed the exact text "No metrics recorded" rendered (correct — no feature in the real `pipeline-state.json` has `metricKeys` populated yet, per D12) | `unit` + `live` (staging) | None |
+| AC2 | ✅ | Confirming with metric keys selected inserts a complete mapping row (6 columns). `check-ep2-s2-feature-mapping-save.js` (integration test against `makeMappingMockPool`, asserts `BEGIN`→`SELECT...FOR UPDATE`→`INSERT`→`COMMIT` and all 6 inserted columns) | `unit`/`integration` only | The metric-keys-selected save path itself was not live-exercised (no real feature has `metricKeys` populated yet to select from) — the zero-keys save path was (see AC3) |
+| AC3 | ✅ | Confirming with zero metric keys selected inserts `metric_keys: []`. `check-ep2-s2-feature-mapping-save.js` (integration test, same mock-pool harness) + **real staging confirmation (2026-10-10):** clicked "Save mapping" with zero metric keys available/selected — the request succeeded, the modal closed cleanly, and the stage card showed no visible change (correct per this story's own scope) | `unit`/`integration` + `live` (staging) | None |
 | AC4 | ✅ | Mapping the same feature+stage twice → exactly one row, latest keys win. `check-ep2-s2-feature-mapping-save.js` (integration test: app-level `SELECT...FOR UPDATE` then `UPDATE`-or-`INSERT` inside one transaction, since the real table has no unique constraint to support `ON CONFLICT`) | `unit`/`integration` only | Not live-verified on staging |
 | AC5 | ✅ | Cross-tenant `journey_stage_id` → 404, no insert. `check-ep2-s2-feature-mapping-save.js` (integration test: ownership `SELECT` before `pool.connect()`). Wording corrected from the story's original "403" to "404", matching this codebase's established FORBIDDEN-vs-NOT_FOUND convention (`decisions.md` D13) | `unit`/`integration` only | AC text corrected (D13); not live-verified on staging |
 
@@ -48,7 +48,7 @@ No visible stage-card UI change after saving — confirmed correct per story sco
 | End-to-end (success path, modal-close assertion) | ✅ | ✅ | Added during code-quality review |
 | End-to-end (failure path, error-message assertion) | ✅ | ✅ | |
 
-**Gaps:** None in the test-plan sense. All 5 ACs have dedicated passing test coverage. The live-browser confirmation committed to in `decisions.md` D14 could not be completed this session — see Outcome below.
+**Gaps:** None in the test-plan sense. All 5 ACs have dedicated passing test coverage. The live-browser confirmation committed to in `decisions.md` D14 was completed in a follow-up session on 2026-10-10 — see Outcome below.
 
 ---
 
@@ -74,11 +74,11 @@ No visible stage-card UI change after saving — confirmed correct per story sco
 
 ## Outcome
 
-**COMPLETE (RISK-ACCEPT on live-browser confirmation — see below)**
+**COMPLETE**
 
 All 5 ACs satisfied with unit/integration-test evidence (9/9 passing, including 2 end-to-end jsdom wiring tests). No scope deviations beyond the test-only CSRF-helper fix. CI fully green. `npm test` on master: 729 files, 0 failed.
 
-`decisions.md` D14 committed a post-merge live-browser confirmation as a required DoD step for this story (same precedent as `ep2-s1`'s own D11). That confirmation was **started but could not be completed this session**: navigating to `https://wuce-staging.fly.dev/customer-journeys` hit the deploy-triggered session-logout pattern (recurring a 7th time this session), and the required GitHub OAuth re-login could not be completed within this session due to a new browser-automation tooling blocker (see `workspace/capture-log.md`, 2026-10-10 entry, and the new RISK-ACCEPT amendment to D14 in `decisions.md`) — the operator reports this specific re-login friction is new behaviour in the Claude-in-Chrome browser-automation tool itself (working without repeated manual re-login as recently as a week ago), not a change in this repo's own deploy/session behaviour. This DoD is closed on the existing test evidence alone; the live confirmation remains an open `pendingActions` item in `workspace/state.json`, to be completed once a tooling fix (candidate: scripted Playwright verification with a persisted/non-interactive staging auth path) is in place.
+`decisions.md` D14 committed a post-merge live-browser confirmation as a required DoD step for this story (same precedent as `ep2-s1`'s own D11). That confirmation was initially blocked: navigating to `https://wuce-staging.fly.dev/customer-journeys` hit the deploy-triggered session-logout pattern (recurring a 7th time that session), and the required GitHub OAuth re-login could not be completed in that session due to a new browser-automation tooling blocker (see `workspace/capture-log.md`, 2026-10-10 entry, and the RISK-ACCEPT amendment to D14 in `decisions.md`). The operator logged into the staging tab in a follow-up session on 2026-10-10, and the live confirmation was completed then: on `wuce-staging.fly.dev`, opened an existing journey (`chrome-verify-1791448856542`), clicked "Map feature" on the "Buy" stage, confirmed the real live feature list renders, selected a real feature and confirmed "No metrics recorded" renders correctly (no feature in the real `pipeline-state.json` has `metricKeys` populated yet — expected, per D12), clicked "Save mapping" with zero metric keys, and confirmed the request succeeded with the modal closing cleanly and no visible stage-card change (correct per this story's own scope). AC2's metric-keys-selected save path and AC4/AC5 (upsert-replaces-not-duplicates, cross-tenant 404) remain confirmed via integration test only — AC2's keys-selected path has no real feature with `metricKeys` populated to select from yet, and AC4/AC5 are DB-level/API-level checks outside normal UI reach, both consistent with `ep2-s1`'s own AC3 precedent for the same class of gap.
 
 Same two pre-existing CI workflow findings observed on this merge commit, not re-logged in detail (already documented in `ep2-s1`'s own DoD and `capture-log.md`):
 1. **Deploy dashboards to GitHub Pages** — repo-configuration issue, unrelated to this story's code.
@@ -107,15 +107,16 @@ Review this Definition of Done artefact for "Feature-to-stage mapping
 save with metric key selection" (ep2-s2). Check:
 1. Does every AC row have a concrete evidence reference (test name or
    observable behaviour)?
-2. Is closing this DoD without the live-browser confirmation committed
-   in decisions.md D14 the right call, given the deferral is for a new
-   tooling blocker (browser-automation re-login friction) rather than a
-   data-safety or code-correctness gap, and all 5 ACs have passing
-   integration-test coverage including the transactional upsert path?
+2. Is it acceptable that AC2's metric-keys-selected save path and AC4/AC5
+   (upsert-replaces-not-duplicates, cross-tenant 404) remain confirmed
+   by integration test only, not live, given AC2's path has no real
+   feature with metricKeys populated yet to select from and AC4/AC5 are
+   DB-level/API-level checks outside normal UI reach?
 3. Should the Playwright/non-interactive-auth tooling fix (Follow-up
-   action 1) become its own short-track story now, given it has now
-   blocked a committed live-verification step for the first time?
-4. Is the outcome verdict (COMPLETE, RISK-ACCEPT on live-browser
-   confirmation) consistent with the AC rows and the new decisions.md
-   entry?
+   action 1) still become its own short-track story, given the
+   browser-automation re-login friction it addresses did recur (7
+   times) even though it was eventually worked around this time?
+4. Is the outcome verdict (COMPLETE) consistent with the AC rows now
+   that the live-browser confirmation committed in decisions.md D14 has
+   been completed?
 ```
