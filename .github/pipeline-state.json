@@ -39068,10 +39068,10 @@
             {
               "slug": "ep3-s1",
               "name": "Customer experience view: emotion, pain points, opportunities annotation rows",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T23:30:31.780Z",
+              "updatedAt": "2026-10-09T23:31:13.884Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md",
@@ -39084,7 +39084,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep3-s1-dor.md",
               "verifyStatus": "passed",
-              "acVerified": 4
+              "acVerified": 4,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/968"
             },
             {
               "slug": "ep3-s2",
