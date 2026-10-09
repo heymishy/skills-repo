@@ -292,6 +292,75 @@ function buildDom(bodyContent) {
     pass('(shape) -- new feature-mappings route does not collide with the existing /stages/:stageId regex');
   } catch (e) { fail('(shape) -- new feature-mappings route does not collide with the existing /stages/:stageId regex', e); }
 
+  try {
+    var pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [{ id: 's1', name: 'Stage 1', position: 0 }]);
+    var featuresJson = JSON.stringify({ features: [{ slug: 'feat-a', name: 'Feature A', metricKeys: ['M1', 'M2'] }] });
+    var bodyContent = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+
+    var fetchCalls = [];
+    win.fetch = function(url, opts) {
+      fetchCalls.push({ url: url, opts: opts });
+      return Promise.resolve({ ok: true, json: function() { return Promise.resolve({ id: 'm1' }); } });
+    };
+
+    var mapBtn = win.document.querySelector('.sw-stage-map-feature');
+    mapBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    var item = win.document.querySelector('.sw-feature-picker-item');
+    item.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    var checkbox = win.document.querySelector('.sw-feature-mapping-metric-checkbox');
+    checkbox.checked = true;
+    win.document.getElementById('sw-feature-mapping-save').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call on Save');
+    assert.strictEqual(fetchCalls[0].url, '/journeys/j1/stages/s1/feature-mappings', 'expected the fetch URL to target this journey/stage');
+    var body = JSON.parse(fetchCalls[0].opts.body);
+    assert.strictEqual(body.featureSlug, 'feat-a', 'expected the correct featureSlug in the POST body');
+    assert.deepStrictEqual(body.metricKeys, ['M1'], 'expected only the checked metric key in the POST body');
+    assert.ok(!win.document.getElementById('sw-feature-picker-modal').classList.contains('sw-feature-picker-modal--open'), 'expected the modal to actually close (lose the --open class) after a successful save');
+    pass('(wiring) -- clicking Save POSTs the correct journeyId/stageId/featureSlug/metricKeys');
+  } catch (e) { fail('(wiring) -- clicking Save POSTs the correct journeyId/stageId/featureSlug/metricKeys', e); }
+
+  try {
+    var pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [{ id: 's1', name: 'Stage 1', position: 0 }]);
+    var featuresJson = JSON.stringify({ features: [{ slug: 'feat-a', name: 'Feature A', metricKeys: ['M1', 'M2'] }] });
+    var bodyContent = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+
+    var fetchCalls = [];
+    win.fetch = function(url, opts) {
+      fetchCalls.push({ url: url, opts: opts });
+      return Promise.resolve({ ok: false, json: function() { return Promise.resolve({ error: 'stage not found' }); } });
+    };
+
+    var mapBtn = win.document.querySelector('.sw-stage-map-feature');
+    mapBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    var item = win.document.querySelector('.sw-feature-picker-item');
+    item.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    win.document.getElementById('sw-feature-mapping-save').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call on Save');
+    var fmError = win.document.getElementById('sw-feature-mapping-error');
+    assert.strictEqual(fmError.textContent, 'stage not found', 'expected the error message to be shown on a failed save');
+    var fpModal = win.document.getElementById('sw-feature-picker-modal');
+    assert.ok(fpModal.classList.contains('sw-feature-picker-modal--open'), 'expected the modal to remain open after a failed save');
+    pass('(wiring) -- a failed save shows the error message and does not close the modal');
+  } catch (e) { fail('(wiring) -- a failed save shows the error message and does not close the modal', e); }
+
   console.log('\n[ep2-s2-feature-mapping-save] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exitCode = 1;
 })();

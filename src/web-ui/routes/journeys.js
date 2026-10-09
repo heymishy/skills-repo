@@ -825,10 +825,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     // above -- Task 3 (open/close modal handling) extends THIS block, not
     // that one.
     '<script>(function(){' +
+      'var journeyId=' + JSON.stringify(journey.id) + ';' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
       'var fpModal=document.getElementById("sw-feature-picker-modal");' +
       'var fpClose=document.getElementById("sw-feature-picker-close");' +
       'var fpSearch=document.getElementById("sw-feature-picker-search");' +
       'var fpTriggerEl=null;' +
+      'var fpStageId=null;' +
       'var featureMetricKeys=' + featureMetricKeysJson + ';' +
       'var fmView=document.getElementById("sw-feature-mapping-view");' +
       'var fmNameEl=document.getElementById("sw-feature-mapping-name");' +
@@ -890,8 +893,27 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'fmShowFeature(realSlug,realName);' +
         '});' +
       '});' +
+      'var fmSave=document.getElementById("sw-feature-mapping-save");' +
+      'var fmError=document.getElementById("sw-feature-mapping-error");' +
+      'if(fmSave){' +
+        'fmSave.addEventListener("click",function(){' +
+          'if(!fmSelectedSlug||!fpStageId)return;' +
+          'var checked=Array.prototype.slice.call(document.querySelectorAll(".sw-feature-mapping-metric-checkbox:checked")).map(function(cb){return cb.value;});' +
+          'fetch("/journeys/"+journeyId+"/stages/"+fpStageId+"/feature-mappings",{' +
+            'method:"POST",' +
+            'headers:{"Content-Type":"application/json"},' +
+            'body:JSON.stringify({featureSlug:fmSelectedSlug,metricKeys:checked,_csrf:csrfToken})' +
+          '}).then(function(r){' +
+            'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||"Request failed");});}' +
+            'fpCloseFn();' +
+          '}).catch(function(e){' +
+            'if(fmError)fmError.textContent=e.message;' +
+          '});' +
+        '});' +
+      '}' +
       'function fpOpen(trigger){' +
         'fpTriggerEl=trigger||document.activeElement;' +
+        'fpStageId=trigger&&trigger.getAttribute?trigger.getAttribute("data-stage-id"):null;' +
         'fpModal.classList.add("sw-feature-picker-modal--open");' +
         'fpModal.setAttribute("aria-hidden","false");' +
         'if(fpSearch)fpSearch.focus();' +
