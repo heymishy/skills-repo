@@ -38945,17 +38945,17 @@
             {
               "slug": "ep2-s1",
               "name": "Feature picker: read pipeline-state.json and render feature list in modal",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T02:49:19.870Z",
+              "updatedAt": "2026-10-09T04:10:45.454Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s1-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -38966,19 +38966,19 @@
                 {
                   "id": "task-1",
                   "name": "Read pipeline-state.json and render the feature list (AC1, AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Client-side filter input (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Close/Escape handling with no server call (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
                 }
               ],

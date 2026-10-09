@@ -31,7 +31,7 @@ Modify:
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ep2-s1-feature-picker.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```javascript
 'use strict';
@@ -152,7 +152,7 @@ function withMockedPipelineState(jsonStringOrThrow, fn) {
 })();
 ```
 
-- [ ] **Step 2: Run tests — must fail**
+- [x] **Step 2: Run tests — must fail**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -160,7 +160,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: `TypeError: journeys.handleGetJourneyCanvas is not a function` or assertion failures — the feature picker markup does not exist yet.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `src/web-ui/routes/journeys.js`, add the import at the top of the file (after the existing `_csrf` require):
 
@@ -286,7 +286,7 @@ Finally, wire `featurePickerModalHtml` into `bodyContent` (insert after `panelHt
 
 Do not touch anything inside the existing `<script>(function(){...})()` block in this task — that is Task 2/3's job.
 
-- [ ] **Step 4: Run tests — must pass**
+- [x] **Step 4: Run tests — must pass**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -294,7 +294,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: `All ep2-s1 Task 1 tests passed.` (all 5 assertions in the block above pass)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -302,12 +302,14 @@ npm test
 
 Expected output: all tests passing (728 files including the new one, 0 failed)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ep2-s1-feature-picker.js
 git commit -m "feat: feature picker reads pipeline-state.json with explicit error/empty/populated states (ep2-s1 AC1, AC3)"
 ```
+
+**Completed.** Final commit (after a post-review amend to match the pass/fail/tally test convention from `check-ep1-s4-stage-reorder.js`): `326a634f`. Spec compliance ✅, code quality ✅ — both via dispatched subagent review.
 
 ---
 
@@ -317,7 +319,7 @@ git commit -m "feat: feature picker reads pipeline-state.json with explicit erro
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ep2-s1-feature-picker.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ep2-s1-feature-picker.js`, inside the `(async function() { ... })()` IIFE, before the final `console.log('\nAll ep2-s1 Task 1 tests passed.')` line (rename that final line to `'All ep2-s1 tests passed.'` once all tasks are done):
 
@@ -340,7 +342,7 @@ Append to `tests/check-ep2-s1-feature-picker.js`, inside the `(async function() 
   })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -348,7 +350,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: pass (Task 1 already wrote the filter input and `data-*` attributes as part of the modal markup) — **if this unexpectedly passes without any new implementation, that confirms Task 1's markup already satisfies AC2's structural requirement; proceed to Step 3 to add the actual filtering BEHAVIOUR (the `swFilterFeaturePicker` function body), which Task 1 deliberately left unimplemented (the `oninput` handler references a function that does not exist yet).**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 At the very end of `bodyContent`'s construction — after the existing `'})()<\/script>';` line that closes the stage-panel/reorder script — change the final semicolon-terminated assignment to append a second, separate `<script>` block:
 
@@ -376,7 +378,7 @@ At the very end of `bodyContent`'s construction — after the existing `'})()<\/
 
 (Task 3 will extend this same new `<script>` block with the open/close handlers — do not duplicate the `(function(){...})()` wrapper.)
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -384,7 +386,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: `All ep2-s1 tests passed.` (AC2 test passes — the `oninput` attribute and `data-*` attributes were already present from Task 1; this step adds the actual filter behaviour the handler invokes)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -392,12 +394,14 @@ npm test
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ep2-s1-feature-picker.js
 git commit -m "feat: client-side filter for the feature picker's rendered list (ep2-s1 AC2)"
 ```
+
+**Completed.** Final commit (after a post-review amend adding a real jsdom behavioral test for the filter logic, per code-quality review): `ae6005ab`. Spec compliance ✅, code quality ✅.
 
 ---
 
@@ -407,7 +411,7 @@ git commit -m "feat: client-side filter for the feature picker's rendered list (
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ep2-s1-feature-picker.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ep2-s1-feature-picker.js`, before the final summary line:
 
@@ -424,7 +428,7 @@ Append to `tests/check-ep2-s1-feature-picker.js`, before the final summary line:
   })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -432,7 +436,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: `AssertionError: expected the feature-picker close button to be wired in the script` — the open/close handlers (referencing `fpModal`, `sw-feature-picker-close`) do not exist yet.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Extend the same second `<script>` block added in Task 2 (do not add a third `(function(){...})()` wrapper — add these lines inside the existing one, before the `window.swFilterFeaturePicker=function(){...}` assignment):
 
@@ -478,7 +482,7 @@ Extend the same second `<script>` block added in Task 2 (do not add a third `(fu
 
 This is the complete final form of the second `<script>` block — it supersedes the partial version written in Task 2 Step 3 (same block, now with open/close handlers added above the filter function).
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ep2-s1-feature-picker.js
@@ -486,7 +490,7 @@ node tests/check-ep2-s1-feature-picker.js
 
 Expected output: `All ep2-s1 tests passed.` (7/7 tests passing)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -494,12 +498,14 @@ npm test
 
 Expected output: all tests passing, 0 failed
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ep2-s1-feature-picker.js
 git commit -m "feat: feature picker open/close handling, no server call on close (ep2-s1 AC4)"
 ```
+
+**Completed.** Final commit: `660a026c`. Spec compliance ✅, code quality ✅ (Minor notes only, no fix required).
 
 ---
 
