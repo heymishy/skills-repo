@@ -39040,18 +39040,20 @@
               "stage": "branch-setup",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-09T18:00:36.136Z",
+              "updatedAt": "2026-10-09T20:22:43.451Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s3-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 11,
+                "passing": 11
               },
               "acTotal": 4,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s3-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s3-dor.md",
+              "verifyStatus": "passed",
+              "acVerified": 4
             }
           ]
         },
