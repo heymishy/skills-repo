@@ -38945,10 +38945,10 @@
             {
               "slug": "ep2-s1",
               "name": "Feature picker: read pipeline-state.json and render feature list in modal",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T04:10:45.454Z",
+              "updatedAt": "2026-10-09T04:57:22.862Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s1-review-1.md",
@@ -38958,7 +38958,7 @@
                 "passing": 9
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -38982,7 +38982,8 @@
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s1-plan.md"
                 }
               ],
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s1-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s1-dor.md",
+              "verifyStatus": "passed"
             },
             {
               "slug": "ep2-s2",
