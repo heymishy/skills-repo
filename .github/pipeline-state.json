@@ -39068,13 +39068,21 @@
             {
               "slug": "ep3-s1",
               "name": "Customer experience view: emotion, pain points, opportunities annotation rows",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "updatedAt": "2026-10-09T22:51:21.189Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep3-s1-dor.md"
             },
             {
               "slug": "ep3-s2",

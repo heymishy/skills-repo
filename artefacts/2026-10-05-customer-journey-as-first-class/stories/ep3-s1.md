@@ -10,7 +10,7 @@ So that **I can review the customer experience dimension of each stage alongside
 ## Benefit Linkage
 M1 — Journey adoption — a richer canvas with multiple view modes makes journeys more valuable to practitioners, supporting sustained adoption beyond initial creation.
 ## Architecture Constraints
-View toggle is client-side (no server round-trip). Emotion display must use colour chip + text label (MC-A11Y-02 — not colour alone). No new npm runtime dependencies.
+View toggle is client-side (no server round-trip). Emotion display must use colour chip + text label (MC-A11Y-02 — not colour alone). No new npm runtime dependencies. ADR-016 (`pipeline-state.json` read-only — not applicable to this story's own data source, but the canvas page it extends is governed by it; `emotion`/`pain_points`/`opportunities` are read-only Postgres columns, not written by this story).
 ## Dependencies
 ep1-s3, ep2-s3
 ## Acceptance Criteria
