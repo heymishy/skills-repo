@@ -16,7 +16,7 @@ ep1-s2, ep5-s1
 ## Acceptance Criteria
 **AC1:** Given I click "Map feature" on a stage card or in the Delivery view,
 When the feature picker modal opens,
-Then it displays a list of features from `pipeline-state.json` (all features for the tenant's repo), each showing the feature name and slug.
+Then it displays a list of features from the local `pipeline-state.json` (all features in the file — tenant scoping applies to mappings saved against them, not to the feature list itself), each showing the feature name and slug.
 
 **AC2:** Given the feature list is long,
 When the modal renders,
