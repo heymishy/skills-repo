@@ -710,7 +710,27 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     // that one.
     '<script>(function(){' +
       'var fpModal=document.getElementById("sw-feature-picker-modal");' +
+      'var fpClose=document.getElementById("sw-feature-picker-close");' +
       'var fpSearch=document.getElementById("sw-feature-picker-search");' +
+      'var fpTriggerEl=null;' +
+      'function fpOpen(trigger){' +
+        'fpTriggerEl=trigger||document.activeElement;' +
+        'fpModal.classList.add("sw-feature-picker-modal--open");' +
+        'fpModal.setAttribute("aria-hidden","false");' +
+        'if(fpSearch)fpSearch.focus();' +
+      '}' +
+      'function fpCloseFn(){' +
+        'fpModal.classList.remove("sw-feature-picker-modal--open");' +
+        'fpModal.setAttribute("aria-hidden","true");' +
+        'if(fpTriggerEl&&typeof fpTriggerEl.focus==="function")fpTriggerEl.focus();' +
+      '}' +
+      'if(fpClose)fpClose.addEventListener("click",fpCloseFn);' +
+      'document.addEventListener("keydown",function(evt){' +
+        'if(fpModal.classList.contains("sw-feature-picker-modal--open")&&evt.key==="Escape")fpCloseFn();' +
+      '});' +
+      'Array.prototype.slice.call(document.querySelectorAll(".sw-stage-map-feature")).forEach(function(btn){' +
+        'btn.addEventListener("click",function(){fpOpen(btn);});' +
+      '});' +
       'window.swFilterFeaturePicker=function(){' +
         'if(!fpSearch)return;' +
         'var q=(fpSearch.value||"").trim().toLowerCase();' +

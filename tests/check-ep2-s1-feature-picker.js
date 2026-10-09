@@ -203,6 +203,60 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC2 (behavioral) -- swFilterFeaturePicker actually hides non-matching items and toggles the empty-state message');
   } catch (e) { fail('AC2 (behavioral) -- swFilterFeaturePicker actually hides non-matching items and toggles the empty-state message', e); }
 
+  // ── AC4 -- closing the picker without selecting a feature issues no write ──
+  try {
+    var src = fs.readFileSync(require.resolve('../src/web-ui/routes/journeys'), 'utf8');
+    var modalScriptStart = src.indexOf('sw-feature-picker-close');
+    assert.ok(modalScriptStart !== -1, 'expected the feature-picker close button to be wired in the script');
+    var scriptSection = src.slice(src.indexOf('fpModal'), src.indexOf('fpModal') + 1200);
+    assert.ok(scriptSection.indexOf('fetch(') === -1, 'expected no fetch( call anywhere in the feature-picker close-handling script section');
+    assert.ok(scriptSection.indexOf('POST') === -1, 'expected no POST anywhere in the feature-picker close-handling script section');
+    pass('AC4 -- closing the picker without selecting a feature issues no write');
+  } catch (e) { fail('AC4 -- closing the picker without selecting a feature issues no write', e); }
+
+  // ── AC4 (behavioral) -- clicking "Map feature" opens the modal and focuses search; close button closes it, issues no fetch, and restores focus ──
+  try {
+    var pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [
+      { id: 's1', name: 'Stage 1', position: 0, description: null, customer_actions: null, touchpoints: null, channel: null, emotion: null, pain_points: null, opportunities: null, moment_of_truth: false }
+    ]);
+    var featuresJson = JSON.stringify({ features: [
+      { slug: 'feat-a', name: 'Feature A' }
+    ] });
+    var out = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var scriptSrc = extractFeaturePickerScript(out);
+    var dom = new JSDOM('<!DOCTYPE html><html><body>' + out + '</body></html>', {
+      runScripts: 'outside-only',
+      url: 'http://localhost/journeys/j1'
+    });
+    dom.window.eval(scriptSrc);
+    var win = dom.window;
+    var doc = win.document;
+
+    var mapBtn = doc.querySelector('.sw-stage-map-feature');
+    assert.ok(mapBtn, 'expected a .sw-stage-map-feature button in the rendered DOM');
+    mapBtn.focus();
+    mapBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    var modalEl = doc.getElementById('sw-feature-picker-modal');
+    assert.strictEqual(modalEl.classList.contains('sw-feature-picker-modal--open'), true, 'expected the modal to have the --open class after clicking Map feature');
+    assert.strictEqual(modalEl.getAttribute('aria-hidden'), 'false', 'expected aria-hidden="false" after opening');
+    assert.strictEqual(doc.activeElement, doc.getElementById('sw-feature-picker-search'), 'expected focus to move to the search input after opening');
+
+    var closeBtn = doc.getElementById('sw-feature-picker-close');
+    assert.ok(closeBtn, 'expected a close button in the rendered DOM');
+    closeBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    assert.strictEqual(modalEl.classList.contains('sw-feature-picker-modal--open'), false, 'expected the --open class to be removed after closing');
+    assert.strictEqual(modalEl.getAttribute('aria-hidden'), 'true', 'expected aria-hidden="true" after closing');
+    assert.strictEqual(doc.activeElement, mapBtn, 'expected focus to return to the triggering Map feature button after closing');
+
+    pass('AC4 (behavioral) -- clicking Map feature opens the modal and focuses search; close button closes it and restores focus');
+  } catch (e) { fail('AC4 (behavioral) -- clicking Map feature opens the modal and focuses search; close button closes it and restores focus', e); }
+
   console.log(`\n[ep2-s1-feature-picker] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();
