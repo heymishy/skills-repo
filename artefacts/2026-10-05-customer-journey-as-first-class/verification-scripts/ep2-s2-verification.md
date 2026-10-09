@@ -63,7 +63,7 @@
 3. Click "Save mapping".
 
 **Expected outcome:**
-> The modal closes. The stage card now shows a visible badge or annotation indicating a feature is mapped to it, along with the selected metric keys.
+> The modal closes cleanly, same as closing without selecting anything. (This story does not add any visible badge or annotation to the stage card — that's a separate, later story. To confirm the mapping actually saved, you'd need to check the database directly or wait for that later story's own display.)
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -80,7 +80,7 @@
 3. Click "Save mapping".
 
 **Expected outcome:**
-> The mapping still saves successfully — the stage shows the feature is mapped, just with no metric keys attached. No error.
+> The modal closes cleanly, same as Scenario 3 — no error shown. (Again, no visible stage-card change is expected from this story; the mapping itself having zero metric keys is a database-level detail, not a UI one.)
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -99,6 +99,21 @@
 
 **Expected outcome:**
 > The stage shows exactly one mapping for that feature — not two side by side. The shown metric key is "B" (the most recent selection), not "A".
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 5 (continued): Confirming the re-map actually replaced the old value
+
+**Covers:** AC4 (data-level confirmation)
+
+**Steps:**
+1. Since this story adds no visible stage-card UI, confirming Scenario 5's outcome directly requires checking the database: `SELECT metric_keys FROM feature_customer_journey_stage_mappings WHERE journey_stage_id = '<stage id>' AND feature_slug = '<feature slug>';`
+
+**Expected outcome:**
+> Exactly one row is returned (not two), and its `metric_keys` column shows `["B"]` (the most recent selection), not `["A"]`.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -130,6 +145,7 @@
 | Scenario 3 — save with metrics | | |
 | Scenario 4 — save with no metrics | | |
 | Scenario 5 — re-map updates, not duplicates | | |
+| Scenario 5 (continued) — DB confirms replacement | | |
 | Edge case — cross-tenant rejection | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
