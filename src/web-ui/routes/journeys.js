@@ -340,6 +340,53 @@ async function handlePostFeatureMapping(req, res, _next, pool) {
 }
 
 /**
+ * DELETE /journeys/:id/stages/:stageId/feature-mappings/:mappingId —
+ * remove one feature-to-stage mapping by its own id. Scoped narrowly to
+ * the Delivery view's "Remove" affordance on a feature-not-found warning
+ * row (decisions.md D16) -- the general case of editing/removing a VALID
+ * mapping remains deferred.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handleDeleteFeatureMapping(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var mappingId = req.params && req.params.mappingId;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+
+  // ep2-s3 -- same ownership-check-before-mutation / 404-not-403 cross-tenant
+  // policy as handlePostFeatureMapping (decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // Single-statement delete, no transaction needed -- matches this file's
+  // own convention of only wrapping multi-row writes in BEGIN/COMMIT (D6).
+  await pool.query(
+    `DELETE FROM feature_customer_journey_stage_mappings WHERE id = $1 AND journey_stage_id = $2`,
+    [mappingId, stageId]
+  );
+
+  if (res.status) { res.status(200).json({ id: mappingId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: mappingId })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -371,6 +418,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     featuresLoadError = true;
   }
 
+  // ep2-s3 -- slug-keyed lookup for joining mappings against the features
+  // list already read above. Features with no matching mapping are simply
+  // never looked up; mappings with no matching feature fall through to the
+  // "Feature not found" branch in buildDeliveryAnnotations below (AC2).
+  var featuresBySlug = {};
+  features.forEach(function(f) { featuresBySlug[f.slug] = f; });
+
   // ep2-s2 -- embed each feature's own optional metricKeys (string[]) for the
   // metric-key sub-view, keyed by the feature's REAL (not lowercased) slug.
   // Nothing currently writes this field (decisions.md D12) -- every feature
@@ -400,6 +454,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   );
   var stages = sr.rows || [];
 
+  // ep2-s3 -- read every feature-to-stage mapping for this journey in one
+  // query, grouped client-side (in this function) by stage id. No separate
+  // tenant_id filter needed here -- the journey's own tenant ownership was
+  // already verified above (the customer_journeys SELECT that 404s before
+  // this point runs).
+  var mr = await pool.query(
+    `SELECT id, journey_stage_id, feature_slug, metric_keys FROM feature_customer_journey_stage_mappings WHERE journey_id = $1`,
+    [journeyId]
+  );
+  var mappingsByStage = {};
+  (mr.rows || []).forEach(function(m) {
+    if (!mappingsByStage[m.journey_stage_id]) mappingsByStage[m.journey_stage_id] = [];
+    mappingsByStage[m.journey_stage_id].push(m);
+  });
+
   // ep1-s3 -- 20x20/1.5px-stroke icon per DESIGN.md's own icon spec, not a
   // unicode glyph (DESIGN.md rule 5 explicitly disallows those in new work).
   var MOMENT_OF_TRUTH_ICON =
@@ -418,6 +487,56 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M10 4v12M4 11l6 6 6-6"/>' +
     '</svg>';
+
+  // ep2-s3 -- 14x14/20x20-viewBox/1.5px-stroke icon per DESIGN.md's own
+  // icon spec, not a unicode glyph (rule 5 explicitly disallows those in
+  // new work) -- matches MOMENT_OF_TRUTH_ICON/ARROW_UP_ICON/ARROW_DOWN_ICON's
+  // own precedent above.
+  var WARNING_ICON =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M10 2L1 17h18L10 2z"/><path d="M10 8v4"/><path d="M10 15h.01"/>' +
+    '</svg>';
+
+  // ep2-s3 -- builds one stage's Delivery-view annotation markup. Three
+  // cases, never conflated: no mappings at all (AC1 boundary), a mapping
+  // whose feature no longer resolves (AC2), and a normal mapping with
+  // its selected metric keys/values (AC1/AC4). metricValues is read the
+  // same optional-field way metricKeys already is (decisions.md D15) --
+  // nothing populates it yet, so every value correctly falls through to
+  // "No value recorded" today.
+  function buildDeliveryAnnotations(stageId) {
+    var mappings = mappingsByStage[stageId] || [];
+    if (mappings.length === 0) {
+      return '<p class="sw-stage-annotations-empty">No features mapped</p>';
+    }
+    return mappings.map(function(m) {
+      var feature = featuresBySlug[m.feature_slug];
+      if (!feature) {
+        return '<div class="sw-feature-mapping-row sw-feature-mapping-row--missing">' +
+          '<span class="sw-feature-mapping-warning">' + WARNING_ICON + ' Feature not found (' + escHtml(m.feature_slug) + ')</span>' +
+          '<button type="button" class="sw-feature-mapping-remove" data-mapping-id="' + escHtml(m.id) + '" data-stage-id="' + escHtml(stageId) + '">Remove</button>' +
+        '</div>';
+      }
+      var metricKeys = Array.isArray(m.metric_keys) ? m.metric_keys : [];
+      var metricsHtml;
+      if (metricKeys.length === 0) {
+        metricsHtml = '<p class="sw-feature-mapping-metrics-empty">No metrics selected</p>';
+      } else {
+        var values = (feature.metricValues && typeof feature.metricValues === 'object') ? feature.metricValues : {};
+        metricsHtml = '<ul class="sw-feature-mapping-metric-values">' +
+          metricKeys.map(function(k) {
+            var hasValue = Object.prototype.hasOwnProperty.call(values, k);
+            var rendered = hasValue ? escHtml(String(values[k])) : 'No value recorded';
+            return '<li>' + escHtml(k) + ': ' + rendered + '</li>';
+          }).join('') +
+        '</ul>';
+      }
+      return '<div class="sw-feature-mapping-row">' +
+        '<span class="sw-feature-mapping-name">' + escHtml(feature.name || feature.slug) + ' (' + escHtml(feature.slug) + ')</span>' +
+        metricsHtml +
+      '</div>';
+    }).join('');
+  }
 
   // AC4: each saved stage renders with its name, an "Edit stage" affordance
   // that opens the side panel (ep1-s3's own scope), and -- when applicable --
@@ -443,6 +562,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             reorderControls +
             '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
             '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
+          '</div>' +
+          '<div class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + escHtml(s.id) + '">' +
+            buildDeliveryAnnotations(s.id) +
           '</div>'
         );
       }).join('')
@@ -595,14 +717,38 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-reorder-error{display:none;font-size:12px;color:var(--danger);margin-top:8px}' +
       '.sw-stage-reorder-error--visible{display:block}' +
       '@media (max-width:768px){.sw-stage-panel{width:100vw}}' +
+      '.sw-stage-annotations{display:none;margin:4px 0 12px 0;padding:8px 10px;' +
+        'border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:12px}' +
+      '.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}' +
+      '.sw-feature-mapping-row{margin-bottom:8px}' +
+      '.sw-feature-mapping-row:last-child{margin-bottom:0}' +
+      '.sw-feature-mapping-warning{color:var(--danger)}' +
+      '.sw-feature-mapping-remove{margin-left:8px}' +
+      '.sw-feature-mapping-metric-values{margin:4px 0 0 0;padding-left:16px}' +
+      '.sw-stage-annotations-empty,.sw-feature-mapping-metrics-empty{color:var(--ink-2)}' +
+      '.sw-canvas-view-toggle{display:flex;gap:6px;margin-bottom:12px}' +
+      '.sw-canvas-view-toggle-btn{background:none;border:1px solid var(--line);border-radius:6px;' +
+        'padding:6px 12px;font-size:13px;color:var(--ink-2);cursor:pointer}' +
+      '.sw-canvas-view-toggle-btn--active{background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}' +
     '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
   // pure client-side DOM behaviour, no server round-trip until save (RISK-ACCEPT,
   // see decisions.md -- not E2E-covered, manual verification only).
+  // ep2-s3 -- 3-way Canvas/Customer experience/Delivery view toggle,
+  // client-side CSS-class swap only, no server round-trip (AC3,
+  // design.md lines 125-131). "Customise" is out of scope for this story.
+  var viewToggleHtml =
+    '<div class="sw-canvas-view-toggle" role="group" aria-label="Canvas view">' +
+      '<button type="button" class="sw-canvas-view-toggle-btn sw-canvas-view-toggle-btn--active" data-view="canvas" aria-pressed="true">Canvas</button>' +
+      '<button type="button" class="sw-canvas-view-toggle-btn" data-view="customer-experience" aria-pressed="false">Customer experience</button>' +
+      '<button type="button" class="sw-canvas-view-toggle-btn" data-view="delivery" aria-pressed="false">Delivery</button>' +
+    '</div>';
+
   var bodyContent =
-    '<div class="sw-journey-canvas">' +
+    '<div class="sw-journey-canvas sw-journey-canvas--view-canvas">' +
       '<h1>' + escHtml(journey.name) + '</h1>' +
+      viewToggleHtml +
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
       '</div>' +
@@ -766,6 +912,51 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         '});' +
       '}' +
       'if(panelClose)panelClose.addEventListener("click",closePanel);' +
+      // ep2-s3 AC3 -- view toggle: a pure className string swap + a
+      // classList/aria-pressed update on the toggle buttons themselves.
+      // No fetch, no server round-trip.
+      'var canvasRoot=document.querySelector(".sw-journey-canvas");' +
+      'var viewToggleBtns=Array.prototype.slice.call(document.querySelectorAll(".sw-canvas-view-toggle-btn"));' +
+      'viewToggleBtns.forEach(function(btn){' +
+        'btn.addEventListener("click",function(){' +
+          'var view=btn.getAttribute("data-view");' +
+          // Removes whichever sw-journey-canvas--view-* class is currently
+          // present (exactly one is ever applied at a time) before
+          // appending the newly selected view's class.
+          'canvasRoot.className=canvasRoot.className.replace(/sw-journey-canvas--view-\\S+/,"").trim()+" sw-journey-canvas--view-"+view;' +
+          'viewToggleBtns.forEach(function(b){' +
+            'var active=b===btn;' +
+            'b.classList.toggle("sw-canvas-view-toggle-btn--active",active);' +
+            'b.setAttribute("aria-pressed",active?"true":"false");' +
+          '});' +
+        '});' +
+      '});' +
+      // ep2-s3 AC2/D16 -- Remove button on a feature-not-found warning row:
+      // a delegated click handler on `list` (reuses submitJson, same
+      // convention as every other mutating action in this script block).
+      'if(list){' +
+        'list.addEventListener("click",function(ev){' +
+          'var btn=ev.target.closest&&ev.target.closest(".sw-feature-mapping-remove");' +
+          'if(!btn)return;' +
+          'var mappingId=btn.getAttribute("data-mapping-id");' +
+          'var stageId=btn.getAttribute("data-stage-id");' +
+          'submitJson("/journeys/"+journeyId+"/stages/"+stageId+"/feature-mappings/"+mappingId,"DELETE",{_csrf:csrfToken})' +
+            '.then(function(){' +
+              'var row=btn.closest(".sw-feature-mapping-row");' +
+              'if(row)row.remove();' +
+            '})' +
+            '.catch(function(){' +
+              // Reuses the EXISTING reorderError banner (declared above,
+              // already used by submitOrder's own catch handler) rather
+              // than introducing a new UX convention/DOM element.
+              'if(reorderError){' +
+                'reorderError.textContent="Could not remove mapping — please try again";' +
+                'reorderError.classList.add("sw-stage-reorder-error--visible");' +
+                'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+              '}' +
+            '});' +
+        '});' +
+      '}' +
       // AC5 -- a genuine keyboard focus trap: Tab past the last focusable
       // element wraps to the first, Shift+Tab before the first wraps to the
       // last. (products.js's own ep4s1-pods-modal explicitly does NOT do
@@ -1133,4 +1324,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping };
