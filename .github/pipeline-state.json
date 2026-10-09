@@ -39009,7 +39009,7 @@
         {
           "slug": "navigation-entry-points-and-journey-list",
           "name": "Navigation, Entry Points, and Journey List",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ep4-s1",
@@ -39064,7 +39064,7 @@
               "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-08T23:36:32.380Z",
+              "updatedAt": "2026-10-09T01:01:35.317Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep4-s2-review-1.md",
@@ -39100,8 +39100,9 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/964"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/964",
+              "dodStatus": "complete"
             }
           ]
         },
