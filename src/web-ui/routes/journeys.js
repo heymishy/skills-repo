@@ -371,6 +371,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     featuresLoadError = true;
   }
 
+  // ep2-s3 -- slug-keyed lookup for joining mappings against the features
+  // list already read above. Features with no matching mapping are simply
+  // never looked up; mappings with no matching feature fall through to the
+  // "Feature not found" branch in buildDeliveryAnnotations below (AC2).
+  var featuresBySlug = {};
+  features.forEach(function(f) { featuresBySlug[f.slug] = f; });
+
   // ep2-s2 -- embed each feature's own optional metricKeys (string[]) for the
   // metric-key sub-view, keyed by the feature's REAL (not lowercased) slug.
   // Nothing currently writes this field (decisions.md D12) -- every feature
@@ -400,6 +407,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   );
   var stages = sr.rows || [];
 
+  // ep2-s3 -- read every feature-to-stage mapping for this journey in one
+  // query, grouped client-side (in this function) by stage id. No separate
+  // tenant_id filter needed here -- the journey's own tenant ownership was
+  // already verified above (the customer_journeys SELECT that 404s before
+  // this point runs).
+  var mr = await pool.query(
+    `SELECT id, journey_stage_id, feature_slug, metric_keys FROM feature_customer_journey_stage_mappings WHERE journey_id = $1`,
+    [journeyId]
+  );
+  var mappingsByStage = {};
+  (mr.rows || []).forEach(function(m) {
+    if (!mappingsByStage[m.journey_stage_id]) mappingsByStage[m.journey_stage_id] = [];
+    mappingsByStage[m.journey_stage_id].push(m);
+  });
+
   // ep1-s3 -- 20x20/1.5px-stroke icon per DESIGN.md's own icon spec, not a
   // unicode glyph (DESIGN.md rule 5 explicitly disallows those in new work).
   var MOMENT_OF_TRUTH_ICON =
@@ -418,6 +440,56 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M10 4v12M4 11l6 6 6-6"/>' +
     '</svg>';
+
+  // ep2-s3 -- 14x14/20x20-viewBox/1.5px-stroke icon per DESIGN.md's own
+  // icon spec, not a unicode glyph (rule 5 explicitly disallows those in
+  // new work) -- matches MOMENT_OF_TRUTH_ICON/ARROW_UP_ICON/ARROW_DOWN_ICON's
+  // own precedent above.
+  var WARNING_ICON =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M10 2L1 17h18L10 2z"/><path d="M10 8v4"/><path d="M10 15h.01"/>' +
+    '</svg>';
+
+  // ep2-s3 -- builds one stage's Delivery-view annotation markup. Three
+  // cases, never conflated: no mappings at all (AC1 boundary), a mapping
+  // whose feature no longer resolves (AC2), and a normal mapping with
+  // its selected metric keys/values (AC1/AC4). metricValues is read the
+  // same optional-field way metricKeys already is (decisions.md D15) --
+  // nothing populates it yet, so every value correctly falls through to
+  // "No value recorded" today.
+  function buildDeliveryAnnotations(stageId) {
+    var mappings = mappingsByStage[stageId] || [];
+    if (mappings.length === 0) {
+      return '<p class="sw-stage-annotations-empty">No features mapped</p>';
+    }
+    return mappings.map(function(m) {
+      var feature = featuresBySlug[m.feature_slug];
+      if (!feature) {
+        return '<div class="sw-feature-mapping-row sw-feature-mapping-row--missing">' +
+          '<span class="sw-feature-mapping-warning">' + WARNING_ICON + ' Feature not found (' + escHtml(m.feature_slug) + ')</span>' +
+          '<button type="button" class="sw-feature-mapping-remove" data-mapping-id="' + escHtml(m.id) + '" data-stage-id="' + escHtml(stageId) + '">Remove</button>' +
+        '</div>';
+      }
+      var metricKeys = Array.isArray(m.metric_keys) ? m.metric_keys : [];
+      var metricsHtml;
+      if (metricKeys.length === 0) {
+        metricsHtml = '<p class="sw-feature-mapping-metrics-empty">No metrics selected</p>';
+      } else {
+        var values = (feature.metricValues && typeof feature.metricValues === 'object') ? feature.metricValues : {};
+        metricsHtml = '<ul class="sw-feature-mapping-metric-values">' +
+          metricKeys.map(function(k) {
+            var hasValue = Object.prototype.hasOwnProperty.call(values, k);
+            var rendered = hasValue ? escHtml(String(values[k])) : 'No value recorded';
+            return '<li>' + escHtml(k) + ': ' + rendered + '</li>';
+          }).join('') +
+        '</ul>';
+      }
+      return '<div class="sw-feature-mapping-row">' +
+        '<span class="sw-feature-mapping-name">' + escHtml(feature.name || feature.slug) + ' (' + escHtml(feature.slug) + ')</span>' +
+        metricsHtml +
+      '</div>';
+    }).join('');
+  }
 
   // AC4: each saved stage renders with its name, an "Edit stage" affordance
   // that opens the side panel (ep1-s3's own scope), and -- when applicable --
@@ -443,6 +515,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             reorderControls +
             '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
             '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
+          '</div>' +
+          '<div class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + escHtml(s.id) + '">' +
+            buildDeliveryAnnotations(s.id) +
           '</div>'
         );
       }).join('')
@@ -595,6 +670,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-reorder-error{display:none;font-size:12px;color:var(--danger);margin-top:8px}' +
       '.sw-stage-reorder-error--visible{display:block}' +
       '@media (max-width:768px){.sw-stage-panel{width:100vw}}' +
+      '.sw-stage-annotations{display:none;margin:4px 0 12px 0;padding:8px 10px;' +
+        'border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:12px}' +
+      '.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}' +
+      '.sw-feature-mapping-row{margin-bottom:8px}' +
+      '.sw-feature-mapping-row:last-child{margin-bottom:0}' +
+      '.sw-feature-mapping-warning{color:var(--danger)}' +
+      '.sw-feature-mapping-remove{margin-left:8px}' +
+      '.sw-feature-mapping-metric-values{margin:4px 0 0 0;padding-left:16px}' +
+      '.sw-stage-annotations-empty,.sw-feature-mapping-metrics-empty{color:var(--ink-2)}' +
     '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
