@@ -253,6 +253,93 @@ async function handlePatchJourneyStagesOrder(req, res, _next, pool) {
 }
 
 /**
+ * POST /journeys/:id/stages/:stageId/feature-mappings — upsert a
+ * feature-to-stage mapping (feature_customer_journey_stage_mappings),
+ * tenant-scoped.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePostFeatureMapping(req, res, _next, pool) {
+  // ep2-s2 -- CSRF guard first, mandatory from first implementation per
+  // jcg-s1/ep1-s2/ep1-s3/ep1-s4's own precedent.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var featureSlug = (req.body && req.body.featureSlug || '').trim();
+  var metricKeys = Array.isArray(req.body && req.body.metricKeys) ? req.body.metricKeys : [];
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  if (!featureSlug) { badRequest('featureSlug is required'); return; }
+
+  // ep2-s2 -- stage ownership check BEFORE any transaction opens -- 404, not
+  // 403, for a cross-tenant journey/stage id, matching every other mutating
+  // handler in this file (see decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // ep2-s2 -- feature_customer_journey_stage_mappings has NO unique
+  // constraint on (journey_stage_id, feature_slug) -- true SQL UPSERT via
+  // INSERT ... ON CONFLICT is not available. Application-level
+  // check-then-write inside a single transaction, matching
+  // handlePatchJourneyStagesOrder's own established pattern exactly.
+  var client = await pool.connect();
+  var mappingId;
+  try {
+    await client.query('BEGIN');
+    var existing = await client.query(
+      `SELECT id FROM feature_customer_journey_stage_mappings
+       WHERE journey_stage_id = $1 AND feature_slug = $2 AND tenant_id = $3
+       FOR UPDATE`,
+      [stageId, featureSlug, tenantId]
+    );
+    if (existing.rows[0]) {
+      mappingId = existing.rows[0].id;
+      await client.query(
+        `UPDATE feature_customer_journey_stage_mappings SET metric_keys = $1 WHERE id = $2`,
+        [JSON.stringify(metricKeys), mappingId]
+      );
+    } else {
+      var ins = await client.query(
+        `INSERT INTO feature_customer_journey_stage_mappings
+         (journey_stage_id, journey_id, tenant_id, feature_slug, metric_keys)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`,
+        [stageId, journeyId, tenantId, featureSlug, JSON.stringify(metricKeys)]
+      );
+      mappingId = ins.rows[0].id;
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* best-effort */ }
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  if (res.status) { res.status(200).json({ id: mappingId, featureSlug: featureSlug, metricKeys: metricKeys }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: mappingId, featureSlug: featureSlug, metricKeys: metricKeys })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -283,6 +370,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   } catch (_) {
     featuresLoadError = true;
   }
+
+  // ep2-s2 -- embed each feature's own optional metricKeys (string[]) for the
+  // metric-key sub-view, keyed by the feature's REAL (not lowercased) slug.
+  // Nothing currently writes this field (decisions.md D12) -- every feature
+  // today falls through to the explicit "No metrics recorded" fallback,
+  // forward-compatible once a future story defines the write path.
+  var featureMetricKeysJson = JSON.stringify(features.reduce(function(acc, f) {
+    acc[f.slug] = Array.isArray(f.metricKeys) ? f.metricKeys : [];
+    return acc;
+  }, {}));
 
   var r = await pool.query(
     `SELECT id, name, description FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
@@ -381,6 +478,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<p id="sw-feature-picker-empty" class="sw-feature-picker-empty" role="status" style="display:none">No features match your search.</p>';
   }
 
+  // ep2-s2 -- metric-key sub-view. Hidden by default; shown by the script
+  // block below when a feature is clicked. Built client-side from the
+  // embedded featureMetricKeys map (mirrors ep1-s3's own stageData
+  // embedding precedent -- embed once server-side, populate via JS at
+  // interaction time, no second round trip).
+  var featureMappingViewHtml =
+    '<div id="sw-feature-mapping-view" class="sw-feature-mapping-view" style="display:none">' +
+      '<h3 id="sw-feature-mapping-name"></h3>' +
+      '<p id="sw-feature-mapping-slug" class="sw-feature-picker-slug"></p>' +
+      '<div id="sw-feature-mapping-metrics"></div>' +
+      '<button type="button" id="sw-feature-mapping-back">Back</button>' +
+      '<button type="button" id="sw-feature-mapping-save">Save mapping</button>' +
+      '<span id="sw-feature-mapping-error" class="sw-feature-picker-message" role="status"></span>' +
+    '</div>';
+
   var featurePickerModalHtml =
     '<div id="sw-feature-picker-modal" class="sw-feature-picker-modal" role="dialog" aria-modal="true" aria-labelledby="sw-feature-picker-title" aria-hidden="true">' +
       '<div class="sw-feature-picker-header">' +
@@ -388,6 +500,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         '<button type="button" id="sw-feature-picker-close" aria-label="Close feature picker">✕</button>' +
       '</div>' +
       featurePickerBodyHtml +
+      featureMappingViewHtml +
     '</div>' +
     '<style>' +
       '.sw-feature-picker-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
@@ -408,6 +521,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-feature-picker-message{font-size:13px;color:var(--ink-2)}' +
       '.sw-feature-picker-empty{font-size:12px;color:var(--muted)}' +
       '.sw-stage-map-feature{margin-left:8px}' +
+      '.sw-feature-mapping-view{margin-top:4px}' +
+      '.sw-feature-mapping-metric-label{display:block;font-size:13px;color:var(--ink);margin:6px 0}' +
+      '#sw-feature-mapping-save{margin-left:8px}' +
     '</style>';
 
   // Full stage data embedded for the side panel to populate from, keyed by
@@ -709,12 +825,95 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     // above -- Task 3 (open/close modal handling) extends THIS block, not
     // that one.
     '<script>(function(){' +
+      'var journeyId=' + JSON.stringify(journey.id) + ';' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
       'var fpModal=document.getElementById("sw-feature-picker-modal");' +
       'var fpClose=document.getElementById("sw-feature-picker-close");' +
       'var fpSearch=document.getElementById("sw-feature-picker-search");' +
       'var fpTriggerEl=null;' +
+      'var fpStageId=null;' +
+      'var featureMetricKeys=' + featureMetricKeysJson + ';' +
+      'var fmView=document.getElementById("sw-feature-mapping-view");' +
+      'var fmNameEl=document.getElementById("sw-feature-mapping-name");' +
+      'var fmSlugEl=document.getElementById("sw-feature-mapping-slug");' +
+      'var fmMetricsEl=document.getElementById("sw-feature-mapping-metrics");' +
+      'var fmBack=document.getElementById("sw-feature-mapping-back");' +
+      'var fmSelectedSlug=null;' +
+      // Shared list/search-label visibility toggle -- used by both
+      // fmShowList (list view) and fmShowFeature (sub-view), so the two
+      // views are never accidentally shown at once.
+      'function fmSetListVisible(visible){' +
+        'var listEl=document.getElementById("sw-feature-picker-list");' +
+        'var searchLabel=document.querySelector(".sw-feature-picker-search-label");' +
+        'if(listEl)listEl.style.display=visible?"":"none";' +
+        'if(searchLabel)searchLabel.style.display=visible?"":"none";' +
+      '}' +
+      'function fmShowList(){' +
+        'fmView.style.display="none";' +
+        'fmSetListVisible(true);' +
+      '}' +
+      'function fmShowFeature(slug,name){' +
+        'fmSelectedSlug=slug;' +
+        'fmNameEl.textContent=name;' +
+        'fmSlugEl.textContent=slug;' +
+        'var keys=featureMetricKeys[slug]||[];' +
+        'fmMetricsEl.innerHTML="";' +
+        'if(keys.length===0){' +
+          'var p=document.createElement("p");' +
+          'p.className="sw-feature-picker-message";' +
+          'p.textContent="No metrics recorded";' +
+          'fmMetricsEl.appendChild(p);' +
+        '}else{' +
+          'keys.forEach(function(k){' +
+            'var label=document.createElement("label");' +
+            'label.className="sw-feature-mapping-metric-label";' +
+            'var cb=document.createElement("input");' +
+            'cb.type="checkbox";' +
+            'cb.value=k;' +
+            'cb.className="sw-feature-mapping-metric-checkbox";' +
+            'label.appendChild(cb);' +
+            'label.appendChild(document.createTextNode(" "+k));' +
+            'fmMetricsEl.appendChild(label);' +
+          '});' +
+        '}' +
+        'fmSetListVisible(false);' +
+        'fmView.style.display="block";' +
+      '}' +
+      'if(fmBack)fmBack.addEventListener("click",fmShowList);' +
+      'Array.prototype.slice.call(document.querySelectorAll(".sw-feature-picker-item")).forEach(function(li){' +
+        'li.addEventListener("click",function(){' +
+          // The REAL slug/name must come from these spans' textContent, not
+          // this <li>'s own data-slug/data-name attributes -- ep2-s1's
+          // swFilterFeaturePicker deliberately lowercases those attributes
+          // for case-insensitive filtering, which would corrupt the
+          // featureMetricKeys lookup (and the displayed name) for any
+          // feature whose real slug/name has uppercase characters.
+          'var realSlug=li.querySelector(".sw-feature-picker-slug").textContent;' +
+          'var realName=li.querySelector(".sw-feature-picker-name").textContent;' +
+          'fmShowFeature(realSlug,realName);' +
+        '});' +
+      '});' +
+      'var fmSave=document.getElementById("sw-feature-mapping-save");' +
+      'var fmError=document.getElementById("sw-feature-mapping-error");' +
+      'if(fmSave){' +
+        'fmSave.addEventListener("click",function(){' +
+          'if(!fmSelectedSlug||!fpStageId)return;' +
+          'var checked=Array.prototype.slice.call(document.querySelectorAll(".sw-feature-mapping-metric-checkbox:checked")).map(function(cb){return cb.value;});' +
+          'fetch("/journeys/"+journeyId+"/stages/"+fpStageId+"/feature-mappings",{' +
+            'method:"POST",' +
+            'headers:{"Content-Type":"application/json"},' +
+            'body:JSON.stringify({featureSlug:fmSelectedSlug,metricKeys:checked,_csrf:csrfToken})' +
+          '}).then(function(r){' +
+            'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||"Request failed");});}' +
+            'fpCloseFn();' +
+          '}).catch(function(e){' +
+            'if(fmError)fmError.textContent=e.message;' +
+          '});' +
+        '});' +
+      '}' +
       'function fpOpen(trigger){' +
         'fpTriggerEl=trigger||document.activeElement;' +
+        'fpStageId=trigger&&trigger.getAttribute?trigger.getAttribute("data-stage-id"):null;' +
         'fpModal.classList.add("sw-feature-picker-modal--open");' +
         'fpModal.setAttribute("aria-hidden","false");' +
         'if(fpSearch)fpSearch.focus();' +
@@ -723,6 +922,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'fpModal.classList.remove("sw-feature-picker-modal--open");' +
         'fpModal.setAttribute("aria-hidden","true");' +
         'if(fpTriggerEl&&typeof fpTriggerEl.focus==="function")fpTriggerEl.focus();' +
+        'fmShowList();' +
       '}' +
       'if(fpClose)fpClose.addEventListener("click",fpCloseFn);' +
       'document.addEventListener("keydown",function(evt){' +
@@ -933,4 +1133,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping };
