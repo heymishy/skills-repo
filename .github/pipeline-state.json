@@ -38945,10 +38945,10 @@
             {
               "slug": "ep2-s1",
               "name": "Feature picker: read pipeline-state.json and render feature list in modal",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T04:57:22.862Z",
+              "updatedAt": "2026-10-09T05:06:51.474Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s1-review-1.md",
@@ -38983,7 +38983,9 @@
                 }
               ],
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s1-dor.md",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/965"
             },
             {
               "slug": "ep2-s2",
