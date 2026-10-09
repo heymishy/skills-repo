@@ -39068,10 +39068,10 @@
             {
               "slug": "ep3-s1",
               "name": "Customer experience view: emotion, pain points, opportunities annotation rows",
-              "stage": "dor-signed-off",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-10-09T22:51:21.189Z",
+              "updatedAt": "2026-10-09T22:52:08.474Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s1-review-1.md",
