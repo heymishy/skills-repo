@@ -32,7 +32,7 @@ Then the stage shows exactly one mapping for that feature — not two — and it
 
 **AC5:** Given a cross-tenant `journey_stage_id` is used in the request,
 When the insert is processed,
-Then a 403 response is returned and no record is inserted.
+Then a 404 response is returned (matching this codebase's own established FORBIDDEN-vs-NOT_FOUND policy — see `decisions.md` D13) and no record is inserted.
 
 ## Out of Scope
 Removing a mapping (deferred), editing metric keys after initial save (deferred for MVP), Delivery view annotation rendering (ep2-s3).

@@ -38991,13 +38991,22 @@
             {
               "slug": "ep2-s2",
               "name": "Feature-to-stage mapping: save mapping with metric key selection",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-07T23:33:28.571Z",
+              "updatedAt": "2026-10-09T06:38:24.397Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false"
             },
             {
               "slug": "ep2-s3",
