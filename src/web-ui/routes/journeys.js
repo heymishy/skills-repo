@@ -9,6 +9,7 @@
 var { renderShellWithNav } = require('./products');
 var { escHtml } = require('../utils/html-shell');
 var _csrf = require('../middleware/csrf'); // jcg-s1 -- CSRF guard, matching every other mutating form handler in this app
+var _repoRootAdapter = require('../adapters/repo-root'); // ep2-s1 -- reuses the existing local-disk repo-root pattern, already used by products.js
 
 // ep1-s3 -- allowlist of customer_journey_stages columns the side panel may
 // PATCH. Never interpolate a client-supplied field name into SQL without
@@ -262,6 +263,27 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
   var journeyId = req.params && req.params.id;
 
+  // ep2-s1 -- read pipeline-state.json fresh on every canvas load (ADR-029:
+  // local filesystem is canonical, never cached/duplicated in Postgres).
+  // Deliberately NOT reusing products.js's own silent { features: [] }
+  // fallback -- AC3 requires a visible, distinct error state, not an
+  // empty list indistinguishable from "this file genuinely has zero
+  // features" (see decisions.md D10 / the test-plan's own grounding notes).
+  // Read BEFORE the first `await` below -- this must happen in the same
+  // synchronous execution burst as the call, not after a microtask-queue
+  // resume, so that a caller mocking fs.readFileSync only around THIS
+  // call reliably observes it.
+  var features = [];
+  var featuresLoadError = false;
+  try {
+    var repoRoot = _repoRootAdapter.getRepoRoot(req);
+    var pipelineStatePath = require('path').join(repoRoot, '.github', 'pipeline-state.json');
+    var pipelineState = JSON.parse(require('fs').readFileSync(pipelineStatePath, 'utf8'));
+    features = pipelineState.features || [];
+  } catch (_) {
+    featuresLoadError = true;
+  }
+
   var r = await pool.query(
     `SELECT id, name, description FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
     [journeyId, tenantId]
@@ -323,12 +345,70 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
               : '') +
             reorderControls +
             '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
+            '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
           '</div>'
         );
       }).join('')
     : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>';
 
   var csrfToken = await _csrf.generateCsrfToken(req);
+
+  // ep2-s1 -- feature picker modal. Three mutually exclusive body states,
+  // never conflated: a read/parse failure (AC3), a genuinely empty
+  // pipeline-state.json (AC1 boundary), and the populated list (AC1/AC2).
+  var featureItemsHtml = features.map(function(f) {
+    var slug = escHtml(f.slug || '');
+    var name = escHtml(f.name || f.slug || '');
+    return '<li class="sw-feature-picker-item" data-slug="' + slug.toLowerCase() + '" data-name="' + name.toLowerCase() + '" role="option">' +
+      '<span class="sw-feature-picker-name">' + name + '</span>' +
+      '<span class="sw-feature-picker-slug">' + slug + '</span>' +
+    '</li>';
+  }).join('');
+
+  var featurePickerBodyHtml;
+  if (featuresLoadError) {
+    featurePickerBodyHtml = '<p id="sw-feature-picker-error" class="sw-feature-picker-message" role="status">Features could not be loaded. Check that pipeline-state.json exists.</p>';
+  } else if (features.length === 0) {
+    featurePickerBodyHtml = '<p id="sw-feature-picker-none" class="sw-feature-picker-message" role="status">No features found in pipeline-state.json.</p>';
+  } else {
+    featurePickerBodyHtml =
+      '<label class="sw-feature-picker-search-label" for="sw-feature-picker-search">Search features' +
+        '<input id="sw-feature-picker-search" type="text" placeholder="Filter by name or slug…" aria-label="Search features" oninput="swFilterFeaturePicker()">' +
+      '</label>' +
+      '<ul id="sw-feature-picker-list" role="listbox" aria-label="Pipeline features" class="sw-feature-picker-list">' +
+        featureItemsHtml +
+      '</ul>' +
+      '<p id="sw-feature-picker-empty" class="sw-feature-picker-empty" role="status" style="display:none">No features match your search.</p>';
+  }
+
+  var featurePickerModalHtml =
+    '<div id="sw-feature-picker-modal" class="sw-feature-picker-modal" role="dialog" aria-modal="true" aria-labelledby="sw-feature-picker-title" aria-hidden="true">' +
+      '<div class="sw-feature-picker-header">' +
+        '<h2 id="sw-feature-picker-title">Map feature</h2>' +
+        '<button type="button" id="sw-feature-picker-close" aria-label="Close feature picker">✕</button>' +
+      '</div>' +
+      featurePickerBodyHtml +
+    '</div>' +
+    '<style>' +
+      '.sw-feature-picker-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
+        'width:420px;max-width:90vw;max-height:70vh;overflow-y:auto;background:var(--surface);' +
+        'border:1px solid var(--line);border-radius:8px;padding:20px;z-index:110;' +
+        'box-shadow:0 8px 32px rgba(0,0,0,0.24)}' +
+      '.sw-feature-picker-modal--open{display:block}' +
+      '.sw-feature-picker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}' +
+      '.sw-feature-picker-search-label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:10px}' +
+      '.sw-feature-picker-search-label input{display:block;width:100%;margin-top:6px;background:var(--bg);' +
+        'color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:13px}' +
+      '.sw-feature-picker-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:6px;max-height:300px;overflow-y:auto}' +
+      '.sw-feature-picker-item{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-bottom:1px solid var(--line)}' +
+      '.sw-feature-picker-item:last-child{border-bottom:none}' +
+      '.sw-feature-picker-item--hidden{display:none}' +
+      '.sw-feature-picker-name{font-size:13px;color:var(--ink)}' +
+      '.sw-feature-picker-slug{font-size:11px;color:var(--ink-2)}' +
+      '.sw-feature-picker-message{font-size:13px;color:var(--ink-2)}' +
+      '.sw-feature-picker-empty{font-size:12px;color:var(--muted)}' +
+      '.sw-stage-map-feature{margin-left:8px}' +
+    '</style>';
 
   // Full stage data embedded for the side panel to populate from, keyed by
   // id, client-side -- avoids a second round-trip when the panel opens.
@@ -414,6 +494,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
     '</div>' +
     panelHtml +
+    featurePickerModalHtml +
     '<script>(function(){' +
       'var journeyId=' + JSON.stringify(journey.id) + ';' +
       'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
@@ -621,6 +702,48 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'el.addEventListener("blur",save);' +
         'if(f==="moment_of_truth")el.addEventListener("change",save);' +
       '});' +
+    '})()<\/script>' +
+    // ep2-s1 AC2 -- client-side filtering behaviour for the feature picker's
+    // search input (markup already added by Task 1). Deliberately a
+    // separate <script> block/IIFE from the stage-panel/reorder script
+    // above -- Task 3 (open/close modal handling) extends THIS block, not
+    // that one.
+    '<script>(function(){' +
+      'var fpModal=document.getElementById("sw-feature-picker-modal");' +
+      'var fpClose=document.getElementById("sw-feature-picker-close");' +
+      'var fpSearch=document.getElementById("sw-feature-picker-search");' +
+      'var fpTriggerEl=null;' +
+      'function fpOpen(trigger){' +
+        'fpTriggerEl=trigger||document.activeElement;' +
+        'fpModal.classList.add("sw-feature-picker-modal--open");' +
+        'fpModal.setAttribute("aria-hidden","false");' +
+        'if(fpSearch)fpSearch.focus();' +
+      '}' +
+      'function fpCloseFn(){' +
+        'fpModal.classList.remove("sw-feature-picker-modal--open");' +
+        'fpModal.setAttribute("aria-hidden","true");' +
+        'if(fpTriggerEl&&typeof fpTriggerEl.focus==="function")fpTriggerEl.focus();' +
+      '}' +
+      'if(fpClose)fpClose.addEventListener("click",fpCloseFn);' +
+      'document.addEventListener("keydown",function(evt){' +
+        'if(fpModal.classList.contains("sw-feature-picker-modal--open")&&evt.key==="Escape")fpCloseFn();' +
+      '});' +
+      'Array.prototype.slice.call(document.querySelectorAll(".sw-stage-map-feature")).forEach(function(btn){' +
+        'btn.addEventListener("click",function(){fpOpen(btn);});' +
+      '});' +
+      'window.swFilterFeaturePicker=function(){' +
+        'if(!fpSearch)return;' +
+        'var q=(fpSearch.value||"").trim().toLowerCase();' +
+        'var items=Array.prototype.slice.call(document.querySelectorAll(".sw-feature-picker-item"));' +
+        'var anyVisible=false;' +
+        'items.forEach(function(li){' +
+          'var match=!q||li.getAttribute("data-slug").indexOf(q)!==-1||li.getAttribute("data-name").indexOf(q)!==-1;' +
+          'li.classList.toggle("sw-feature-picker-item--hidden",!match);' +
+          'if(match)anyVisible=true;' +
+        '});' +
+        'var emptyEl=document.getElementById("sw-feature-picker-empty");' +
+        'if(emptyEl)emptyEl.style.display=(items.length&&!anyVisible)?"block":"none";' +
+      '};' +
     '})()<\/script>';
 
   if (res.status) {
