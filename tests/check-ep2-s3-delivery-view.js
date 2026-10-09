@@ -158,6 +158,89 @@ function buildDom(bodyContent) {
     pass('AC1 -- a mapped feature with zero metric keys shows "No metrics selected"');
   } catch (e) { fail('AC1 -- a mapped feature with zero metric keys shows "No metrics selected"', e); }
 
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      []
+    );
+    var out = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    assert.ok(out.indexOf('No features mapped') !== -1, 'expected "No features mapped" for a stage with zero mappings');
+    pass('AC1 (boundary) -- a stage with zero mappings shows "No features mapped"');
+  } catch (e) { fail('AC1 (boundary) -- a stage with zero mappings shows "No features mapped"', e); }
+
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'ghost-feature', metric_keys: [] }]
+    );
+    var out = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    assert.ok(out.indexOf('Feature not found (ghost-feature)') !== -1, 'expected the feature-not-found warning text with the slug');
+    assert.ok(/<button[^>]*class="sw-feature-mapping-remove"[^>]*data-mapping-id="map-1"[^>]*data-stage-id="s1"/.test(out), 'expected a Remove button with the correct mapping id and stage id');
+    pass('AC2 -- a mapped feature no longer in pipeline-state.json shows a warning with a Remove button');
+  } catch (e) { fail('AC2 -- a mapped feature no longer in pipeline-state.json shows a warning with a Remove button', e); }
+
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'feat-a', metric_keys: ['m2'] }]
+    );
+    var featuresJson = JSON.stringify({ features: [{ slug: 'feat-a', name: 'Feature A', metricValues: {} }] });
+    var out = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    assert.ok(out.indexOf('m2: No value recorded') !== -1, 'expected "m2: No value recorded" when the key has no matching metricValues entry');
+    pass('AC4 -- a selected metric key with no recorded value shows "No value recorded"');
+  } catch (e) { fail('AC4 -- a selected metric key with no recorded value shows "No value recorded"', e); }
+
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'feat-a', metric_keys: ['m1'] }]
+    );
+    var featuresJson = JSON.stringify({ features: [{ slug: 'feat-a', name: 'Feature A', metricValues: { m1: '0.42' } }] });
+    var bodyContent = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+    var fetchCalls = [];
+    win.fetch = function(url, opts) { fetchCalls.push({ url: url, opts: opts }); return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    var canvasRoot = win.document.querySelector('.sw-journey-canvas');
+    var deliveryBtn = win.document.querySelector('.sw-canvas-view-toggle-btn[data-view="delivery"]');
+    var canvasBtn = win.document.querySelector('.sw-canvas-view-toggle-btn[data-view="canvas"]');
+    var annotations = win.document.querySelector('.sw-stage-annotations--delivery');
+
+    assert.strictEqual(canvasRoot.className.indexOf('sw-journey-canvas--view-delivery'), -1, 'expected delivery view class absent by default');
+
+    deliveryBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    assert.ok(canvasRoot.className.indexOf('sw-journey-canvas--view-delivery') !== -1, 'expected the canvas root to gain the delivery-view class after clicking Delivery');
+    assert.strictEqual(win.getComputedStyle(annotations).display, 'block', 'expected the annotation block to become visible in Delivery view');
+
+    canvasBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    assert.ok(canvasRoot.className.indexOf('sw-journey-canvas--view-delivery') === -1, 'expected the delivery-view class to be removed after clicking Canvas');
+    assert.strictEqual(win.getComputedStyle(annotations).display, 'none', 'expected the annotation block to be hidden again in Canvas view');
+
+    assert.strictEqual(fetchCalls.length, 0, 'expected ZERO fetch calls -- the view toggle must never hit the network');
+    pass('AC3 -- the view toggle shows/hides annotation rows via CSS class with no server round-trip');
+  } catch (e) { fail('AC3 -- the view toggle shows/hides annotation rows via CSS class with no server round-trip', e); }
+
   console.log('\n[ep2-s3-delivery-view] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exitCode = 1;
 })();

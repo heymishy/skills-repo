@@ -679,14 +679,29 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-feature-mapping-remove{margin-left:8px}' +
       '.sw-feature-mapping-metric-values{margin:4px 0 0 0;padding-left:16px}' +
       '.sw-stage-annotations-empty,.sw-feature-mapping-metrics-empty{color:var(--ink-2)}' +
+      '.sw-canvas-view-toggle{display:flex;gap:6px;margin-bottom:12px}' +
+      '.sw-canvas-view-toggle-btn{background:none;border:1px solid var(--line);border-radius:6px;' +
+        'padding:6px 12px;font-size:13px;color:var(--ink-2);cursor:pointer}' +
+      '.sw-canvas-view-toggle-btn--active{background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}' +
     '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
   // pure client-side DOM behaviour, no server round-trip until save (RISK-ACCEPT,
   // see decisions.md -- not E2E-covered, manual verification only).
+  // ep2-s3 -- 3-way Canvas/Customer experience/Delivery view toggle,
+  // client-side CSS-class swap only, no server round-trip (AC3,
+  // design.md lines 125-131). "Customise" is out of scope for this story.
+  var viewToggleHtml =
+    '<div class="sw-canvas-view-toggle" role="group" aria-label="Canvas view">' +
+      '<button type="button" class="sw-canvas-view-toggle-btn sw-canvas-view-toggle-btn--active" data-view="canvas" aria-pressed="true">Canvas</button>' +
+      '<button type="button" class="sw-canvas-view-toggle-btn" data-view="customer-experience" aria-pressed="false">Customer experience</button>' +
+      '<button type="button" class="sw-canvas-view-toggle-btn" data-view="delivery" aria-pressed="false">Delivery</button>' +
+    '</div>';
+
   var bodyContent =
-    '<div class="sw-journey-canvas">' +
+    '<div class="sw-journey-canvas sw-journey-canvas--view-canvas">' +
       '<h1>' + escHtml(journey.name) + '</h1>' +
+      viewToggleHtml +
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
       '</div>' +
@@ -850,6 +865,25 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         '});' +
       '}' +
       'if(panelClose)panelClose.addEventListener("click",closePanel);' +
+      // ep2-s3 AC3 -- view toggle: a pure className string swap + a
+      // classList/aria-pressed update on the toggle buttons themselves.
+      // No fetch, no server round-trip.
+      'var canvasRoot=document.querySelector(".sw-journey-canvas");' +
+      'var viewToggleBtns=Array.prototype.slice.call(document.querySelectorAll(".sw-canvas-view-toggle-btn"));' +
+      'viewToggleBtns.forEach(function(btn){' +
+        'btn.addEventListener("click",function(){' +
+          'var view=btn.getAttribute("data-view");' +
+          // Removes whichever sw-journey-canvas--view-* class is currently
+          // present (exactly one is ever applied at a time) before
+          // appending the newly selected view's class.
+          'canvasRoot.className=canvasRoot.className.replace(/sw-journey-canvas--view-\\S+/,"").trim()+" sw-journey-canvas--view-"+view;' +
+          'viewToggleBtns.forEach(function(b){' +
+            'var active=b===btn;' +
+            'b.classList.toggle("sw-canvas-view-toggle-btn--active",active);' +
+            'b.setAttribute("aria-pressed",active?"true":"false");' +
+          '});' +
+        '});' +
+      '});' +
       // AC5 -- a genuine keyboard focus trap: Tab past the last focusable
       // element wraps to the first, Shift+Tab before the first wraps to the
       // last. (products.js's own ep4s1-pods-modal explicitly does NOT do
