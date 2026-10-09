@@ -125,8 +125,14 @@ console.log('\nU5 — NAV_ITEMS no longer contains a \'skills\' or \'journey\' i
   eq(NAV_ITEMS.find(item => item.id === 'dashboard'), undefined, 'U5.3: no "dashboard" NAV_ITEMS entry (replaced by products section)');
 }
 
-console.log('\nU6 — renderSidebar never renders "Run a Skill" or "Journeys" text regardless of active/isAdmin combination (AC3)');
+console.log('\nU6 — renderSidebar never renders "Run a Skill" regardless of active/isAdmin combination (AC3)');
 {
+  // ep4-s2: "Journeys" is no longer checked for absence here -- it is now a
+  // legitimate, different, tenant-wide NAV_ITEMS entry (customer_journeys,
+  // /customer-journeys), matching the pod-manager/signals precedent, not a
+  // reintroduction of the OLD product-duplicate 'journey' concept this test
+  // originally guarded against. "Run a Skill" remains a valid regression
+  // guard, unrelated to this story.
   const actives = ['dashboard', 'journey', 'skills', 'settings', 'org-kanban', undefined];
   const isAdmins = [true, false];
   let allClean = true;
@@ -137,10 +143,10 @@ console.log('\nU6 — renderSidebar never renders "Run a Skill" or "Journeys" te
         active: active, isAdmin: isAdmin,
         products: FIXTURE_PRODUCTS, noProductJourneyCount: 2
       });
-      if (output.includes('>Run a Skill<') || output.includes('>Journeys<')) allClean = false;
+      if (output.includes('>Run a Skill<')) allClean = false;
     });
   });
-  ok(allClean, 'U6.1: no combination of active/isAdmin re-introduces "Run a Skill" or "Journeys"');
+  ok(allClean, 'U6.1: no combination of active/isAdmin re-introduces "Run a Skill"');
 }
 
 console.log('\nU7 — the "start a new feature" flow with no product context still omits productId (AC6, unit-level)');
