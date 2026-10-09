@@ -32,7 +32,7 @@ Modify:
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ep2-s2-feature-mapping-save.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/check-ep2-s2-feature-mapping-save.js` with this initial content:
 
@@ -174,7 +174,7 @@ function buildDom(bodyContent) {
 })();
 ```
 
-- [ ] **Step 2: Run tests — must fail**
+- [x] **Step 2: Run tests — must fail**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -182,7 +182,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected output: both tests fail — `featureMetricKeys` is not embedded, `#sw-feature-mapping-view` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `src/web-ui/routes/journeys.js`, inside `handleGetJourneyCanvas`, immediately after the existing block that computes `features`/`featuresLoadError` (the `try { ... } catch (_) { featuresLoadError = true; }` block from `ep2-s1`), add:
 
@@ -301,7 +301,7 @@ Also extend `fpCloseFn` (already exists) to reset the sub-view when the whole mo
         'fmShowList();' +
 ```
 
-- [ ] **Step 4: Run tests — must pass**
+- [x] **Step 4: Run tests — must pass**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -309,7 +309,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected output: `[ep2-s2-feature-mapping-save] Results: 2 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -317,12 +317,14 @@ npm test
 
 Expected output: all tests passing, 0 failed
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ep2-s2-feature-mapping-save.js
 git commit -m "feat: metric-key sub-view for the feature picker (ep2-s2 AC1)"
 ```
+
+**Completed.** Final commit (after a post-review amend adding Back/close-reset behavioral assertions, per code-quality review): `8a2b5de2`. Spec compliance ✅, code quality ✅.
 
 ---
 
@@ -332,7 +334,7 @@ git commit -m "feat: metric-key sub-view for the feature picker (ep2-s2 AC1)"
 - Modify: `src/web-ui/routes/journeys.js`, `src/web-ui/server.js`
 - Test: `tests/check-ep2-s2-feature-mapping-save.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/check-ep2-s2-feature-mapping-save.js`, inside the `(async function() { ... })()` IIFE, before the final summary-line block. First add this mock pool helper near the top of the file (after `makeCanvasMockPool`, before `makeMockReqRes`):
 
@@ -474,7 +476,7 @@ Then add these 5 test cases:
   } catch (e) { fail('(shape) -- new feature-mappings route does not collide with the existing /stages/:stageId regex', e); }
 ```
 
-- [ ] **Step 2: Run tests — must fail**
+- [x] **Step 2: Run tests — must fail**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -482,7 +484,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected output: `TypeError: journeys.handlePostFeatureMapping is not a function` (and the shape test fails — no `feature-mappings` string in `server.js` yet).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `src/web-ui/routes/journeys.js`, add this new handler after the existing `handlePatchJourneyStagesOrder` function (before `handleGetJourneyCanvas`):
 
@@ -601,7 +603,7 @@ Add a new dispatch entry immediately after the existing `/journeys/[^/]+/stages/
     });
 ```
 
-- [ ] **Step 4: Run tests — must pass**
+- [x] **Step 4: Run tests — must pass**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -609,7 +611,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected output: `[ep2-s2-feature-mapping-save] Results: 7 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -617,12 +619,14 @@ npm test
 
 Expected output: all tests passing, 0 failed
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js src/web-ui/server.js tests/check-ep2-s2-feature-mapping-save.js
 git commit -m "feat: transactional upsert handler for feature-to-stage mappings (ep2-s2 AC2-AC5)"
 ```
+
+**Completed.** Final commit: `658565fa`. Spec compliance ✅, code quality ✅ (one cosmetic Minor note: test constant named `MAPPING_CSRF`, comment referenced `REAL_CSRF` — not fixed, non-blocking).
 
 ---
 
@@ -632,7 +636,7 @@ git commit -m "feat: transactional upsert handler for feature-to-stage mappings 
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ep2-s2-feature-mapping-save.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ep2-s2-feature-mapping-save.js`, before the final summary-line block:
 
@@ -673,7 +677,7 @@ Append to `tests/check-ep2-s2-feature-mapping-save.js`, before the final summary
   } catch (e) { fail('(wiring) -- clicking Save POSTs the correct journeyId/stageId/featureSlug/metricKeys', e); }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -681,7 +685,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected: fails — clicking Save does nothing yet (no handler wired).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In the SAME second `<script>` block (do not add a fourth wrapper), add `journeyId` and `csrfToken` duplicated into this block's own closure (they already exist in the FIRST script block's closure, which this second block cannot reach — separate IIFEs), plus the Save button's click handler and `fpStageId` capture. Add the two duplicated constants as the very first lines of the block, before `var fpModal=...`:
 
@@ -728,7 +732,7 @@ Add the Save button wiring, placed after the existing `fmShowFeature`/`fmShowLis
       '}' +
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ep2-s2-feature-mapping-save.js
@@ -736,7 +740,7 @@ node tests/check-ep2-s2-feature-mapping-save.js
 
 Expected output: `[ep2-s2-feature-mapping-save] Results: 9 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -744,12 +748,14 @@ npm test
 
 Expected output: all tests passing, 0 failed
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ep2-s2-feature-mapping-save.js
 git commit -m "feat: wire the Save button to POST the feature-to-stage mapping (ep2-s2)"
 ```
+
+**Completed.** Final commit (after a post-review amend adding a direct modal-closed assertion to the success-path test, per code-quality review): `467349ff`. Spec compliance ✅, code quality ✅ — including a holistic full-block check across all 3 tasks together.
 
 ---
 

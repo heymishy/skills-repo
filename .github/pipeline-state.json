@@ -38991,17 +38991,17 @@
             {
               "slug": "ep2-s2",
               "name": "Feature-to-stage mapping: save mapping with metric key selection",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-09T07:36:44.570Z",
+              "updatedAt": "2026-10-09T08:55:15.534Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -39013,19 +39013,19 @@
                 {
                   "id": "task-1",
                   "name": "Metric-key picker UI (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Save mapping -- transactional upsert handler (AC2, AC3, AC4, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Wire the Save button client-side",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s2-plan.md"
                 }
               ]
