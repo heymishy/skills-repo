@@ -284,6 +284,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     featuresLoadError = true;
   }
 
+  // ep2-s2 -- embed each feature's own optional metricKeys (string[]) for the
+  // metric-key sub-view, keyed by the feature's REAL (not lowercased) slug.
+  // Nothing currently writes this field (decisions.md D12) -- every feature
+  // today falls through to the explicit "No metrics recorded" fallback,
+  // forward-compatible once a future story defines the write path.
+  var featureMetricKeysJson = JSON.stringify(features.reduce(function(acc, f) {
+    acc[f.slug] = Array.isArray(f.metricKeys) ? f.metricKeys : [];
+    return acc;
+  }, {}));
+
   var r = await pool.query(
     `SELECT id, name, description FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
     [journeyId, tenantId]
@@ -381,6 +391,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<p id="sw-feature-picker-empty" class="sw-feature-picker-empty" role="status" style="display:none">No features match your search.</p>';
   }
 
+  // ep2-s2 -- metric-key sub-view. Hidden by default; shown by the script
+  // block below when a feature is clicked. Built client-side from the
+  // embedded featureMetricKeys map (mirrors ep1-s3's own stageData
+  // embedding precedent -- embed once server-side, populate via JS at
+  // interaction time, no second round trip).
+  var featureMappingViewHtml =
+    '<div id="sw-feature-mapping-view" class="sw-feature-mapping-view" style="display:none">' +
+      '<h3 id="sw-feature-mapping-name"></h3>' +
+      '<p id="sw-feature-mapping-slug" class="sw-feature-picker-slug"></p>' +
+      '<div id="sw-feature-mapping-metrics"></div>' +
+      '<button type="button" id="sw-feature-mapping-back">Back</button>' +
+      '<button type="button" id="sw-feature-mapping-save">Save mapping</button>' +
+      '<span id="sw-feature-mapping-error" class="sw-feature-picker-message" role="status"></span>' +
+    '</div>';
+
   var featurePickerModalHtml =
     '<div id="sw-feature-picker-modal" class="sw-feature-picker-modal" role="dialog" aria-modal="true" aria-labelledby="sw-feature-picker-title" aria-hidden="true">' +
       '<div class="sw-feature-picker-header">' +
@@ -388,6 +413,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         '<button type="button" id="sw-feature-picker-close" aria-label="Close feature picker">✕</button>' +
       '</div>' +
       featurePickerBodyHtml +
+      featureMappingViewHtml +
     '</div>' +
     '<style>' +
       '.sw-feature-picker-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
@@ -408,6 +434,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-feature-picker-message{font-size:13px;color:var(--ink-2)}' +
       '.sw-feature-picker-empty{font-size:12px;color:var(--muted)}' +
       '.sw-stage-map-feature{margin-left:8px}' +
+      '.sw-feature-mapping-view{margin-top:4px}' +
+      '.sw-feature-mapping-metric-label{display:block;font-size:13px;color:var(--ink);margin:6px 0}' +
+      '#sw-feature-mapping-save{margin-left:8px}' +
     '</style>';
 
   // Full stage data embedded for the side panel to populate from, keyed by
@@ -713,6 +742,67 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       'var fpClose=document.getElementById("sw-feature-picker-close");' +
       'var fpSearch=document.getElementById("sw-feature-picker-search");' +
       'var fpTriggerEl=null;' +
+      'var featureMetricKeys=' + featureMetricKeysJson + ';' +
+      'var fmView=document.getElementById("sw-feature-mapping-view");' +
+      'var fmNameEl=document.getElementById("sw-feature-mapping-name");' +
+      'var fmSlugEl=document.getElementById("sw-feature-mapping-slug");' +
+      'var fmMetricsEl=document.getElementById("sw-feature-mapping-metrics");' +
+      'var fmBack=document.getElementById("sw-feature-mapping-back");' +
+      'var fmSelectedSlug=null;' +
+      // Shared list/search-label visibility toggle -- used by both
+      // fmShowList (list view) and fmShowFeature (sub-view), so the two
+      // views are never accidentally shown at once.
+      'function fmSetListVisible(visible){' +
+        'var listEl=document.getElementById("sw-feature-picker-list");' +
+        'var searchLabel=document.querySelector(".sw-feature-picker-search-label");' +
+        'if(listEl)listEl.style.display=visible?"":"none";' +
+        'if(searchLabel)searchLabel.style.display=visible?"":"none";' +
+      '}' +
+      'function fmShowList(){' +
+        'fmView.style.display="none";' +
+        'fmSetListVisible(true);' +
+      '}' +
+      'function fmShowFeature(slug,name){' +
+        'fmSelectedSlug=slug;' +
+        'fmNameEl.textContent=name;' +
+        'fmSlugEl.textContent=slug;' +
+        'var keys=featureMetricKeys[slug]||[];' +
+        'fmMetricsEl.innerHTML="";' +
+        'if(keys.length===0){' +
+          'var p=document.createElement("p");' +
+          'p.className="sw-feature-picker-message";' +
+          'p.textContent="No metrics recorded";' +
+          'fmMetricsEl.appendChild(p);' +
+        '}else{' +
+          'keys.forEach(function(k){' +
+            'var label=document.createElement("label");' +
+            'label.className="sw-feature-mapping-metric-label";' +
+            'var cb=document.createElement("input");' +
+            'cb.type="checkbox";' +
+            'cb.value=k;' +
+            'cb.className="sw-feature-mapping-metric-checkbox";' +
+            'label.appendChild(cb);' +
+            'label.appendChild(document.createTextNode(" "+k));' +
+            'fmMetricsEl.appendChild(label);' +
+          '});' +
+        '}' +
+        'fmSetListVisible(false);' +
+        'fmView.style.display="block";' +
+      '}' +
+      'if(fmBack)fmBack.addEventListener("click",fmShowList);' +
+      'Array.prototype.slice.call(document.querySelectorAll(".sw-feature-picker-item")).forEach(function(li){' +
+        'li.addEventListener("click",function(){' +
+          // The REAL slug/name must come from these spans' textContent, not
+          // this <li>'s own data-slug/data-name attributes -- ep2-s1's
+          // swFilterFeaturePicker deliberately lowercases those attributes
+          // for case-insensitive filtering, which would corrupt the
+          // featureMetricKeys lookup (and the displayed name) for any
+          // feature whose real slug/name has uppercase characters.
+          'var realSlug=li.querySelector(".sw-feature-picker-slug").textContent;' +
+          'var realName=li.querySelector(".sw-feature-picker-name").textContent;' +
+          'fmShowFeature(realSlug,realName);' +
+        '});' +
+      '});' +
       'function fpOpen(trigger){' +
         'fpTriggerEl=trigger||document.activeElement;' +
         'fpModal.classList.add("sw-feature-picker-modal--open");' +
@@ -723,6 +813,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'fpModal.classList.remove("sw-feature-picker-modal--open");' +
         'fpModal.setAttribute("aria-hidden","true");' +
         'if(fpTriggerEl&&typeof fpTriggerEl.focus==="function")fpTriggerEl.focus();' +
+        'fmShowList();' +
       '}' +
       'if(fpClose)fpClose.addEventListener("click",fpCloseFn);' +
       'document.addEventListener("keydown",function(evt){' +
