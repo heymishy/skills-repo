@@ -702,6 +702,28 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'el.addEventListener("blur",save);' +
         'if(f==="moment_of_truth")el.addEventListener("change",save);' +
       '});' +
+    '})()<\/script>' +
+    // ep2-s1 AC2 -- client-side filtering behaviour for the feature picker's
+    // search input (markup already added by Task 1). Deliberately a
+    // separate <script> block/IIFE from the stage-panel/reorder script
+    // above -- Task 3 (open/close modal handling) extends THIS block, not
+    // that one.
+    '<script>(function(){' +
+      'var fpModal=document.getElementById("sw-feature-picker-modal");' +
+      'var fpSearch=document.getElementById("sw-feature-picker-search");' +
+      'window.swFilterFeaturePicker=function(){' +
+        'if(!fpSearch)return;' +
+        'var q=(fpSearch.value||"").trim().toLowerCase();' +
+        'var items=Array.prototype.slice.call(document.querySelectorAll(".sw-feature-picker-item"));' +
+        'var anyVisible=false;' +
+        'items.forEach(function(li){' +
+          'var match=!q||li.getAttribute("data-slug").indexOf(q)!==-1||li.getAttribute("data-name").indexOf(q)!==-1;' +
+          'li.classList.toggle("sw-feature-picker-item--hidden",!match);' +
+          'if(match)anyVisible=true;' +
+        '});' +
+        'var emptyEl=document.getElementById("sw-feature-picker-empty");' +
+        'if(emptyEl)emptyEl.style.display=(items.length&&!anyVisible)?"block":"none";' +
+      '};' +
     '})()<\/script>';
 
   if (res.status) {

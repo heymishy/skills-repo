@@ -4,6 +4,22 @@
 // Test plan: artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep2-s1-test-plan.md
 const assert = require('assert');
 const fs = require('fs');
+const { JSDOM } = require('jsdom');
+
+// Same "extract the real script, run it in real jsdom against a real render"
+// technique as pflx-s2 (tests/check-pflx-s2-default-active-only-filter.js).
+// Extracts ONLY the second <script> block (the one ep2-s1 Task 2 added,
+// containing swFilterFeaturePicker) -- not the first (stage-panel/reorder)
+// script, which needs DOM elements this test does not set up.
+function extractFeaturePickerScript(html) {
+  var marker = 'var fpModal=document.getElementById("sw-feature-picker-modal");';
+  var idx = html.indexOf(marker);
+  assert.ok(idx !== -1, 'expected the feature-picker filter script to be present in the rendered HTML');
+  var start = html.lastIndexOf('<script>', idx);
+  var end = html.indexOf('</script>', idx);
+  assert.ok(start !== -1 && end !== -1, 'expected enclosing <script>...</script> tags');
+  return html.slice(start + '<script>'.length, end);
+}
 
 /**
  * @param {object} journeyRow {id, name, description}
@@ -115,6 +131,77 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     assert.ok(/\.github['"],\s*['"]pipeline-state\.json/.test(src), "expected a path.join(..., '.github', 'pipeline-state.json') construction");
     pass('(shape) -- handleGetJourneyCanvas reads pipeline-state.json via the repo-root adapter, not a hardcoded path');
   } catch (e) { fail('(shape) -- handleGetJourneyCanvas reads pipeline-state.json via the repo-root adapter, not a hardcoded path', e); }
+
+  // ── AC2 -- feature picker includes a filter/search input wired to the rendered list ──
+  try {
+    var pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, []);
+    var featuresJson = JSON.stringify({ features: [
+      { slug: 'feat-a', name: 'Feature A' },
+      { slug: 'feat-b', name: 'Feature B' }
+    ] });
+    var out = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    assert.ok(/<input[^>]*oninput="swFilterFeaturePicker\(\)"/.test(out), 'expected a filter <input> with an oninput handler');
+    assert.ok(out.indexOf('data-slug="feat-a"') !== -1 && out.indexOf('data-name="feature a"') !== -1, 'expected data-slug/data-name attributes on the rendered item');
+    pass('AC2 -- feature picker includes a filter/search input wired to the rendered list');
+  } catch (e) { fail('AC2 -- feature picker includes a filter/search input wired to the rendered list', e); }
+
+  // ── AC2 (behavioral) -- swFilterFeaturePicker actually hides non-matching items and toggles the empty-state message ──
+  try {
+    var pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, []);
+    var featuresJson = JSON.stringify({ features: [
+      { slug: 'feat-a', name: 'Feature A' },
+      { slug: 'feat-b', name: 'Feature B' },
+      { slug: 'other-x', name: 'Something Else' }
+    ] });
+    var out = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var scriptSrc = extractFeaturePickerScript(out);
+    var dom = new JSDOM('<!DOCTYPE html><html><body>' + out + '</body></html>', {
+      runScripts: 'outside-only',
+      url: 'http://localhost/journeys/j1'
+    });
+    dom.window.eval(scriptSrc);
+    var win = dom.window;
+    var doc = win.document;
+
+    function items() { return Array.prototype.slice.call(doc.querySelectorAll('.sw-feature-picker-item')); }
+    function isHidden(el) { return el.classList.contains('sw-feature-picker-item--hidden'); }
+    function byDataSlug(slug) { return items().find(function(el) { return el.getAttribute('data-slug') === slug; }); }
+
+    // Before any filtering: all 3 items visible, empty message not shown.
+    assert.strictEqual(items().length, 3, 'expected 3 rendered feature-picker items');
+    items().forEach(function(el) { assert.strictEqual(isHidden(el), false, 'expected no item hidden before filtering'); });
+    var emptyEl = doc.getElementById('sw-feature-picker-empty');
+    assert.notStrictEqual(emptyEl.style.display, 'block', 'expected the empty-state message not to be shown before filtering');
+
+    // Filter to "feat" -- the two feat-* items stay visible, other-x hides.
+    doc.getElementById('sw-feature-picker-search').value = 'feat';
+    win.swFilterFeaturePicker();
+    assert.strictEqual(isHidden(byDataSlug('feat-a')), false, 'expected feat-a to remain visible when filtering for "feat"');
+    assert.strictEqual(isHidden(byDataSlug('feat-b')), false, 'expected feat-b to remain visible when filtering for "feat"');
+    assert.strictEqual(isHidden(byDataSlug('other-x')), true, 'expected other-x to be hidden when filtering for "feat"');
+
+    // Filter to something matching nothing -- all items hide, empty message shows.
+    doc.getElementById('sw-feature-picker-search').value = 'zzz-no-match';
+    win.swFilterFeaturePicker();
+    items().forEach(function(el) { assert.strictEqual(isHidden(el), true, 'expected all items hidden when nothing matches'); });
+    assert.strictEqual(emptyEl.style.display, 'block', 'expected the empty-state message to be shown when nothing matches');
+
+    // Clear the search -- all items become visible again, empty message hides again.
+    doc.getElementById('sw-feature-picker-search').value = '';
+    win.swFilterFeaturePicker();
+    items().forEach(function(el) { assert.strictEqual(isHidden(el), false, 'expected all items visible again once the search is cleared'); });
+    assert.strictEqual(emptyEl.style.display, 'none', 'expected the empty-state message to be hidden again once the search is cleared');
+
+    pass('AC2 (behavioral) -- swFilterFeaturePicker actually hides non-matching items and toggles the empty-state message');
+  } catch (e) { fail('AC2 (behavioral) -- swFilterFeaturePicker actually hides non-matching items and toggles the empty-state message', e); }
 
   console.log(`\n[ep2-s1-feature-picker] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
