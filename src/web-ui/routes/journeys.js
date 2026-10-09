@@ -253,6 +253,93 @@ async function handlePatchJourneyStagesOrder(req, res, _next, pool) {
 }
 
 /**
+ * POST /journeys/:id/stages/:stageId/feature-mappings — upsert a
+ * feature-to-stage mapping (feature_customer_journey_stage_mappings),
+ * tenant-scoped.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePostFeatureMapping(req, res, _next, pool) {
+  // ep2-s2 -- CSRF guard first, mandatory from first implementation per
+  // jcg-s1/ep1-s2/ep1-s3/ep1-s4's own precedent.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var featureSlug = (req.body && req.body.featureSlug || '').trim();
+  var metricKeys = Array.isArray(req.body && req.body.metricKeys) ? req.body.metricKeys : [];
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  if (!featureSlug) { badRequest('featureSlug is required'); return; }
+
+  // ep2-s2 -- stage ownership check BEFORE any transaction opens -- 404, not
+  // 403, for a cross-tenant journey/stage id, matching every other mutating
+  // handler in this file (see decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // ep2-s2 -- feature_customer_journey_stage_mappings has NO unique
+  // constraint on (journey_stage_id, feature_slug) -- true SQL UPSERT via
+  // INSERT ... ON CONFLICT is not available. Application-level
+  // check-then-write inside a single transaction, matching
+  // handlePatchJourneyStagesOrder's own established pattern exactly.
+  var client = await pool.connect();
+  var mappingId;
+  try {
+    await client.query('BEGIN');
+    var existing = await client.query(
+      `SELECT id FROM feature_customer_journey_stage_mappings
+       WHERE journey_stage_id = $1 AND feature_slug = $2 AND tenant_id = $3
+       FOR UPDATE`,
+      [stageId, featureSlug, tenantId]
+    );
+    if (existing.rows[0]) {
+      mappingId = existing.rows[0].id;
+      await client.query(
+        `UPDATE feature_customer_journey_stage_mappings SET metric_keys = $1 WHERE id = $2`,
+        [JSON.stringify(metricKeys), mappingId]
+      );
+    } else {
+      var ins = await client.query(
+        `INSERT INTO feature_customer_journey_stage_mappings
+         (journey_stage_id, journey_id, tenant_id, feature_slug, metric_keys)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`,
+        [stageId, journeyId, tenantId, featureSlug, JSON.stringify(metricKeys)]
+      );
+      mappingId = ins.rows[0].id;
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* best-effort */ }
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  if (res.status) { res.status(200).json({ id: mappingId, featureSlug: featureSlug, metricKeys: metricKeys }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: mappingId, featureSlug: featureSlug, metricKeys: metricKeys })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -1024,4 +1111,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping };

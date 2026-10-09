@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -4001,6 +4001,16 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handlePatchJourneyStage(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/feature-mappings$/) && req.method === 'POST') {
+    // cj-ep2-s2 — save a feature-to-stage mapping (2026-10-05-customer-journey-as-first-class)
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostFeatureMapping(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/journeys\/[^/]+\/stages-order$/) && req.method === 'PATCH') {
