@@ -38991,10 +38991,10 @@
             {
               "slug": "ep2-s2",
               "name": "Feature-to-stage mapping: save mapping with metric key selection",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-09T08:55:15.534Z",
+              "updatedAt": "2026-10-09T09:17:11.836Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s2-review-2.md",
@@ -39004,7 +39004,7 @@
                 "passing": 9
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -39028,7 +39028,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-10-05-customer-journey-as-first-class/plans/ep2-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "ep2-s3",
