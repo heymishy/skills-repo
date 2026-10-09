@@ -10,7 +10,7 @@ So that **I can see at a glance which features and metrics are attached to each 
 ## Benefit Linkage
 M2 — Feature-to-stage mapping adoption — the Delivery view surfaces existing mappings, making the M2 metric visible. M3 — Journey-level metric coverage — metric values are displayed at the stage where they are relevant.
 ## Architecture Constraints
-View toggle is client-side (no server round-trip) per the design decision in `design.md`. No new npm runtime dependencies.
+View toggle is client-side (no server round-trip) per the design decision in `design.md`. No new npm runtime dependencies. ADR-016 (`pipeline-state.json` is read-only; metric keys and values are sourced from it, never written back). ADR-025 (tenant scoping on every write — the new mapping-removal route checks `req.session.tenantId` ownership before any delete).
 ## Dependencies
 ep2-s2
 ## Acceptance Criteria
@@ -31,7 +31,7 @@ When a metric key has no recorded value in `pipeline-state.json`,
 Then the metric row shows "No value recorded" — not blank, not an error.
 
 ## Out of Scope
-Editing mappings from the Delivery view (deferred), removing mappings (deferred for MVP), health indicators (ep3-s2), customer experience annotation rows (ep3-s1).
+Editing mappings from the Delivery view (deferred), removing mappings in the general case (deferred for MVP) — except removing an orphaned (feature-not-found) mapping specifically, which AC2 requires and is implemented via a narrow, scoped DELETE route (see `decisions.md` D16) — health indicators (ep3-s2), customer experience annotation rows (ep3-s1).
 ## NFRs
 View toggle client-side. Feature-not-found case handled gracefully. No new npm runtime dependencies. WCAG 2.1 AA — annotation rows readable by screen reader.
 ## Complexity Rating

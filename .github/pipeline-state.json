@@ -39037,13 +39037,21 @@
             {
               "slug": "ep2-s3",
               "name": "Delivery view: feature and metric annotation rows on stage cards",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-07T19:42:37.013Z",
+              "updatedAt": "2026-10-09T17:59:23.872Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s3-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep2-s3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep2-s3-dor.md"
             }
           ]
         },
