@@ -39245,21 +39245,24 @@
             {
               "slug": "ep5-s2",
               "name": "Tenant isolation hardening: adversarial path and cross-tenant guard tests for journey routes",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-10T03:37:05.488Z",
+              "updatedAt": "2026-10-10T04:08:31.699Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s2-review-1.md",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 7,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s2-dor.md"
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s2-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/970",
+              "acVerified": 7
             },
             {
               "slug": "ep5-s3",
