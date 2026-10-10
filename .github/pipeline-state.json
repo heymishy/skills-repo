@@ -39816,7 +39816,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-10-10T08:33:02.580Z",
+      "updatedAt": "2026-10-10T08:40:20.907Z",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
       "track": "standard",
@@ -39835,38 +39835,74 @@
             {
               "slug": "ic-s1",
               "name": "Render journey stages as connected nodes on a drawflow canvas, replacing the linear list",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s1-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s1-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "ic-s2",
               "name": "Free node positioning persisted across reloads",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s2-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s2-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             },
             {
               "slug": "ic-s3",
               "name": "Canvas pan and zoom",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s3-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s3-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "ic-s4",
               "name": "Keyboard-accessible node movement (WCAG 2.1 AA)",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s4-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s4-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             }
           ]
         }
