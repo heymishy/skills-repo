@@ -39787,6 +39787,22 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-10-10-infinite-canvas",
+      "name": "Infinite Canvas -- Reusable Free-Form Spatial Canvas Primitive",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-10-10T07:43:56.375Z",
+      "discoveryStatus": "clarified",
+      "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
