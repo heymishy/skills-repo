@@ -39835,7 +39835,7 @@
             {
               "slug": "ic-s1",
               "name": "Render journey stages as connected nodes on a drawflow canvas, replacing the linear list",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39852,7 +39852,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s1-dor.md",
               "verifyStatus": "passed",
-              "updatedAt": "2026-10-10T11:15:42.689Z",
+              "updatedAt": "2026-10-10T18:06:29.436Z",
               "tasks": [
                 {
                   "id": "task-1",
@@ -39876,8 +39876,11 @@
                   "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s1-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/971"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/971",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "ic-s2",
