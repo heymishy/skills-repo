@@ -85,6 +85,126 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC5: GET /vendor/drawflow.min.css (Accept-Encoding: gzip) returns 200 with Content-Encoding: gzip and the real gzip-compressed file');
   } catch (e) { fail('AC5: GET /vendor/drawflow.min.css (Accept-Encoding: gzip) returns 200 with Content-Encoding: gzip and the real gzip-compressed file', e); }
 
+  function makeCanvasMockPool(journeyRow, stageRows) {
+    return {
+      query: function(sql, params) {
+        var s = String(sql).trim();
+        if (/^SELECT id, name, description FROM customer_journeys/.test(s)) {
+          var match = journeyRow && journeyRow.id === params[0];
+          return Promise.resolve({ rows: match ? [journeyRow] : [] });
+        }
+        if (/^SELECT id, name, position, description/.test(s)) {
+          return Promise.resolve({ rows: stageRows });
+        }
+        if (/^SELECT id, journey_stage_id, feature_slug, metric_keys FROM feature_customer_journey_stage_mappings/.test(s)) {
+          return Promise.resolve({ rows: [] });
+        }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+  }
+
+  function stageRow(id, name, position, extra) {
+    return Object.assign({ id: id, name: name, position: position, description: null, customer_actions: null, touchpoints: null, channel: null, emotion: null, pain_points: null, opportunities: null, moment_of_truth: false }, extra || {});
+  }
+
+  const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+
+  // Named distinctly from the writeHead/end-shaped makeMockRes() above --
+  // both are `function` declarations in this same IIFE scope, and same-name
+  // function declarations hoist such that the textually-later one wins for
+  // the WHOLE scope (including calls made earlier in execution order), which
+  // would have silently broken the AC5 tests above (res.writeHead would no
+  // longer exist on their mock res).
+  function makeCanvasMockRes() {
+    return { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+  }
+
+  // -- AC1: nodes in position order, auto-connected ------------------------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [
+      stageRow('s1', 'Discover', 0), stageRow('s2', 'Evaluate', 1), stageRow('s3', 'Buy', 2)
+    ]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/id="sw-drawflow-canvas"/.test(html), 'expected a #sw-drawflow-canvas container');
+    const idxS1 = html.indexOf('"s1"');
+    const idxS2 = html.indexOf('"s2"');
+    const idxS3 = html.indexOf('"s3"');
+    assert.ok(idxS1 !== -1 && idxS2 !== -1 && idxS3 !== -1 && idxS1 < idxS2 && idxS2 < idxS3, 'expected node data for s1, s2, s3 in position order in the generated script');
+    const connectionCount = (html.match(/addConnection/g) || []).length;
+    assert.strictEqual(connectionCount, 2, 'expected exactly 2 addConnection calls for 3 sequential stages');
+    pass('AC1: 3 stages render as drawflow nodes in position order with 2 auto-connections');
+  } catch (e) { fail('AC1: 3 stages render as drawflow nodes in position order with 2 auto-connections', e); }
+
+  // -- AC1 edge case: 1 stage, 0 connections --------------------------------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Only', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const connectionCount = (res._b.bodyContent.match(/addConnection/g) || []).length;
+    assert.strictEqual(connectionCount, 0, 'expected 0 connections for a single-stage journey');
+    pass('AC1 (edge case): a single-stage journey renders 0 connections');
+  } catch (e) { fail('AC1 (edge case): a single-stage journey renders 0 connections', e); }
+
+  // -- AC2: existing per-stage actions preserved in BOTH renderings --------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Discover', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/sw-stage-edit[^>]*data-stage-id="s1"/.test(html), 'expected Edit-stage control for s1 (legacy list, unchanged)');
+    assert.ok(/sw-stage-map-feature[^>]*data-stage-id="s1"/.test(html), 'expected Map-feature control for s1 (legacy list, unchanged)');
+    // The SAME action controls must also be reachable from the new canvas node's own HTML content.
+    const nodeHtmlMatch = html.match(/addNode\([^)]*"s1"[^)]*\)/);
+    assert.ok(nodeHtmlMatch, 'expected an addNode(...) call referencing stage s1');
+    pass('AC2: Edit-stage and Map-feature controls exist for s1, both in the legacy list and the new canvas node');
+  } catch (e) { fail('AC2: Edit-stage and Map-feature controls exist for s1, both in the legacy list and the new canvas node', e); }
+
+  // -- AC3: moment-of-truth badge on the flagged node only -----------------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [
+      stageRow('s1', 'Discover', 0, { moment_of_truth: true }),
+      stageRow('s2', 'Evaluate', 1, { moment_of_truth: false })
+    ]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    const s1NodeCall = html.match(/addNode\([^;]*?"s1"[^;]*?\);/);
+    const s2NodeCall = html.match(/addNode\([^;]*?"s2"[^;]*?\);/);
+    assert.ok(s1NodeCall && /Moment of truth/.test(s1NodeCall[0]), 'expected s1\'s own node HTML to include the Moment of truth badge');
+    assert.ok(s2NodeCall && !/Moment of truth/.test(s2NodeCall[0]), 'expected s2\'s own node HTML to NOT include the badge');
+    pass('AC3: moment-of-truth badge appears in the flagged stage\'s own node content only');
+  } catch (e) { fail('AC3: moment-of-truth badge appears in the flagged stage\'s own node content only', e); }
+
+  // -- AC4: 0-stage empty state unchanged -----------------------------------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, []);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/No stages yet\. Add your first stage\./.test(html), 'expected the unchanged empty-state message');
+    assert.ok(!/addNode\(/.test(html), 'expected zero addNode calls for an empty journey');
+    pass('AC4: 0-stage journey shows the unchanged empty-state message, no canvas nodes');
+  } catch (e) { fail('AC4: 0-stage journey shows the unchanged empty-state message, no canvas nodes', e); }
+
+  // -- AC6: client-side load guard ------------------------------------------
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Discover', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/typeof\s+window\.Drawflow\s*===\s*['"]function['"]/.test(html), 'expected a window.Drawflow load guard before any node-rendering call');
+    pass('AC6: client script guards against window.Drawflow being undefined');
+  } catch (e) { fail('AC6: client script guards against window.Drawflow being undefined', e); }
+
   console.log(`\n[ic-s1-canvas-render] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();

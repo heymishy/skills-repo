@@ -786,6 +786,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-annotations{display:none;margin:4px 0 12px 0;padding:8px 10px;' +
         'border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:12px}' +
       '.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}' +
+      '.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}' +
+      '#sw-drawflow-canvas{display:none;height:600px;width:100%}' +
+      '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
       '.sw-feature-mapping-row{margin-bottom:8px}' +
       '.sw-feature-mapping-row:last-child{margin-bottom:0}' +
       '.sw-feature-mapping-warning{color:var(--danger)}' +
@@ -823,6 +826,26 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<button type="button" class="sw-canvas-view-toggle-btn" data-view="delivery" aria-pressed="false">Delivery</button>' +
     '</div>';
 
+  // ic-s1 -- drawflow canvas nodes, built from the SAME per-stage data as
+  // the legacy list below. Auto-connects stages in sequence order; manual
+  // connection-drawing is never exposed to the operator for journeys
+  // (epic-level scope decision, decisions.md).
+  var drawflowNodesScript = stages.map(function(s, idx) {
+    var nodeHtml =
+      '<div class="sw-stage-name">' + escHtml(s.name) + '</div>' +
+      buildHealthIndicator(s.id) +
+      (s.moment_of_truth
+        ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
+        : '') +
+      '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
+      '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>';
+    return 'editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + (idx * 220) + ', 120, ' +
+      JSON.stringify('sw-drawflow-node') + ', {}, ' + JSON.stringify(nodeHtml) + ');';
+  }).join('');
+  var drawflowConnectionsScript = stages.slice(0, -1).map(function(s, idx) {
+    return 'editor.addConnection(' + JSON.stringify(stages[idx].id) + ', ' + JSON.stringify(stages[idx + 1].id) + ', "output_1", "input_1");';
+  }).join('');
+
   var bodyContent =
     '<div class="sw-journey-canvas sw-journey-canvas--view-canvas">' +
       '<h1>' + escHtml(journey.name) + '</h1>' +
@@ -833,6 +856,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '</div>' +
       '<span id="sw-stage-reorder-error" class="sw-stage-reorder-error" aria-live="polite"></span>' +
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
+      '<div id="sw-drawflow-canvas"></div>' +
     '</div>' +
     panelHtml +
     featurePickerModalHtml +
@@ -841,6 +865,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
       'var stageData={};' +
       (stageDataJson) + '.forEach(function(s){stageData[s.id]=s;});' +
+      // ic-s1 AC6 -- load-guard: fail loudly (console.error + a visible
+      // fallback message in the canvas container), never silently, if the
+      // drawflow asset failed to load -- matches csd-s1's own
+      // window.mermaid check precedent in skills.js.
+      'if(typeof window.Drawflow===\"function\"){' +
+        'var editor=new window.Drawflow(document.getElementById(\"sw-drawflow-canvas\"));' +
+        'editor.reroute=true;' +
+        'editor.start();' +
+        drawflowNodesScript +
+        drawflowConnectionsScript +
+      '}else{' +
+        'console.error(\"drawflow failed to load -- canvas view unavailable\");' +
+        'var el=document.getElementById(\"sw-drawflow-canvas\");' +
+        'if(el)el.textContent=\"Canvas failed to load. Please refresh the page.\";' +
+      '}' +
       'var list=document.getElementById("sw-journey-stages");' +
       'var addBtn=document.getElementById("sw-add-stage-btn");' +
       'var panel=document.getElementById("sw-stage-panel");' +
