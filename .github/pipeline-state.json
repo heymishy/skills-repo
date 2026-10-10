@@ -39830,12 +39830,12 @@
         {
           "slug": "canvas-replacement-for-journey-stages",
           "name": "Operators can spatially position and view journey stages on a free-form canvas",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "ic-s1",
               "name": "Render journey stages as connected nodes on a drawflow canvas, replacing the linear list",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39850,7 +39850,8 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s1-dor.md"
+              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s1-dor.md",
+              "updatedAt": "2026-10-10T09:03:15.627Z"
             },
             {
               "slug": "ic-s2",
