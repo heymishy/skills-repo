@@ -39885,7 +39885,7 @@
             {
               "slug": "ic-s2",
               "name": "Free node positioning persisted across reloads",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39901,7 +39901,7 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s2-dor.md",
-              "updatedAt": "2026-10-10T19:58:32.504Z",
+              "updatedAt": "2026-10-10T20:00:00.690Z",
               "tasks": [
                 {
                   "id": "task-1",
@@ -39925,7 +39925,9 @@
                   "endingSha": "140c9b0b"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/972"
             },
             {
               "slug": "ic-s3",
