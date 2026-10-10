@@ -38,14 +38,16 @@ Modify:
 
 ---
 
-## Task 1: Serve drawflow.min.js and drawflow.min.css via the zero-build vendor pattern
+## Task 1: Serve drawflow.min.js and drawflow.min.css via the zero-build vendor pattern — COMPLETE (commit `ca82eb81`)
 
 **Files:**
 - Modify: `src/web-ui/routes/public.js`
 - Modify: `src/web-ui/server.js`
 - Test: `tests/check-ic-s1-canvas-render.js` (AC5 tests, first 2 of 9)
 
-- [ ] **Step 1: Install drawflow**
+**Note:** implementation diverged from the exact code shown below in two ways, both confirmed correct by spec-compliance and code-quality review: (1) the handler pair was refactored into shared `_loadVendorAsset`/`handleVendorAsset` helpers after code-quality review flagged duplication with the existing mermaid asset pair; (2) the test file grew from 2 to 4 tests (both assets x gzip/non-gzip branches, each asserting a real `Buffer.compare` against the actual file read from `node_modules`, with gzip round-trip verification via `zlib.gunzipSync`) rather than the 2 shown in Step 2 — a strengthening the code-quality reviewer requested and independently confirmed. Full suite re-run after the amend: 734/734 (one pre-existing flaky failure in `tests/check-pcr-s1-test-runner.js` under full-suite conditions, confirmed to pass in isolation — not a regression from this change).
+
+- [x] **Step 1: Install drawflow**
 
 ```bash
 npm install drawflow
@@ -59,7 +61,7 @@ grep '"drawflow"' package.json
 
 Expected output: a line under `"dependencies"` (not `"devDependencies"`), e.g. `"drawflow": "^0.0.59",`
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `tests/check-ic-s1-canvas-render.js` with this header and the first 2 tests (AC5):
 
@@ -111,7 +113,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 })();
 ```
 
-- [ ] **Step 3: Run test — must fail**
+- [x] **Step 3: Run test — must fail**
 
 ```bash
 node tests/check-ic-s1-canvas-render.js
@@ -119,7 +121,7 @@ node tests/check-ic-s1-canvas-render.js
 
 Expected output: `TypeError: handleDrawflowJsAsset is not a function` (or equivalent — the handlers don't exist yet)
 
-- [ ] **Step 4: Add the asset handlers to public.js**
+- [x] **Step 4: Add the asset handlers to public.js**
 
 Open `src/web-ui/routes/public.js`. Find the existing `_loadMermaidAsset`/`handleMermaidAsset` pair (search for `csd-s1: mermaid client bundle`). Add this immediately after `handleMermaidAsset`'s closing brace, mirroring its exact pattern:
 
@@ -168,7 +170,7 @@ function handleDrawflowCssAsset(req, res) {
 
 Update the `module.exports` line at the bottom of `public.js` to add `handleDrawflowJsAsset, handleDrawflowCssAsset` to the existing exported object.
 
-- [ ] **Step 5: Wire the routes in server.js**
+- [x] **Step 5: Wire the routes in server.js**
 
 Open `src/web-ui/server.js`. Find the existing `require('./routes/public')` line (search for `handleMermaidAsset`) and add the two new names to the destructured require. Find the `/vendor/mermaid.min.js` route dispatch (search for `pathname === '/vendor/mermaid.min.js'`) and add immediately after its `else if` block:
 
@@ -183,7 +185,7 @@ Open `src/web-ui/server.js`. Find the existing `require('./routes/public')` line
     handleDrawflowCssAsset(req, res);
 ```
 
-- [ ] **Step 6: Run test — must pass**
+- [x] **Step 6: Run test — must pass**
 
 ```bash
 node tests/check-ic-s1-canvas-render.js
@@ -191,7 +193,7 @@ node tests/check-ic-s1-canvas-render.js
 
 Expected output: `[ic-s1-canvas-render] Results: 2 passed, 0 failed`
 
-- [ ] **Step 7: Run full suite — no regressions**
+- [x] **Step 7: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -199,7 +201,7 @@ npm test
 
 Expected output: all 733+ files passing (your new test file adds to this count)
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/web-ui/routes/public.js src/web-ui/server.js package.json package-lock.json tests/check-ic-s1-canvas-render.js
@@ -208,13 +210,15 @@ git commit -m "feat: serve drawflow.js/.css via the zero-build vendor pattern (i
 
 ---
 
-## Task 2: Render stages as drawflow nodes with auto-connections, zero regression to the other two views
+## Task 2: Render stages as drawflow nodes with auto-connections, zero regression to the other two views — COMPLETE (commit `413ba57e`)
+
+**Note:** two real divergences from the exact code shown below, both confirmed by independent re-run after implementation: (1) the plan's Step 1 test helper `makeMockRes()` collided by name with Task 1's own already-committed `makeMockRes()` (different shape — `writeHead`/`end` vs `status`/`json`) in the same top-level IIFE scope; JS function-declaration hoisting meant the later declaration silently won for the whole scope and broke the 4 already-passing AC5 tests the moment the new code was pasted in. Fixed by renaming the new helper to `makeCanvasMockRes()` and updating its 6 call sites. (2) final test count is 10 (4 AC5 + 6 Task-2), not the 9 this plan's Step 5 originally said — the Step 5 comment was never updated after Task 1 grew from 2→4 tests during its own review; not a real discrepancy. All three production-code search anchors (bodyContent wrapper div, `stageData` script line, delivery-view CSS rule) matched the real file verbatim — no anchor mismatches. Full suite after implementation: 734/734 clean (no pcr-s1 flake this run).
 
 **Files:**
 - Modify: `src/web-ui/routes/journeys.js`
 - Test: `tests/check-ic-s1-canvas-render.js` (remaining 7 tests)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/check-ic-s1-canvas-render.js`, before the final `console.log`/closing block (add a `makeCanvasMockPool` helper at the top of the IIFE, mirroring `check-ep1-s4-stage-reorder.js`'s own helper exactly):
 
@@ -336,7 +340,7 @@ Append to `tests/check-ic-s1-canvas-render.js`, before the final `console.log`/c
 
 Move the `console.log`/closing block to after these new tests (it must remain the last thing in the IIFE).
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ic-s1-canvas-render.js
@@ -344,7 +348,7 @@ node tests/check-ic-s1-canvas-render.js
 
 Expected output: multiple `[FAIL]` lines — `#sw-drawflow-canvas` not found, no `addNode`/`addConnection` calls exist yet
 
-- [ ] **Step 3: Implement the canvas node rendering**
+- [x] **Step 3: Implement the canvas node rendering**
 
 Open `src/web-ui/routes/journeys.js`. In `handleGetJourneyCanvas`, find the `var bodyContent =` assignment (search for `'<div class="sw-journey-canvas sw-journey-canvas--view-canvas">'`). Add a new `drawflowNodesScript` variable built from the existing `stages` array, right before the `bodyContent` assignment:
 
@@ -392,7 +396,7 @@ And inside the existing `<script>` block (search for `'var stageData={};'`), add
       '}' +
 ```
 
-- [ ] **Step 4: Add the CSS view-toggle rules**
+- [x] **Step 4: Add the CSS view-toggle rules**
 
 In the same file's existing CSS `<style>` string (search for `.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}`), add two new rules:
 
@@ -402,7 +406,7 @@ In the same file's existing CSS `<style>` string (search for `.sw-journey-canvas
       '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
 ```
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-ic-s1-canvas-render.js
@@ -410,7 +414,7 @@ node tests/check-ic-s1-canvas-render.js
 
 Expected output: `[ic-s1-canvas-render] Results: 9 passed, 0 failed`
 
-- [ ] **Step 6: Run full suite — no regressions**
+- [x] **Step 6: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -418,7 +422,7 @@ npm test
 
 Expected output: all files passing, especially `tests/check-ep2-s3*.js` and `tests/check-ep3-s1*.js`/`check-ep3-s2*.js` (Delivery/Customer-experience view tests) — these MUST still pass unchanged, confirming zero regression to the other two views.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ic-s1-canvas-render.js
@@ -427,8 +431,24 @@ git commit -m "feat: render journey stages as connected drawflow nodes on the Ca
 
 ---
 
+## Task 3 (unplanned): four defects found and fixed via live browser checks in /verify-completion — COMPLETE (commits `49b7a28e`, `538e1504`)
+
+Found during `/verify-completion`'s own mandatory live browser render check (not part of this plan's original Task 1/2 scope — no step above called for it). This is this story's single clearest demonstration of why that check is mandatory and not optional busywork: **all 13 jsdom tests passed throughout**, for every one of the four defects below, because jsdom tests in this file only assert the generated HTML/script *text*, never whether a real browser actually executes it correctly. Rendering the real handler output in an actual Chrome tab caught all four; none would have shipped-undetected to a human tester who trusted the green test suite.
+
+1. **The drawflow library was never actually loaded on the page** (commit `49b7a28e`). Task 1 added the zero-build vendor route handlers; Task 2 added client-side code that calls `new window.Drawflow(...)`. Neither ever added a `<script src="/vendor/drawflow.min.js">` or `<link rel="stylesheet" href="/vendor/drawflow.min.css">` tag anywhere in the page output. `window.Drawflow` was therefore always `undefined` in a real browser, so AC6's own load-guard fallback branch ("Canvas failed to load. Please refresh the page.") fired unconditionally — the Canvas tab would never have worked in production. Fixed by adding both tags to `journeys.js`'s own `bodyContent` string, the `<link>` right after the existing `<style>` block and the `<script src>` immediately before the inline init `<script>` block (document order matters — the synchronous `<script src>` must parse/execute before the inline script that depends on it runs).
+
+2. **`editor.addConnection()` was called with each stage's own string id** (`"s1"`, `"s2"`, ...) (commit `49b7a28e`). drawflow's `addNode(name, inputs, outputs, posx, posy, class, data, html)` does not treat its first `name` argument as a connectable id — it returns its own auto-incrementing numeric id (confirmed against `node_modules/drawflow/README.md`'s own `addConnection` example, which uses numeric ids `15,16`, and independently confirmed by exercising the real loaded library directly in a browser: `addNode` returned `1`, `2`, ... not the string passed in). Calling `addConnection` with a stage's string id threw `Cannot read properties of undefined (reading 'data')` from inside `drawflow.min.js` on every page load, and no connection line was ever drawn. Fixed by capturing each node's real numeric id into a `__icS1NodeIds` lookup object (keyed by stage id), and having the connections script read back through that map instead of reusing stage ids directly.
+
+3. **"Edit stage" silently did nothing when clicked from a canvas node** (commit `538e1504`, AC2). The delegated click handler was scoped to `list.addEventListener(...)` (`list` = `#sw-journey-stages`, the legacy list container). A canvas node's own `.sw-stage-edit` link is a *sibling* of that container, not a descendant, so its clicks never bubbled through the old listener. Confirmed live via a direct `.click()` dispatch on the canvas node's link: did nothing before the fix, correctly opened the side panel (with the right stage's data pre-filled, including the Moment-of-truth checkbox) after delegating on `document` instead — matching `.sw-stage-map-feature`'s own already-correct document-wide binding, which was separately confirmed to already work.
+
+4. **A 0-stage journey's "No stages yet. Add your first stage." message never appeared on the Canvas tab** (commit `538e1504`, AC4). It lives inside `#sw-journey-stages`, which Task 2's own CSS rule hides specifically on the canvas view. The jsdom AC4 test only asserted the text's *presence* anywhere in the generated HTML, never whether the CSS toggle rules left it *visible* — it passed throughout while the canvas view silently rendered blank for empty journeys. Fixed by rendering a separate `#sw-drawflow-canvas-empty` element for the 0-stage case instead of `#sw-drawflow-canvas`, using the identical hidden-by-default/shown-in-canvas-view CSS pattern already established for the drawflow container itself; the init script is now guarded on `#sw-drawflow-canvas` actually existing, since it no longer always does.
+
+All four confirmed fixed by direct observation in a real Chrome tab (not just jsdom assertions): 3 nodes rendered with a visible connecting line between each, the moment-of-truth badge on the correct node only, zero console errors, Edit-stage panel opens with correct data, Map-feature modal opens, a 0-stage journey shows the empty message visibly on the Canvas tab, and the Customer experience/Delivery tabs render identically to before throughout. Added 3 further regression tests (13 total in `tests/check-ic-s1-canvas-render.js`, up from the original plan's 9). Full suite after both fix commits: 734/734 clean.
+
+---
+
 ## Final check before opening a PR
 
-- [ ] Run the full suite one more time (`npm test`) and confirm 0 failures
-- [ ] Manually verify (or note as a post-merge live check, per this feature's own established precedent): open a journey, confirm the Canvas tab shows nodes/connections, switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before (list view, annotation rows) — this is the single most important manual check for this story
+- [x] Run the full suite one more time (`npm test`) and confirm 0 failures
+- [x] Manually verify (or note as a post-merge live check, per this feature's own established precedent): open a journey, confirm the Canvas tab shows nodes/connections, switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before (list view, annotation rows) — this is the single most important manual check for this story — **done via live browser render checks during /verify-completion** (see Task 3 above); this is what caught all four real defects fixed there
 - [ ] Open a draft PR (never ready for review)
