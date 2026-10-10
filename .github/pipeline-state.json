@@ -39791,7 +39791,7 @@
     {
       "slug": "2026-10-10-infinite-canvas",
       "name": "Infinite Canvas -- Reusable Free-Form Spatial Canvas Primitive",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -39816,14 +39816,49 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-10-10T08:13:46.943Z",
+      "updatedAt": "2026-10-10T08:22:29.051Z",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": [],
+      "epics": [
+        {
+          "slug": "canvas-replacement-for-journey-stages",
+          "name": "Operators can spatially position and view journey stages on a free-form canvas",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "ic-s1",
+              "name": "Render journey stages as connected nodes on a drawflow canvas, replacing the linear list",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "ic-s2",
+              "name": "Free node positioning persisted across reloads",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "ic-s3",
+              "name": "Canvas pan and zoom",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "ic-s4",
+              "name": "Keyboard-accessible node movement (WCAG 2.1 AA)",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

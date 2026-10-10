@@ -45,12 +45,10 @@ Discovery's own third directional indicator ("zero-build integration holds") is 
 
 ## Metric Coverage Matrix
 
-<!-- Populated by /definition once story slugs exist. -->
-
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Spatial layout actually used | TBD at `/definition` | Pending |
-| Metric 2 — Operator CX judgment vs. the list view | TBD at `/definition` | Pending |
+| Metric 1 — Spatial layout actually used | ic-s1 (foundation), ic-s2 (direct mechanism), ic-s4 (keyboard-input path to the same mechanism) | Covered |
+| Metric 2 — Operator CX judgment vs. the list view | ic-s1, ic-s2, ic-s3, ic-s4 (all four stories together constitute the real artefact the judgment is formed against) | Covered |
 
 ---
 
