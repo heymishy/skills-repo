@@ -1023,6 +1023,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             '.then(function(){' +
               'var row=btn.closest(".sw-feature-mapping-row");' +
               'if(row)row.remove();' +
+              'window.location.reload();' +
             '})' +
             '.catch(function(){' +
               // Reuses the EXISTING reorderError banner (declared above,
@@ -1176,6 +1177,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           '}).then(function(r){' +
             'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||"Request failed");});}' +
             'fpCloseFn();' +
+            'window.location.reload();' +
           '}).catch(function(e){' +
             'if(fmError)fmError.textContent=e.message;' +
           '});' +

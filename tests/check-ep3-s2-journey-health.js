@@ -6,7 +6,7 @@
 // artefacts/2026-10-05-customer-journey-as-first-class/test-plans/ep3-s2-test-plan.md
 const assert = require('assert');
 const fs = require('fs');
-const { JSDOM } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom');
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log('  [PASS] ' + name); passed++; }
@@ -58,6 +58,52 @@ function withMockedPipelineState(jsonStringOrThrow, fn) {
     return orig(p, enc);
   };
   try { return fn(); } finally { fs.readFileSync = orig; }
+}
+
+// Extracts the FIRST <script> block (stage-panel/canvas/Remove handler,
+// ep1-s2/ep1-s3/ep1-s4/ep2-s3) and the SECOND <script> block (feature-picker/
+// Save handler, ep2-s1/ep2-s2/ep2-s3) separately -- the two handlers this
+// task modifies live in different blocks and must each be eval'd with the
+// other's own DOM already present.
+function extractScriptByMarker(html, marker) {
+  var idx = html.indexOf(marker);
+  assert.ok(idx !== -1, 'expected to find marker: ' + marker);
+  var start = html.lastIndexOf('<script>', idx);
+  var end = html.indexOf('</script>', idx);
+  assert.ok(start !== -1 && end !== -1, 'expected enclosing <script>...</script> tags for marker: ' + marker);
+  return html.slice(start + '<script>'.length, end);
+}
+
+// DEVIATION from plan (jsdom version mismatch): the plan's own test code
+// stubs reload via `Object.defineProperty(win.location, 'reload', {value:
+// fn, configurable: true})`. Against the jsdom actually installed in this
+// repo (25.0.1), `location.reload` is an own, non-configurable,
+// non-writable property, so that defineProperty call throws "Cannot
+// redefine property: reload" before the handler is even exercised -- it is
+// not possible to stub `location.reload` directly in this jsdom version.
+// jsdom instead reports an unimplemented navigation (what `reload()`
+// internally triggers) via the VirtualConsole's 'jsdomError' event rather
+// than a catchable throw or promise rejection, so that event is the only
+// observable signal, in this environment, that `window.location.reload()`
+// was actually invoked. `dom.reloadCalls` below counts those events and is
+// used as the discriminating assertion in place of a stub call count --
+// it is still zero until the handler is wired, and still fires exactly
+// once per reload() call, so it preserves the same pass/fail discrimination
+// the plan intended.
+function buildFullDom(bodyContent) {
+  var vc = new VirtualConsole();
+  var dom = new JSDOM('<!DOCTYPE html><html><body>' + bodyContent + '</body></html>', {
+    runScripts: 'outside-only',
+    url: 'http://localhost/journeys/j1',
+    virtualConsole: vc
+  });
+  dom.reloadCalls = 0;
+  vc.on('jsdomError', function(err) {
+    if (err && /navigation/i.test(err.message)) dom.reloadCalls++;
+  });
+  dom.window.eval(extractScriptByMarker(bodyContent, 'var stageData={};'));
+  dom.window.eval(extractScriptByMarker(bodyContent, 'var fpModal=document.getElementById'));
+  return dom;
 }
 
 (async function() {
@@ -129,6 +175,54 @@ function withMockedPipelineState(jsonStringOrThrow, fn) {
     assert.ok(out.indexOf('1 of 3 stages have metric coverage') !== -1, 'expected the summary bar to show "1 of 3 stages have metric coverage"');
     pass('AC4 -- the summary bar shows the correct X of Y stages have metric coverage count');
   } catch (e) { fail('AC4 -- the summary bar shows the correct X of Y stages have metric coverage count', e); }
+
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      []
+    );
+    var featuresJson = JSON.stringify({ features: [{ slug: 'feat-a', name: 'Feature A', metricKeys: ['M1'] }] });
+    var bodyContent = await withMockedPipelineState(featuresJson, async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildFullDom(bodyContent);
+    var win = dom.window;
+    win.fetch = function() { return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    win.document.querySelector('.sw-stage-map-feature').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    win.document.querySelector('.sw-feature-picker-item').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    var checkbox = win.document.querySelector('.sw-feature-mapping-metric-checkbox');
+    checkbox.checked = true;
+    win.document.getElementById('sw-feature-mapping-save').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+    assert.strictEqual(dom.reloadCalls, 1, 'expected window.location.reload to be called exactly once after a successful Save');
+    pass('AC6 -- saving a feature mapping triggers a reload so the health indicator reflects the new state');
+  } catch (e) { fail('AC6 -- saving a feature mapping triggers a reload so the health indicator reflects the new state', e); }
+
+  try {
+    var pool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Stage 1', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'ghost-feature', metric_keys: [] }]
+    );
+    var bodyContent = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      var { req, res } = makeMockReqRes();
+      await journeys.handleGetJourneyCanvas(req, res, null, pool);
+      return res._b.bodyContent;
+    });
+    var dom = buildFullDom(bodyContent);
+    var win = dom.window;
+    win.fetch = function() { return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    win.document.querySelector('.sw-feature-mapping-remove').dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+    assert.strictEqual(dom.reloadCalls, 1, 'expected window.location.reload to be called exactly once after a successful Remove');
+    pass('AC6 -- removing an orphaned mapping triggers a reload so the health indicator reflects the new state');
+  } catch (e) { fail('AC6 -- removing an orphaned mapping triggers a reload so the health indicator reflects the new state', e); }
 
   console.log('\n[ep3-s2-journey-health] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exitCode = 1;
