@@ -4047,8 +4047,20 @@ async function router(req, res) {
 
   } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/position$/) && req.method === 'PATCH') {
     // ic-s2 -- persist a drawflow node's dragged position (AC1/AC3/AC5).
+    // requireNonViewer added post-implementation: every other mutating route
+    // in this file (including the immediately-adjacent stages-order PATCH
+    // route this one was modeled after) wraps its handler in this gate; the
+    // omission here was a plan-writing oversight (ic-s2-plan.md's own Task 2
+    // Step 4 code never included it), caught during Task 2's own independent
+    // verification, not a deliberate scope decision -- no AC or NFR in
+    // ic-s2.md says viewer sessions should be allowed to reposition nodes.
     req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
-    authGuard(req, res, async () => { await handlePatchJourneyStagePosition(req, res, null, _pshPool); });
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePatchJourneyStagePosition(req, res, null, _pshPool);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
     // psh-s4 — product view: list features for one product with stage + health

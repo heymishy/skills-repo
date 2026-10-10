@@ -112,6 +112,105 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC5: updating stage A\'s position makes exactly one UPDATE, targeting only stage A');
   } catch (e) { fail('AC5: updating stage A\'s position makes exactly one UPDATE, targeting only stage A', e); }
 
+  // -- regression: the position route must deny a viewer-role session, like
+  // every other mutating route in this file -------------------------------
+  // Found during Task 2's own independent verification (not an AC/NFR this
+  // story names explicitly): the route was wired without requireNonViewer,
+  // unlike the immediately-adjacent stages-order PATCH route it was modeled
+  // on and ~58 other mutating routes in server.js. Tests the REAL wiring via
+  // a real server.js dispatch (requireNonViewer lives in server.js's route
+  // chain, not inside handlePatchJourneyStagePosition itself, so a handler-
+  // level unit test cannot observe this) -- reuses
+  // check-vrne-s4-edge-case-gate.js's own already-proven real-dispatch
+  // harness verbatim (same env setup, same /test/seed-multi-user-roles seed,
+  // same session shape) rather than reinventing it.
+  try {
+    process.env.NODE_ENV             = 'test';
+    process.env.SESSION_SECRET       = 'test-session-secret-minimum32chars!!';
+    process.env.GITHUB_CLIENT_ID     = 'test-client-id';
+    process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+    process.env.GITHUB_CALLBACK_URL  = 'http://localhost:3000/auth/github/callback';
+    delete process.env.POSTHOG_KEY;
+    delete process.env.DATABASE_URL;
+
+    const router = require('../src/web-ui/server').router;
+    const seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
+    const EventEmitter = require('events').EventEmitter;
+
+    function integrationMockRes() {
+      var _statusCode = null;
+      var _headers = {};
+      var _chunks = [];
+      return {
+        writeHead: function(code, headers) { _statusCode = code; Object.assign(_headers, headers || {}); return this; },
+        setHeader: function(k, v) { _headers[k] = v; },
+        end: function(body) { if (body != null) _chunks.push(body); },
+        _get: function() { return { statusCode: _statusCode, headers: _headers, body: _chunks.join('') }; }
+      };
+    }
+    function dispatchAndAwaitResponse(req) {
+      return new Promise(function(resolve, reject) {
+        var res = integrationMockRes();
+        var settled = false;
+        var origEnd = res.end;
+        res.end = function(body) {
+          origEnd(body);
+          if (!settled) { settled = true; resolve(res._get()); }
+        };
+        router(req, res).catch(function(err) {
+          if (!settled) { settled = true; reject(err); }
+        });
+      });
+    }
+    function seedMultiUserRolesForIntegrationTest(sharedOrg) {
+      return new Promise(function(resolve, reject) {
+        var req = new EventEmitter();
+        req.method = 'POST';
+        req.url = '/test/seed-multi-user-roles';
+        req.headers = { 'content-type': 'application/json' };
+        var res = integrationMockRes();
+        var origEnd = res.end;
+        res.end = function(body) {
+          origEnd(body);
+          var result = res._get();
+          if (result.statusCode !== 200) {
+            reject(new Error('seed-multi-user-roles failed: ' + result.statusCode + ' ' + result.body));
+          } else {
+            resolve(result);
+          }
+        };
+        router(req, res).then(function() {
+          req.emit('data', JSON.stringify({ sharedOrg: sharedOrg }));
+          req.emit('end');
+        }).catch(reject);
+      });
+    }
+
+    const sharedOrg = 'e2e-ic-s2-integration';
+    await seedMultiUserRolesForIntegrationTest(sharedOrg);
+
+    // _parseSessionId only captures [a-f0-9]+ from the cookie header -- must
+    // be a valid hex string, distinct from check-vrne-s4-edge-case-gate.js's
+    // own 'faceb00c04' so the two tests' in-memory sessions never collide.
+    const sessionId = 'faceb00c05';
+    seedTestSession(sessionId, {
+      accessToken: 'e2e-test-access-token',
+      userId: 9002,
+      login: 'e2e-viewer',
+      tenantId: sharedOrg
+    });
+    const cookieHeader = { cookie: 'session_id=' + sessionId };
+
+    const req = {
+      headers: Object.assign({ 'content-type': 'application/json' }, cookieHeader),
+      method: 'PATCH',
+      url: '/journeys/j1/stages/s1/position'
+    };
+    const result = await dispatchAndAwaitResponse(req);
+    assert.strictEqual(result.statusCode, 403, 'PATCH /journeys/:id/stages/:stageId/position must return 403 for a viewer-role session, got ' + result.statusCode + ' -- ' + result.body);
+    pass('regression: position route denies a viewer-role session via real server.js dispatch, matching every other mutating route');
+  } catch (e) { fail('regression: position route denies a viewer-role session via real server.js dispatch, matching every other mutating route', e); }
+
   console.log(`\n[ic-s2-position-persistence] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();
