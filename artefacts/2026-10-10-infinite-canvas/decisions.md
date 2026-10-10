@@ -54,6 +54,14 @@
 **Revisit trigger:** If a keyboard-only operator reports being unable to reach nodes outside the default viewport on a real journey, or before this feature's own DoD if the operator wants it resolved rather than carried forward.
 ---
 
+**2026-10-10 | RISK-ACCEPT | /definition-of-ready (W4, all 4 stories)**
+**Decision:** Proceed to DoR sign-off without a separate formal domain-expert review pass of the 4 verification scripts (`ic-s1` through `ic-s4`) — the operator has been actively reviewing and confirming artefact content throughout this session's own discovery → clarify → decisions → definition → review → test-plan chain.
+**Alternatives considered:** (B) Hold DoR and schedule a dedicated verification-script review pass before proceeding.
+**Rationale:** The operator's continuous, substantive engagement with this feature's artefacts across every prior stage already constitutes informal domain-expert review in substance, if not in the formal "reviewed the verification script specifically" sense W4 checks for. Formally blocking on a redundant separate pass adds process overhead without a corresponding quality signal.
+**Made by:** Hamish King — Platform Owner (acknowledged in chat)
+**Revisit trigger:** If a post-merge smoke test using these verification scripts finds a scenario that doesn't match real behaviour, revisit whether a dedicated pre-code review pass should become mandatory for this feature's remaining stories.
+---
+
 ---
 
 ## Architecture Decision Records
