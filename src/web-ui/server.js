@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -4044,6 +4044,11 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handlePatchJourneyStagesOrder(req, res, null, _pshPool);
     });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/position$/) && req.method === 'PATCH') {
+    // ic-s2 -- persist a drawflow node's dragged position (AC1/AC3/AC5).
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePatchJourneyStagePosition(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
     // psh-s4 — product view: list features for one product with stage + health

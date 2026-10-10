@@ -53,6 +53,65 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     } catch (e) { fail('AC4: migration adds nullable position_x/position_y columns idempotently, no backfill', e); }
   }
 
+  // -- AC3: cross-tenant stage id -> 404, zero mutation ---------------------
+  try {
+    const calls = [];
+    const pool = {
+      query: function(sql, params) {
+        calls.push({ sql: String(sql).trim(), params: params });
+        var s = String(sql).trim();
+        if (/^SELECT cjs\.id FROM customer_journey_stages/.test(s)) {
+          return Promise.resolve({ rows: [] }); // cross-tenant: never matches
+        }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+    const { handlePatchJourneyStagePosition } = require('../src/web-ui/routes/journeys');
+    // Deviation from the plan's literal mock (noted in final report): the
+    // handler calls _csrf.csrfGuard first, which 403s (and calls
+    // res.writeHead, absent from this status/json-shaped mock) unless
+    // session.csrfToken matches body._csrf -- same established convention
+    // already documented in check-ep2-s3-delivery-view.js's own
+    // makeDeleteReqRes for handleDeleteFeatureMapping.
+    const AC3_CSRF = 'ic-s2-ac3-csrf-token';
+    const req = { session: { tenantId: 'org-1', csrfToken: AC3_CSRF }, params: { id: 'j1', stageId: 's-other-tenant' }, body: { x: 10, y: 20, _csrf: AC3_CSRF } };
+    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    await handlePatchJourneyStagePosition(req, res, null, pool);
+    assert.strictEqual(res._s, 404, 'expected 404, not 403, for a cross-tenant stage id');
+    const updateCalls = calls.filter(function(c) { return /^UPDATE/.test(c.sql); });
+    assert.strictEqual(updateCalls.length, 0, 'expected zero UPDATE calls against the mock pool');
+    pass('AC3: cross-tenant stage id returns 404 (not 403) and makes no UPDATE call');
+  } catch (e) { fail('AC3: cross-tenant stage id returns 404 (not 403) and makes no UPDATE call', e); }
+
+  // -- AC5: updating stage A's position leaves stage B's completely untouched --
+  try {
+    const updateCalls = [];
+    const pool = {
+      query: function(sql, params) {
+        var s = String(sql).trim();
+        if (/^SELECT cjs\.id FROM customer_journey_stages/.test(s)) {
+          return Promise.resolve({ rows: [{ id: 'sA' }] }); // sA belongs to this journey/tenant
+        }
+        if (/^UPDATE customer_journey_stages/.test(s)) {
+          updateCalls.push(params);
+          return Promise.resolve({ rowCount: 1 });
+        }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+    const { handlePatchJourneyStagePosition } = require('../src/web-ui/routes/journeys');
+    // Same CSRF-mock deviation as the AC3 block above.
+    const AC5_CSRF = 'ic-s2-ac5-csrf-token';
+    const req = { session: { tenantId: 'org-1', csrfToken: AC5_CSRF }, params: { id: 'j1', stageId: 'sA' }, body: { x: 42, y: 99, _csrf: AC5_CSRF } };
+    const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+    await handlePatchJourneyStagePosition(req, res, null, pool);
+    assert.strictEqual(res._s, 200, 'expected 200 for a valid same-tenant stage id');
+    assert.strictEqual(updateCalls.length, 1, 'expected exactly one UPDATE call');
+    assert.ok(updateCalls[0].indexOf('sA') !== -1, 'expected the UPDATE to target stage sA only');
+    assert.ok(updateCalls[0].indexOf('sB') === -1, 'expected stage sB\'s id to never appear in the UPDATE params -- it must be completely untouched by updating a different stage');
+    pass('AC5: updating stage A\'s position makes exactly one UPDATE, targeting only stage A');
+  } catch (e) { fail('AC5: updating stage A\'s position makes exactly one UPDATE, targeting only stage A', e); }
+
   console.log(`\n[ic-s2-position-persistence] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();

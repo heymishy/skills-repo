@@ -387,6 +387,60 @@ async function handleDeleteFeatureMapping(req, res, _next, pool) {
 }
 
 /**
+ * PATCH /journeys/:id/stages/:stageId/position — persist a drawflow node's
+ * dragged screen position (ic-s2 AC1/AC3/AC5). Dual response mode:
+ * res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePatchJourneyStagePosition(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var x = req.body && req.body.x;
+  var y = req.body && req.body.y;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  if (typeof x !== 'number' || typeof y !== 'number' || !isFinite(x) || !isFinite(y)) {
+    badRequest('x and y must be finite numbers');
+    return;
+  }
+
+  // ic-s2 -- same ownership-check-before-mutation / 404-not-403 cross-tenant
+  // policy as handleDeleteFeatureMapping (decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  // Single-statement update, no transaction needed -- matches this file's
+  // own convention of only wrapping multi-row writes in BEGIN/COMMIT (D6).
+  await pool.query(
+    `UPDATE customer_journey_stages SET position_x = $1, position_y = $2, updated_at = NOW() WHERE id = $3`,
+    [x, y, stageId]
+  );
+
+  if (res.status) { res.status(200).json({ id: stageId, position_x: x, position_y: y }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: stageId, position_x: x, position_y: y })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -1505,4 +1559,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition };
