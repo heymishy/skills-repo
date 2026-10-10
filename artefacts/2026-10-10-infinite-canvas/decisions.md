@@ -2,7 +2,7 @@
 
 **Feature:** Infinite Canvas — Reusable Free-Form Spatial Canvas Primitive
 **Discovery reference:** artefacts/2026-10-10-infinite-canvas/discovery.md
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-10 (ADR-001 added)
 
 ---
 
@@ -50,4 +50,38 @@
 
 ## Architecture Decision Records
 
-<!-- None yet — these 3 decisions are lightweight, reversible log entries, not structural ADRs. An ADR may be warranted once the zero-build spike confirms a specific library and the integration pattern is locked. -->
+### ADR-001: Use drawflow.js, served via the mermaid/csd-s1 zero-build pattern, as the infinite-canvas rendering library
+
+**Status:** Accepted
+**Date:** 2026-10-10
+**Decided by:** Hamish King — Platform Owner, on the recommendation of `artefacts/2026-10-10-infinite-canvas/spikes/zero-build-canvas-library-outcome.md`
+
+#### Context
+
+The infinite-canvas feature needs a client-side rendering library for free-form node positioning, canvas pan/zoom, and interactive node-to-node connections — explicitly relaxing this platform's "zero new npm dependencies" principle (`product/tech-stack.md`), on the condition that whatever is chosen follows the one already-proven precedent for doing this safely: mermaid is already a real `package.json` dependency (`csd-s1`), served via a dedicated server route that reads its pre-built bundle straight from `node_modules` at request time (no bundler/build step), loaded client-side via a plain `<script src>`. `/clarify` narrowed the candidate field to purpose-built node-graph libraries (Cytoscape.js or a drawflow.js-class alternative) but explicitly deferred the final choice to a dedicated spike, since it requires real investigation, not a judgment call.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **drawflow.js (chosen)** | Smaller bundle (46KB) than Cytoscape (425KB); zero dependencies at every layer (confirmed via direct `package.json`/`dist` inspection); interactive node-to-node connection-drawing is a core, built-in feature — confirmed working first-try in a live browser test with zero custom code; passes the zero-build serving pattern cleanly (proper UMD bundle) | Zoom requires `Ctrl+scroll` by the library's own design, not plain scroll (minor, confirmed, not a blocker); has its own small CSS asset (`drawflow.min.css`) that also needs a zero-build serving route; keyboard interaction model not yet tested |
+| Cytoscape.js | Clean, zero-dependency core; mature, widely used for graph visualization; free node-drag and pan/zoom work immediately out of the box | Interactive connection-drawing is NOT built in — the standard extension, `cytoscape-edgehandles`, has 2 dependencies (`lodash.memoize`, `lodash.throttle`) published as CommonJS-only with no browser UMD build, so it fails the zero-build test as published; a custom connection-drawing implementation against Cytoscape core was attempted directly in the spike and hit real, unresolved event-ordering friction across 4 separate attempts |
+| Build a fully custom canvas (no library) | Zero third-party footprint at all | Reimplements a well-solved problem from scratch; the same spike's 4 failed custom-connection-drawing attempts against Cytoscape core directly demonstrate this is real, non-trivial engineering effort, not a quick win |
+
+#### Decision
+
+Use **drawflow.js** as the infinite-canvas feature's rendering library, served via a dedicated server route mirroring `src/web-ui/routes/public.js`'s `handleMermaidAsset()` exactly (read `node_modules/drawflow/dist/drawflow.min.js` — and its companion `drawflow.min.css` — at request time, gzip + in-memory cache, serve via a `/vendor/` route, load client-side via a plain `<script src>`). The primary reason: the MVP's own scope (node positioning + pan/zoom + interactive node-to-node connections, sharpened explicitly during `/clarify` as the "Miro-like" bar) is drawflow's literal purpose-built use case, not Cytoscape's — Cytoscape treats connection-drawing as a secondary, plugin-delegated concern, and that plugin doesn't meet this platform's own zero-build bar. Confirmed by direct, equally rigorous side-by-side testing of both libraries in a real browser (see spike outcome artefact), not by reading documentation alone.
+
+#### Consequences
+
+**Becomes easier:** interactive node-to-node connection UX ships essentially for free, with zero custom gesture-handling code to write or maintain — a direct contrast to the Cytoscape path, which would have required either adopting a dependency that fails this platform's own npm-relaxation condition, or writing and maintaining bespoke drag-to-connect interaction code. `/definition` can write concrete ACs against drawflow's own documented, built-in API (`addConnection`, `addNode`, `connectionCreated` event, etc.) rather than an interaction model that doesn't exist yet.
+
+**Becomes harder / more constrained:** the feature is now specifically tied to drawflow's own interaction conventions (e.g. `Ctrl+scroll` to zoom, not plain scroll) — `/definition`'s ACs and any user-facing instructions must reflect this exactly, not assume a generic "scroll to zoom" convention. The feature also now owns a second static asset (the CSS file) requiring its own zero-build serving route, a small but real addition to `server.js`'s own routing table.
+
+**Off the table:** adopting Cytoscape.js (or its `cytoscape-edgehandles` extension) for this feature without either a build step this platform doesn't have, or writing bespoke connection-drawing interaction code from scratch — this spike's own direct investigation found Cytoscape's extension path concretely fails the zero-build condition as published, not merely "untested."
+
+#### Revisit trigger
+
+If drawflow's own keyboard interaction model (tested during `/definition`, against the already-committed snap-to-grid WCAG AA decision above) proves incompatible or requires disproportionate custom work to retrofit; or if a future feature needs genuine multi-user real-time collaborative editing (explicitly out of scope for this MVP) and drawflow's own architecture turns out not to support that direction well; or if `cytoscape-edgehandles` (or an equivalent) ever ships a proper UMD build of its own dependencies, reopening the Cytoscape path as a live alternative.
+
+---
