@@ -41,6 +41,8 @@ So that **I can spatially organise a journey the way I actually think about it, 
 
 **AC5:** Given two different stages on the same journey, When one is dragged and its position saved, Then the other stage's own position (whether set or still `NULL`/auto-layout) is completely unaffected.
 
+**AC6:** Given a position-save request fails (network or server error), When the failure occurs, Then the operator sees a visible error (a toast matching this app's own existing "Stage order not saved — please try again" pattern from `ep1-s4`) rather than the failure being silent — a reload after a failed save must not leave the operator unknowingly believing their drag persisted when it didn't.
+
 ## Out of Scope
 
 - **Canvas pan/zoom** — `ic-s3`.
@@ -50,7 +52,7 @@ So that **I can spatially organise a journey the way I actually think about it, 
 
 ## NFRs
 
-- **Performance:** Position-save requests complete without a perceptible delay to the drag gesture — fire-and-forget is acceptable (no blocking spinner), matching the autosave pattern already established by `ep1-s3`'s stage side panel.
+- **Performance:** Position-save requests complete without a perceptible delay to the drag gesture — no blocking spinner on the happy path, matching the autosave pattern already established by `ep1-s3`'s stage side panel. Failures are surfaced, not silent — see AC6.
 - **Security:** Position-update route follows the same ownership-check-before-mutation / 404-not-403 pattern as every other mutating route in `journeys.js` (D13) — AC3 directly tests this.
 - **Accessibility:** N/A for this story specifically — the keyboard-equivalent interaction is `ic-s4`'s own scope.
 - **Audit:** None — position is a presentation-layer detail, not an auditable business event, consistent with how this file treats other cosmetic fields.

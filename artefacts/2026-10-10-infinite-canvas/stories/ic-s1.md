@@ -18,7 +18,7 @@ So that **I have a real spatial artefact to work from and judge, rather than a p
 
 ## Architecture Constraints
 
-- **ADR-001** (`decisions.md`): use drawflow.js, served via a dedicated route mirroring `handleMermaidAsset()` in `src/web-ui/routes/public.js` — real `package.json` dependency, read from `node_modules` at request time, gzip + in-memory cache, no bundler. This story is what ADR-001 materializes into real code.
+- **`decisions.md` ADR-001** (this feature's own feature-level ADR, not `architecture-guardrails.md`'s unrelated repo-level ADR-001): use drawflow.js, served via a dedicated route mirroring `handleMermaidAsset()` in `src/web-ui/routes/public.js` — real `package.json` dependency, read from `node_modules` at request time, gzip + in-memory cache, no bundler. This story is what `decisions.md` ADR-001 materializes into real code.
 - The `/vendor/drawflow.min.js` and `/vendor/drawflow.min.css` routes are unauthenticated static assets — same trust level as the existing `/vendor/mermaid.min.js` route (`csd-s1`), no session/tenant data involved.
 - **ADR-025**: no new tenant-scoping concern introduced here — this story only changes rendering of data `handleGetJourneyCanvas` already fetches tenant-scoped.
 

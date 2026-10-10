@@ -70,6 +70,4 @@
 
 ## Gaps and open questions
 
-| NFR area | Gap | Owner | Due |
-|----------|-----|-------|-----|
-| Accessibility — canvas pan/zoom keyboard operability | `/clarify`'s own committed WCAG 2.1 AA interaction model covers keyboard-accessible *node movement* (`ic-s4`) but not keyboard-accessible canvas *pan/zoom* itself. A keyboard-only operator may not be able to reach nodes outside the default viewport on a larger journey. Explicitly flagged in `ic-s3`'s own Out of Scope — not resolved, not silently accepted. | Hamish King — Platform Owner | Before `/definition-of-ready` sign-off for `ic-s3` — needs an explicit RISK-ACCEPT or a scoped fix |
+_No open gaps as of 2026-10-10._ Canvas pan/zoom keyboard operability was identified during `/review` (`ic-s3-review-1.md`, finding 1-M1) and resolved the same day via a formal RISK-ACCEPT (`decisions.md`, Hamish King — Platform Owner) rather than a committed fix — see that entry for rationale and revisit trigger.

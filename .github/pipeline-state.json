@@ -39816,7 +39816,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-10-10T08:29:23.939Z",
+      "updatedAt": "2026-10-10T08:33:02.580Z",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
       "track": "standard",
@@ -39839,34 +39839,34 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s1-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s1-review-2.md"
             },
             {
               "slug": "ic-s2",
               "name": "Free node positioning persisted across reloads",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s2-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s2-review-2.md"
             },
             {
               "slug": "ic-s3",
               "name": "Canvas pan and zoom",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s3-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s3-review-2.md"
             },
             {
               "slug": "ic-s4",
               "name": "Keyboard-accessible node movement (WCAG 2.1 AA)",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s4-review-1.md"
+              "reviewArtefact": "artefacts/2026-10-10-infinite-canvas/review/ic-s4-review-2.md"
             }
           ]
         }

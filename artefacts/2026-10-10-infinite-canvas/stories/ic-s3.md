@@ -18,7 +18,7 @@ So that **I can work with journeys that have more stages than fit comfortably in
 
 ## Architecture Constraints
 
-None identified beyond those already named in the epic (ADR-001) — this story is pure client-side interaction wiring, no new route or persisted data.
+None identified beyond those already named in the epic (`decisions.md` ADR-001 — not `architecture-guardrails.md`'s unrelated repo-level ADR-001) — this story is pure client-side interaction wiring, no new route or persisted data.
 
 ## Dependencies
 
@@ -38,13 +38,13 @@ None identified beyond those already named in the epic (ADR-001) — this story 
 ## Out of Scope
 
 - **Persisting pan/zoom state across reloads** — deliberately session-only; see AC3.
-- **Keyboard-based pan/zoom of the canvas view itself.** `/clarify`'s own committed WCAG 2.1 AA interaction model (`decisions.md`) addressed keyboard-accessible *node* movement only (`ic-s4`), not keyboard-accessible canvas navigation (pan/zoom). **Flagging honestly, not silently omitting:** this may be a real WCAG 2.1 AA gap — a keyboard-only operator who cannot pan/zoom may not be able to reach nodes outside the default viewport on a larger journey. This was not resolved during `/clarify` and is not committed as in-scope here. Surfacing for `/review` to assess explicitly, rather than treating the absence as already-acceptable.
+- **Keyboard-based pan/zoom of the canvas view itself.** `/clarify`'s own committed WCAG 2.1 AA interaction model (`decisions.md`) addressed keyboard-accessible *node* movement only (`ic-s4`), not keyboard-accessible canvas navigation (pan/zoom). **Formally RISK-ACCEPTed** (`decisions.md`, 2026-10-10, Hamish King — Platform Owner) rather than silently omitted — see that entry for the full rationale and revisit trigger.
 
 ## NFRs
 
 - **Performance:** Pan/zoom interactions render at a perceived-smooth frame rate for journeys with up to 20 stages (matching `ic-s1`'s own performance bound) — this is drawflow's own default rendering behaviour, not custom code, so no additional optimisation work is anticipated.
 - **Security:** None — no new input surface, no persisted data.
-- **Accessibility:** See Out of Scope above — a known, explicitly flagged open question for `/review`, not a silently accepted gap.
+- **Accessibility:** See Out of Scope above — RISK-ACCEPTed in `decisions.md` (2026-10-10), not a silently accepted gap.
 - **Audit:** None.
 
 ## Complexity Rating

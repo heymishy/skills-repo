@@ -46,6 +46,14 @@
 **Revisit trigger:** When a second real, concrete use case for the canvas primitive (e.g. the `definition-canvas` story-map replacement) is named and scoped as its own feature.
 ---
 
+**2026-10-10 | RISK-ACCEPT | /review (ic-s3)**
+**Decision:** Ship `ic-s3` (canvas pan/zoom) without a keyboard-accessible path for panning/zooming the canvas view itself. `/clarify`'s own committed WCAG 2.1 AA interaction model covers keyboard-accessible *node movement* only (`ic-s4`), not canvas *navigation*.
+**Alternatives considered:** (B) Add a committed AC for keyboard-based pan/zoom (e.g. `+`/`-` to zoom, arrow keys with no node selected to pan) as new scope within `ic-s3`. (C) Defer resolution entirely with no tracked record (rejected — this is exactly the "silently accepted gap" pattern this feature has been explicitly avoiding throughout discovery/clarify/review).
+**Rationale:** Adding keyboard pan/zoom now would be new scope nobody has actually decided on — it was not named in discovery, not resolved in `/clarify`, and inventing it unilaterally during review/fix-up would be exactly the kind of silent scope expansion `/definition`'s own scope-discipline is meant to prevent. The honest, correct resolution is to accept the gap explicitly, with a real owner and trigger, rather than quietly add untested new interaction scope or quietly ignore a real accessibility question.
+**Made by:** Hamish King — Platform Owner (acknowledged in chat; review finding `ic-s3-review-1.md` 1-M1)
+**Revisit trigger:** If a keyboard-only operator reports being unable to reach nodes outside the default viewport on a real journey, or before this feature's own DoD if the operator wants it resolved rather than carried forward.
+---
+
 ---
 
 ## Architecture Decision Records

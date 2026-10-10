@@ -20,6 +20,7 @@ So that **the canvas is genuinely usable for me, not just for mouse/touch users 
 
 - **`decisions.md` ASSUMPTION entry from `/clarify`**: the committed interaction model is snap-to-grid discrete movement — arrow keys move a selected node by a fixed step — explicitly extending `ep1-s4`'s own already-shipped, already-accessible up/down-button reorder precedent to two dimensions, rather than attempting continuous freehand keyboard dragging.
 - **`product/constraints.md` #9**: WCAG 2.1 AA, already a hard constraint on the journey canvas generally.
+- **Node focusability is not assumed — it must be built.** drawflow's own node elements are plain `<div class="drawflow-node">` wrappers, not natively keyboard-focusable. This story must explicitly add `tabindex="0"` to each node and a visible `:focus` style — see AC1a.
 
 ## Dependencies
 
@@ -28,7 +29,9 @@ So that **the canvas is genuinely usable for me, not just for mouse/touch users 
 
 ## Acceptance Criteria
 
-**AC1:** Given a canvas node, When the operator presses Tab to focus it (or otherwise focuses it) and presses an arrow key, Then the node moves one fixed step in that direction (up/down/left/right), and the new position is saved via the exact same route `ic-s2` established for mouse-drag persistence.
+**AC1a:** Given a canvas node, When the page renders, Then the node has `tabindex="0"` and a visible `:focus` style (not the browser default, matching this app's own existing focus-style convention) — nodes are not keyboard-reachable by default in drawflow and must be made so explicitly.
+
+**AC1b:** Given a canvas node, When the operator presses Tab to focus it and presses an arrow key, Then the node moves one fixed step in that direction (up/down/left/right), and the new position is saved via the exact same route `ic-s2` established for mouse-drag persistence.
 
 **AC2:** Given a focused node, When the operator presses Tab (or Shift+Tab), Then focus moves cleanly to the next (or previous) focusable element on the page — no focus trap — consistent with this app's own existing focus-management convention (`ep1-s3`'s precedent for the stage side panel).
 
