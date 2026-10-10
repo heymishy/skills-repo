@@ -10,7 +10,7 @@ So that **I can assess where a journey has metric coverage gaps and where delive
 ## Benefit Linkage
 M3 — Journey-level metric coverage — health indicators make M3 visible and actionable on the canvas.
 ## Architecture Constraints
-Health state indicators must use icon + label, not colour alone (MC-A11Y-02). Health computation is server-side at render time (no separate background job). No new npm runtime dependencies.
+Health state indicators must use icon + label, not colour alone (MC-A11Y-02). Health computation is server-side at render time (no separate background job). No new npm runtime dependencies. ADR-025 (tenant scoping — health is computed from mappings already scoped by the journey's own tenant-owned data, no new cross-tenant surface introduced).
 ## Dependencies
 ep2-s2, ep3-s1
 ## Acceptance Criteria

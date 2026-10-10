@@ -39092,13 +39092,21 @@
             {
               "slug": "ep3-s2",
               "name": "Journey health indicators: per-stage health state and summary bar",
-              "stage": "review",
+              "stage": "dor-signed-off",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-08T04:13:44.782Z",
+              "updatedAt": "2026-10-10T02:07:28.203Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s2-review-2.md"
+              "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s2-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep3-s2-dor.md"
             }
           ]
         },
