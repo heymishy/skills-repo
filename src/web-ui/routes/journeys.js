@@ -502,7 +502,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }
 
   var sr = await pool.query(
-    `SELECT id, name, position, description, customer_actions, touchpoints, channel, emotion, pain_points, opportunities, moment_of_truth
+    `SELECT id, name, position, description, customer_actions, touchpoints, channel, emotion, pain_points, opportunities, moment_of_truth, position_x, position_y
      FROM customer_journey_stages WHERE journey_id = $1 ORDER BY position ASC`,
     [journeyId]
   );
@@ -915,7 +915,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // stage's string id instead). Each node's own generated script assigns
   // its real numeric id into a lookup object keyed by stage id, which the
   // connections script then reads back.
-  var drawflowNodesScript = 'var __icS1NodeIds={};' + stages.map(function(s, idx) {
+  var drawflowNodesScript = 'var __icS1NodeIds={};var __icS2NodeIdToStageId={};' + stages.map(function(s, idx) {
     var nodeHtml =
       '<div class="sw-stage-name">' + escHtml(s.name) + '</div>' +
       buildHealthIndicator(s.id) +
@@ -924,8 +924,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         : '') +
       '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
       '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>';
-    return '__icS1NodeIds[' + JSON.stringify(s.id) + ']=editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + (idx * 220) + ', 120, ' +
-      JSON.stringify('sw-drawflow-node') + ', {}, ' + JSON.stringify(nodeHtml) + ');';
+    // ic-s2 AC1/AC2 -- a stage with a stored position (set by a prior drag)
+    // uses it; a stage with NULL position (never dragged) falls back to
+    // ic-s1's own unchanged auto-layout formula.
+    var hasStoredPosition = typeof s.position_x === 'number' && typeof s.position_y === 'number';
+    var posX = hasStoredPosition ? s.position_x : (idx * 220);
+    var posY = hasStoredPosition ? s.position_y : 120;
+    return '__icS1NodeIds[' + JSON.stringify(s.id) + ']=editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + posX + ', ' + posY + ', ' +
+      JSON.stringify('sw-drawflow-node') + ', {}, ' + JSON.stringify(nodeHtml) + ');' +
+      '__icS2NodeIdToStageId[__icS1NodeIds[' + JSON.stringify(s.id) + ']]=' + JSON.stringify(s.id) + ';';
   }).join('');
   var drawflowConnectionsScript = stages.slice(0, -1).map(function(s, idx) {
     return 'editor.addConnection(__icS1NodeIds[' + JSON.stringify(stages[idx].id) + '], __icS1NodeIds[' + JSON.stringify(stages[idx + 1].id) + '], "output_1", "input_1");';
@@ -982,6 +989,28 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'editor.start();' +
           drawflowNodesScript +
           drawflowConnectionsScript +
+          // ic-s2 AC1/AC3/AC5/AC6 -- persist a node's final position after
+          // a drag. getNodeFromId confirmed against node_modules/drawflow/
+          // README.md to return {pos_x, pos_y, ...}. Reuses the EXISTING
+          // #sw-stage-reorder-error element verbatim for the failure toast
+          // (it is a sibling of #sw-journey-stages in bodyContent, not a
+          // descendant, so ic-s1's own canvas-view CSS rule that hides
+          // #sw-journey-stages does not hide it -- confirmed by reading
+          // bodyContent's own structure directly, not assumed).
+          'editor.on("nodeMoved", function(nodeId){' +
+            'var node=editor.getNodeFromId(nodeId);' +
+            'var stageId=__icS2NodeIdToStageId[nodeId];' +
+            'if(!stageId||!node)return;' +
+            'submitJson("/journeys/"+journeyId+"/stages/"+stageId+"/position","PATCH",{x:node.pos_x,y:node.pos_y,_csrf:csrfToken})' +
+              '.catch(function(){' +
+                'var reorderError=document.getElementById("sw-stage-reorder-error");' +
+                'if(reorderError){' +
+                  'reorderError.textContent="Stage position not saved — please try again";' +
+                  'reorderError.classList.add("sw-stage-reorder-error--visible");' +
+                  'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+                '}' +
+              '});' +
+          '});' +
         '}else{' +
           'console.error(\"drawflow failed to load -- canvas view unavailable\");' +
           '__icS1CanvasEl.textContent=\"Canvas failed to load. Please refresh the page.\";' +

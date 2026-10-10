@@ -211,6 +211,66 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('regression: position route denies a viewer-role session via real server.js dispatch, matching every other mutating route');
   } catch (e) { fail('regression: position route denies a viewer-role session via real server.js dispatch, matching every other mutating route', e); }
 
+  function stageRow(id, name, position, extra) {
+    return Object.assign({ id: id, name: name, position: position, description: null, customer_actions: null, touchpoints: null, channel: null, emotion: null, pain_points: null, opportunities: null, moment_of_truth: false, position_x: null, position_y: null }, extra || {});
+  }
+  function makeCanvasMockPool(journeyRow, stageRows) {
+    return {
+      query: function(sql, params) {
+        var s = String(sql).trim();
+        if (/^SELECT id, name, description FROM customer_journeys/.test(s)) {
+          var match = journeyRow && journeyRow.id === params[0];
+          return Promise.resolve({ rows: match ? [journeyRow] : [] });
+        }
+        if (/^SELECT id, name, position, description/.test(s)) {
+          return Promise.resolve({ rows: stageRows });
+        }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+  }
+  function makeCanvasMockRes() {
+    return { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+  }
+
+  // -- AC2: NULL position falls back to ic-s1's own auto-layout formula ----
+  try {
+    const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [
+      stageRow('s1', 'Discover', 0), // position_x/position_y both NULL (default above)
+      stageRow('s2', 'Evaluate', 1, { position_x: 500, position_y: 300 }) // has a stored position
+    ]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    const s1Call = html.match(/addNode\("s1", 1, 1, ([\d.]+), ([\d.]+),/);
+    const s2Call = html.match(/addNode\("s2", 1, 1, ([\d.]+), ([\d.]+),/);
+    assert.ok(s1Call, 'expected an addNode call for s1');
+    assert.strictEqual(Number(s1Call[1]), 0, 'expected s1 (NULL position, idx=0) to use the auto-layout x formula (idx*220=0)');
+    assert.strictEqual(Number(s1Call[2]), 120, 'expected s1 (NULL position) to use the auto-layout y (120)');
+    assert.ok(s2Call, 'expected an addNode call for s2');
+    assert.strictEqual(Number(s2Call[1]), 500, 'expected s2 (stored position_x=500) to use its OWN stored x, not the auto-layout formula (idx*220=220)');
+    assert.strictEqual(Number(s2Call[2]), 300, 'expected s2 (stored position_y=300) to use its own stored y, not the auto-layout 120');
+    pass('AC2: a stage with NULL position falls back to ic-s1\'s auto-layout; a stage with a stored position uses it');
+  } catch (e) { fail('AC2: a stage with NULL position falls back to ic-s1\'s auto-layout; a stage with a stored position uses it', e); }
+
+  // -- AC6: a failed position-save shows a visible error toast -------------
+  try {
+    const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Discover', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/editor\.on\(["']nodeMoved["']/.test(html), 'expected an editor.on("nodeMoved", ...) listener to be registered');
+    assert.ok(/getNodeFromId/.test(html), 'expected the nodeMoved handler to read the node\'s final position via editor.getNodeFromId');
+    assert.ok(/\/stages\/["']?\s*\+?\s*\w*\s*\+?\s*["']?\/position/.test(html) || /\/position["']/.test(html), 'expected a PATCH to a .../position URL');
+    assert.ok(/reorderError/.test(html), 'expected the save-failure handler to reuse the existing #sw-stage-reorder-error element, not a new one');
+    assert.ok(/position not saved/i.test(html), 'expected a position-save-specific failure message, adapted from ep1-s4\'s own "Stage order not saved" convention');
+    pass('AC6: nodeMoved handler reads the real position, PATCHes it, and reuses the existing failure-toast element on rejection');
+  } catch (e) { fail('AC6: nodeMoved handler reads the real position, PATCHes it, and reuses the existing failure-toast element on rejection', e); }
+
   console.log(`\n[ic-s2-position-persistence] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();
