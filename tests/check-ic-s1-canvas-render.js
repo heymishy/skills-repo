@@ -205,6 +205,31 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC6: client script guards against window.Drawflow being undefined');
   } catch (e) { fail('AC6: client script guards against window.Drawflow being undefined', e); }
 
+  // -- AC5/AC6 regression: the drawflow asset must actually be requested on
+  // the page, not just servable by the route handler. Found via a live
+  // browser render check (verify-completion): Task 1 added the handler and
+  // route, Task 2 added the init script that calls new window.Drawflow(...),
+  // but neither ever added the <script src="/vendor/drawflow.min.js"> or
+  // <link rel="stylesheet" href="/vendor/drawflow.min.css"> tag that loads
+  // it -- window.Drawflow was always undefined in a real browser, so the
+  // AC6 load-guard's failure branch fired unconditionally. None of the
+  // above jsdom tests caught this because they only assert the init
+  // script's own text, never whether the library that text depends on was
+  // ever requested.
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Discover', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/<script src="\/vendor\/drawflow\.min\.js"><\/script>/.test(html), 'expected a <script src="/vendor/drawflow.min.js"> tag so window.Drawflow is actually defined');
+    assert.ok(/<link rel="stylesheet" href="\/vendor\/drawflow\.min\.css">/.test(html), 'expected a <link> tag loading drawflow.min.css so nodes/connections are actually styled');
+    const scriptIdx = html.indexOf('<script src="/vendor/drawflow.min.js"></script>');
+    const initIdx = html.indexOf('new window.Drawflow(');
+    assert.ok(scriptIdx !== -1 && initIdx !== -1 && scriptIdx < initIdx, 'expected the vendor <script src> tag to appear before the inline script that constructs new window.Drawflow(...)');
+    pass('AC5/AC6 (regression): the page actually requests drawflow.min.js/.css, and in the right document order');
+  } catch (e) { fail('AC5/AC6 (regression): the page actually requests drawflow.min.js/.css, and in the right document order', e); }
+
   console.log(`\n[ic-s1-canvas-render] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
 })();

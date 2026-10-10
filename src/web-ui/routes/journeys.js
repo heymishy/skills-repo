@@ -811,7 +811,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-health--partial{color:var(--warn)}' +
       '.sw-stage-health--none{color:var(--danger)}' +
       '.sw-journey-health-summary{font-size:13px;color:var(--ink-2);margin-bottom:8px}' +
-    '</style>';
+    '</style>' +
+    // ic-s1 -- the drawflow stylesheet must actually be requested, or node
+    // layout/connection-line rendering is unstyled. Mirrors csd-s1's own
+    // <link>-before-<script> ordering for the mermaid vendor asset.
+    '<link rel="stylesheet" href="/vendor/drawflow.min.css">';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
   // pure client-side DOM behaviour, no server round-trip until save (RISK-ACCEPT,
@@ -830,7 +834,20 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // the legacy list below. Auto-connects stages in sequence order; manual
   // connection-drawing is never exposed to the operator for journeys
   // (epic-level scope decision, decisions.md).
-  var drawflowNodesScript = stages.map(function(s, idx) {
+  //
+  // addNode(name, inputs, outputs, posx, posy, class, data, html) does NOT
+  // use its first "name" argument as a connectable id -- it returns its OWN
+  // auto-incrementing numeric id (1, 2, 3...), and that returned id, not the
+  // stage's own string id, is what addConnection(id_output, id_input, ...)
+  // requires (confirmed against the real library: node_modules/drawflow/
+  // README.md's own addConnection example uses numeric ids "15,16", and a
+  // live browser check against the actual loaded window.Drawflow instance
+  // threw "Cannot read properties of undefined (reading 'data')" from
+  // inside drawflow.min.js the moment addConnection was called with a
+  // stage's string id instead). Each node's own generated script assigns
+  // its real numeric id into a lookup object keyed by stage id, which the
+  // connections script then reads back.
+  var drawflowNodesScript = 'var __icS1NodeIds={};' + stages.map(function(s, idx) {
     var nodeHtml =
       '<div class="sw-stage-name">' + escHtml(s.name) + '</div>' +
       buildHealthIndicator(s.id) +
@@ -839,11 +856,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         : '') +
       '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
       '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>';
-    return 'editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + (idx * 220) + ', 120, ' +
+    return '__icS1NodeIds[' + JSON.stringify(s.id) + ']=editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + (idx * 220) + ', 120, ' +
       JSON.stringify('sw-drawflow-node') + ', {}, ' + JSON.stringify(nodeHtml) + ');';
   }).join('');
   var drawflowConnectionsScript = stages.slice(0, -1).map(function(s, idx) {
-    return 'editor.addConnection(' + JSON.stringify(stages[idx].id) + ', ' + JSON.stringify(stages[idx + 1].id) + ', "output_1", "input_1");';
+    return 'editor.addConnection(__icS1NodeIds[' + JSON.stringify(stages[idx].id) + '], __icS1NodeIds[' + JSON.stringify(stages[idx + 1].id) + '], "output_1", "input_1");';
   }).join('');
 
   var bodyContent =
@@ -860,6 +877,19 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     '</div>' +
     panelHtml +
     featurePickerModalHtml +
+    // ic-s1 AC5/AC6 -- the drawflow library itself was never actually
+    // requested anywhere (the route handler existed from Task 1, but no
+    // page ever loaded it) -- window.Drawflow was always undefined and the
+    // AC6 load-guard's fallback branch fired unconditionally. Found via a
+    // live browser render check, not caught by any of the 10 jsdom tests,
+    // since they only assert the init script's own text contains the guard
+    // and the addNode/addConnection calls, never execute it against a real
+    // DOM with the library actually (not) loaded. Must load before the
+    // inline init script immediately below, which is why it is placed here,
+    // directly preceding it in document order (synchronous <script src>
+    // blocks parsing until it executes, matching csd-s1's own mermaid
+    // <script src> placement convention one block up in this same file).
+    '<script src="/vendor/drawflow.min.js"></script>' +
     '<script>(function(){' +
       'var journeyId=' + JSON.stringify(journey.id) + ';' +
       'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
