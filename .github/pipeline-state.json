@@ -39092,10 +39092,10 @@
             {
               "slug": "ep3-s2",
               "name": "Journey health indicators: per-stage health state and summary bar",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-10T03:00:08.520Z",
+              "updatedAt": "2026-10-10T03:00:55.451Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep3-s2-review-2.md",
@@ -39108,7 +39108,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep3-s2-dor.md",
               "verifyStatus": "passed",
-              "acVerified": 6
+              "acVerified": 6,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/969"
             }
           ]
         },
