@@ -39794,8 +39794,29 @@
       "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-10-10T08:11:30.245Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Spatial layout actually used",
+          "target": ">=1 journey stage node repositioned and persisted within 2 weeks of release",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Operator CX judgment vs. the list view it replaced",
+          "target": "Operator judges the canvas as genuinely better, not just fine/different, after 2-4 weeks of real use",
+          "baseline": "N/A - qualitative judgment metric",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-10-10T08:13:46.943Z",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
       "track": "standard",
