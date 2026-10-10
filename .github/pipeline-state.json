@@ -38790,7 +38790,7 @@
       "name": "Customer Journey as First Class",
       "health": "green",
       "track": "standard",
-      "stage": "review",
+      "stage": "definition-of-done",
       "epics": [
         {
           "slug": "journey-entity-and-stage-management",
@@ -38940,7 +38940,7 @@
         {
           "slug": "feature-mapping-and-delivery-view",
           "name": "Feature Mapping and Delivery View",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ep2-s1",
@@ -39063,7 +39063,7 @@
         {
           "slug": "journey-health-and-customer-experience-views",
           "name": "Journey Health and Customer Experience Views",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ep3-s1",
@@ -39218,7 +39218,7 @@
         {
           "slug": "database-migration-and-tenant-isolation-hardening",
           "name": "Database Migration and Tenant Isolation Hardening",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ep5-s1",
@@ -39245,10 +39245,10 @@
             {
               "slug": "ep5-s2",
               "name": "Tenant isolation hardening: adversarial path and cross-tenant guard tests for journey routes",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-10T04:08:31.699Z",
+              "updatedAt": "2026-10-10T05:35:49.102Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s2-review-1.md",
@@ -39260,9 +39260,11 @@
               "acTotal": 7,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/dor/ep5-s2-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/970",
-              "acVerified": 7
+              "acVerified": 7,
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep5-s3",
@@ -39289,7 +39291,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-08T04:37:12.788Z",
+      "updatedAt": "2026-10-10T05:36:51.801Z",
       "stories": []
     },
     {
