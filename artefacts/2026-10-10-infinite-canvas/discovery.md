@@ -1,8 +1,8 @@
 # Discovery: Infinite Canvas — Reusable Free-Form Spatial Canvas Primitive
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-10-10
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-10-10
 **Author:** Claude Sonnet 5 (session_01FWedhLob35Ggekkzc7DUmy)
 
 ---
@@ -81,7 +81,7 @@ Two triggers converge. First, direct: this session's own post-delivery live revi
 
 ## Approved By
 
-[Pending]
+Hamish King — Platform Owner — 2026-10-10
 
 ---
 
