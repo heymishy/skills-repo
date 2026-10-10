@@ -39245,10 +39245,10 @@
             {
               "slug": "ep5-s2",
               "name": "Tenant isolation hardening: adversarial path and cross-tenant guard tests for journey routes",
-              "stage": "dor-signed-off",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-10-10T03:36:14.429Z",
+              "updatedAt": "2026-10-10T03:44:22.003Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-10-05-customer-journey-as-first-class/review/ep5-s2-review-1.md",
