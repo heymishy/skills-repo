@@ -39,6 +39,7 @@
   "dependencies": {
     "@upstash/redis": "^1.38.0",
     "bcrypt": "^6.0.0",
+    "drawflow": "^0.0.60",
     "mermaid": "^11.16.0",
     "passport": "^0.7.0",
     "passport-magic-login": "^1.2.4",

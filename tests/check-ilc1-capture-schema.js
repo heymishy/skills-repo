@@ -176,7 +176,10 @@ console.log('\n[ilc1-capture-schema] NFR — no new dependencies');
   // (transactional invitation email delivery) -- an explicit ARCH decision,
   // see artefacts/2026-07-30-agency-client-organisations/decisions.md
   // (2026-07-31 entry).
-  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid', 'passport', 'passport-magic-login', 'resend'];
+  // ic-s1 (2026-10-10-infinite-canvas, ADR-001): added drawflow -- infinite-canvas
+  // rendering library, served via the same zero-build vendor pattern as mermaid
+  // (csd-s1), see artefacts/2026-10-10-infinite-canvas/decisions.md.
+  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid', 'passport', 'passport-magic-login', 'resend', 'drawflow'];
   const unexpected = deps.filter(d => !ALLOWED_PROD_DEPS.includes(d));
   assert(
     unexpected.length === 0,

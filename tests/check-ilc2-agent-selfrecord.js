@@ -123,6 +123,7 @@ test('self-recording-no-new-npm-dependencies — package.json has no new depende
     'resend',             // story-3 (#660): Agency-to-Client provisioning (transactional email)
     'posthog-node',       // bri-s1.2 (#446): separate staging/prod PostHog projects
     'stripe',             // billing fix (08587265): Stripe billing integration
+    'drawflow',           // ic-s1 (2026-10-10-infinite-canvas, ADR-001): infinite-canvas rendering library, zero-build vendor pattern (mirrors mermaid/csd-s1)
   ]);
   const unknownProdDeps = Object.keys(pkg.dependencies || {}).filter(k => !PERMITTED_PROD_DEPS.has(k));
   const unknownDevDeps  = Object.keys(pkg.devDependencies || {}).filter(k => !PERMITTED_DEV_DEPS.has(k));

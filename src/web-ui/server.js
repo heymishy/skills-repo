@@ -11,7 +11,7 @@ const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
-const { handleRoot, handleWelcome, handleMermaidAsset }              = require('./routes/public');      // lab-s1.2 / lab-s2.3 / csd-s1
+const { handleRoot, handleWelcome, handleMermaidAsset, handleDrawflowJsAsset, handleDrawflowCssAsset } = require('./routes/public');      // lab-s1.2 / lab-s2.3 / csd-s1 / ic-s1
 const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleExportRoute, setExportDataSource }                     = require('./routes/export');    // rb-s4
@@ -3080,6 +3080,18 @@ async function router(req, res) {
     // trust level as any other client-side JS shipped with the page, no
     // session/tenant data involved.
     handleMermaidAsset(req, res);
+
+  } else if (pathname === '/vendor/drawflow.min.js' && req.method === 'GET') {
+    // ic-s1: unauthenticated static asset (drawflow client bundle), same
+    // trust level as /vendor/mermaid.min.js (csd-s1) -- no session/tenant
+    // data involved.
+    handleDrawflowJsAsset(req, res);
+
+  } else if (pathname === '/vendor/drawflow.min.css' && req.method === 'GET') {
+    // ic-s1: unauthenticated static asset (drawflow's companion stylesheet),
+    // same trust level as its sibling /vendor/drawflow.min.js route above --
+    // no session/tenant data involved.
+    handleDrawflowCssAsset(req, res);
 
   } else if (pathname === '/api/as-built-diagrams/data-model' && req.method === 'GET') {
     // csd-s5: as-built Data Model diagram, statically parsed from this

@@ -8,6 +8,11 @@
 //             triggered by any authenticated browser loading the /ideate
 //             canvas, mirroring the existing landing/welcome HTML pattern
 //             below rather than adding a generic static-file middleware.
+//             GET /vendor/drawflow.min.js handler for the drawflow canvas
+//             rendering library's client bundle (ic-s1)
+//             GET /vendor/drawflow.min.css handler for drawflow's companion
+//             stylesheet (ic-s1) — both served via the same zero-build
+//             vendor-asset pattern as mermaid above (decisions.md ADR-001).
 // Serves the Skills Platform landing page to unauthenticated visitors.
 // Authenticated users (req.session.accessToken) are redirected to /dashboard.
 // PostHog server-side event is fired fire-and-forget on each unauthenticated visit.
@@ -244,4 +249,81 @@ function handleMermaidAsset(req, res) {
   }
 }
 
-module.exports = { handleRoot, handleWelcome, handleMermaidAsset };
+// ic-s1: shared zero-build vendor-asset loader + handler, parameterized so
+// handleDrawflowJsAsset and handleDrawflowCssAsset below both delegate to the
+// same read-once-and-cache / gzip-or-not logic that handleMermaidAsset itself
+// uses above, rather than duplicating that logic once per drawflow asset.
+// `cache` is a small mutable holder object ({ value: null }) owned by each
+// caller, so each asset (js, css) still gets its own independent in-memory
+// cache, exactly as _mermaidAssetCache does for mermaid.
+//
+// Path-traversal safety: `moduleDir`/`fileName` are always literal strings
+// supplied by the two call sites below (handleDrawflowJsAsset,
+// handleDrawflowCssAsset) — never derived from `req` or any other
+// request-controlled input — and the path is built entirely from this file's
+// own __dirname plus those hardcoded segments. There is therefore no
+// request-influenced path component and no path-traversal surface, matching
+// _loadMermaidAsset's own safety rationale above.
+function _loadVendorAsset(cache, moduleDir, fileName) {
+  if (cache.value) {
+    return cache.value;
+  }
+  var assetPath = path.join(__dirname, '..', '..', '..', 'node_modules', moduleDir, 'dist', fileName);
+  var raw = fs.readFileSync(assetPath);
+  var gzip = zlib.gzipSync(raw);
+  cache.value = { raw: raw, gzip: gzip };
+  return cache.value;
+}
+
+function handleVendorAsset(req, res, asset, contentType) {
+  var acceptEncoding = (req.headers && req.headers['accept-encoding']) || '';
+  var useGzip = acceptEncoding.indexOf('gzip') !== -1;
+  var headers = {
+    'Content-Type':  contentType,
+    // Immutable-ish: pinned drawflow version in package.json, safe to cache
+    // for a full day in the browser between deploys (same rationale as
+    // handleMermaidAsset's own Cache-Control above).
+    'Cache-Control': 'public, max-age=86400'
+  };
+  if (useGzip) {
+    headers['Content-Encoding'] = 'gzip';
+    res.writeHead(200, headers);
+    res.end(asset.gzip);
+  } else {
+    res.writeHead(200, headers);
+    res.end(asset.raw);
+  }
+}
+
+var _drawflowJsCache = { value: null };
+var _drawflowCssCache = { value: null };
+
+/**
+ * Handle GET /vendor/drawflow.min.js — serves the drawflow rendering
+ * library's pre-built client bundle so the infinite-canvas Canvas tab
+ * (ic-s1) can render journey stages as connected drawflow nodes.
+ * Gzip-compressed when the requester advertises support; cached in memory
+ * after first read so the asset is never re-read from disk per request —
+ * same pattern as handleMermaidAsset above (decisions.md ADR-001).
+ * @param {object} req
+ * @param {object} res
+ */
+function handleDrawflowJsAsset(req, res) {
+  var asset = _loadVendorAsset(_drawflowJsCache, 'drawflow', 'drawflow.min.js');
+  handleVendorAsset(req, res, asset, 'application/javascript; charset=utf-8');
+}
+
+/**
+ * Handle GET /vendor/drawflow.min.css — serves drawflow's companion
+ * stylesheet, required for the canvas's nodes/connections to render with
+ * correct layout (ic-s1). Same caching/gzip rationale as
+ * handleDrawflowJsAsset immediately above.
+ * @param {object} req
+ * @param {object} res
+ */
+function handleDrawflowCssAsset(req, res) {
+  var asset = _loadVendorAsset(_drawflowCssCache, 'drawflow', 'drawflow.min.css');
+  handleVendorAsset(req, res, asset, 'text/css; charset=utf-8');
+}
+
+module.exports = { handleRoot, handleWelcome, handleMermaidAsset, handleDrawflowJsAsset, handleDrawflowCssAsset };
