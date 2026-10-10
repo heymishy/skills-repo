@@ -497,6 +497,18 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<path d="M10 2L1 17h18L10 2z"/><path d="M10 8v4"/><path d="M10 15h.01"/>' +
     '</svg>';
 
+  // ep3-s2 -- 14x14/20x20-viewBox/1.5px-stroke icons per DESIGN.md's own
+  // icon spec, not unicode glyphs -- matches MOMENT_OF_TRUTH_ICON/
+  // ARROW_UP_ICON/ARROW_DOWN_ICON/WARNING_ICON's own precedent above.
+  var CHECK_ICON =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M4 10l4 4 8-8"/>' +
+    '</svg>';
+  var CLOSE_ICON =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M5 5l10 10M15 5L5 15"/>' +
+    '</svg>';
+
   // ep2-s3 -- builds one stage's Delivery-view annotation markup. Three
   // cases, never conflated: no mappings at all (AC1 boundary), a mapping
   // whose feature no longer resolves (AC2), and a normal mapping with
@@ -553,6 +565,36 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     );
   }
 
+  // ep3-s2 -- health state is a pure function of the already-fetched
+  // mappingsByStage data (ep2-s3) -- no new query. Zero mappings => none
+  // (❌); >=1 mapping, none with metric_keys.length>0 => partial (⚠️);
+  // >=1 mapping with at least one having metric_keys.length>0 => covered
+  // (✅).
+  function computeStageHealth(stageId) {
+    var mappings = mappingsByStage[stageId] || [];
+    if (mappings.length === 0) return 'none';
+    var hasMetrics = mappings.some(function(m) {
+      return Array.isArray(m.metric_keys) && m.metric_keys.length > 0;
+    });
+    return hasMetrics ? 'covered' : 'partial';
+  }
+
+  var HEALTH_META = {
+    covered: { icon: CHECK_ICON, label: 'Covered', className: 'sw-stage-health--covered' },
+    partial: { icon: WARNING_ICON, label: 'Needs metrics', className: 'sw-stage-health--partial' },
+    none: { icon: CLOSE_ICON, label: 'No coverage', className: 'sw-stage-health--none' }
+  };
+
+  // ep3-s2 -- icon + accessible label together, never colour/icon alone
+  // (MC-A11Y-02, AC5).
+  function buildHealthIndicator(stageId) {
+    var health = computeStageHealth(stageId);
+    var meta = HEALTH_META[health];
+    return '<span class="sw-stage-health ' + meta.className + '" role="img" aria-label="Health: ' + meta.label + '">' +
+      meta.icon + ' ' + meta.label +
+    '</span>';
+  }
+
   // AC4: each saved stage renders with its name, an "Edit stage" affordance
   // that opens the side panel (ep1-s3's own scope), and -- when applicable --
   // a visible moment-of-truth indicator.
@@ -571,6 +613,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         return (
           '<div class="sw-stage-card" data-stage-id="' + escHtml(s.id) + '" draggable="true">' +
             '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
+            buildHealthIndicator(s.id) +
             (s.moment_of_truth
               ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
               : '') +
@@ -587,6 +630,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         );
       }).join('')
     : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>';
+
+  // ep3-s2 AC4 -- X counts only 'covered' stages; Y is the total stage
+  // count regardless of health state.
+  var coveredStageCount = stages.filter(function(s) { return computeStageHealth(s.id) === 'covered'; }).length;
+  var summaryBarHtml = '<p class="sw-journey-health-summary">' + coveredStageCount + ' of ' + stages.length + ' stages have metric coverage</p>';
 
   var csrfToken = await _csrf.generateCsrfToken(req);
 
@@ -755,6 +803,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-emotion-chip--negative{background:var(--danger)}' +
       '.sw-stage-emotion-chip--mixed{background:var(--warn)}' +
       '.sw-stage-emotion-chip--neutral{background:var(--ink-2)}' +
+      '.sw-stage-health{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px}' +
+      '.sw-stage-health--covered{color:var(--success)}' +
+      '.sw-stage-health--partial{color:var(--warn)}' +
+      '.sw-stage-health--none{color:var(--danger)}' +
+      '.sw-journey-health-summary{font-size:13px;color:var(--ink-2);margin-bottom:8px}' +
     '</style>';
 
   // AC1: "+ Add stage" inserts an unsaved, focused inline-name stage card --
@@ -774,6 +827,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     '<div class="sw-journey-canvas sw-journey-canvas--view-canvas">' +
       '<h1>' + escHtml(journey.name) + '</h1>' +
       viewToggleHtml +
+      summaryBarHtml +
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
       '</div>' +
