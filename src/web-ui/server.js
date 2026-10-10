@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -4043,6 +4043,23 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handlePatchJourneyStagesOrder(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/position$/) && req.method === 'PATCH') {
+    // ic-s2 -- persist a drawflow node's dragged position (AC1/AC3/AC5).
+    // requireNonViewer added post-implementation: every other mutating route
+    // in this file (including the immediately-adjacent stages-order PATCH
+    // route this one was modeled after) wraps its handler in this gate; the
+    // omission here was a plan-writing oversight (ic-s2-plan.md's own Task 2
+    // Step 4 code never included it), caught during Task 2's own independent
+    // verification, not a deliberate scope decision -- no AC or NFR in
+    // ic-s2.md says viewer sessions should be allowed to reposition nodes.
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePatchJourneyStagePosition(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {

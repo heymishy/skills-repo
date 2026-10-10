@@ -39885,7 +39885,7 @@
             {
               "slug": "ic-s2",
               "name": "Free node positioning persisted across reloads",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39893,14 +39893,41 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s2-dor.md"
+              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s2-dor.md",
+              "updatedAt": "2026-10-10T20:00:00.690Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Migration: add nullable position_x/position_y columns to customer_journey_stages, idempotent",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s2-plan.md",
+                  "endingSha": "041f9595"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Position-update route: PATCH /journeys/:id/stages/:stageId/position, D13 ownership check, single-stage isolation",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s2-plan.md",
+                  "endingSha": "f051dfe8"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Client: stored-position rendering with auto-layout fallback, drag-to-save via nodeMoved, failure toast, E2E spec",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s2-plan.md",
+                  "endingSha": "140c9b0b"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/972"
             },
             {
               "slug": "ic-s3",
