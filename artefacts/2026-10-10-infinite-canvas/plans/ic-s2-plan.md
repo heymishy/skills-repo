@@ -27,7 +27,7 @@
 - Modify: `scripts/migrate-schema-journeys.js`
 - Test: `tests/check-ic-s2-position-persistence.js` (new file, AC4 test, first of 6)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-ic-s2-position-persistence.js` with this header and the AC4 migration test (`DATABASE_URL`-gated, SKIPs cleanly when unset — matches `check-ep5-s1-migration.js`'s own established convention exactly, do not deviate):
 
@@ -92,7 +92,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 })();
 ```
 
-- [ ] **Step 2: Run test — must pass trivially (SKIP, no DATABASE_URL locally)**
+- [x] **Step 2: Run test — must pass trivially (SKIP, no DATABASE_URL locally)**
 
 ```bash
 node tests/check-ic-s2-position-persistence.js
@@ -100,7 +100,7 @@ node tests/check-ic-s2-position-persistence.js
 
 Expected: `[SKIP] AC4: DATABASE_URL not set...` then `Results: 0 passed, 0 failed`. This is expected to SKIP, not FAIL, locally — matching `ep5-s1`'s own established pattern. Do not treat the SKIP as a reason to not also implement the migration change below; the test exists and is real, it simply cannot execute without a real Postgres instance in this environment.
 
-- [ ] **Step 3: Add the migration**
+- [x] **Step 3: Add the migration**
 
 Open `scripts/migrate-schema-journeys.js`. Immediately after the existing `idx_customer_journey_stages_tenant_id` index creation line (inside the `customer_journey_stages` block, before the `feature_customer_journey_stage_mappings` table), add:
 
@@ -113,13 +113,13 @@ Open `scripts/migrate-schema-journeys.js`. Immediately after the existing `idx_c
   await db.query(`ALTER TABLE customer_journey_stages ADD COLUMN IF NOT EXISTS position_y DOUBLE PRECISION`);
 ```
 
-- [ ] **Step 4: Run full suite — no regressions**
+- [x] **Step 4: Run full suite — no regressions**
 
 ```bash
 npm test
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/migrate-schema-journeys.js tests/check-ic-s2-position-persistence.js
@@ -135,7 +135,7 @@ git commit -m "feat: add nullable position_x/position_y columns to customer_jour
 - Modify: `src/web-ui/server.js`
 - Test: `tests/check-ic-s2-position-persistence.js` (AC3, AC5 tests)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/check-ic-s2-position-persistence.js`, before the final `console.log`/closing block:
 
@@ -191,7 +191,7 @@ Append to `tests/check-ic-s2-position-persistence.js`, before the final `console
   } catch (e) { fail('AC5: updating stage A\'s position makes exactly one UPDATE, targeting only stage A', e); }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ic-s2-position-persistence.js
@@ -199,7 +199,7 @@ node tests/check-ic-s2-position-persistence.js
 
 Expected: `TypeError: handlePatchJourneyStagePosition is not a function` (or equivalent).
 
-- [ ] **Step 3: Add the route handler**
+- [x] **Step 3: Add the route handler**
 
 Open `src/web-ui/routes/journeys.js`. Find `handleDeleteFeatureMapping` (search for `async function handleDeleteFeatureMapping`) — add this new handler immediately after its closing `}`, mirroring its exact ownership-check-before-mutation pattern (D13):
 
@@ -261,7 +261,7 @@ async function handlePatchJourneyStagePosition(req, res, _next, pool) {
 
 Update the `module.exports` line at the bottom of `journeys.js` to add `handlePatchJourneyStagePosition`.
 
-- [ ] **Step 4: Wire the route in server.js**
+- [x] **Step 4: Wire the route in server.js**
 
 Open `src/web-ui/server.js`. Add `handlePatchJourneyStagePosition` to the existing destructured require of `./routes/journeys` (search for `handlePatchJourneyStagesOrder`). Find the existing `/journeys/:id/stages-order` PATCH route dispatch (search for `stages-order` and `req.method === 'PATCH'`) and add immediately after its block:
 
@@ -272,19 +272,19 @@ Open `src/web-ui/server.js`. Add `handlePatchJourneyStagePosition` to the existi
     authGuard(req, res, async () => { await handlePatchJourneyStagePosition(req, res, null, _pshPool); });
 ```
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-ic-s2-position-persistence.js
 ```
 
-- [ ] **Step 6: Run full suite — no regressions**
+- [x] **Step 6: Run full suite — no regressions**
 
 ```bash
 npm test
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js src/web-ui/server.js tests/check-ic-s2-position-persistence.js
@@ -300,7 +300,7 @@ git commit -m "feat: PATCH /journeys/:id/stages/:stageId/position route, 404-not
 - Test: `tests/check-ic-s2-position-persistence.js` (AC2, AC6 tests)
 - New: `tests/e2e/ic-s2-canvas-drag-position.spec.js` (AC1)
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 Append to `tests/check-ic-s2-position-persistence.js`, before the final `console.log`/closing block (reuse the exact same `makeCanvasMockPool`/`stageRow`/`makeCanvasMockRes` shape `check-ic-s1-canvas-render.js` already established — do not reinvent; this file does not export them, so redeclare locally, identically):
 
@@ -366,7 +366,7 @@ Append to `tests/check-ic-s2-position-persistence.js`, before the final `console
   } catch (e) { fail('AC6: nodeMoved handler reads the real position, PATCHes it, and reuses the existing failure-toast element on rejection', e); }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ic-s2-position-persistence.js
@@ -374,7 +374,7 @@ node tests/check-ic-s2-position-persistence.js
 
 Expected: AC2 fails (both stages still use the pure auto-layout formula), AC6 fails (no `nodeMoved` listener exists yet).
 
-- [ ] **Step 3: Extend the stages SELECT query**
+- [x] **Step 3: Extend the stages SELECT query**
 
 Open `src/web-ui/routes/journeys.js`. Find the stages `SELECT` (search for `SELECT id, name, position, description`). Add `position_x, position_y` to the column list:
 
@@ -386,7 +386,7 @@ Open `src/web-ui/routes/journeys.js`. Find the stages `SELECT` (search for `SELE
   );
 ```
 
-- [ ] **Step 4: Make node position conditional on stored vs. NULL**
+- [x] **Step 4: Make node position conditional on stored vs. NULL**
 
 In the same file, find `drawflowNodesScript` (search for `var drawflowNodesScript = 'var __icS1NodeIds={};'`). Replace the hardcoded `(idx * 220), 120` posx/posy arguments with a conditional, and build the reverse node-id-to-stage-id map alongside the existing one:
 
@@ -412,7 +412,7 @@ In the same file, find `drawflowNodesScript` (search for `var drawflowNodesScrip
   }).join('');
 ```
 
-- [ ] **Step 5: Add the nodeMoved listener and reuse the existing failure toast**
+- [x] **Step 5: Add the nodeMoved listener and reuse the existing failure toast**
 
 In the same file, find the drawflow init block (search for `editor.start();`). Add the `nodeMoved` listener immediately after `drawflowConnectionsScript` runs, still inside the `if(typeof window.Drawflow==="function")` branch:
 
@@ -445,7 +445,7 @@ In the same file, find the drawflow init block (search for `editor.start();`). A
 
 Note: `submitJson` is declared a few lines further down in the same `<script>` IIFE (search for `function submitJson(url,method,payload){`), inside the same closure — it is available by the time `nodeMoved` actually fires (an event callback, not executed synchronously at this point in the script), even though its declaration textually follows this block. `csrfToken` and `journeyId` are both already declared earlier in the same IIFE.
 
-- [ ] **Step 6: Run test — must pass**
+- [x] **Step 6: Run test — must pass**
 
 ```bash
 node tests/check-ic-s2-position-persistence.js
@@ -453,7 +453,7 @@ node tests/check-ic-s2-position-persistence.js
 
 Expected: `Results: 5 passed, 0 failed` locally (AC4's own test SKIPs without `DATABASE_URL`; AC1's E2E spec, written next, is not part of this file's own count).
 
-- [ ] **Step 7: Write the E2E spec**
+- [x] **Step 7: Write the E2E spec**
 
 Create `tests/e2e/ic-s2-canvas-drag-position.spec.js`, reusing `ep1-s4-stage-reorder.spec.js`'s own `seedJourneyWithStages` helper and `withAuth` fixture pattern exactly (read that file first as the literal template — same CSRF-extraction approach, same `/test/session` seeding, same known-gap header comment convention):
 
@@ -536,7 +536,7 @@ withAuth('dragging a canvas node to a new position persists across reload (AC1)'
 });
 ```
 
-- [ ] **Step 8: Run full suite — no regressions**
+- [x] **Step 8: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -544,7 +544,7 @@ npm test
 
 Expected: all files passing, especially `tests/check-ic-s1-canvas-render.js` (AC1 of `ic-s1` asserts `idx*220` positions for a fresh mock pool with no `position_x`/`position_y` fields set at all — confirm this still passes: `stageRow()` in that file does not set `position_x`/`position_y`, so they are `undefined`, and `typeof undefined === 'number'` is `false`, so `hasStoredPosition` is correctly `false` and the exact same auto-layout formula applies unchanged).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/web-ui/routes/journeys.js tests/check-ic-s2-position-persistence.js tests/e2e/ic-s2-canvas-drag-position.spec.js
@@ -555,7 +555,7 @@ git commit -m "feat: persist dragged node positions, fall back to auto-layout wh
 
 ## Final check before opening a PR
 
-- [ ] Run the full suite one more time (`npm test`) and confirm 0 failures
-- [ ] **Live browser render check (mandatory per `/verify-completion` — `ic-s1`'s own session found 4 real defects this exact check alone caught, none of which any jsdom test found):** render the real `handleGetJourneyCanvas` output via a mock pool (same technique `ic-s1`'s DoD/verify-completion passes used), load it in a real browser, and directly confirm: (a) a node can actually be dragged and visibly moves, (b) a real `nodeMoved` event fires and a real PATCH request is sent (check Network tab or console), (c) reloading the SAME rendered output with the stage's `position_x`/`position_y` now set to the dragged coordinates shows the node at that position, not the auto-layout one, (d) a stage with `position_x`/`position_y` still `NULL` continues to use the auto-layout formula unchanged, (e) deliberately making the PATCH fail (e.g. block the `/position` route or point it at a 404) shows the reused `#sw-stage-reorder-error` toast with the adapted "Stage position not saved" text. Do NOT skip (c)/(d)/(e) as "already covered by jsdom" — `ic-s1`'s own session proved that assumption wrong four separate times for exactly this category of claim.
-- [ ] Switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before — zero regression to the other two views (same check `ic-s1` already established as mandatory for this file).
+- [x] Run the full suite one more time (`npm test`) and confirm 0 failures
+- [x] **Live browser render check (mandatory per `/verify-completion` — `ic-s1`'s own session found 4 real defects this exact check alone caught, none of which any jsdom test found):** render the real `handleGetJourneyCanvas` output via a mock pool (same technique `ic-s1`'s DoD/verify-completion passes used), load it in a real browser, and directly confirm: (a) a node can actually be dragged and visibly moves, (b) a real `nodeMoved` event fires and a real PATCH request is sent (check Network tab or console), (c) reloading the SAME rendered output with the stage's `position_x`/`position_y` now set to the dragged coordinates shows the node at that position, not the auto-layout one, (d) a stage with `position_x`/`position_y` still `NULL` continues to use the auto-layout formula unchanged, (e) deliberately making the PATCH fail (e.g. block the `/position` route or point it at a 404) shows the reused `#sw-stage-reorder-error` toast with the adapted "Stage position not saved" text. Do NOT skip (c)/(d)/(e) as "already covered by jsdom" — `ic-s1`'s own session proved that assumption wrong four separate times for exactly this category of claim.
+- [ ] **Switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before — NOT completed live this session.** The Chrome browser extension disconnected mid-session (environment issue, coinciding with an account re-authentication event) before this specific check could run, and did not reconnect despite retries. Residual risk assessed as LOW, not blocking, for two independent reasons: (1) this story's entire diff is scoped to the stages `SELECT` query, `drawflowNodesScript`, and the drawflow init `<script>` block — it does not touch `stagesHtml`, `viewToggleHtml`, or either view's own annotation-rendering code at all (confirmed by re-reading the actual diff, not assumed); (2) the existing jsdom regression suites for both views (`tests/check-ep2-s3-delivery-view.js`, `tests/check-ep3-s1-customer-experience-view.js`) both ran clean in this session's own full-suite confirmation (735/735). Flagging explicitly rather than silently checking this box — if a human reviewer wants this closed out before merge, it is a 2-minute manual check once the browser extension reconnects.
 - [ ] Open a draft PR (never ready for review)
