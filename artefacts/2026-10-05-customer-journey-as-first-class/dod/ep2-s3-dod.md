@@ -13,10 +13,10 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ✅ | Delivery view shows mapped features + selected metric keys/values, or "No features mapped"/"No metrics selected". `check-ep2-s3-delivery-view.js` (unit + integration tests, scoped jsdom extraction via `extractDeliveryAnnotationsHtml` to avoid the vacuous-assertion gap caught in review), plus the final cross-task review traced the Task1/Task2 CSS-class composition by hand and confirmed via the live AC3 test | `unit`/`integration` | Not live-verified on staging — see Outcome/RISK-ACCEPT below |
-| AC2 | ✅ | A feature-not-found mapping shows "⚠️ Feature not found (slug)" with a Remove button; clicking it fires a real DELETE and removes the row from the DOM (success path), leaves it in place with visible error feedback on failure. `check-ep2-s3-delivery-view.js` (markup test + 2 jsdom end-to-end tests added during Task 3's own code-quality review) | `unit`/`integration` | AC2/Out-of-Scope contradiction resolved via a narrow DELETE route (D16); not live-verified on staging |
-| AC3 | ✅ | Canvas/Customer experience/Delivery view toggle shows/hides annotation rows via CSS class, zero server round-trip. `check-ep2-s3-delivery-view.js` (jsdom behavioral test: real click → real `getComputedStyle` visibility assertions → zero fetch calls) | `unit` (jsdom behavioral) | Not live-verified on staging |
-| AC4 | ✅ | A selected metric key with no recorded value shows "No value recorded". `check-ep2-s3-delivery-view.js` (integration test against a new optional `feature.metricValues` field, D15) | `unit`/`integration` | Not live-verified on staging |
+| AC1 | ✅ | Delivery view shows mapped features + selected metric keys/values, or "No features mapped"/"No metrics selected". `check-ep2-s3-delivery-view.js` (unit + integration tests, scoped jsdom extraction via `extractDeliveryAnnotationsHtml` to avoid the vacuous-assertion gap caught in review), plus the final cross-task review traced the Task1/Task2 CSS-class composition by hand and confirmed via the live AC3 test + **real staging confirmation (2026-10-10):** `wuce-staging.fly.dev`, Delivery view showed "No features mapped" on two empty stages and the real saved mapping ("Skills Infrastructure and Schema-Migration Pipeline Tracks", "No metrics selected") on the "Buy" stage | `unit`/`integration` + `live` (staging) | None |
+| AC2 | ✅ | A feature-not-found mapping shows "⚠️ Feature not found (slug)" with a Remove button; clicking it fires a real DELETE and removes the row from the DOM (success path), leaves it in place with visible error feedback on failure. `check-ep2-s3-delivery-view.js` (markup test + 2 jsdom end-to-end tests added during Task 3's own code-quality review) | `unit`/`integration` | AC2/Out-of-Scope contradiction resolved via a narrow DELETE route (D16); the feature-not-found/Remove path specifically was not live-exercised (no orphaned mapping existed to test against, and deliberately creating one risks corrupting the real shared staging `pipeline-state.json`) — relies on its dedicated test coverage |
+| AC3 | ✅ | Canvas/Customer experience/Delivery view toggle shows/hides annotation rows via CSS class, zero server round-trip. `check-ep2-s3-delivery-view.js` (jsdom behavioral test: real click → real `getComputedStyle` visibility assertions → zero fetch calls) + **real staging confirmation:** clicked between Canvas/Customer experience/Delivery views repeatedly; each click instantly showed/hid the correct annotation rows | `unit` (jsdom behavioral) + `live` (staging) | None |
+| AC4 | ✅ | A selected metric key with no recorded value shows "No value recorded". `check-ep2-s3-delivery-view.js` (integration test against a new optional `feature.metricValues` field, D15) | `unit`/`integration` | Not live-exercised — the real saved mapping on staging has zero metric keys selected (falls under AC1's "No metrics selected" case, confirmed live), not a selected-but-unvalued key; relies on its dedicated test coverage |
 
 **End-to-end wiring (beyond individual AC tests):** 2 jsdom tests drive a full real click → DELETE fetch → DOM row removal sequence for the Remove button (success and failure paths), added during Task 3's own code-quality review after the reviewer found the client-side click handler had zero behavioral coverage — the same recurring gap already caught in `ep2-s1`/`ep2-s2`/this story's own Task 1.
 
@@ -76,19 +76,19 @@ None against the DoR contract's "Modify ONLY" file list (`src/web-ui/routes/jour
 
 ## Outcome
 
-**COMPLETE (RISK-ACCEPT on live-browser confirmation — see below)**
+**COMPLETE**
 
 All 4 ACs satisfied with unit/integration-test evidence (11/11 passing, including 2 end-to-end jsdom wiring tests), confirmed end-to-end by a final cross-task review that hand-traced the composition of all 3 tasks together (annotation markup ↔ CSS class ↔ toggle handler ↔ DELETE route attribute plumbing) and found zero integration gaps. No scope deviations beyond the two operator-confirmed grounding decisions (D15, D16). CI fully green. `npm test` on master: 730 files, 0 failed.
 
-This story's own `/verify-completion` and `/branch-complete` steps did not include a live-browser confirmation (same structural constraint as every prior story in this epic: the canvas page cannot render without a real DB-backed journey, and `fake-test-db.js` has no `customer_journeys` support for a local E2E run). A post-merge live-browser confirmation was attempted this session: navigated to `wuce-staging.fly.dev/journeys/862d52d7-ff98-4176-bd9f-81f0f417f8df` (a real journey with 3 stages, used for `ep2-s1`'s/`ep2-s2`'s own prior live checks), but the deploy-triggered session-logout pattern recurred (8th time this session) and the operator was not able to log back in at this time. Per the operator's own instruction, this DoD closes on the existing test evidence alone, with the live confirmation logged as an open `pendingActions` item in `workspace/state.json` to complete when the operator is next available to sign in — not a new browser-automation tooling blocker this time, just ordinary unavailability.
+This story's own `/verify-completion` and `/branch-complete` steps did not include a live-browser confirmation (same structural constraint as every prior story in this epic: the canvas page cannot render without a real DB-backed journey, and `fake-test-db.js` has no `customer_journeys` support for a local E2E run). A post-merge live-browser confirmation was initially blocked: the deploy-triggered session-logout pattern recurred (8th and 9th times this session), and the operator was not able to sign in on either of the first two attempts. The operator logged in during a later turn the same session, and the live confirmation was completed then: on `wuce-staging.fly.dev`, Delivery view correctly showed "No features mapped" on two empty stages and the real saved mapping (from `ep2-s2`'s own earlier live check) on the "Buy" stage with "No metrics selected", and the view toggle was exercised across all three views with correct show/hide behaviour (AC1, AC3). The feature-not-found/Remove-button path (AC2) and the "No value recorded" per-key fallback (AC4) were not live-exercised — AC2 would require deliberately creating an orphaned mapping against the real shared staging `pipeline-state.json`, and AC4 would require a real feature with a selected-but-unvalued metric key, neither of which exist on this journey's real data — both rely on their existing dedicated test coverage instead, consistent with this epic's own established data-safety precedent (e.g. `ep2-s1`'s own AC3, `ep2-s2`'s own AC2 keys-selected path).
 
 Same two pre-existing CI workflow findings observed on this merge commit, not re-logged in detail (already documented in `ep2-s1`'s/`ep2-s2`'s own DoDs and `capture-log.md`):
 1. **Deploy dashboards to GitHub Pages** — repo-configuration issue, unrelated to this story's code.
 2. **Improvement Agent — Scheduled Dreaming** — recurring `GH013` branch-protection ruleset conflict.
 
 **Follow-up actions:**
-1. Complete the deferred live-browser confirmation once the operator can sign in: open `chrome-verify-1791448856542`'s canvas, switch to Delivery view, confirm the already-saved "Skills Infrastructure and Schema-Migration Pipeline Tracks" mapping (saved during `ep2-s2`'s own live confirmation) renders as an annotation row with "No metrics selected", switch back to Canvas view and confirm the row disappears, then exercise the Remove affordance against a deliberately-broken mapping if one can be safely created.
-2. Scope a short-track story for scripted (Playwright) staging verification with persisted/non-interactive auth — still a live follow-up candidate from `ep2-s2`'s own DoD (capture-log.md 2026-10-10), though not the blocker this time.
+1. AC2 (feature-not-found/Remove) and AC4 ("No value recorded") remain live-unverified — if a safe way to exercise them against staging emerges (e.g. a dedicated disposable test feature/mapping that doesn't risk the real shared `pipeline-state.json`), complete that check; otherwise their existing test coverage stands as sufficient per this epic's own established data-safety precedent.
+2. Scope a short-track story for scripted (Playwright) staging verification with persisted/non-interactive auth — still a live follow-up candidate from `ep2-s2`'s own DoD (capture-log.md 2026-10-10).
 3. Extend `fake-test-db.js` with `customer_journeys`/`customer_journey_stages` support — still the single largest recurring gap across this feature, now affecting 6 stories' own local E2E/verification attempts identically.
 4. Investigate the "Deploy dashboards to GitHub Pages" failure and the recurring "Improvement Agent — Scheduled Dreaming" `GH013` conflict — both logged as pipeline-maintenance follow-ups across multiple DoDs now.
 
@@ -109,18 +109,17 @@ Review this Definition of Done artefact for "Delivery view: feature
 and metric annotation rows on stage cards" (ep2-s3). Check:
 1. Does every AC row have a concrete evidence reference (test name or
    observable behaviour)?
-2. Is closing this DoD without a live-browser confirmation acceptable,
-   given all 4 ACs have passing unit/integration test coverage AND a
-   final cross-task review independently traced the composition of all
-   3 tasks by hand (class names, data attributes, URL shapes) and found
-   no integration gaps?
+2. Is it acceptable that AC2 (Remove affordance) and AC4 ("No value
+   recorded") remain live-unverified, relying on their dedicated test
+   coverage, given exercising them live would require deliberately
+   creating an orphaned mapping or an unvalued metric key against the
+   real shared staging pipeline-state.json?
 3. Is the 100% fix-and-re-review hit rate across all 3 tasks (DoD
    Observation 1) worth investigating as its own signal -- e.g. should
    implementation plans themselves get a lighter-weight logic/assertion
    sanity pass before being handed to subagents, given one of the three
    bugs (Task 2's operator-precedence bug) originated in the plan
    itself, not in any implementer's own work?
-4. Is the outcome verdict (COMPLETE, RISK-ACCEPT on live-browser
-   confirmation) consistent with the AC rows and this story's own
-   decisions.md entries (D15, D16, D17)?
+4. Is the outcome verdict (COMPLETE) consistent with the AC rows and
+   this story's own decisions.md entries (D15, D16, D17)?
 ```
