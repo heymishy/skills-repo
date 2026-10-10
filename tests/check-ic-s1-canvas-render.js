@@ -165,6 +165,29 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     pass('AC2: Edit-stage and Map-feature controls exist for s1, both in the legacy list and the new canvas node');
   } catch (e) { fail('AC2: Edit-stage and Map-feature controls exist for s1, both in the legacy list and the new canvas node', e); }
 
+  // -- AC2 regression: the Edit-stage click handler must actually fire from
+  // a canvas node, not just exist as markup. Found via a live browser
+  // render check: the original delegated listener was scoped to
+  // `list.addEventListener(...)` (list = #sw-journey-stages, the legacy
+  // list container) -- a canvas node's own .sw-stage-edit link is a
+  // SIBLING of that container, not a descendant, so clicks on it never
+  // bubbled through the old listener and silently did nothing. Confirmed
+  // live: dispatching a real .click() on a canvas node's Edit-stage link
+  // opened the side panel only after delegating on `document` instead.
+  // This is a text-level check on the generated script (this file has no
+  // jsdom/real-DOM harness), so it cannot itself dispatch a click -- the
+  // live browser check is what proved the fix; this guards the specific
+  // code shape that fix depends on from silently regressing back.
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [stageRow('s1', 'Discover', 0)]);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/document\.addEventListener\("click",function\(ev\)\{var link=ev\.target\.closest&&ev\.target\.closest\("\.sw-stage-edit"\)/.test(html), 'expected the Edit-stage click handler to be delegated on document (reaches both the legacy list and canvas nodes), not scoped to #sw-journey-stages alone');
+    pass('AC2 (regression): Edit-stage click handler is delegated on document, reaching both the legacy list and canvas nodes');
+  } catch (e) { fail('AC2 (regression): Edit-stage click handler is delegated on document, reaching both the legacy list and canvas nodes', e); }
+
   // -- AC3: moment-of-truth badge on the flagged node only -----------------
   try {
     const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, [
@@ -193,6 +216,29 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     assert.ok(!/addNode\(/.test(html), 'expected zero addNode calls for an empty journey');
     pass('AC4: 0-stage journey shows the unchanged empty-state message, no canvas nodes');
   } catch (e) { fail('AC4: 0-stage journey shows the unchanged empty-state message, no canvas nodes', e); }
+
+  // -- AC4 regression: the empty-state message must be VISIBLE on the
+  // Canvas view specifically, not merely present somewhere in the HTML.
+  // Found via a live browser render check: #sw-journey-stages (which the
+  // legacy empty message lives inside) is CSS-hidden on the canvas view
+  // (`.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}`),
+  // so a 0-stage journey rendered a visually blank canvas even though the
+  // test above -- which only checks text presence anywhere in the HTML --
+  // passed throughout. The fix renders a separate #sw-drawflow-canvas-empty
+  // element instead of #sw-drawflow-canvas for the 0-stage case, scoped
+  // with the identical hidden-by-default/shown-in-canvas-view CSS pattern.
+  try {
+    const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, []);
+    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const res = makeCanvasMockRes();
+    await handleGetJourneyCanvas(req, res, null, pool);
+    const html = res._b.bodyContent;
+    assert.ok(/id="sw-drawflow-canvas-empty"/.test(html), 'expected a #sw-drawflow-canvas-empty element for the 0-stage case');
+    assert.ok(!/<div id="sw-drawflow-canvas">/.test(html), 'expected #sw-drawflow-canvas (the drawflow container) to NOT be rendered for a 0-stage journey');
+    assert.ok(/#sw-drawflow-canvas-empty\{display:none\}/.test(html), 'expected #sw-drawflow-canvas-empty to be hidden by default, matching #sw-drawflow-canvas\'s own pattern');
+    assert.ok(/\.sw-journey-canvas--view-canvas #sw-drawflow-canvas-empty\{display:block\}/.test(html), 'expected #sw-drawflow-canvas-empty to be shown specifically on the canvas view');
+    pass('AC4 (regression): the 0-stage empty message is actually visible on the Canvas view, not just present in the HTML');
+  } catch (e) { fail('AC4 (regression): the 0-stage empty message is actually visible on the Canvas view, not just present in the HTML', e); }
 
   // -- AC6: client-side load guard ------------------------------------------
   try {

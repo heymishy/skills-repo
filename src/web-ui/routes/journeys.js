@@ -789,6 +789,20 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}' +
       '#sw-drawflow-canvas{display:none;height:600px;width:100%}' +
       '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
+      // ic-s1 AC4 regression (found via live browser render check): the
+      // "No stages yet" message lives inside #sw-journey-stages, which the
+      // rule immediately above hides on the canvas view -- a 0-stage
+      // journey showed a blank canvas instead of that message. The jsdom
+      // AC4 test only asserted the text's PRESENCE in the HTML, not
+      // whether the CSS toggle rules left it visible, so it passed despite
+      // the regression. #sw-drawflow-canvas-empty mirrors the exact same
+      // hidden-by-default/shown-in-canvas-view pattern as #sw-drawflow-canvas
+      // itself, as a sibling (not nested inside #sw-drawflow-canvas, so
+      // drawflow\'s own start() never overwrites it -- it is only ever
+      // rendered when there are 0 stages, i.e. drawflow is never
+      // initialised at all in that case).
+      '#sw-drawflow-canvas-empty{display:none}' +
+      '.sw-journey-canvas--view-canvas #sw-drawflow-canvas-empty{display:block}' +
       '.sw-feature-mapping-row{margin-bottom:8px}' +
       '.sw-feature-mapping-row:last-child{margin-bottom:0}' +
       '.sw-feature-mapping-warning{color:var(--danger)}' +
@@ -873,7 +887,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '</div>' +
       '<span id="sw-stage-reorder-error" class="sw-stage-reorder-error" aria-live="polite"></span>' +
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
-      '<div id="sw-drawflow-canvas"></div>' +
+      (stages.length === 0
+        ? '<p class="sw-journey-stages-empty" id="sw-drawflow-canvas-empty">No stages yet. Add your first stage.</p>'
+        : '<div id="sw-drawflow-canvas"></div>') +
     '</div>' +
     panelHtml +
     featurePickerModalHtml +
@@ -899,16 +915,23 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       // fallback message in the canvas container), never silently, if the
       // drawflow asset failed to load -- matches csd-s1's own
       // window.mermaid check precedent in skills.js.
-      'if(typeof window.Drawflow===\"function\"){' +
-        'var editor=new window.Drawflow(document.getElementById(\"sw-drawflow-canvas\"));' +
-        'editor.reroute=true;' +
-        'editor.start();' +
-        drawflowNodesScript +
-        drawflowConnectionsScript +
-      '}else{' +
-        'console.error(\"drawflow failed to load -- canvas view unavailable\");' +
-        'var el=document.getElementById(\"sw-drawflow-canvas\");' +
-        'if(el)el.textContent=\"Canvas failed to load. Please refresh the page.\";' +
+      // ic-s1 AC4 (live browser render check fix) -- #sw-drawflow-canvas
+      // only exists in the DOM when stages.length>0 (see bodyContent above:
+      // a 0-stage journey renders #sw-drawflow-canvas-empty instead); guard
+      // the whole init block on the element actually existing, or
+      // `new window.Drawflow(null)` runs for every 0-stage journey load.
+      'var __icS1CanvasEl=document.getElementById(\"sw-drawflow-canvas\");' +
+      'if(__icS1CanvasEl){' +
+        'if(typeof window.Drawflow===\"function\"){' +
+          'var editor=new window.Drawflow(__icS1CanvasEl);' +
+          'editor.reroute=true;' +
+          'editor.start();' +
+          drawflowNodesScript +
+          drawflowConnectionsScript +
+        '}else{' +
+          'console.error(\"drawflow failed to load -- canvas view unavailable\");' +
+          '__icS1CanvasEl.textContent=\"Canvas failed to load. Please refresh the page.\";' +
+        '}' +
       '}' +
       'var list=document.getElementById("sw-journey-stages");' +
       'var addBtn=document.getElementById("sw-add-stage-btn");' +
@@ -985,14 +1008,22 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         // AC4 -- focus returns to the stage card/link that opened the panel.
         'if(panelTriggerEl&&typeof panelTriggerEl.focus==="function")panelTriggerEl.focus();' +
       '}' +
-      'if(list){' +
-        'list.addEventListener("click",function(ev){' +
-          'var link=ev.target.closest&&ev.target.closest(".sw-stage-edit");' +
-          'if(!link)return;' +
-          'ev.preventDefault();' +
-          'openPanel(link.getAttribute("data-stage-id"));' +
-        '});' +
-      '}' +
+      // ic-s1 AC2 (live browser render check fix): .sw-stage-edit now also
+      // exists inside drawflow canvas nodes (a SIBLING of #sw-journey-stages,
+      // not a descendant), so delegating this listener on `list` alone --
+      // as the original code did, and as still-correctly scoped below for
+      // .sw-stage-move/.sw-feature-mapping-remove, which genuinely only
+      // ever exist in the legacy list -- silently dropped every click on a
+      // canvas node's own Edit-stage link. Delegating on `document` instead
+      // (matching the existing .sw-stage-map-feature convention a few
+      // blocks down, which already queries the whole document) fixes both
+      // renderings with one listener.
+      'document.addEventListener("click",function(ev){' +
+        'var link=ev.target.closest&&ev.target.closest(".sw-stage-edit");' +
+        'if(!link)return;' +
+        'ev.preventDefault();' +
+        'openPanel(link.getAttribute("data-stage-id"));' +
+      '});' +
       // ep1-s4 -- drag-and-drop + keyboard reorder, sharing one submit
       // path (submitOrder). Native HTML5 drag-and-drop is kanban-view.js's
       // own existing convention in this codebase, reused here, not
