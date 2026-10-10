@@ -63,6 +63,13 @@ async function migrate(dbOverride) {
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_journey_id ON customer_journey_stages(journey_id)`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_tenant_id ON customer_journey_stages(tenant_id)`);
 
+  // ic-s2: free node positioning (AC4) -- nullable, no backfill; a NULL
+  // position means "use ic-s1's own deterministic auto-layout" (AC2), not
+  // an error state. ADD COLUMN IF NOT EXISTS keeps this idempotent,
+  // matching every other migration file's own convention.
+  await db.query(`ALTER TABLE customer_journey_stages ADD COLUMN IF NOT EXISTS position_x DOUBLE PRECISION`);
+  await db.query(`ALTER TABLE customer_journey_stages ADD COLUMN IF NOT EXISTS position_y DOUBLE PRECISION`);
+
   await db.query(`CREATE TABLE IF NOT EXISTS feature_customer_journey_stage_mappings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     journey_stage_id UUID NOT NULL REFERENCES customer_journey_stages(id) ON DELETE CASCADE,
