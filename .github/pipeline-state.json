@@ -40054,7 +40054,7 @@
     {
       "slug": "2026-10-11-journey-cx-redesign",
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -40066,7 +40066,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "jcx-s3",
+            "jcx-s4"
+          ]
         },
         {
           "id": "m2",
@@ -40076,7 +40079,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "jcx-s1",
+            "jcx-s2",
+            "jcx-s5"
+          ]
         },
         {
           "id": "m3",
@@ -40086,10 +40093,13 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "jcx-s3",
+            "jcx-s4"
+          ]
         }
       ],
-      "updatedAt": "2026-10-11T08:43:22.539Z",
+      "updatedAt": "2026-10-11T08:55:26.291Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
@@ -40097,9 +40107,60 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "slicingStrategy": null,
+      "slicingStrategy": "Walking skeleton",
       "guardrails": [],
-      "epics": []
+      "epics": [
+        {
+          "id": "journey-map-and-placeholder-trigger",
+          "slug": "journey-map-and-placeholder-trigger",
+          "name": "Journey maps read as journey maps, and can seed new pipeline work directly from a stage",
+          "status": "not-started",
+          "slicingStrategy": "Walking skeleton",
+          "humanOversight": "Medium",
+          "stories": [
+            {
+              "slug": "jcx-s1",
+              "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-11T08:55:26.290Z",
+              "complexity": 3
+            },
+            {
+              "slug": "jcx-s2",
+              "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-11T08:55:26.291Z",
+              "complexity": 2
+            },
+            {
+              "slug": "jcx-s3",
+              "name": "Connected emotion curve across stages on the Customer experience tab",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-11T08:55:26.291Z",
+              "complexity": 2
+            },
+            {
+              "slug": "jcx-s4",
+              "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-11T08:55:26.291Z",
+              "complexity": 2
+            },
+            {
+              "slug": "jcx-s5",
+              "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-11T08:55:26.291Z",
+              "complexity": 1
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

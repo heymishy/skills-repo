@@ -60,9 +60,9 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Operator CX judgment vs. reference bar | *Populated at `/definition`* | Gap |
-| M2 — Placeholder-feature trigger actually used | *Populated at `/definition`* | Gap |
-| M3 — Emotion/persona data actually populated | *Populated at `/definition`* | Gap |
+| M1 — Operator CX judgment vs. reference bar | `jcx-s3` (emotion curve), `jcx-s4` (persona card) | Covered |
+| M2 — Placeholder-feature trigger actually used | `jcx-s1` (data model + trigger), `jcx-s2` (auto-conversion), `jcx-s5` (authorization hardening) | Covered |
+| M3 — Emotion/persona data actually populated | `jcx-s3` (emotion), `jcx-s4` (persona, discovery-seeded) | Covered |
 
 ---
 

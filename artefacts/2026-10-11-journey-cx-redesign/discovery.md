@@ -25,6 +25,8 @@ Redesign the Customer experience tab to render as an actual journey map: a conne
 
 MVP must include an explicit "no emotion data yet" empty state for the emotion curve — per `/clarify`, existing journeys' `emotion` field is mostly empty today, so most journeys will render with no real curve on day one unless this is designed for explicitly.
 
+MVP must also include an explicit authorization/tenant-scoping verification pass across the new placeholder-trigger and mapping-conversion routes (added at `/definition`, 2026-10-11) — a direct, necessary consequence of introducing a genuinely new mutating surface under ADR-025's existing multi-tenancy constraint, not an optional hardening nicety. This mirrors the real gap `ic-s2`'s own DoD found and fixed for its position route.
+
 Deferred from MVP: per-stage illustration/storyboard (supplementary, not core per the spike), and the Hustle-Badger-style build-order callouts.
 
 ## Out of Scope

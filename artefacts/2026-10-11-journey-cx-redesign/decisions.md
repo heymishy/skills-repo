@@ -21,3 +21,21 @@
 **Rationale:** Each answer was chosen for consistency with this app's own already-established conventions rather than inventing new patterns: item 3 mirrors the uniform non-viewer-only authorization check used by every existing mutating route in this codebase; item 1/2 mirror how `/discovery` and `ep2-s3`'s own mapping model already work, extended rather than replaced; item 4 was a direct, confident operator answer (not inferred), with a real MVP-scope consequence (the empty state is now required, not optional) captured immediately in both `discovery.md`'s Assumptions and MVP Scope sections to keep the artefact internally consistent.
 **Made by:** Claude (session), confirmed by Hamish King (Platform Owner), answer-by-answer.
 **Revisit trigger:** If usage data after release shows item 3's authorization model is being abused (e.g. spam placeholder-triggers with no real intent to build), tighten to a restricted role rather than leaving it uniform — not pre-built now since no evidence calls for it yet.
+
+---
+
+**2026-10-11 | SCOPE | /definition**
+**Decision:** Added `jcx-s5` (authorization/tenant-scoping verification pass across the placeholder-trigger and mapping-conversion routes) to MVP scope, even though it was not an explicit bullet in the original `discovery.md` MVP Scope section.
+**Context:** `/definition`'s own per-story scope guard flagged this story as necessary-but-not-originally-named during epic decomposition.
+**Rationale:** `jcx-s1`/`jcx-s2` introduce a genuinely new mutating surface in this app (a UI action triggering a backend pipeline run). ADR-025 (multi-tenancy enforced at the application layer) and the `/clarify`-confirmed authorization model (same as every other mutating route) both require this to be actually, independently verified — not just assumed correct because the pattern was copied. This mirrors a real, previously-found gap: `ic-s2`'s own position route was initially wired without `requireNonViewer`, caught only by independent verification during that story's own DoD pass, not by the handler-level unit tests alone.
+**Made by:** Claude (session), confirmed by Hamish King (Platform Owner).
+**Revisit trigger:** None needed — this is now a permanent part of MVP scope, not a temporary addition.
+
+---
+
+**2026-10-11 | DESIGN | /definition (jcx-s4 data model)**
+**Decision:** The journey-map persona card uses a new, dedicated end-customer persona concept (distinct from this platform's own pipeline personas already captured in every feature's `discovery.md` "Who It Affects" section) — stored as 3 new `TEXT` columns directly on `customer_journeys` (`persona_name`, `persona_role`, `persona_goal`), not a new table and not a markdown artefact. The persona editor pre-populates suggestions by scanning `artefacts/[feature_slug]/discovery.md` "Who It Affects" sections for every `feature_slug` associated with the journey's own `product_id` (via the legacy `journeys` table), rather than starting from a blank form.
+**Context:** Confirmed via an `ADR-026` reuse-check (no existing table covers this concept) and a direct operator clarification on two points: (1) which persona concept the card should show (pipeline persona vs. a dedicated end-customer persona — operator confirmed the latter), and (2) whether it should be DB columns or a markdown artefact (operator confirmed DB columns), plus an operator-requested enhancement to pre-populate from existing discovery artefacts rather than starting blank.
+**Rationale:** `customer_journeys.product_id` already exists (confirmed by reading `server.js`'s own inline migration directly), giving a precise, already-available scope boundary for the discovery-artefact scan — no new association mechanism needed. DB columns (not a markdown artefact) keep the persona editable inline on the same page as the rest of the journey's data, consistent with how `emotion`/`pain_points`/`opportunities` are already stored and edited today.
+**Made by:** Claude (session), confirmed by Hamish King (Platform Owner), answer-by-answer.
+**Revisit trigger:** If a future need emerges for multi-persona support per journey, or for the pre-population scan to also incorporate structured persona data (not just prose from "Who It Affects"), revisit this data model.
