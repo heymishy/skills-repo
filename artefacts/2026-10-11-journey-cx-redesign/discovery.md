@@ -1,6 +1,6 @@
 # Discovery: Journey CX/UX redesign — journey map + placeholder-feature trigger
 
-**Status:** Approved
+**Status:** Clarified
 **Created:** 2026-10-11
 **Approved by:** Hamish King — Platform Owner — 2026-10-11
 **Author:** Claude (session), confirmed section-by-section with Hamish King (Platform Owner)
@@ -23,6 +23,8 @@ The `canvas-replacement-for-journey-stages` epic (`ic-s1`–`ic-s4`, plus the `i
 
 Redesign the Customer experience tab to render as an actual journey map: a connected emotion curve across stages (using the already-captured `emotion` field) and a persona card (single-persona scope). Primary new capability: each journey stage can have one or more **features mapped to it** — reusing `ep2-s3`'s existing `feature_customer_journey_stage_mappings` data model, which today only supports mapping *already-built* features. This MVP extends it so a stage can also hold a **placeholder feature** — a named-but-not-yet-built feature slot — that, when triggered, kicks off a new outer-loop run (`/discovery`) for that feature, seeded with the journey-stage context it came from. This ties the journey map directly to the pipeline: the primary expected use case is a **new** journey map where no features exist yet (the map itself becomes the source of new feature ideas, one placeholder per stage), with mapping to pre-existing features as a secondary, occasional case.
 
+MVP must include an explicit "no emotion data yet" empty state for the emotion curve — per `/clarify`, existing journeys' `emotion` field is mostly empty today, so most journeys will render with no real curve on day one unless this is designed for explicitly.
+
 Deferred from MVP: per-stage illustration/storyboard (supplementary, not core per the spike), and the Hustle-Badger-style build-order callouts.
 
 ## Out of Scope
@@ -35,13 +37,13 @@ Deferred from MVP: per-stage illustration/storyboard (supplementary, not core pe
 
 ## Assumptions and Risks
 
-[ASSUMPTION] A triggered placeholder feature creates a new feature-slug folder under `artefacts/` and seeds `/discovery`'s Section 1 (problem statement) with the journey stage's own context (name, description, emotion, pain points, opportunities, touchpoints) — unconfirmed, requires `/clarify` before scope is locked.
+**Confirmed (was [ASSUMPTION], resolved via `/clarify` 2026-10-11):** A triggered placeholder feature creates a new `artefacts/[feature-slug]/` folder and seeds `/discovery`'s Section 1 (problem statement) with the journey stage's own context (name, description, emotion, pain points, opportunities, touchpoints). The operator still walks through the rest of discovery normally — only Section 1 is pre-populated, not the full artefact.
 
-[ASSUMPTION] The journey-stage-to-feature mapping should persist and convert from "placeholder" to "linked real feature" once the triggered `/discovery` is approved, rather than being a one-shot, disconnected trigger — unconfirmed, requires `/clarify` before scope is locked.
+**Confirmed (was [ASSUMPTION], resolved via `/clarify` 2026-10-11):** The journey-stage-to-feature mapping persists and converts automatically from "placeholder" to "linked real feature" once the triggered `/discovery` is approved — the journey map always reflects real pipeline state, not a one-shot disconnected trigger. This means `ep2-s3`'s existing mapping data model needs a new state field distinguishing placeholder from linked.
 
-[ASSUMPTION] Triggering a new outer-loop run from a placeholder feature uses the same authorization as a normal manual `/discovery` invocation — no special elevated or different access control — unconfirmed, requires `/clarify` before scope is locked. This matters because it's a genuinely new surface: every existing feature in this pipeline today is triggered by a human directly invoking a skill, not a UI action kicking off a backend pipeline run.
+**Confirmed (was [ASSUMPTION], resolved via `/clarify` 2026-10-11):** Triggering a new outer-loop run from a placeholder feature uses the same authorization as any other mutating action in this app — any non-viewer tenant member can trigger it, matching the uniform convention across every existing mutating route (creating journeys/stages, position updates, feature mappings). No new, finer-grained permission tier is introduced. Rationale: triggering only creates a draft discovery artefact, which still passes through this pipeline's own human-approval gates (discovery approval, DoR sign-off, etc.) before anything real happens — those gates are the structural safeguard against low-quality triggers, not a special access check. If usage data later shows this needs tightening (e.g. admin-only), that is a natural follow-up, not pre-built now.
 
-[ASSUMPTION] Existing journeys' `emotion` field data is populated with enough coverage/granularity to render a meaningful emotion curve, not mostly null — unconfirmed.
+**Confirmed (was [ASSUMPTION], resolved via `/clarify` 2026-10-11):** Existing journeys' `emotion` field is mostly empty — this is genuinely new behaviour operators haven't used yet via the current plain-text Customer experience tab. MVP scope must therefore include an explicit "no emotion data yet" empty state for the emotion curve (not an assumption of pre-populated real curves from day one) — this is now a required MVP element, not a deferred nicety.
 
 **Risk:** rendering a real emotion curve likely needs either a charting approach or custom SVG — the same "no new npm dependency unless justified" tension `ic-s1`'s own `decisions.md` spike already resolved once for the canvas library; this may need its own small spike rather than being assumed trivial.
 
@@ -83,3 +85,13 @@ This discovery contains 4 unconfirmed assumptions that affect scope and benefit 
 - Existing journeys' `emotion` field data is populated with enough coverage/granularity to render a meaningful emotion curve
 
 These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification.
+
+---
+
+## Clarification log
+
+[2026-10-11] Clarified via /clarify:
+- Q: What exactly does triggering a placeholder feature do?  A: Creates a new `artefacts/[feature-slug]/` folder and seeds `/discovery`'s Section 1 only with journey-stage context; operator still walks through the rest of discovery normally.
+- Q: Should the journey-stage mapping persist and convert from "placeholder" to "linked real feature" once the triggered discovery is approved?  A: Yes — persists and auto-converts; requires a new state field on `ep2-s3`'s existing mapping model.
+- Q: Does triggering a new outer-loop run use the same authorization as a normal manual `/discovery` invocation?  A: Yes — same as any other mutating action (non-viewer tenant member); no new permission tier. The pipeline's own human-approval gates are the structural safeguard, not a special access check.
+- Q: Is the existing `emotion` field populated widely enough to render a meaningful emotion curve?  A: Mostly empty today — MVP must include an explicit "no emotion data yet" empty state, now a required MVP element (added to MVP Scope).
