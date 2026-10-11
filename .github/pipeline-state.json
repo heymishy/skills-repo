@@ -39972,7 +39972,7 @@
             {
               "slug": "ic-s4",
               "name": "Keyboard-accessible node movement (WCAG 2.1 AA)",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39988,7 +39988,7 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s4-dor.md",
-              "updatedAt": "2026-10-11T04:59:29.660Z",
+              "updatedAt": "2026-10-11T05:00:17.414Z",
               "tasks": [
                 {
                   "id": "task-1",
@@ -40012,7 +40012,9 @@
                   "endingSha": "491addb9"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/974"
             }
           ]
         }
