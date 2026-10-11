@@ -81,25 +81,43 @@ withAuth('Tab/Shift+Tab move between canvas nodes and off the canvas with no foc
   await first.focus();
   await expect(first).toBeFocused();
 
-  // Tab forward past all 3 nodes -- the 4th Tab must leave the canvas node
-  // set entirely (no focus trap).
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Tab');
-  const stillOnANode = await page.evaluate(() => {
-    return !!(document.activeElement && document.activeElement.classList.contains('sw-drawflow-node'));
-  });
-  expect(stillOnANode, 'expected focus to have left the canvas node set after tabbing past the last node').toBe(false);
+  // Each node's own "Edit stage" link and "Map feature" button are also
+  // natively tab-focusable descendants (confirmed via a live browser check,
+  // not assumed), so forward Tab moves through more than one stop per node.
+  // Loop with a generous cap rather than a hardcoded press count -- the real
+  // conformance claim is "focus eventually and predictably leaves the canvas
+  // entirely", not an exact number of presses.
+  let leftCanvasForward = false;
+  for (let i = 0; i < 20; i++) {
+    await page.keyboard.press('Tab');
+    const outside = await page.evaluate(() => {
+      const canvas = document.getElementById('sw-drawflow-canvas');
+      return !canvas || !canvas.contains(document.activeElement);
+    });
+    if (outside) { leftCanvasForward = true; break; }
+  }
+  expect(leftCanvasForward, 'expected focus to eventually leave the canvas entirely when tabbing forward (no focus trap)').toBe(true);
 
-  // Shift+Tab back from the first node must also leave the node set (not
-  // wrap back INTO the canvas), confirming no trap in either direction.
+  // Shift+Tab back from the first node must also leave the canvas (not wrap
+  // back INTO it), confirming no trap in either direction. Observed live: the
+  // first Shift+Tab lands on the canvas's own outer container element itself
+  // (not a node), then the next lands on "+ Add stage", fully outside --
+  // looping with a cap here for the same reason as the forward check above.
   await first.focus();
   await expect(first).toBeFocused();
-  await page.keyboard.press('Shift+Tab');
-  const stillOnANodeBackward = await page.evaluate(() => {
-    return !!(document.activeElement && document.activeElement.classList.contains('sw-drawflow-node'));
-  });
-  expect(stillOnANodeBackward, 'expected Shift+Tab from the first node to also leave the canvas node set').toBe(false);
+  let leftCanvasBackward = false;
+  for (let i = 0; i < 20; i++) {
+    await page.keyboard.press('Shift+Tab');
+    const noNodeFocused = await page.evaluate(() => {
+      return !document.activeElement || !document.activeElement.classList.contains('sw-drawflow-node');
+    });
+    const trulyOutside = await page.evaluate(() => {
+      const canvas = document.getElementById('sw-drawflow-canvas');
+      return !canvas || (document.activeElement !== canvas && !canvas.contains(document.activeElement));
+    });
+    if (noNodeFocused && trulyOutside) { leftCanvasBackward = true; break; }
+  }
+  expect(leftCanvasBackward, 'expected focus to eventually leave the canvas entirely when tabbing backward (no focus trap)').toBe(true);
 });
 
 withAuth('a full keyboard-only walkthrough can focus, move, and persist a node position across reload (AC3)', async ({ page }) => {
