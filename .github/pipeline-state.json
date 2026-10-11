@@ -39812,8 +39812,9 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-11T06:03:36.109Z",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-10-11T07:32:47.521Z",
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
         }
       ],
       "metrics": [
