@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -596,6 +596,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_stage_id ON feature_customer_journey_stage_mappings(journey_stage_id)`);
     }).then(function() {
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_tenant_id ON feature_customer_journey_stage_mappings(tenant_id)`);
+    }).then(function() {
+      // jcx-s1 -- distinguishes an intentional placeholder (operator-named
+      // feature slot, not yet built) from a real, linked mapping. Existing
+      // rows implicitly mean "linked" (default), matching their own
+      // pre-jcx-s1 meaning exactly -- no backfill needed.
+      return _creditsPool.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS mapping_state TEXT NOT NULL DEFAULT 'linked'`);
     }).then(function() { console.log('feature_customer_journey_stage_mappings table ready'); })
       .catch(function(err) { console.error('feature_customer_journey_stage_mappings table migration failed:', err.message); });
     // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list
@@ -4075,6 +4081,26 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handleDeleteFeatureMapping(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/placeholder-features$/) && req.method === 'POST') {
+    // jcx-s1 — add a placeholder feature to a journey stage (2026-10-11-journey-cx-redesign)
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostPlaceholderFeature(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/placeholder-features\/[^/]+\/trigger$/) && req.method === 'POST') {
+    // jcx-s1 — trigger a placeholder feature, seeding a new /discovery session (2026-10-11-journey-cx-redesign)
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4], mappingId: pathname.split('/')[6] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleTriggerPlaceholderFeature(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/journeys\/[^/]+\/stages-order$/) && req.method === 'PATCH') {

@@ -40142,28 +40142,33 @@
           "id": "journey-map-and-placeholder-trigger",
           "slug": "journey-map-and-placeholder-trigger",
           "name": "Journey maps read as journey maps, and can seed new pipeline work directly from a stage",
-          "status": "not-started",
+          "status": "in-progress",
           "slicingStrategy": "Walking skeleton",
           "humanOversight": "Medium",
           "stories": [
             {
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-11T09:27:59.023Z",
+              "updatedAt": "2026-10-11T18:49:43.488Z",
               "complexity": 3,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0,
+                "totalTests": 9,
+                "passing": 9,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s1-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "acVerified": 5,
+              "acTotal": 5,
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/976"
             },
             {
               "slug": "jcx-s2",

@@ -26,7 +26,7 @@ function makeCanvasMockPool(journeyRow, stageRows) {
       if (/^SELECT id, name, position, description/.test(s)) {
         return Promise.resolve({ rows: stageRows });
       }
-      if (/^SELECT id, journey_stage_id, feature_slug, metric_keys FROM feature_customer_journey_stage_mappings/.test(s)) {
+      if (/^SELECT id, journey_stage_id, feature_slug, metric_keys, mapping_state FROM feature_customer_journey_stage_mappings/.test(s)) {
         return Promise.resolve({ rows: [] });
       }
       return Promise.resolve({ rows: [] });
