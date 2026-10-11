@@ -40054,11 +40054,42 @@
     {
       "slug": "2026-10-11-journey-cx-redesign",
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-10-11T08:40:16.321Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Operator CX judgment vs. the reference bar",
+          "target": "Operator judges the redesigned tab as genuinely matching or approaching the 3 reference examples' quality",
+          "baseline": "Not matching (operator's own direct feedback, 2026-10-11)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Placeholder-feature trigger actually used",
+          "target": ">=1 placeholder feature triggered from a journey stage and reaching /discovery approval within 4 weeks of release",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Emotion/persona data actually populated",
+          "target": ">=25% of touched journey stages have emotion populated within 4 weeks of release",
+          "baseline": "Unknown exact % -- confirmed mostly empty today via /clarify; real baseline query pending before release",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-10-11T08:43:22.539Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
