@@ -440,6 +440,116 @@ async function handlePatchJourneyStagePosition(req, res, _next, pool) {
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: stageId, position_x: x, position_y: y })); }
 }
 
+var _discoverySeeder = require('../adapters/discovery-seeder');
+
+/**
+ * POST /journeys/:id/stages/:stageId/placeholder-features — add a
+ * placeholder feature to a stage (jcx-s1 AC1). feature_slug holds the
+ * operator-provided NAME (free text), not a resolvable slug, until jcx-s2's
+ * own conversion step runs -- see this story's own Architecture Constraints.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePostPlaceholderFeature(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var name = (req.body && req.body.name || '').trim();
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  if (!name) { badRequest('name is required'); return; }
+
+  // jcx-s1 -- same ownership-check-before-mutation / 404-not-403 cross-tenant
+  // policy as handlePostFeatureMapping/handleDeleteFeatureMapping (decisions.md D13).
+  var sr = await pool.query(
+    `SELECT cjs.id FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+
+  var ins = await pool.query(
+    `INSERT INTO feature_customer_journey_stage_mappings
+     (journey_stage_id, journey_id, tenant_id, feature_slug, mapping_state)
+     VALUES ($1, $2, $3, $4, 'placeholder')
+     RETURNING id`,
+    [stageId, journeyId, tenantId, name]
+  );
+  var mappingId = ins.rows[0].id;
+
+  if (res.status) { res.status(200).json({ id: mappingId, name: name, mappingState: 'placeholder' }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ id: mappingId, name: name, mappingState: 'placeholder' })); }
+}
+
+/**
+ * POST /journeys/:id/stages/:stageId/placeholder-features/:mappingId/trigger
+ * — trigger a placeholder feature, seeding a new /discovery session (jcx-s1
+ * AC2). _opts is test-only (repoRoot override); production always uses the
+ * real repo root.
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ * @param {object} [_opts]
+ */
+async function handleTriggerPlaceholderFeature(req, res, _next, pool, _opts) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var mappingId = req.params && req.params.mappingId;
+  var repoRoot = (_opts && _opts.repoRoot) || _repoRootAdapter.getRepoRoot(req);
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  var sr = await pool.query(
+    `SELECT id, name, description, emotion, pain_points, opportunities, touchpoints
+     FROM customer_journey_stages cjs
+     JOIN customer_journeys cj ON cjs.journey_id = cj.id
+     WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
+    [stageId, journeyId, tenantId]
+  );
+  var stage = sr.rows[0];
+  if (!stage) { notFound('stage not found'); return; }
+
+  var mr = await pool.query(
+    `SELECT feature_slug FROM feature_customer_journey_stage_mappings WHERE id = $1 AND journey_stage_id = $2 AND tenant_id = $3`,
+    [mappingId, stageId, tenantId]
+  );
+  var mapping = mr.rows[0];
+  if (!mapping) { notFound('mapping not found'); return; }
+
+  var result = _discoverySeeder.seedDiscoveryFromStage(stage, mapping.feature_slug, repoRoot);
+  if (result.error) { badRequest(result.error); return; }
+
+  if (res.status) { res.status(200).json({ featureSlug: result.featureSlug }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ featureSlug: result.featureSlug })); }
+}
+
 /**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
@@ -1627,4 +1737,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature };
