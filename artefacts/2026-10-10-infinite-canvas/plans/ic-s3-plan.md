@@ -39,7 +39,7 @@ This was independently confirmed in this feature's own spike (`spikes/zero-build
 **Files:**
 - Test: `tests/check-ic-s3-canvas-pan-zoom.js` (new file, all 4 tests)
 
-- [ ] **Step 1: Write the test file**
+- [x] **Step 1: Write the test file**
 
 Create `tests/check-ic-s3-canvas-pan-zoom.js`:
 
@@ -195,7 +195,7 @@ async function buildRealCanvas(stageRows) {
 })();
 ```
 
-- [ ] **Step 2: Run the tests — expected to PASS immediately against the unmodified codebase**
+- [x] **Step 2: Run the tests — expected to PASS immediately against the unmodified codebase**
 
 ```bash
 node tests/check-ic-s3-canvas-pan-zoom.js
@@ -203,7 +203,7 @@ node tests/check-ic-s3-canvas-pan-zoom.js
 
 Expected: `Results: 4 passed, 0 failed`. **This is not a RED step in the usual TDD sense** — per this plan's own Architecture note, all 4 ACs are already satisfied by `ic-s1`'s own already-shipped `editor.start()` call and drawflow's own default behaviour; these tests exist to *prove and guard* that, not to drive new code. If any test unexpectedly fails here, that is itself a real finding — stop and investigate the actual cause (check the real search-anchors this plan's own harness relies on: the `__icS1NodeIds` marker string, the `#sw-drawflow-canvas` element id, the real `drawflow.min.js` file at the expected `node_modules` path) before assuming the AC itself is wrong.
 
-- [ ] **Step 3: Run the full suite — no regressions**
+- [x] **Step 3: Run the full suite — no regressions**
 
 ```bash
 npm test
@@ -211,7 +211,7 @@ npm test
 
 No production code is touched by this task, so a regression here would mean this new test file itself has broken something else (e.g. a global leaked from `dom.window.eval`) — investigate if so, do not ignore.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add tests/check-ic-s3-canvas-pan-zoom.js
@@ -222,7 +222,7 @@ git commit -m "test: verify canvas pan/zoom via real jsdom execution against dra
 
 ## Final check before opening a PR
 
-- [ ] Run the full suite one more time (`npm test`) and confirm 0 failures
-- [ ] **Live browser render check (mandatory per `/verify-completion`):** even though this story's own ACs are confirmed via real-library jsdom execution (not text-only assertions, a materially stronger test than `ic-s1`'s own original tests), `ic-s1`'s and `ic-s2`'s own sessions both found real defects that only a REAL browser caught (missing vendor `<script>` tag; wrong-id-type `addConnection`; click-delegation scope; CSS-visibility scoping) that no jsdom test — including a real-execution one — would necessarily catch, since jsdom is still not a real browser's own paint/layout/compositing pipeline. Load the real rendered canvas in Chrome, confirm: (a) `Ctrl+scroll` visibly zooms, (b) dragging empty canvas space visibly pans, (c) the page itself does not scroll/jump when either interaction happens, (d) reloading after panning/zooming returns to the default view. Do not skip this on the assumption that the stronger jsdom tests already cover it — different failure classes.
-- [ ] Switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before — zero regression (this story's diff, if any beyond the new test file, should be none at all, but verify).
+- [x] Run the full suite one more time (`npm test`) and confirm 0 failures
+- [x] **Live browser render check (mandatory per `/verify-completion`):** even though this story's own ACs are confirmed via real-library jsdom execution (not text-only assertions, a materially stronger test than `ic-s1`'s own original tests), `ic-s1`'s and `ic-s2`'s own sessions both found real defects that only a REAL browser caught (missing vendor `<script>` tag; wrong-id-type `addConnection`; click-delegation scope; CSS-visibility scoping) that no jsdom test — including a real-execution one — would necessarily catch, since jsdom is still not a real browser's own paint/layout/compositing pipeline. Load the real rendered canvas in Chrome, confirm: (a) `Ctrl+scroll` visibly zooms, (b) dragging empty canvas space visibly pans, (c) the page itself does not scroll/jump when either interaction happens, (d) reloading after panning/zooming returns to the default view. Do not skip this on the assumption that the stronger jsdom tests already cover it — different failure classes.
+- [x] Switch to Customer experience and Delivery tabs, confirm they render EXACTLY as before — zero regression (this story's diff, if any beyond the new test file, should be none at all, but verify).
 - [ ] Open a draft PR (never ready for review)

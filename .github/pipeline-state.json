@@ -39938,7 +39938,7 @@
             {
               "slug": "ic-s3",
               "name": "Canvas pan and zoom",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39946,10 +39946,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -39958,11 +39958,13 @@
                 {
                   "id": "task-1",
                   "name": "Write all 4 tests against the real, unmodified codebase (real jsdom execution of drawflow, no production code changes anticipated)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s3-plan.md"
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s3-plan.md",
+                  "endingSha": "2ac35c88"
                 }
               ],
-              "updatedAt": "2026-10-10T22:16:36.861Z"
+              "updatedAt": "2026-10-11T02:31:37.413Z",
+              "verifyStatus": "passed"
             },
             {
               "slug": "ic-s4",
