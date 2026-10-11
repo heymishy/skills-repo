@@ -554,8 +554,50 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_journey_id ON customer_journey_stages(journey_id)`);
     }).then(function() {
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journey_stages_tenant_id ON customer_journey_stages(tenant_id)`);
+    }).then(function() {
+      // ic-hotfix1 -- ic-s2 added position_x/position_y via
+      // scripts/migrate-schema-journeys.js, which is never copied into the
+      // deployed image (see the Dockerfile's own COPY allowlist -- scripts/
+      // is not in it, same reason the customer_journeys/customer_journey_stages
+      // CREATE TABLE statements above are duplicated inline rather than left
+      // to only live in that script). That script's own ADD COLUMN statements
+      // were never mirrored here, so every deployed environment's
+      // customer_journey_stages table was missing these two columns,
+      // breaking every GET /journeys/:id canvas page view with a real
+      // "column position_x does not exist" error (confirmed live on
+      // wuce-staging.fly.dev, 2026-10-11). Column definitions copied verbatim
+      // from scripts/migrate-schema-journeys.js to stay identical.
+      return _creditsPool.query(`ALTER TABLE customer_journey_stages ADD COLUMN IF NOT EXISTS position_x DOUBLE PRECISION`);
+    }).then(function() {
+      return _creditsPool.query(`ALTER TABLE customer_journey_stages ADD COLUMN IF NOT EXISTS position_y DOUBLE PRECISION`);
     }).then(function() { console.log('customer_journey_stages table ready'); })
       .catch(function(err) { console.error('customer_journey_stages table migration failed:', err.message); });
+    // ic-hotfix1 -- feature_customer_journey_stage_mappings (ep2-s3) has the
+    // exact same gap as position_x/position_y above: it is only ever created
+    // in scripts/migrate-schema-journeys.js, never mirrored into this file's
+    // own inline migration path, so a genuinely fresh deployed environment
+    // (one that never had that script run against it manually) would 500
+    // every GET /journeys/:id canvas page view with "relation
+    // feature_customer_journey_stage_mappings does not exist" the moment it
+    // reached ep2-s3's own mappings query -- the very next failure after the
+    // position_x one this fix addresses. Column/index definitions copied
+    // verbatim from scripts/migrate-schema-journeys.js.
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS feature_customer_journey_stage_mappings (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        journey_stage_id UUID NOT NULL REFERENCES customer_journey_stages(id) ON DELETE CASCADE,
+        journey_id UUID NOT NULL REFERENCES customer_journeys(id) ON DELETE CASCADE,
+        tenant_id TEXT NOT NULL,
+        feature_slug TEXT NOT NULL,
+        metric_keys JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `).then(function() {
+      return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_stage_id ON feature_customer_journey_stage_mappings(journey_stage_id)`);
+    }).then(function() {
+      return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_tenant_id ON feature_customer_journey_stage_mappings(tenant_id)`);
+    }).then(function() { console.log('feature_customer_journey_stage_mappings table ready'); })
+      .catch(function(err) { console.error('feature_customer_journey_stage_mappings table migration failed:', err.message); });
     // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list
     // admin-seeding block that used to live here were removed entirely (AC1) --
     // the real admin-bootstrap mechanism is tab-s1's login-time grant plus

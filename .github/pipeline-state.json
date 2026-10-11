@@ -39793,7 +39793,29 @@
       "name": "Infinite Canvas -- Reusable Free-Form Spatial Canvas Primitive",
       "stage": "definition",
       "health": "green",
-      "stories": [],
+      "stories": [
+        {
+          "id": "ic-hotfix1",
+          "slug": "ic-hotfix1",
+          "name": "Fix missing position_x/position_y and feature_customer_journey_stage_mappings migration breaking the journey canvas in deployed environments",
+          "track": "short-track",
+          "stage": "implementation-plan",
+          "health": "green",
+          "reviewStatus": "n/a",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-10-10-infinite-canvas/test-plans/ic-hotfix1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-10-11T06:03:36.109Z",
+          "dorStatus": "signed-off"
+        }
+      ],
       "metrics": [
         {
           "id": "m1",
