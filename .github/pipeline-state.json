@@ -40151,7 +40151,7 @@
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-11T18:49:43.488Z",
+              "updatedAt": "2026-10-11T19:58:03.458Z",
               "complexity": 3,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40167,7 +40167,7 @@
               "acVerified": 5,
               "acTotal": 5,
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/976"
             },
             {
