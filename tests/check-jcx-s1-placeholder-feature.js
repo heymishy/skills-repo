@@ -207,7 +207,17 @@ function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
     const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
     await handleTriggerPlaceholderFeature(req, res, null, pool, { repoRoot: scratchRoot });
     assert.strictEqual(res._s, 400, 'expected 400 for a path-traversal placeholder name');
-    assert.ok(!fs.existsSync(path.join(scratchRoot, '..', '..', 'etc')), 'expected no file written outside the scratch repo root');
+    // Not `!fs.existsSync(path.join(scratchRoot, '..', '..', 'etc'))` -- on
+    // Linux, os.tmpdir() is /tmp, so scratchRoot/../../etc resolves to the
+    // real, pre-existing /etc, which of course exists regardless of this
+    // guard (passed "by accident" on Windows, where that same traversal
+    // lands on a path that happens not to exist -- caught running this
+    // suite in a Linux/Node 24 container to match CI, which Windows-local
+    // runs never exercised). The actual invariant to assert is narrower and
+    // platform-independent: the guard rejects BEFORE any fs write, so
+    // nothing -- not even an artefacts/ dir -- should exist under
+    // scratchRoot itself.
+    assert.ok(!fs.existsSync(path.join(scratchRoot, 'artefacts')), 'expected no artefacts/ folder created under the scratch repo root');
     fs.rmSync(scratchRoot, { recursive: true, force: true });
     pass('NFR: path traversal guard rejects a crafted placeholder name with 400, no file written');
   } catch (e) { fail('NFR: path traversal guard rejects a crafted placeholder name with 400, no file written', e); }
