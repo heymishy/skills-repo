@@ -40054,7 +40054,7 @@
     {
       "slug": "2026-10-11-journey-cx-redesign",
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -40099,7 +40099,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-11T09:14:59.045Z",
+      "updatedAt": "2026-10-11T09:30:36.884Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
@@ -40149,9 +40149,9 @@
             {
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:14:59.044Z",
+              "updatedAt": "2026-10-11T09:27:59.023Z",
               "complexity": 3,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40162,14 +40162,15 @@
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s1-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:14:59.045Z",
+              "updatedAt": "2026-10-11T09:28:31.057Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40180,14 +40181,15 @@
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s2-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:14:59.045Z",
+              "updatedAt": "2026-10-11T09:29:02.934Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40198,14 +40200,15 @@
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s3-test-plan.md"
               },
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:14:59.045Z",
+              "updatedAt": "2026-10-11T09:29:34.652Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40216,14 +40219,15 @@
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s4-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jcx-s5",
               "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:14:59.045Z",
+              "updatedAt": "2026-10-11T09:30:20.557Z",
               "complexity": 1,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40234,7 +40238,8 @@
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s5-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
