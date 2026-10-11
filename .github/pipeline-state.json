@@ -40050,6 +40050,25 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-10-11-journey-cx-redesign",
+      "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-10-11T08:35:56.245Z",
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "slicingStrategy": null,
+      "guardrails": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
