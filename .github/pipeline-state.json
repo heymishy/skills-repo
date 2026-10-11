@@ -40108,7 +40108,35 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "slicingStrategy": "Walking skeleton",
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: story artefact before/alongside src/ changes",
+          "status": "met",
+          "evidence": "All 5 stories reference this epic/discovery chain, committed before implementation begins",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-11T09:07:58.379Z"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E framework; auth bypass is test-fixture-layer only",
+          "status": "met",
+          "evidence": "Referenced in jcx-s1 Architecture Constraints; no deviation proposed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-11T09:07:58.379Z"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "met",
+          "evidence": "Referenced explicitly in jcx-s1/s2/s4/s5 Architecture Constraints; jcx-s5 is a dedicated verification story for this exact constraint",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-11T09:07:58.379Z"
+        }
+      ],
       "epics": [
         {
           "id": "journey-map-and-placeholder-trigger",
@@ -40121,42 +40149,52 @@
             {
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
-              "stage": "definition",
-              "health": "green",
-              "updatedAt": "2026-10-11T08:55:26.290Z",
-              "complexity": 3
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-10-11T09:06:35.546Z",
+              "complexity": 3,
+              "reviewStatus": "has-findings",
+              "highFindings": 0
             },
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "definition",
-              "health": "green",
-              "updatedAt": "2026-10-11T08:55:26.291Z",
-              "complexity": 2
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-10-11T09:06:47.759Z",
+              "complexity": 2,
+              "reviewStatus": "has-findings",
+              "highFindings": 0
             },
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
-              "updatedAt": "2026-10-11T08:55:26.291Z",
-              "complexity": 2
+              "updatedAt": "2026-10-11T09:07:00.674Z",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "definition",
-              "health": "green",
-              "updatedAt": "2026-10-11T08:55:26.291Z",
-              "complexity": 2
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-10-11T09:07:12.274Z",
+              "complexity": 2,
+              "reviewStatus": "has-findings",
+              "highFindings": 0
             },
             {
               "slug": "jcx-s5",
               "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
-              "updatedAt": "2026-10-11T08:55:26.291Z",
-              "complexity": 1
+              "updatedAt": "2026-10-11T09:07:26.862Z",
+              "complexity": 1,
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
