@@ -624,7 +624,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // already verified above (the customer_journeys SELECT that 404s before
   // this point runs).
   var mr = await pool.query(
-    `SELECT id, journey_stage_id, feature_slug, metric_keys FROM feature_customer_journey_stage_mappings WHERE journey_id = $1`,
+    `SELECT id, journey_stage_id, feature_slug, metric_keys, mapping_state FROM feature_customer_journey_stage_mappings WHERE journey_id = $1`,
     [journeyId]
   );
   var mappingsByStage = {};
@@ -686,6 +686,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       return '<p class="sw-stage-annotations-empty">No features mapped</p>';
     }
     return mappings.map(function(m) {
+      // jcx-s1 AC5 -- a placeholder mapping renders with its own distinct
+      // class/label, checked BEFORE the feature-resolution lookup below so
+      // it never falls into (and never shares markup with) the existing
+      // feature-not-found warning row (`/review` finding 1-M1).
+      if (m.mapping_state === 'placeholder') {
+        return '<div class="sw-feature-mapping-row sw-mapping--placeholder">' +
+          '<span class="sw-placeholder-label">Placeholder: ' + escHtml(m.feature_slug) + '</span>' +
+          '<button type="button" class="sw-placeholder-trigger" data-mapping-id="' + escHtml(m.id) + '" data-stage-id="' + escHtml(stageId) + '">Trigger</button>' +
+        '</div>';
+      }
       var feature = featuresBySlug[m.feature_slug];
       if (!feature) {
         return '<div class="sw-feature-mapping-row sw-feature-mapping-row--missing">' +
@@ -784,9 +794,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             reorderControls +
             '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
             '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
+            '<button type="button" class="sw-stage-add-placeholder" data-stage-id="' + escHtml(s.id) + '">Add placeholder</button>' +
           '</div>' +
           '<div class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + escHtml(s.id) + '">' +
             buildDeliveryAnnotations(s.id) +
+            '<form class="sw-placeholder-add-form" data-stage-id="' + escHtml(s.id) + '">' +
+              '<label for="sw-placeholder-name-' + escHtml(s.id) + '">Placeholder name</label>' +
+              '<input type="text" id="sw-placeholder-name-' + escHtml(s.id) + '" class="sw-placeholder-name-input" required>' +
+              '<button type="submit" class="sw-placeholder-add-submit">Create</button>' +
+              '<button type="button" class="sw-placeholder-add-cancel">Cancel</button>' +
+            '</form>' +
           '</div>' +
           '<div class="sw-stage-annotations sw-stage-annotations--customer-experience" data-stage-id="' + escHtml(s.id) + '">' +
             buildCustomerExperienceAnnotations(s) +
@@ -873,6 +890,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-feature-picker-message{font-size:13px;color:var(--ink-2)}' +
       '.sw-feature-picker-empty{font-size:12px;color:var(--muted)}' +
       '.sw-stage-map-feature{margin-left:8px}' +
+      '.sw-stage-add-placeholder{margin-left:8px}' +
+      // jcx-s1 AC5 -- never shares styling with .sw-feature-mapping-warning
+      // (which uses var(--danger)); a placeholder is an intentional,
+      // neutral-state slot, not an error.
+      '.sw-placeholder-label{color:var(--ink-2);font-style:italic}' +
+      '.sw-placeholder-trigger{margin-left:8px}' +
+      '.sw-placeholder-add-form{display:none;margin-top:8px;gap:6px;align-items:center}' +
+      '.sw-placeholder-add-form--open{display:flex}' +
+      '.sw-placeholder-trigger-success{color:var(--success);margin-left:8px}' +
       '.sw-feature-mapping-view{margin-top:4px}' +
       '.sw-feature-mapping-metric-label{display:block;font-size:13px;color:var(--ink);margin:6px 0}' +
       '#sw-feature-mapping-save{margin-left:8px}' +
@@ -1038,7 +1064,8 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
         : '') +
       '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
-      '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>';
+      '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
+      '<button type="button" class="sw-stage-add-placeholder" data-stage-id="' + escHtml(s.id) + '">Add placeholder</button>';
     // ic-s2 AC1/AC2 -- a stage with a stored position (set by a prior drag)
     // uses it; a stage with NULL position (never dragged) falls back to
     // ic-s1's own unchanged auto-layout formula.
@@ -1535,6 +1562,82 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       'Array.prototype.slice.call(document.querySelectorAll(".sw-stage-map-feature")).forEach(function(btn){' +
         'btn.addEventListener("click",function(){fpOpen(btn);});' +
       '});' +
+      // jcx-s1 AC1 -- "Add placeholder" reveals the inline form that lives
+      // in that SAME stage's own Delivery annotations container (not a
+      // modal -- plain DOM visibility toggle, so Tab order and focus
+      // behave exactly like any other in-flow form; no custom focus trap
+      // needed for WCAG 2.1 AA here, unlike the side panel's own modal).
+      // This whole block lives in the feature-picker's OWN <script> IIFE
+      // (a separate closure from the stage-panel/reorder script above --
+      // see this file's own comment at the IIFE boundary), so it cannot
+      // reach that other block's `list`/`reorderError`/`submitJson` locals;
+      // everything here is looked up or defined fresh, matching fmSave's
+      // own raw-fetch convention a few lines above.
+      'var jcxList=document.getElementById("sw-journey-stages");' +
+      'var jcxReorderError=document.getElementById("sw-stage-reorder-error");' +
+      'function jcxShowError(msg){' +
+        'if(!jcxReorderError)return;' +
+        'jcxReorderError.textContent=msg;' +
+        'jcxReorderError.classList.add("sw-stage-reorder-error--visible");' +
+        'setTimeout(function(){jcxReorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+      '}' +
+      'function jcxSubmitJson(url,payload){' +
+        'return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})' +
+          '.then(function(r){' +
+            'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}' +
+            'return r.json();' +
+          '});' +
+      '}' +
+      'Array.prototype.slice.call(document.querySelectorAll(".sw-stage-add-placeholder")).forEach(function(btn){' +
+        'btn.addEventListener("click",function(){' +
+          'var stageId=btn.getAttribute("data-stage-id");' +
+          'var form=document.querySelector(\'.sw-placeholder-add-form[data-stage-id="\'+stageId+\'"]\');' +
+          'if(!form)return;' +
+          'form.classList.add("sw-placeholder-add-form--open");' +
+          'var input=form.querySelector(".sw-placeholder-name-input");' +
+          'if(input)input.focus();' +
+        '});' +
+      '});' +
+      'if(jcxList){' +
+        'jcxList.addEventListener("click",function(ev){' +
+          'var cancelBtn=ev.target.closest&&ev.target.closest(".sw-placeholder-add-cancel");' +
+          'if(cancelBtn){' +
+            'var cform=cancelBtn.closest(".sw-placeholder-add-form");' +
+            'if(cform)cform.classList.remove("sw-placeholder-add-form--open");' +
+            'return;' +
+          '}' +
+          'var triggerBtn=ev.target.closest&&ev.target.closest(".sw-placeholder-trigger");' +
+          'if(triggerBtn){' +
+            'var tMappingId=triggerBtn.getAttribute("data-mapping-id");' +
+            'var tStageId=triggerBtn.getAttribute("data-stage-id");' +
+            'triggerBtn.disabled=true;' +
+            'jcxSubmitJson("/journeys/"+journeyId+"/stages/"+tStageId+"/placeholder-features/"+tMappingId+"/trigger",{_csrf:csrfToken})' +
+              '.then(function(data){' +
+                'var row=triggerBtn.closest(".sw-mapping--placeholder");' +
+                'var success=document.createElement("span");' +
+                'success.className="sw-placeholder-trigger-success";' +
+                'success.textContent="Discovery started: "+(data&&data.featureSlug||"");' +
+                'if(row)row.appendChild(success);' +
+              '})' +
+              '.catch(function(){' +
+                'triggerBtn.disabled=false;' +
+                'jcxShowError("Could not trigger placeholder — please try again");' +
+              '});' +
+          '}' +
+        '});' +
+        'jcxList.addEventListener("submit",function(ev){' +
+          'var form=ev.target.closest&&ev.target.closest(".sw-placeholder-add-form");' +
+          'if(!form)return;' +
+          'ev.preventDefault();' +
+          'var pStageId=form.getAttribute("data-stage-id");' +
+          'var input=form.querySelector(".sw-placeholder-name-input");' +
+          'var name=input?input.value.trim():"";' +
+          'if(!name)return;' +
+          'jcxSubmitJson("/journeys/"+journeyId+"/stages/"+pStageId+"/placeholder-features",{name:name,_csrf:csrfToken})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(){jcxShowError("Could not add placeholder — please try again");});' +
+        '});' +
+      '}' +
       'window.swFilterFeaturePicker=function(){' +
         'if(!fpSearch)return;' +
         'var q=(fpSearch.value||"").trim().toLowerCase();' +

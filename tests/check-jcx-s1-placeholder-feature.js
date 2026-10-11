@@ -4,6 +4,20 @@
 // Story: artefacts/2026-10-11-journey-cx-redesign/stories/jcx-s1.md
 const assert = require('assert');
 const path = require('path');
+const fs = require('fs');
+
+// Mirrors check-ep2-s3-delivery-view.js's own withMockedPipelineState --
+// handleGetJourneyCanvas always reads pipeline-state.json fresh (ADR-029);
+// this keeps the AC5 render test deterministic regardless of the real file's
+// contents.
+function withMockedPipelineState(jsonString, fn) {
+  var orig = fs.readFileSync;
+  fs.readFileSync = function(p, enc) {
+    if (String(p).indexOf('pipeline-state.json') !== -1) { return jsonString; }
+    return orig(p, enc);
+  };
+  try { return fn(); } finally { fs.readFileSync = orig; }
+}
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
@@ -36,6 +50,30 @@ function makeMockPool(stageRows, mappingRows) {
         var row = { id: 'map-' + (mappingRows.length + 1), journey_stage_id: params[0], journey_id: params[1], tenant_id: params[2], feature_slug: params[3], mapping_state: 'placeholder' };
         mappingRows.push(row);
         return Promise.resolve({ rows: [{ id: row.id }] });
+      }
+      return Promise.resolve({ rows: [] });
+    }
+  };
+}
+
+// Mirrors check-ep2-s3-delivery-view.js's own makeCanvasMockPool (same
+// query shapes handleGetJourneyCanvas issues) so AC5's render check can
+// exercise the real handler directly, without needing a shared helper file.
+function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
+  mappingRows = mappingRows || [];
+  return {
+    query: function(sql, params) {
+      var s = String(sql).trim();
+      if (/^SELECT id, name, description FROM customer_journeys/.test(s)) {
+        var match = journeyRow && journeyRow.id === params[0];
+        return Promise.resolve({ rows: match ? [journeyRow] : [] });
+      }
+      if (/^SELECT id, name, position, description/.test(s)) {
+        return Promise.resolve({ rows: stageRows });
+      }
+      if (/^SELECT id, journey_stage_id, feature_slug, metric_keys, mapping_state FROM feature_customer_journey_stage_mappings/.test(s)) {
+        var jMatch = params[0] === journeyRow.id;
+        return Promise.resolve({ rows: jMatch ? mappingRows : [] });
       }
       return Promise.resolve({ rows: [] });
     }
@@ -144,6 +182,29 @@ function makeMockPool(stageRows, mappingRows) {
     fs.rmSync(scratchRoot, { recursive: true, force: true });
     pass('NFR: path traversal guard rejects a crafted placeholder name with 400, no file written');
   } catch (e) { fail('NFR: path traversal guard rejects a crafted placeholder name with 400, no file written', e); }
+
+  // -- AC5: a placeholder mapping renders with its own distinct class/label,
+  // never sharing markup with the existing feature-not-found warning row --
+  try {
+    const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+    const canvasPool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Discover', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'Bulk export', metric_keys: [], mapping_state: 'placeholder' }]
+    );
+    const out = withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      const req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+      const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+      await handleGetJourneyCanvas(req, res, null, canvasPool);
+      return res._b.bodyContent;
+    });
+    const html = await out;
+    const rowMatch = html.match(/<div class="sw-feature-mapping-row sw-mapping--placeholder">[\s\S]*?<\/div>/);
+    assert.ok(rowMatch, 'expected the sw-mapping--placeholder class on the rendered row');
+    assert.ok(rowMatch[0].indexOf('Placeholder: Bulk export') !== -1, 'expected the literal "Placeholder" label with the placeholder name');
+    assert.ok(rowMatch[0].indexOf('sw-feature-mapping-warning') === -1, 'expected the placeholder row\'s OWN markup to never carry the feature-not-found warning class (the page-wide stylesheet defining that class for other rows is a separate concern)');
+    pass('AC5: a placeholder mapping renders with sw-mapping--placeholder + Placeholder label, never the warning markup');
+  } catch (e) { fail('AC5: a placeholder mapping renders with sw-mapping--placeholder + Placeholder label, never the warning markup', e); }
 
   console.log(`\n[jcx-s1-placeholder-feature] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;

@@ -81,6 +81,11 @@ async function migrate(dbOverride) {
   )`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_stage_id ON feature_customer_journey_stage_mappings(journey_stage_id)`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_fjs_mappings_tenant_id ON feature_customer_journey_stage_mappings(tenant_id)`);
+  // jcx-s1 -- mirrored into server.js's own inline migration (the one that
+  // actually runs against a deployed environment, per the ic-hotfix1
+  // incident's own deployed-image mirroring rule). Kept here too so this
+  // script and server.js never drift apart again.
+  await db.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS mapping_state TEXT NOT NULL DEFAULT 'linked'`);
 
   if (isExternal) await db.end();
   console.log('Customer journeys schema migration complete.');

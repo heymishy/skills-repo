@@ -552,6 +552,19 @@ git commit -m "feat: wire placeholder-feature creation and trigger routes in ser
 
 ---
 
+## Task 4 (added during execution): Frontend UI for AC5 + the Accessibility NFR
+
+**Why added:** Tasks 1-3 as originally planned covered only the backend routes (AC1-AC4, NFR Security). AC5 ("renders with a distinct `sw-mapping--placeholder` class and a visible 'Placeholder' label") and the Accessibility NFR ("the 'add placeholder' and 'trigger' affordances meet WCAG 2.1 AA") both require real UI — missed in the original 3-task plan, caught before `/verify-completion` by re-reading the story file.
+
+**Files:**
+- Modify: `src/web-ui/routes/journeys.js` — `buildDeliveryAnnotations` placeholder branch; `mapping_state` added to `handleGetJourneyCanvas`'s own mappings SELECT (the column the placeholder branch reads); "Add placeholder" button on both stage-card render sites; inline `sw-placeholder-add-form`; CSS; click/submit handlers in the feature-picker's own `<script>` IIFE
+- Modify: `scripts/migrate-schema-journeys.js` — mirrored `mapping_state` column add, keeping it in sync with `server.js`'s own inline migration (the `ic-hotfix1` mirroring rule)
+- Modify: `tests/check-ep2-s3-delivery-view.js`, `tests/check-ep3-s1-customer-experience-view.js`, `tests/check-ep3-s2-journey-health.js`, `tests/check-ic-s1-canvas-render.js` — mock-pool SELECT regex updated to include `mapping_state` (the real SQL changed)
+- Modify: `tests/check-ep5-s1-migration.js` — AC3 expected-columns list updated to include `mapping_state`
+- Modify: `tests/check-jcx-s1-placeholder-feature.js` — added AC5 render test
+
+**Scope-boundary bug found and fixed during this task:** the new click/submit handlers were first written assuming access to `list`/`reorderError`/`submitJson`, which only exist in the stage-panel/reorder script's own closure — a SEPARATE `<script>` IIFE from the feature-picker block this code actually lives in (confirmed by locating all three `<script>` tag boundaries directly). Fixed by giving the new code its own local `jcxList`/`jcxReorderError`/`jcxSubmitJson`, matching the existing `fmSave` handler's own raw-`fetch` convention in that same block. Caught by running `check-ep3-s2-journey-health.js`, `check-ep2-s2-feature-mapping-save.js`, and `check-ep2-s1-feature-picker.js` directly (all three failed with "list is not defined" before the fix, all pass after).
+
 ## Final check
 
 - [ ] All 7 tests pass (`node tests/check-jcx-s1-placeholder-feature.js`)
