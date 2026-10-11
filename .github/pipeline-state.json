@@ -39938,7 +39938,7 @@
             {
               "slug": "ic-s3",
               "name": "Canvas pan and zoom",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39963,10 +39963,11 @@
                   "endingSha": "2ac35c88"
                 }
               ],
-              "updatedAt": "2026-10-11T04:04:53.719Z",
+              "updatedAt": "2026-10-11T04:08:09.382Z",
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/973"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/973",
+              "dodStatus": "complete"
             },
             {
               "slug": "ic-s4",
