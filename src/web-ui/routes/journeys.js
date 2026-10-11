@@ -843,6 +843,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}' +
       '#sw-drawflow-canvas{display:none;height:600px;width:100%}' +
       '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
+      // ic-s4 AC1a -- visible, non-default focus style for keyboard-focused
+      // canvas nodes. Selecting our own "sw-drawflow-node" class (not
+      // drawflow's own "drawflow-node") matches this file's existing
+      // sw- prefixed selector convention.
+      '.sw-drawflow-node:focus{outline:3px solid var(--accent);outline-offset:2px}' +
       // ic-s1 AC4 regression (found via live browser render check): the
       // "No stages yet" message lives inside #sw-journey-stages, which the
       // rule immediately above hides on the canvas view -- a 0-stage
@@ -932,7 +937,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     var posY = hasStoredPosition ? s.position_y : 120;
     return '__icS1NodeIds[' + JSON.stringify(s.id) + ']=editor.addNode(' + JSON.stringify(s.id) + ', 1, 1, ' + posX + ', ' + posY + ', ' +
       JSON.stringify('sw-drawflow-node') + ', {}, ' + JSON.stringify(nodeHtml) + ');' +
-      '__icS2NodeIdToStageId[__icS1NodeIds[' + JSON.stringify(s.id) + ']]=' + JSON.stringify(s.id) + ';';
+      '__icS2NodeIdToStageId[__icS1NodeIds[' + JSON.stringify(s.id) + ']]=' + JSON.stringify(s.id) + ';' +
+      // ic-s4 AC1a -- drawflow's own node divs are plain, non-focusable
+      // <div>s (confirmed against node_modules/drawflow/dist/drawflow.min.js's
+      // own addNode source -- it never sets tabindex). WCAG 2.1 AA keyboard
+      // operability requires this explicitly; getElementById uses the exact
+      // same "node-"+id convention addNode's own return value is keyed by.
+      'document.getElementById("node-"+__icS1NodeIds[' + JSON.stringify(s.id) + ']).setAttribute("tabindex","0");';
   }).join('');
   var drawflowConnectionsScript = stages.slice(0, -1).map(function(s, idx) {
     return 'editor.addConnection(__icS1NodeIds[' + JSON.stringify(stages[idx].id) + '], __icS1NodeIds[' + JSON.stringify(stages[idx + 1].id) + '], "output_1", "input_1");';
@@ -1010,6 +1021,34 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
                   'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
                 '}' +
               '});' +
+          '});' +
+          // ic-s4 AC1b/AC4/AC5 -- snap-to-grid keyboard movement (decisions.md
+          // ASSUMPTION entry: fixed-step arrow keys, not continuous drag).
+          // Mutates the SAME live internal position record a mouse-drag
+          // mutates (confirmed against drawflow's own source:
+          // editor.drawflow.drawflow[editor.module].data[nodeId] is the live
+          // record; editor.getNodeFromId deep-clones it, so it cannot be used
+          // to write), then dispatches the EXISTING "nodeMoved" event above --
+          // reusing ic-s2's own persistence route verbatim, not a second
+          // parallel path (DoR constraint).
+          'document.addEventListener("keydown", function(ke){' +
+            'var active=document.activeElement;' +
+            'if(!active||!active.classList||!active.classList.contains("sw-drawflow-node"))return;' +
+            'var STEP=20,dx=0,dy=0;' +
+            'if(ke.key==="ArrowLeft")dx=-STEP;' +
+            'else if(ke.key==="ArrowRight")dx=STEP;' +
+            'else if(ke.key==="ArrowUp")dy=-STEP;' +
+            'else if(ke.key==="ArrowDown")dy=STEP;' +
+            'else return;' +
+            'ke.preventDefault();' +
+            'var nodeId=active.id.slice(5);' +
+            'var nodeData=editor.drawflow.drawflow[editor.module].data[nodeId];' +
+            'if(!nodeData)return;' +
+            'nodeData.pos_x+=dx;nodeData.pos_y+=dy;' +
+            'active.style.left=nodeData.pos_x+"px";' +
+            'active.style.top=nodeData.pos_y+"px";' +
+            'if(typeof editor.updateConnectionNodes==="function")editor.updateConnectionNodes("node-"+nodeId);' +
+            'editor.dispatch("nodeMoved", nodeId);' +
           '});' +
         '}else{' +
           'console.error(\"drawflow failed to load -- canvas view unavailable\");' +
