@@ -39799,8 +39799,8 @@
           "slug": "ic-hotfix1",
           "name": "Fix missing position_x/position_y and feature_customer_journey_stage_mappings migration breaking the journey canvas in deployed environments",
           "track": "short-track",
-          "stage": "implementation-plan",
-          "health": "green",
+          "stage": "branch-complete",
+          "health": "red",
           "reviewStatus": "n/a",
           "testPlan": {
             "status": "written",
@@ -39809,11 +39809,13 @@
             "artefact": "artefacts/2026-10-10-infinite-canvas/test-plans/ic-hotfix1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-11T06:03:36.109Z",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-10-11T06:04:40.055Z",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/975"
         }
       ],
       "metrics": [
