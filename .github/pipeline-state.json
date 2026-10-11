@@ -39972,7 +39972,7 @@
             {
               "slug": "ic-s4",
               "name": "Keyboard-accessible node movement (WCAG 2.1 AA)",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -39987,7 +39987,8 @@
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s4-dor.md"
+              "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s4-dor.md",
+              "updatedAt": "2026-10-11T04:29:54.779Z"
             }
           ]
         }
