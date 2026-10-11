@@ -5,6 +5,35 @@
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
+const { JSDOM } = require('jsdom');
+
+// Extracts and evals EVERY <script>...</script> block journeys.js renders,
+// in document order, into one jsdom window -- the new Add-placeholder/
+// Trigger handlers live in the feature-picker's own <script> IIFE (the
+// SECOND of three blocks), a separate closure from the stage-panel/reorder
+// script's own `list`/`reorderError` (the FIRST block) -- discovered the
+// hard way when an earlier version of this code tried to reuse those and
+// threw "list is not defined" in three unrelated, pre-existing test files.
+// Evaluating all three blocks together, in order, matches real runtime
+// behaviour exactly (the browser does the same) rather than guessing which
+// one this story's own code landed in.
+function extractAllScripts(html) {
+  var scripts = [];
+  var re = /<script>([\s\S]*?)<\/script>/g;
+  var m;
+  while ((m = re.exec(html)) !== null) { scripts.push(m[1]); }
+  assert.ok(scripts.length > 0, 'expected at least one <script> block in the rendered HTML');
+  return scripts;
+}
+function buildDom(bodyContent) {
+  var scripts = extractAllScripts(bodyContent);
+  var dom = new JSDOM('<!DOCTYPE html><html><body>' + bodyContent + '</body></html>', {
+    runScripts: 'outside-only',
+    url: 'http://localhost/journeys/j1'
+  });
+  scripts.forEach(function(src) { dom.window.eval(src); });
+  return dom;
+}
 
 // Mirrors check-ep2-s3-delivery-view.js's own withMockedPipelineState --
 // handleGetJourneyCanvas always reads pipeline-state.json fresh (ADR-029);
@@ -205,6 +234,85 @@ function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
     assert.ok(rowMatch[0].indexOf('sw-feature-mapping-warning') === -1, 'expected the placeholder row\'s OWN markup to never carry the feature-not-found warning class (the page-wide stylesheet defining that class for other rows is a separate concern)');
     pass('AC5: a placeholder mapping renders with sw-mapping--placeholder + Placeholder label, never the warning markup');
   } catch (e) { fail('AC5: a placeholder mapping renders with sw-mapping--placeholder + Placeholder label, never the warning markup', e); }
+
+  // -- (UI, E2E) clicking "Add placeholder" reveals the inline form, and
+  // submitting it POSTs the right payload to the right URL --
+  try {
+    const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+    const canvasPool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Discover', position: 0 }],
+      []
+    );
+    const bodyContent = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      const req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+      const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+      await handleGetJourneyCanvas(req, res, null, canvasPool);
+      return res._b.bodyContent;
+    });
+    const dom = buildDom(bodyContent);
+    const win = dom.window;
+    const fetchCalls = [];
+    win.fetch = function(url, opts) { fetchCalls.push({ url: url, opts: opts }); return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    const addBtn = win.document.querySelector('.sw-stage-add-placeholder');
+    assert.ok(addBtn, 'expected an "Add placeholder" button to exist in the rendered DOM');
+    const form = win.document.querySelector('.sw-placeholder-add-form');
+    assert.ok(form, 'expected the inline placeholder-add form to exist in the rendered DOM');
+    assert.strictEqual(win.getComputedStyle(form).display, 'none', 'expected the form to be hidden before clicking Add placeholder');
+
+    addBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    assert.strictEqual(win.getComputedStyle(form).display, 'flex', 'expected the form to become visible after clicking Add placeholder');
+
+    const input = form.querySelector('.sw-placeholder-name-input');
+    input.value = 'Bulk export';
+    form.dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call on submit');
+    assert.strictEqual(fetchCalls[0].url, '/journeys/j1/stages/s1/placeholder-features', 'expected the fetch to target the placeholder-features route for the right stage');
+    const sentBody = JSON.parse(fetchCalls[0].opts.body);
+    assert.strictEqual(sentBody.name, 'Bulk export', 'expected the typed name to be sent in the POST body');
+    pass('(UI, E2E) clicking "Add placeholder" reveals the form, and submitting it POSTs {name} to the right stage URL');
+  } catch (e) { fail('(UI, E2E) clicking "Add placeholder" reveals the form, and submitting it POSTs {name} to the right stage URL', e); }
+
+  // -- (UI, E2E) clicking "Trigger" on a placeholder row POSTs to the
+  // trigger endpoint and shows the returned featureSlug inline --
+  try {
+    const { handleGetJourneyCanvas } = require('../src/web-ui/routes/journeys');
+    const canvasPool = makeCanvasMockPool(
+      { id: 'j1', name: 'J', description: null },
+      [{ id: 's1', name: 'Discover', position: 0 }],
+      [{ id: 'map-1', journey_stage_id: 's1', feature_slug: 'Bulk export', metric_keys: [], mapping_state: 'placeholder' }]
+    );
+    const bodyContent = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
+      const req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+      const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+      await handleGetJourneyCanvas(req, res, null, canvasPool);
+      return res._b.bodyContent;
+    });
+    const dom = buildDom(bodyContent);
+    const win = dom.window;
+    const fetchCalls = [];
+    win.fetch = function(url, opts) {
+      fetchCalls.push({ url: url, opts: opts });
+      return Promise.resolve({ ok: true, json: function() { return Promise.resolve({ featureSlug: '2026-10-12-bulk-export' }); } });
+    };
+
+    const triggerBtn = win.document.querySelector('.sw-placeholder-trigger');
+    assert.ok(triggerBtn, 'expected a Trigger button to exist on the placeholder row');
+    triggerBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call on Trigger click');
+    assert.strictEqual(fetchCalls[0].url, '/journeys/j1/stages/s1/placeholder-features/map-1/trigger', 'expected the fetch to target the exact mapping\'s trigger URL');
+    assert.strictEqual(fetchCalls[0].opts.method, 'POST', 'expected the fetch to use method POST');
+    assert.strictEqual(triggerBtn.disabled, true, 'expected the Trigger button to be disabled after a successful trigger (prevents double-trigger)');
+    const successEl = win.document.querySelector('.sw-placeholder-trigger-success');
+    assert.ok(successEl, 'expected a success message element to appear after a successful trigger');
+    assert.ok(successEl.textContent.indexOf('2026-10-12-bulk-export') !== -1, 'expected the success message to include the real returned featureSlug');
+    pass('(UI, E2E) clicking "Trigger" POSTs to the mapping\'s trigger URL and shows the returned featureSlug inline');
+  } catch (e) { fail('(UI, E2E) clicking "Trigger" POSTs to the mapping\'s trigger URL and shows the returned featureSlug inline', e); }
 
   console.log(`\n[jcx-s1-placeholder-feature] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
