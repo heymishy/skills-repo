@@ -39988,19 +39988,21 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s4-dor.md",
-              "updatedAt": "2026-10-11T04:40:14.470Z",
+              "updatedAt": "2026-10-11T04:49:46.262Z",
               "tasks": [
                 {
                   "id": "task-1",
                   "name": "Node focusability -- tabindex=\"0\" and a visible :focus style (AC1a)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md"
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md",
+                  "endingSha": "baeb83da"
                 },
                 {
                   "id": "task-2",
                   "name": "Arrow-key snap-to-grid movement, reusing the existing save route (AC1b, AC4, AC5)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md"
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md",
+                  "endingSha": "baeb83da"
                 },
                 {
                   "id": "task-3",
