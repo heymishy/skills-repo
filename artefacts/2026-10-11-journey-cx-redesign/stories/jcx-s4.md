@@ -29,7 +29,7 @@ So that **I don't have to re-type a persona from scratch when one was likely alr
 
 ## Acceptance Criteria
 
-**AC1:** Given a journey associated with a product that has 1+ features with a discovery artefact naming a persona (the "Who It Affects" section), When the operator opens the persona card editor for the first time (no persona set yet), Then the card offers the discovered persona(s) as selectable suggestions — not a blank form with no starting point.
+**AC1:** Given a journey associated with a product that has 1+ features with a discovery artefact naming a persona (the "Who It Affects" section), When the operator opens the persona card editor for the first time (no persona set yet), Then the card offers each discovered persona's raw "Who It Affects" text as a selectable starting point, which the operator then splits into `persona_name`/`persona_role`/`persona_goal` — not a blank form with no starting point, and not automatic structured field extraction (`/review` finding 1-M1, revised 2026-10-11).
 
 **AC2:** Given a product with no features that have a discovery artefact, or none naming a persona, When the operator opens the persona card editor, Then it falls back to a plain blank-entry form — no broken empty state, no error.
 

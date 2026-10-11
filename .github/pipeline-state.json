@@ -40054,7 +40054,7 @@
     {
       "slug": "2026-10-11-journey-cx-redesign",
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -40099,7 +40099,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-11T08:55:26.291Z",
+      "updatedAt": "2026-10-11T09:10:52.587Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
@@ -40150,20 +40150,20 @@
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
               "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-10-11T09:06:35.546Z",
+              "health": "green",
+              "updatedAt": "2026-10-11T09:10:10.383Z",
               "complexity": 3,
-              "reviewStatus": "has-findings",
+              "reviewStatus": "passed",
               "highFindings": 0
             },
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
               "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-10-11T09:06:47.759Z",
+              "health": "green",
+              "updatedAt": "2026-10-11T09:10:20.128Z",
               "complexity": 2,
-              "reviewStatus": "has-findings",
+              "reviewStatus": "passed",
               "highFindings": 0
             },
             {
@@ -40171,7 +40171,7 @@
               "name": "Connected emotion curve across stages on the Customer experience tab",
               "stage": "review",
               "health": "green",
-              "updatedAt": "2026-10-11T09:07:00.674Z",
+              "updatedAt": "2026-10-11T09:10:37.649Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0
@@ -40180,10 +40180,10 @@
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
               "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-10-11T09:07:12.274Z",
+              "health": "green",
+              "updatedAt": "2026-10-11T09:10:29.466Z",
               "complexity": 2,
-              "reviewStatus": "has-findings",
+              "reviewStatus": "passed",
               "highFindings": 0
             },
             {
@@ -40191,7 +40191,7 @@
               "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
               "stage": "review",
               "health": "green",
-              "updatedAt": "2026-10-11T09:07:26.862Z",
+              "updatedAt": "2026-10-11T09:10:42.002Z",
               "complexity": 1,
               "reviewStatus": "passed",
               "highFindings": 0

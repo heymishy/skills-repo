@@ -21,6 +21,7 @@ So that **the journey map itself can be the source of new pipeline work, not jus
 - **ADR-025** — multi-tenancy enforced at the application layer. The new mapping write and the trigger action must both use the same ownership-check-before-mutation pattern (`handlePostFeatureMapping`'s own `SELECT cjs.id FROM customer_journey_stages ... JOIN customer_journeys` check, confirmed by reading `src/web-ui/routes/journeys.js` directly) — 404, not 403, for a cross-tenant stage id.
 - **ADR-011** — Artefact-first: the new `/discovery` run this story triggers must itself go through the normal discovery → benefit-metric → ... chain; this story does not bypass that pipeline, it only seeds Section 1 of a normal `/discovery` session.
 - **D37 (injectable adapter rule, `CLAUDE.md`)** — if the trigger action is wired via an injectable adapter (e.g. a `createSeededDiscovery` function), the stub default must throw, not silently no-op, and the wiring must be a separate task from the handler task.
+- **`feature_slug` dual-use, confirmed via `/review` finding 1-M2 (2026-10-11):** for a placeholder row, `feature_customer_journey_stage_mappings.feature_slug` holds the operator-provided placeholder *name* (free text), not a resolvable feature slug — it only becomes a real, resolvable slug once `jcx-s2`'s own conversion step runs. Any code in this story or `jcx-s2` that queries or joins `feature_slug` against `pipeline-state.json` features MUST check `mapping_state = 'linked'` first — never assume `feature_slug` is resolvable without checking that field.
 
 ## Dependencies
 
@@ -37,7 +38,7 @@ So that **the journey map itself can be the source of new pipeline work, not jus
 
 **AC4:** Given a stage already has 1+ real (non-placeholder) features mapped to it, When the operator adds a placeholder feature to the same stage, Then both coexist — a stage is not limited to either all-real or all-placeholder mappings.
 
-**AC5:** Given a placeholder feature that has not yet been triggered, When the operator views the stage, Then it is visually and functionally distinct from a mapped real feature — not confusable with the existing "feature not found" warning state.
+**AC5:** Given a placeholder feature that has not yet been triggered, When the operator views the stage, Then it renders with a distinct `sw-mapping--placeholder` class and a visible "Placeholder" label — never sharing markup with the existing feature-not-found warning row (`/review` finding 1-M1, revised 2026-10-11).
 
 ## Out of Scope
 
