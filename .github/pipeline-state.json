@@ -40054,7 +40054,7 @@
     {
       "slug": "2026-10-11-journey-cx-redesign",
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -40099,7 +40099,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-11T09:10:52.587Z",
+      "updatedAt": "2026-10-11T09:14:59.045Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
@@ -40149,52 +40149,92 @@
             {
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-11T09:10:10.383Z",
+              "updatedAt": "2026-10-11T09:14:59.044Z",
               "complexity": 3,
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s1-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-11T09:10:20.128Z",
+              "updatedAt": "2026-10-11T09:14:59.045Z",
               "complexity": 2,
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s2-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-11T09:10:37.649Z",
+              "updatedAt": "2026-10-11T09:14:59.045Z",
               "complexity": 2,
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s3-test-plan.md"
+              },
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             },
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-11T09:10:29.466Z",
+              "updatedAt": "2026-10-11T09:14:59.045Z",
               "complexity": 2,
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s4-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "jcx-s5",
               "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-11T09:10:42.002Z",
+              "updatedAt": "2026-10-11T09:14:59.045Z",
               "complexity": 1,
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s5-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
