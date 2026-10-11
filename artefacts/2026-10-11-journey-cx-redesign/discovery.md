@@ -75,6 +75,14 @@ Deferred from MVP: per-stage illustration/storyboard (supplementary, not core pe
 
 - Hamish King — Platform Owner
 
+## Reviewers
+
+- [Pending]
+
+## Approved By
+
+Hamish King — Platform Owner — 2026-10-11
+
 ---
 
 ## /clarify recommendation
