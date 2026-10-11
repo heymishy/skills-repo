@@ -39799,7 +39799,7 @@
           "slug": "ic-hotfix1",
           "name": "Fix missing position_x/position_y and feature_customer_journey_stage_mappings migration breaking the journey canvas in deployed environments",
           "track": "short-track",
-          "stage": "implementation-plan",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "n/a",
           "testPlan": {
@@ -39812,9 +39812,10 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-11T07:32:47.521Z",
+          "updatedAt": "2026-10-11T07:39:49.067Z",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [
