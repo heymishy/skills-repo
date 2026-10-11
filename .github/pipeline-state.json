@@ -39988,7 +39988,7 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-10-infinite-canvas/dor/ic-s4-dor.md",
-              "updatedAt": "2026-10-11T04:49:46.262Z",
+              "updatedAt": "2026-10-11T04:50:24.478Z",
               "tasks": [
                 {
                   "id": "task-1",
@@ -40007,8 +40007,9 @@
                 {
                   "id": "task-3",
                   "name": "E2E spec -- focus style, tab order, full no-mouse walkthrough (AC1a style, AC2, AC3)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md"
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-10-infinite-canvas/plans/ic-s4-plan.md",
+                  "endingSha": "491addb9"
                 }
               ]
             }
