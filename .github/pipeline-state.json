@@ -40199,9 +40199,9 @@
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-12T20:09:05.233Z",
+              "updatedAt": "2026-10-12T20:09:44.392Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40216,7 +40216,9 @@
               "dorStatus": "signed-off",
               "acVerified": 4,
               "acTotal": 4,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/978"
             },
             {
               "slug": "jcx-s3",
