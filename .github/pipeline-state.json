@@ -40078,7 +40078,7 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "jcx-s1 DoD (2026-10-13): jcx-s1 alone only builds the placeholder-creation and trigger-seeds-discovery mechanism -- does not complete the full M2 chain (trigger -> discovery approval -> auto-conversion), since jcx-s2 and jcx-s5 have not shipped yet.",
           "contributingStories": [
             "jcx-s1",
             "jcx-s2",
@@ -40132,9 +40132,9 @@
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer",
           "status": "met",
-          "evidence": "Referenced explicitly in jcx-s1/s2/s4/s5 Architecture Constraints; jcx-s5 is a dedicated verification story for this exact constraint",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-11T09:07:58.379Z"
+          "evidence": "jcx-s1 DoD: AC3 tests confirm both new placeholder-creation and trigger routes check tenant_id at the SQL WHERE-clause level before any mutation, matching handlePostFeatureMapping own established pattern (404 not 403 for cross-tenant ids).",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-12T19:09:28.182Z"
         }
       ],
       "epics": [
@@ -40149,9 +40149,9 @@
             {
               "slug": "jcx-s1",
               "name": "Add a placeholder feature to a journey stage, triggering a new seeded discovery",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-11T19:58:03.458Z",
+              "updatedAt": "2026-10-12T19:09:05.749Z",
               "complexity": 3,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40168,7 +40168,9 @@
               "acTotal": 5,
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/976"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/976",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
               "slug": "jcx-s2",
