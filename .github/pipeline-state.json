@@ -40102,7 +40102,7 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "jcx-s1 DoD (2026-10-13): jcx-s1 alone only builds the placeholder-creation and trigger-seeds-discovery mechanism -- does not complete the full M2 chain (trigger -> discovery approval -> auto-conversion), since jcx-s2 and jcx-s5 have not shipped yet.",
+          "evidence": "jcx-s2 DoD (2026-10-13): jcx-s1 + jcx-s2 together now build the full mechanism M2 requires (trigger + conversion-on-approval). Still not yet measured -- jcx-s5 (authorization hardening) has not shipped, and no real operator has completed a full trigger-to-approval cycle in production.",
           "contributingStories": [
             "jcx-s1",
             "jcx-s2",
@@ -40156,9 +40156,9 @@
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer",
           "status": "met",
-          "evidence": "jcx-s1 DoD: AC3 tests confirm both new placeholder-creation and trigger routes check tenant_id at the SQL WHERE-clause level before any mutation, matching handlePostFeatureMapping own established pattern (404 not 403 for cross-tenant ids).",
+          "evidence": "jcx-s2 DoD: checkPlaceholderConversions SELECT itself filters by tenant_id, so a cross-tenant mapping is never even reachable by the UPDATE step -- confirmed by the NFR test (zero UPDATE calls for a different tenant's mapping).",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-12T19:09:28.182Z"
+          "assessedAt": "2026-10-12T20:31:46.370Z"
         }
       ],
       "epics": [
@@ -40199,9 +40199,9 @@
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-12T20:09:44.392Z",
+              "updatedAt": "2026-10-12T20:31:39.134Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40217,8 +40217,10 @@
               "acVerified": 4,
               "acTotal": 4,
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/978"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/978",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
               "slug": "jcx-s3",
