@@ -66,7 +66,7 @@ function makeMockPool(stageRows, mappingRows) {
         var found = stageRows.find(function(r) { return r.id === params[0] && params[2] === 'org-1'; });
         return Promise.resolve({ rows: found ? [{ id: found.id }] : [] });
       }
-      if (/^SELECT id, name, description, emotion, pain_points, opportunities, touchpoints/.test(s)) {
+      if (/^SELECT cjs\.id, cjs\.name, cjs\.description, cjs\.emotion, cjs\.pain_points, cjs\.opportunities, cjs\.touchpoints/.test(s)) {
         var foundFull = stageRows.find(function(r) { return r.id === params[0] && params[2] === 'org-1'; });
         return Promise.resolve({ rows: foundFull ? [foundFull] : [] });
       }
