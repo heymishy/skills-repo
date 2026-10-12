@@ -69,4 +69,25 @@ function seedDiscoveryFromStage(stage, placeholderName, repoRoot) {
   return { featureSlug: featureSlug };
 }
 
-module.exports = { seedDiscoveryFromStage, slugify };
+/**
+ * jcx-s2 -- reads artefacts/[featureSlug]/discovery.md and returns true if
+ * its own Status field reads "Approved" -- the exact convention
+ * /discovery's own SKILL.md documents ("update the Status field to
+ * 'Approved'"). Returns false (never throws) if the file doesn't exist or
+ * has no matching line -- an abandoned, never-approved trigger must resolve
+ * to a quiet no-op, not an error.
+ * @param {string} featureSlug
+ * @param {string} repoRoot
+ * @returns {boolean}
+ */
+function isDiscoveryApproved(featureSlug, repoRoot) {
+  try {
+    var discoveryPath = path.join(path.resolve(repoRoot), 'artefacts', featureSlug, 'discovery.md');
+    var content = fs.readFileSync(discoveryPath, 'utf8');
+    return /^\*\*Status:\*\*\s*Approved\s*$/m.test(content);
+  } catch (_) {
+    return false;
+  }
+}
+
+module.exports = { seedDiscoveryFromStage, slugify, isDiscoveryApproved };

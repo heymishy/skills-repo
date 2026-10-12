@@ -602,6 +602,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       // rows implicitly mean "linked" (default), matching their own
       // pre-jcx-s1 meaning exactly -- no backfill needed.
       return _creditsPool.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS mapping_state TEXT NOT NULL DEFAULT 'linked'`);
+    }).then(function() {
+      // jcx-s2 -- links a placeholder mapping to the real feature slug its
+      // own trigger created, so the conversion-check (handleGetJourneyCanvas)
+      // can find "this mapping's own discovery.md" without guessing. Set by
+      // handleTriggerPlaceholderFeature at trigger time; read (never
+      // written) by the conversion-check. Null for every mapping that was
+      // never triggered (a real/linked mapping, or a placeholder never
+      // clicked).
+      return _creditsPool.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS triggered_feature_slug TEXT`);
     }).then(function() { console.log('feature_customer_journey_stage_mappings table ready'); })
       .catch(function(err) { console.error('feature_customer_journey_stage_mappings table migration failed:', err.message); });
     // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list

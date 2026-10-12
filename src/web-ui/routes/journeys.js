@@ -546,8 +546,49 @@ async function handleTriggerPlaceholderFeature(req, res, _next, pool, _opts) {
   var result = _discoverySeeder.seedDiscoveryFromStage(stage, mapping.feature_slug, repoRoot);
   if (result.error) { badRequest(result.error); return; }
 
+  // jcx-s2 -- persist the provenance link this story's own conversion-check
+  // depends on. Best-effort: if this UPDATE fails, the trigger itself still
+  // succeeded (the discovery.md is already on disk) -- log and continue
+  // rather than erroring the whole request over a bookkeeping write.
+  try {
+    await pool.query(
+      `UPDATE feature_customer_journey_stage_mappings SET triggered_feature_slug = $1 WHERE id = $2 AND tenant_id = $3`,
+      [result.featureSlug, mappingId, tenantId]
+    );
+  } catch (e) { console.error('jcx-s2: failed to persist triggered_feature_slug:', e.message); }
+
   if (res.status) { res.status(200).json({ featureSlug: result.featureSlug }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ featureSlug: result.featureSlug })); }
+}
+
+/**
+ * jcx-s2 -- for every placeholder mapping in this journey that was
+ * triggered (triggered_feature_slug set), check whether its own seeded
+ * discovery.md has since been approved; if so, convert it to linked. A
+ * pure reconciliation pass, not a push-based event -- called from
+ * handleGetJourneyCanvas on every page load (AC2's own "when the operator
+ * views the stage"). Tenant-scoped at the SELECT itself (D13/ADR-025) --
+ * never a separate per-row ownership check, since the query's own WHERE
+ * clause already excludes every other tenant's rows.
+ * @param {object} pool
+ * @param {string} journeyId
+ * @param {string} tenantId
+ * @param {string} repoRoot
+ */
+async function checkPlaceholderConversions(pool, journeyId, tenantId, repoRoot) {
+  var mr = await pool.query(
+    `SELECT id, triggered_feature_slug FROM feature_customer_journey_stage_mappings WHERE mapping_state = 'placeholder' AND triggered_feature_slug IS NOT NULL AND journey_id = $1 AND tenant_id = $2`,
+    [journeyId, tenantId]
+  );
+  for (var i = 0; i < (mr.rows || []).length; i++) {
+    var row = mr.rows[i];
+    if (_discoverySeeder.isDiscoveryApproved(row.triggered_feature_slug, repoRoot)) {
+      await pool.query(
+        `UPDATE feature_customer_journey_stage_mappings SET mapping_state = 'linked', feature_slug = $1 WHERE id = $2 AND tenant_id = $3`,
+        [row.triggered_feature_slug, row.id, tenantId]
+      );
+    }
+  }
 }
 
 /**
@@ -617,6 +658,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     [journeyId]
   );
   var stages = sr.rows || [];
+
+  // jcx-s2 -- reconcile placeholder -> linked conversions before rendering,
+  // so a mapping converted via its own approved discovery shows as linked
+  // on THIS page load, not only after a second reload (AC2). repoRoot was
+  // already computed above for the pipeline-state.json read -- reused here,
+  // not recomputed.
+  await checkPlaceholderConversions(pool, journeyId, tenantId, repoRoot);
 
   // ep2-s3 -- read every feature-to-stage mapping for this journey in one
   // query, grouped client-side (in this function) by stage id. No separate
@@ -1840,4 +1888,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions };

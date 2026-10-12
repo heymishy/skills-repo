@@ -86,6 +86,8 @@ async function migrate(dbOverride) {
   // incident's own deployed-image mirroring rule). Kept here too so this
   // script and server.js never drift apart again.
   await db.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS mapping_state TEXT NOT NULL DEFAULT 'linked'`);
+  // jcx-s2 -- same mirroring rule, same reasoning.
+  await db.query(`ALTER TABLE feature_customer_journey_stage_mappings ADD COLUMN IF NOT EXISTS triggered_feature_slug TEXT`);
 
   if (isExternal) await db.end();
   console.log('Customer journeys schema migration complete.');

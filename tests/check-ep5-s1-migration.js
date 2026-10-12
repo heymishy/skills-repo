@@ -116,7 +116,7 @@ async function run() {
     {
       const res = await db.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'feature_customer_journey_stage_mappings'`);
       const cols = res.rows.map(function(r) { return r.column_name; });
-      const expected = ['id', 'journey_stage_id', 'journey_id', 'tenant_id', 'feature_slug', 'metric_keys', 'created_at', 'mapping_state'];
+      const expected = ['id', 'journey_stage_id', 'journey_id', 'tenant_id', 'feature_slug', 'metric_keys', 'created_at', 'mapping_state', 'triggered_feature_slug'];
       ok(cols.length === expected.length, 'AC3: feature_customer_journey_stage_mappings has exactly ' + expected.length + ' columns, got ' + cols.length);
       expected.forEach(function(c) { ok(cols.indexOf(c) !== -1, 'AC3: feature_customer_journey_stage_mappings has column ' + c); });
 
