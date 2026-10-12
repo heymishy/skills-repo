@@ -787,6 +787,75 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     );
   }
 
+  // jcx-s3 -- Y-position per emotion value: SVG y increases downward, so
+  // SMALLER y = visually HIGHER. positive highest, negative lowest,
+  // neutral/mixed in the middle -- matches AC1's own "conventional
+  // emotion-curve shape" wording.
+  var EMOTION_CURVE_Y = { positive: 20, neutral: 60, mixed: 60, negative: 100 };
+  var EMOTION_CURVE_COLOR = { positive: 'var(--success)', negative: 'var(--danger)', mixed: 'var(--warn)', neutral: 'var(--ink-2)' };
+  var EMOTION_CURVE_STEP_X = 120;
+  var EMOTION_CURVE_HEIGHT = 140;
+
+  // jcx-s3 -- a connected emotion curve spanning ALL stages, rendered ONCE
+  // (not per-stage, unlike buildCustomerExperienceAnnotations). AC1-AC5.
+  function buildEmotionCurve(stagesForCurve) {
+    var anyEmotionSet = stagesForCurve.some(function(s) { return !!s.emotion; });
+    if (!anyEmotionSet) {
+      // AC3 -- the common case (confirmed via /clarify: existing emotion
+      // data is mostly empty today), not a rare edge case.
+      return '<div class="sw-emotion-curve-empty" role="status">' +
+        '<p>No emotion data yet. Set each stage\'s emotion in the side panel to see the journey\'s emotional arc.</p>' +
+      '</div>';
+    }
+
+    var padding = 40;
+    var width = Math.max(400, padding * 2 + (stagesForCurve.length - 1) * EMOTION_CURVE_STEP_X);
+    var stepX = stagesForCurve.length > 1 ? (width - padding * 2) / (stagesForCurve.length - 1) : 0;
+
+    var points = stagesForCurve.map(function(s, idx) {
+      return {
+        x: padding + idx * stepX,
+        y: s.emotion ? EMOTION_CURVE_Y[s.emotion] : EMOTION_CURVE_Y.neutral,
+        emotion: s.emotion,
+        name: s.name
+      };
+    });
+
+    // AC2 -- the connecting line passes through EVERY stage's own x
+    // position (including unset ones, at a neutral fallback y) so the two
+    // set stages on either side of a gap still connect correctly around
+    // it, per the AC's own wording -- never silently skipped.
+    var polylinePoints = points.map(function(p) { return p.x + ',' + p.y; }).join(' ');
+
+    var pointsHtml = points.map(function(p) {
+      if (!p.emotion) {
+        return '<g class="sw-emotion-curve-point sw-emotion-curve-point--unset">' +
+          '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="none" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="2,2"/>' +
+          '<text x="' + p.x + '" y="' + (p.y + 24) + '" text-anchor="middle" font-size="11" fill="var(--ink-2)">No data yet</text>' +
+        '</g>';
+      }
+      return '<g class="sw-emotion-curve-point sw-emotion-curve-point--' + escHtml(p.emotion) + '">' +
+        '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="' + EMOTION_CURVE_COLOR[p.emotion] + '"/>' +
+        '<text x="' + p.x + '" y="' + (p.y + 24) + '" text-anchor="middle" font-size="11" fill="var(--ink)">' + escHtml(p.emotion) + '</text>' +
+      '</g>';
+    }).join('');
+
+    // AC5 -- the SVG is decorative once this text alternative exists.
+    var a11yListHtml = '<ul class="sw-emotion-curve-a11y-list sw-visually-hidden">' +
+      points.map(function(p) {
+        return '<li>' + escHtml(p.name) + ': ' + (p.emotion ? escHtml(p.emotion) : 'No emotion data yet') + '</li>';
+      }).join('') +
+    '</ul>';
+
+    return '<div class="sw-emotion-curve">' +
+      '<svg width="' + width + '" height="' + EMOTION_CURVE_HEIGHT + '" viewBox="0 0 ' + width + ' ' + EMOTION_CURVE_HEIGHT + '" aria-hidden="true">' +
+        '<polyline points="' + polylinePoints + '" fill="none" stroke="var(--line)" stroke-width="2"/>' +
+        pointsHtml +
+      '</svg>' +
+      a11yListHtml +
+    '</div>';
+  }
+
   // ep3-s2 -- health state is a pure function of the already-fetched
   // mappingsByStage data (ep2-s3) -- no new query. Zero mappings => none
   // (❌); >=1 mapping, none with metric_keys.length>0 => partial (⚠️);
@@ -1057,6 +1126,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'padding:6px 12px;font-size:13px;color:var(--ink-2);cursor:pointer}' +
       '.sw-canvas-view-toggle-btn--active{background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}' +
       '.sw-journey-canvas--view-customer-experience .sw-stage-annotations--customer-experience{display:block}' +
+      '.sw-emotion-curve{overflow-x:auto}' +
+      '.sw-emotion-curve-empty{padding:24px;text-align:center;color:var(--ink-2)}' +
+      '.sw-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
       '.sw-stage-cx-row{margin:4px 0}' +
       '.sw-stage-emotion-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff}' +
       '.sw-stage-emotion-chip--positive{background:var(--success)}' +
@@ -1139,6 +1211,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<h1>' + escHtml(journey.name) + '</h1>' +
       viewToggleHtml +
       summaryBarHtml +
+      '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-emotion-curve-container">' +
+        buildEmotionCurve(stages) +
+      '</div>' +
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
       '</div>' +
