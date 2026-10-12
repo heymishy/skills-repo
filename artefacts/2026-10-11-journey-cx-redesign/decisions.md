@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-13 | RISK-ACCEPT | jcx-s3 /verify-completion**
+**Decision:** Accept unit-test evidence (AC4, AC5) plus a correctly-written, actually-executed E2E spec (`tests/e2e/jcx-s3-emotion-curve.spec.js`, AC1-AC3) as verification, even though the E2E spec currently fails — not on anything this story's own code does, but on the separate, already-tracked dashboard CSRF gap (the same one named in `ncdv-s2-dod.md`'s own Follow-up Actions).
+**Context:** `ncdv-s2` (merged earlier this session) fixed the local-Postgres SSL block that had made E2E execution for this entire feature area impractical to even attempt locally. Ran `jcx-s3`'s own new E2E spec against a real local Postgres for the first time — it got past the SSL layer entirely and failed at the EXACT point `ncdv-s2-dod.md` predicted: `page.request.get('/')` (the authenticated home page, which redirects to `/dashboard`) embeds no CSRF token in either format `extractCsrfToken` checks for.
+**Rationale:** This is not evidence of a defect in `jcx-s3`'s own implementation — the spec's own setup helper (`seedJourneyWithStages`, copied verbatim from `ic-s4`'s own established pattern) fails before it ever reaches the emotion-curve code under test. Confirmed by direct reproduction: the exact same failure, at the exact same line, for the exact same reason already documented. Fixing the dashboard's own shared-shell CSRF gap is explicitly out of scope for this story (and was already deferred as its own pending action during `ncdv-s2`).
+**Made by:** Claude (session), consistent with the operator's own established pattern this session of proceeding on real, substantiated evidence rather than re-blocking on an already-known, separately-tracked gap.
+**Revisit trigger:** Once the dashboard CSRF gap (tracked in `ncdv-s2-dod.md`'s own Follow-up Actions) is fixed, re-run `tests/e2e/jcx-s3-emotion-curve.spec.js` for real and update this entry's outcome — the spec itself needs no changes, only the environment it runs against.
+
+---
+
 **2026-10-13 | RISK-ACCEPT | jcx-s2 /verify-completion**
 **Decision:** Accept integration-style tests (real `fs.readFileSync` against real temp `discovery.md` fixtures, mocked DB layer) as the verification evidence for jcx-s2's 4 ACs, without a live-browser re-check of the Delivery view actually showing the converted state.
 **Context:** Same blockers as `jcx-hotfix1`: the local dev server's HTTP-hang issue remains unresolved, and the staging session logged out after the hotfix redeploy — re-authenticating requires driving a GitHub/Google OAuth flow this session does not do, and the operator already explicitly chose to skip live re-verification once in this same session rather than sign in again.
