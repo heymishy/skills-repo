@@ -40056,7 +40056,31 @@
       "name": "Journey CX/UX redesign — journey map + placeholder-feature trigger",
       "stage": "definition-of-ready",
       "health": "green",
-      "stories": [],
+      "stories": [
+        {
+          "id": "jcx-hotfix1",
+          "slug": "jcx-hotfix1",
+          "name": "Fix ambiguous id column crashing the placeholder-feature trigger in production",
+          "track": "short-track",
+          "stage": "definition-of-done",
+          "health": "green",
+          "reviewStatus": "n/a",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 9,
+            "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix1-test-plan.md"
+          },
+          "acTotal": 1,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-10-12T19:53:01.825Z",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "dodStatus": "complete"
+        }
+      ],
       "metrics": [
         {
           "id": "m1",

@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-13 | RISK-ACCEPT | jcx-hotfix1 /definition-of-done**
+**Decision:** Accept the fix for the production-breaking ambiguous-column bug (PR #977, merged and deployed to staging) without a second post-deploy live-browser re-verification.
+**Context:** The ORIGINAL bug was found and root-caused via a genuine live Chrome check against `wuce-staging.fly.dev` (real 500, confirmed via `flyctl logs`). After the fix deployed, the staging session had logged out (machine restart cleared it) — re-verifying live would have required driving a GitHub/Google OAuth sign-in, which this session does not do on policy grounds. Asked the operator whether to sign in themselves or skip the re-check; operator chose to skip it and trust the root-cause fix.
+**Rationale:** The fix is a narrow, mechanical correction (qualifying `id` with the `cjs.` table alias in a single SELECT) that directly addresses the exact error string (`column reference "id" is ambiguous`) captured in the real staging logs — there is no ambiguity about whether this specific fix resolves that specific error; this is a different risk profile than a RISK-ACCEPT on a behaviorally complex change. Unit tests (9/9) and the full repo suite both pass post-fix.
+**Made by:** Claude (session), confirmed by Hamish King (Platform Owner) via `AskUserQuestion`.
+**Revisit trigger:** If any further `placeholder-features/.../trigger` failures are reported in production/staging logs, re-open this and perform the live re-check that was skipped here.
+
+---
+
 **2026-10-11 | RISK-ACCEPT | jcx-s1 /verify-completion**
 **Decision:** Accept jsdom-based `dispatchEvent`-driven DOM interaction tests (including `getComputedStyle` visibility assertions) as the verification evidence for AC5 (placeholder renders with a distinct `sw-mapping--placeholder` class + "Placeholder" label) and the story's own Accessibility NFR (keyboard-operable Add-placeholder/Trigger affordances, visible focus state), in place of a real browser check or a Playwright spec.
 **Context:** `/verify-completion`'s mandatory live-browser render check could not be performed — the local dev server starts and logs "listening on port 3000" with a real Postgres connection, but every HTTP request to it (including a cold `GET /`, before any of jcx-s1's own routes are reached) never completes. Reproduced two independent ways (the Claude-in-Chrome extension's `navigate`, and a plain `curl`); both show the TCP connection reach `ESTABLISHED` (confirmed via `netstat`) but no HTTP response ever returns. Not explained by this story's own diff. No Playwright spec exists for this new UI either (it is new this story).
