@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-13 | RISK-ACCEPT | jcx-s2 /verify-completion**
+**Decision:** Accept integration-style tests (real `fs.readFileSync` against real temp `discovery.md` fixtures, mocked DB layer) as the verification evidence for jcx-s2's 4 ACs, without a live-browser re-check of the Delivery view actually showing the converted state.
+**Context:** Same blockers as `jcx-hotfix1`: the local dev server's HTTP-hang issue remains unresolved, and the staging session logged out after the hotfix redeploy — re-authenticating requires driving a GitHub/Google OAuth flow this session does not do, and the operator already explicitly chose to skip live re-verification once in this same session rather than sign in again.
+**Rationale:** jcx-s2's own conversion logic (`checkPlaceholderConversions`, `isDiscoveryApproved`) is tested against REAL file-system reads, not mocked status checks — a materially stronger evidence class than jcx-s1's own jsdom-only AC5 substitution, and directly addresses the exact class of bug (real-world behavior diverging from mocked behavior) that caused `jcx-hotfix1`. The visual rendering of a converted `linked` mapping reuses `jcx-s1`'s own already-tested `buildDeliveryAnnotations` rendering path unchanged — this story's diff never touches that function, only the underlying `mapping_state`/`feature_slug` values it reads.
+**Made by:** Claude (session), consistent with the operator's own just-made decision on `jcx-hotfix1` to proceed without a live re-check given the same blockers.
+**Revisit trigger:** Once the local dev server's hang is fixed or a fresh staging login is available, perform a real end-to-end live check: trigger a placeholder, manually approve its discovery, reload the canvas, confirm the Delivery view actually shows it as linked.
+
+---
+
 **2026-10-13 | RISK-ACCEPT | jcx-hotfix1 /definition-of-done**
 **Decision:** Accept the fix for the production-breaking ambiguous-column bug (PR #977, merged and deployed to staging) without a second post-deploy live-browser re-verification.
 **Context:** The ORIGINAL bug was found and root-caused via a genuine live Chrome check against `wuce-staging.fly.dev` (real 500, confirmed via `flyctl logs`). After the fix deployed, the staging session had logged out (machine restart cleared it) — re-verifying live would have required driving a GitHub/Google OAuth sign-in, which this session does not do on policy grounds. Asked the operator whether to sign in themselves or skip the re-check; operator chose to skip it and trust the root-cause fix.
