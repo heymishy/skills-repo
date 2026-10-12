@@ -40199,21 +40199,24 @@
             {
               "slug": "jcx-s2",
               "name": "Placeholder mapping auto-converts to linked once its triggered discovery is approved",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-11T09:28:31.057Z",
+              "updatedAt": "2026-10-12T20:09:05.233Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s2-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "acVerified": 4,
+              "acTotal": 4,
+              "verifyStatus": "passed"
             },
             {
               "slug": "jcx-s3",
