@@ -40079,6 +40079,29 @@
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "dodStatus": "complete"
+        },
+        {
+          "id": "ncdv-s2",
+          "slug": "ncdv-s2",
+          "name": "Stop forcing SSL on local Postgres connections (journey-store-pg.js)",
+          "track": "short-track",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "n/a",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 2,
+            "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/ncdv-s2-test-plan.md"
+          },
+          "acTotal": 1,
+          "acVerified": 1,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-10-12T21:39:24.981Z",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/979"
         }
       ],
       "metrics": [
