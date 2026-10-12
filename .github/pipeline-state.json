@@ -40250,9 +40250,9 @@
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-12T22:51:06.871Z",
+              "updatedAt": "2026-10-12T22:51:46.137Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40267,7 +40267,9 @@
               "dorStatus": "signed-off",
               "acVerified": 5,
               "acTotal": 5,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/980"
             },
             {
               "slug": "jcx-s4",
