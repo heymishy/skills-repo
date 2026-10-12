@@ -527,7 +527,7 @@ async function handleTriggerPlaceholderFeature(req, res, _next, pool, _opts) {
   }
 
   var sr = await pool.query(
-    `SELECT id, name, description, emotion, pain_points, opportunities, touchpoints
+    `SELECT cjs.id, cjs.name, cjs.description, cjs.emotion, cjs.pain_points, cjs.opportunities, cjs.touchpoints
      FROM customer_journey_stages cjs
      JOIN customer_journeys cj ON cjs.journey_id = cj.id
      WHERE cjs.id = $1 AND cjs.journey_id = $2 AND cj.tenant_id = $3`,
