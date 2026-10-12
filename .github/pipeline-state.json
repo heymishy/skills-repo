@@ -40114,7 +40114,7 @@
           "baseline": "Not matching (operator's own direct feedback, 2026-10-11)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "jcx-s3 DoD (2026-10-13): the headline structural change (emotion curve) identified by the CX spike as most load-bearing is now shipped. Still not yet measured -- needs jcx-s4 (persona card) to also ship, then a direct operator judgment solicitation against the 3 reference examples.",
           "contributingStories": [
             "jcx-s3",
             "jcx-s4"
@@ -40141,7 +40141,7 @@
           "baseline": "Unknown exact % -- confirmed mostly empty today via /clarify; real baseline query pending before release",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "jcx-s3 DoD (2026-10-13): the curve's own empty-state markers are the mechanism expected to prompt operators to fill in missing emotion data. Still not yet measured -- needs real post-merge usage time.",
           "contributingStories": [
             "jcx-s3",
             "jcx-s4"
@@ -40250,15 +40250,15 @@
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-12T22:51:46.137Z",
+              "updatedAt": "2026-10-12T23:24:11.055Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
+                "totalTests": 4,
                 "passing": 4,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s3-test-plan.md"
               },
@@ -40268,8 +40268,10 @@
               "acVerified": 5,
               "acTotal": 5,
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/980"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/980",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
               "slug": "jcx-s4",
