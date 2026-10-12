@@ -14,14 +14,36 @@ function _setPoolForTesting(pool) {
   _poolForTesting = pool;
 }
 
+// ncdv-s2 -- a plain local Postgres (the only realistic local E2E target --
+// Neon/staging/production are never pointed at from a developer machine)
+// rejects an SSL handshake outright ("The server does not support SSL
+// connections"), which this pool's own hardcoded `ssl: {...}` option forces
+// unconditionally -- root-caused during ic-s4's own DoD (see
+// workspace/learnings.md, 2026-10-11) and left as a known gap since. Scoped
+// to localhost/127.0.0.1/::1 specifically (never inferred from anything
+// else) so every real Neon/staging/production DATABASE_URL keeps its
+// EXACT existing behaviour -- this never changes what SSL options reach a
+// non-local host.
+function _isLocalHost(connectionString) {
+  try {
+    var hostname = new URL(connectionString).hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+  } catch (_) {
+    return false;
+  }
+}
+
 function _getPool() {
   if (_poolForTesting) return _poolForTesting;
   if (!_pool && process.env.DATABASE_URL) {
-    _pool = new Pool({
+    var poolConfig = {
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
       connectionTimeoutMillis: 10000
-    });
+    };
+    if (!_isLocalHost(process.env.DATABASE_URL)) {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    }
+    _pool = new Pool(poolConfig);
   }
   return _pool;
 }
