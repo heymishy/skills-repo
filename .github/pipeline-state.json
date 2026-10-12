@@ -40250,21 +40250,24 @@
             {
               "slug": "jcx-s3",
               "name": "Connected emotion curve across stages on the Customer experience tab",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-11T09:29:02.934Z",
+              "updatedAt": "2026-10-12T22:51:06.871Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s3-test-plan.md"
               },
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "acVerified": 5,
+              "acTotal": 5,
+              "verifyStatus": "passed"
             },
             {
               "slug": "jcx-s4",
