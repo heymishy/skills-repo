@@ -1,0 +1,23 @@
+{
+  "storyId": "jcx-s5",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/982",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "acTotal": 5,
+  "acVerified": 5,
+  "regressionSuite": {
+    "file": "tests/check-jcx-s5-authorization.js",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "fullSuite": {
+    "filesRun": 744,
+    "failed": 0,
+    "newFailures": 0,
+    "note": "AC5 (no regression) verified by this full run; 0 failures"
+  }
+}

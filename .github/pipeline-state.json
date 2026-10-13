@@ -40304,19 +40304,21 @@
               "name": "Authorization and tenant-scoping verification across the placeholder-trigger and mapping-conversion surface",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-11T09:30:20.557Z",
+              "updatedAt": "2026-10-13T02:17:08.144Z",
               "complexity": 1,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s5-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/982"
             }
           ]
         }
