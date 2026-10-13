@@ -40156,7 +40156,7 @@
           "slug": "jcx-hotfix4",
           "name": "Fix \"+ Add stage\" being invisible and unfocusable outside the Delivery view",
           "track": "short-track",
-          "stage": "test-plan",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 1,
           "acVerified": 0,
@@ -40168,8 +40168,10 @@
             "passing": 3,
             "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix4-test-plan.md"
           },
-          "updatedAt": "2026-10-13T19:13:35.433Z",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-10-13T19:41:50.381Z",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/986"
         }
       ],
       "metrics": [
