@@ -40114,7 +40114,7 @@
           "baseline": "Not matching (operator's own direct feedback, 2026-10-11)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "jcx-s3 DoD (2026-10-13): the headline structural change (emotion curve) identified by the CX spike as most load-bearing is now shipped. Still not yet measured -- needs jcx-s4 (persona card) to also ship, then a direct operator judgment solicitation against the 3 reference examples.",
+          "evidence": "jcx-s4 DoD (2026-10-13): both headline structural changes identified by the CX spike (jcx-s3 emotion curve, jcx-s4 persona card) are now shipped. Still not yet measured -- the real measurement event is a direct operator judgment solicitation against the 3 reference examples, not yet performed.",
           "contributingStories": [
             "jcx-s3",
             "jcx-s4"
@@ -40276,9 +40276,9 @@
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-13T00:49:17.845Z",
+              "updatedAt": "2026-10-13T01:48:22.205Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40294,8 +40294,10 @@
               "acVerified": 5,
               "acTotal": 5,
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/981"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/981",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
               "slug": "jcx-s5",
