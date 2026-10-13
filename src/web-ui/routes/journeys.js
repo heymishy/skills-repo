@@ -1363,7 +1363,17 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       // columns grow via 1fr to fill the track when it fits -- AC3's
       // ≥80%-fill case -- and floor at 200px, overflowing/scrolling once
       // stageCount*200px exceeds the track's own width -- AC7).
-      '.sw-cx-swimlane-grid{display:block}' +
+      // jcx-hotfix3 -- NOT '.sw-cx-swimlane-grid{display:block}' here: that
+      // rule has the SAME specificity as the base '.sw-stage-annotations
+      // {display:none}' rule (both single-class selectors) and, coming
+      // later in the stylesheet, would unconditionally win -- making the
+      // grid visible in EVERY view (confirmed live: the Delivery tab showed
+      // both the grid AND the old delivery stage list simultaneously).
+      // Visibility is entirely handled by the existing, correctly-scoped
+      // '.sw-journey-canvas--view-customer-experience .sw-stage-annotations
+      // --customer-experience{display:block}' rule below -- the grid
+      // container already carries both classes, so no extra rule is needed
+      // or safe to add here.
       '.sw-cx-grid-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);padding:10px 0}' +
       '.sw-cx-grid-row:last-of-type{border-bottom:none}' +
       '.sw-cx-row-label{flex:0 0 150px;width:150px;font-size:11px;font-weight:700;text-transform:uppercase;' +
