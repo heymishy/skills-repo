@@ -40237,7 +40237,7 @@
           "id": "journey-map-and-placeholder-trigger",
           "slug": "journey-map-and-placeholder-trigger",
           "name": "Journey maps read as journey maps, and can seed new pipeline work directly from a stage",
-          "status": "in-progress",
+          "status": "complete",
           "slicingStrategy": "Walking skeleton",
           "humanOversight": "Medium",
           "stories": [
@@ -40373,9 +40373,9 @@
             {
               "slug": "jcx-s6",
               "name": "Restructure the Customer experience tab into a real timeline + swimlane grid",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-13T17:44:06.216Z",
+              "updatedAt": "2026-10-13T18:39:50.365Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40423,8 +40423,9 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/984"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/984",
+              "dodStatus": "complete"
             }
           ]
         }
