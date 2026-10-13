@@ -4122,8 +4122,13 @@ async function router(req, res) {
       await handleTriggerPlaceholderFeature(req, res, null, _pshPool);
     });
 
-  } else if (pathname.match(/^\/journeys\/[^/]+\/persona$/) && req.method === 'PATCH') {
+  } else if (pathname.match(/^\/journeys\/[^/]+\/persona$/) && req.method === 'POST') {
     // jcx-s4 — save the journey's own persona fields (2026-10-11-journey-cx-redesign)
+    // jcx-hotfix2 — was 'PATCH', but journeys.js's own jcxSubmitJson client
+    // helper always sends POST (shared with jcx-s1's two routes, which are
+    // correctly wired as POST); the mismatch meant every real save fell
+    // through to the catch-all sign-in-page handler and silently no-opped
+    // in production. Confirmed live via wuce-staging.fly.dev.
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => {
       let _rnvOk = false;
