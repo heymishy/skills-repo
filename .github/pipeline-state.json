@@ -40276,9 +40276,9 @@
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-13T00:48:37.327Z",
+              "updatedAt": "2026-10-13T00:49:17.845Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40293,7 +40293,9 @@
               "dorStatus": "signed-off",
               "acVerified": 5,
               "acTotal": 5,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/981"
             },
             {
               "slug": "jcx-s5",
