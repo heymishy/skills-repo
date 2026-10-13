@@ -40150,6 +40150,26 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/985",
           "dodStatus": "complete"
+        },
+        {
+          "id": "jcx-hotfix4",
+          "slug": "jcx-hotfix4",
+          "name": "Fix \"+ Add stage\" being invisible and unfocusable outside the Delivery view",
+          "track": "short-track",
+          "stage": "test-plan",
+          "health": "green",
+          "acTotal": 1,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix4-test-plan.md"
+          },
+          "updatedAt": "2026-10-13T19:13:35.433Z",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [
