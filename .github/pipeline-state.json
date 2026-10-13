@@ -40214,7 +40214,7 @@
           "id": "journey-map-and-placeholder-trigger",
           "slug": "journey-map-and-placeholder-trigger",
           "name": "Journey maps read as journey maps, and can seed new pipeline work directly from a stage",
-          "status": "complete",
+          "status": "in-progress",
           "slicingStrategy": "Walking skeleton",
           "humanOversight": "Medium",
           "stories": [
@@ -40346,6 +40346,19 @@
               "verifyStatus": "passed",
               "acVerified": 5,
               "acTotal": 5
+            },
+            {
+              "slug": "jcx-s6",
+              "name": "Restructure the Customer experience tab into a real timeline + swimlane grid",
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-10-13T07:13:25.085Z",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "dorStatus": "not-started"
             }
           ]
         }
