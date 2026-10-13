@@ -40127,6 +40127,26 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/983",
           "dodStatus": "complete"
+        },
+        {
+          "id": "jcx-hotfix3",
+          "slug": "jcx-hotfix3",
+          "name": "Fix CSS specificity bug making the swimlane grid visible in every view",
+          "track": "short-track",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 1,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "updatedAt": "2026-10-13T18:07:19.435Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 0,
+            "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix3-test-plan.md"
+          }
         }
       ],
       "metrics": [
