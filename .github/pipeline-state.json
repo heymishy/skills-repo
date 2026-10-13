@@ -40350,15 +40350,23 @@
             {
               "slug": "jcx-s6",
               "name": "Restructure the Customer experience tab into a real timeline + swimlane grid",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-13T07:13:25.085Z",
+              "updatedAt": "2026-10-13T07:15:37.776Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
-              "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true,
-              "dorStatus": "not-started"
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "dorStatus": "not-started",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s6-test-plan.md"
+              },
+              "acTotal": 6,
+              "acVerified": 0
             }
           ]
         }
