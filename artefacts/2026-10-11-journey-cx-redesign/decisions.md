@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-13 | RISK-ACCEPT | jcx-s4 /verify-completion**
+**Decision:** Accept unit/integration-test evidence plus real jsdom DOM-interaction tests (11/11 passing — including the suggestion-click → reference-text and the submit → save-payload flows, both against the real rendered DOM) as verification, without a live-browser confirmation in an actual Chrome session.
+**Context:** Same unresolved blockers as `jcx-hotfix1`/`jcx-s2`/`jcx-s3` earlier this session: the local dev server's HTTP-hang issue remains unfixed, and no fresh staging/local authenticated browser session is available this session.
+**Rationale:** Added 2 jsdom E2E tests (matching `jcx-s1`'s own established `extractAllScripts`/`buildDom` convention) specifically to close the interaction-wiring gap an earlier draft of this entry named as the residual risk: clicking a real suggestion button in a real DOM fills the reference textarea with the exact raw text (never auto-split into the 3 fields, confirmed directly — AC1's own constraint), and submitting the real form POSTs all 3 field values to the correct route. Combined with AC4's own real-handler render test, every piece of this story's logic — scan, suggestion click, form submit, save, and saved-state re-render — now has DOM-level or handler-level evidence. Only a literal pixel-rendered browser session is missing, not any functional behavior.
+**Made by:** Claude (session), consistent with the operator's own established pattern this session.
+**Revisit trigger:** Once the local dev server's hang is fixed or a fresh browser session is available, perform a real interactive check as a final visual/UX confirmation — the functional behavior is already evidenced, this would only catch a CSS/layout-level issue.
+
+---
+
 **2026-10-13 | RISK-ACCEPT | jcx-s3 /verify-completion**
 **Decision:** Accept unit-test evidence (AC4, AC5) plus a correctly-written, actually-executed E2E spec (`tests/e2e/jcx-s3-emotion-curve.spec.js`, AC1-AC3) as verification, even though the E2E spec currently fails — not on anything this story's own code does, but on the separate, already-tracked dashboard CSRF gap (the same one named in `ncdv-s2-dod.md`'s own Follow-up Actions).
 **Context:** `ncdv-s2` (merged earlier this session) fixed the local-Postgres SSL block that had made E2E execution for this entire feature area impractical to even attempt locally. Ran `jcx-s3`'s own new E2E spec against a real local Postgres for the first time — it got past the SSL layer entirely and failed at the EXACT point `ncdv-s2-dod.md` predicted: `page.request.get('/')` (the authenticated home page, which redirects to `/dashboard`) embeds no CSRF token in either format `extractCsrfToken` checks for.

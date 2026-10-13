@@ -10,6 +10,7 @@ var { renderShellWithNav } = require('./products');
 var { escHtml } = require('../utils/html-shell');
 var _csrf = require('../middleware/csrf'); // jcg-s1 -- CSRF guard, matching every other mutating form handler in this app
 var _repoRootAdapter = require('../adapters/repo-root'); // ep2-s1 -- reuses the existing local-disk repo-root pattern, already used by products.js
+var _personaScanner = require('../adapters/persona-scanner'); // jcx-s4 -- pure file-read scan of discovery.md's own "Who It Affects" sections
 
 // ep1-s3 -- allowlist of customer_journey_stages columns the side panel may
 // PATCH. Never interpolate a client-supplied field name into SQL without
@@ -592,6 +593,65 @@ async function checkPlaceholderConversions(pool, journeyId, tenantId, repoRoot) 
 }
 
 /**
+ * jcx-s4 -- resolves product_id -> feature_slugs via the SAME query
+ * pattern already established in products.js's own getProductsNavSummary
+ * (confirmed by reading that function directly), then delegates to the
+ * pure-file-read scanner. AC2: a product with zero associated
+ * feature_slugs (or none with a readable "Who It Affects") returns an
+ * empty array, not an error.
+ * @param {object} pool
+ * @param {string} productId
+ * @param {string} repoRoot
+ * @returns {Promise<Array<{featureSlug: string, personaText: string}>>}
+ */
+async function getPersonaSuggestions(pool, productId, repoRoot) {
+  if (!productId) return [];
+  var fr = await pool.query(
+    `SELECT DISTINCT feature_slug FROM journeys WHERE product_id = $1 AND feature_slug IS NOT NULL`,
+    [productId]
+  );
+  var featureSlugs = fr.rows.map(function(r) { return r.feature_slug; });
+  return _personaScanner.scanForPersonas(featureSlugs, repoRoot);
+}
+
+/**
+ * PATCH /journeys/:id/persona — save the journey's own persona fields.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handlePatchJourneyPersona(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var personaName = req.body && req.body.persona_name;
+  var personaRole = req.body && req.body.persona_role;
+  var personaGoal = req.body && req.body.persona_goal;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+
+  // jcx-s4 -- same ownership-check-before-mutation / 404-not-403 cross-tenant
+  // policy as every other mutating route in this file (decisions.md D13).
+  var jr = await pool.query(`SELECT id FROM customer_journeys WHERE id = $1 AND tenant_id = $2`, [journeyId, tenantId]);
+  if (!jr.rows[0]) { notFound('journey not found'); return; }
+
+  await pool.query(
+    `UPDATE customer_journeys SET persona_name = $1, persona_role = $2, persona_goal = $3 WHERE id = $4`,
+    [personaName || null, personaRole || null, personaGoal || null, journeyId]
+  );
+
+  if (res.status) { res.status(200).json({ persona_name: personaName, persona_role: personaRole, persona_goal: personaGoal }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ persona_name: personaName, persona_role: personaRole, persona_goal: personaGoal })); }
+}
+
+/**
  * GET /journeys/:id — the journey canvas shell (name + stage list + "+ Add stage").
  * @param {object} req
  * @param {object} res
@@ -641,7 +701,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   }, {}));
 
   var r = await pool.query(
-    `SELECT id, name, description FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
+    `SELECT id, name, description, product_id, persona_name, persona_role, persona_goal FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
     [journeyId, tenantId]
   );
   var journey = r.rows[0];
@@ -651,6 +711,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Journey not found'); }
     return;
   }
+
+  // jcx-s4 -- AC4: a journey with a persona already saved never re-offers
+  // the original discovery-sourced suggestions -- the scan only runs when
+  // nothing is saved yet.
+  var personaSuggestions = journey.persona_name
+    ? []
+    : await getPersonaSuggestions(pool, journey.product_id, repoRoot);
 
   var sr = await pool.query(
     `SELECT id, name, position, description, customer_actions, touchpoints, channel, emotion, pain_points, opportunities, moment_of_truth, position_x, position_y
@@ -795,6 +862,56 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   var EMOTION_CURVE_COLOR = { positive: 'var(--success)', negative: 'var(--danger)', mixed: 'var(--warn)', neutral: 'var(--ink-2)' };
   var EMOTION_CURVE_STEP_X = 120;
   var EMOTION_CURVE_HEIGHT = 140;
+
+  // jcx-s4 -- persona card (saved state) + editor (unset state, or opened
+  // via "Edit persona"). AC1-AC5. Suggestions are RAW TEXT only -- never
+  // auto-split into the 3 fields (per /review finding 1-M1); clicking a
+  // suggestion fills a read-only reference area the operator reads while
+  // typing the 3 fields themselves (wired in the client script below).
+  function buildPersonaCard(journeyRow, suggestions) {
+    var hasSavedPersona = !!journeyRow.persona_name;
+
+    var cardHtml = hasSavedPersona
+      ? '<div class="sw-persona-card">' +
+          '<p class="sw-persona-card-row"><strong>Name:</strong> ' + escHtml(journeyRow.persona_name) + '</p>' +
+          '<p class="sw-persona-card-row"><strong>Role:</strong> ' + (journeyRow.persona_role ? escHtml(journeyRow.persona_role) : 'Not set') + '</p>' +
+          '<p class="sw-persona-card-row"><strong>Goal:</strong> ' + (journeyRow.persona_goal ? escHtml(journeyRow.persona_goal) : 'Not set') + '</p>' +
+          '<button type="button" class="sw-persona-edit-btn">Edit persona</button>' +
+        '</div>'
+      : '';
+
+    // AC2 -- an empty suggestions array (no features, or none with a
+    // readable "Who It Affects") falls through to a plain blank form,
+    // never an error or broken empty state.
+    var suggestionsHtml = suggestions.length > 0
+      ? '<div class="sw-persona-suggestions">' +
+          '<p>Suggested starting points, from this product\'s own features:</p>' +
+          '<ul>' +
+            suggestions.map(function(s) {
+              return '<li><button type="button" class="sw-persona-suggestion-btn" data-text="' + escHtml(s.personaText) + '">' +
+                escHtml(s.featureSlug) + ': ' + escHtml(s.personaText) +
+              '</button></li>';
+            }).join('') +
+          '</ul>' +
+        '</div>'
+      : '';
+
+    var editorHtml =
+      '<form class="sw-persona-editor-form' + (hasSavedPersona ? '' : ' sw-persona-editor-form--open') + '">' +
+        suggestionsHtml +
+        '<textarea class="sw-persona-reference-text" readonly aria-label="Selected suggestion reference text"></textarea>' +
+        '<label for="sw-persona-name-input">Name</label>' +
+        '<input type="text" id="sw-persona-name-input" class="sw-persona-name-input" value="' + escHtml(journeyRow.persona_name || '') + '">' +
+        '<label for="sw-persona-role-input">Role</label>' +
+        '<input type="text" id="sw-persona-role-input" class="sw-persona-role-input" value="' + escHtml(journeyRow.persona_role || '') + '">' +
+        '<label for="sw-persona-goal-input">Goal</label>' +
+        '<input type="text" id="sw-persona-goal-input" class="sw-persona-goal-input" value="' + escHtml(journeyRow.persona_goal || '') + '">' +
+        '<button type="submit" class="sw-persona-save-btn">Save persona</button>' +
+        (hasSavedPersona ? '<button type="button" class="sw-persona-cancel-btn">Cancel</button>' : '') +
+      '</form>';
+
+    return '<div class="sw-persona-card-container">' + cardHtml + editorHtml + '</div>';
+  }
 
   // jcx-s3 -- a connected emotion curve spanning ALL stages, rendered ONCE
   // (not per-stage, unlike buildCustomerExperienceAnnotations). AC1-AC5.
@@ -1126,6 +1243,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'padding:6px 12px;font-size:13px;color:var(--ink-2);cursor:pointer}' +
       '.sw-canvas-view-toggle-btn--active{background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}' +
       '.sw-journey-canvas--view-customer-experience .sw-stage-annotations--customer-experience{display:block}' +
+      '.sw-persona-card{padding:12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px}' +
+      '.sw-persona-card-row{margin:4px 0}' +
+      '.sw-persona-editor-form{display:none;flex-direction:column;gap:6px;max-width:400px}' +
+      '.sw-persona-editor-form--open{display:flex}' +
+      '.sw-persona-suggestions ul{list-style:none;margin:4px 0;padding:0}' +
+      '.sw-persona-suggestion-btn{display:block;width:100%;text-align:left;padding:6px;margin-bottom:4px;' +
+        'border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}' +
+      '.sw-persona-reference-text{display:none;width:100%;min-height:50px;font-size:12px;color:var(--ink-2)}' +
+      '.sw-persona-reference-text--visible{display:block}' +
       '.sw-emotion-curve{overflow-x:auto}' +
       '.sw-emotion-curve-empty{padding:24px;text-align:center;color:var(--ink-2)}' +
       '.sw-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
@@ -1211,6 +1337,9 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<h1>' + escHtml(journey.name) + '</h1>' +
       viewToggleHtml +
       summaryBarHtml +
+      '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-persona-card-outer">' +
+        buildPersonaCard(journey, personaSuggestions) +
+      '</div>' +
       '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-emotion-curve-container">' +
         buildEmotionCurve(stages) +
       '</div>' +
@@ -1761,6 +1890,43 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             '.catch(function(){jcxShowError("Could not add placeholder — please try again");});' +
         '});' +
       '}' +
+      // jcx-s4 -- the persona card lives OUTSIDE #sw-journey-stages (a
+      // sibling, alongside the emotion curve), so it cannot reuse jcxList's
+      // own delegated listeners above -- delegating on document instead.
+      'document.addEventListener("click",function(ev){' +
+        'var editBtn=ev.target.closest&&ev.target.closest(".sw-persona-edit-btn");' +
+        'if(editBtn){' +
+          'var form=document.querySelector(".sw-persona-editor-form");' +
+          'if(form)form.classList.add("sw-persona-editor-form--open");' +
+          'return;' +
+        '}' +
+        'var cancelBtn=ev.target.closest&&ev.target.closest(".sw-persona-cancel-btn");' +
+        'if(cancelBtn){' +
+          'var cform=cancelBtn.closest(".sw-persona-editor-form");' +
+          'if(cform)cform.classList.remove("sw-persona-editor-form--open");' +
+          'return;' +
+        '}' +
+        'var suggestionBtn=ev.target.closest&&ev.target.closest(".sw-persona-suggestion-btn");' +
+        'if(suggestionBtn){' +
+          'var sform=suggestionBtn.closest(".sw-persona-editor-form");' +
+          'var refText=sform&&sform.querySelector(".sw-persona-reference-text");' +
+          'if(refText){' +
+            'refText.value=suggestionBtn.getAttribute("data-text")||"";' +
+            'refText.classList.add("sw-persona-reference-text--visible");' +
+          '}' +
+        '}' +
+      '});' +
+      'document.addEventListener("submit",function(ev){' +
+        'var form=ev.target.closest&&ev.target.closest(".sw-persona-editor-form");' +
+        'if(!form)return;' +
+        'ev.preventDefault();' +
+        'var name=form.querySelector(".sw-persona-name-input").value.trim();' +
+        'var role=form.querySelector(".sw-persona-role-input").value.trim();' +
+        'var goal=form.querySelector(".sw-persona-goal-input").value.trim();' +
+        'jcxSubmitJson("/journeys/"+journeyId+"/persona",{persona_name:name,persona_role:role,persona_goal:goal,_csrf:csrfToken})' +
+          '.then(function(){window.location.reload();})' +
+          '.catch(function(){jcxShowError("Could not save persona — please try again");});' +
+      '});' +
       'window.swFilterFeaturePicker=function(){' +
         'if(!fpSearch)return;' +
         'var q=(fpSearch.value||"").trim().toLowerCase();' +
@@ -1963,4 +2129,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions, getPersonaSuggestions, handlePatchJourneyPersona };

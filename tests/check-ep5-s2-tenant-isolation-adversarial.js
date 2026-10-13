@@ -48,7 +48,7 @@ function fail(name, err, acId) { console.error(`  [FAIL] ${name}: ${err.message 
     const pool = {
       query: function(sql, params) {
         const s = norm(sql);
-        if (/^SELECT id, name, description FROM customer_journeys WHERE id = \$1 AND tenant_id = \$2$/.test(s)) {
+        if (/^SELECT id, name, description, product_id, persona_name, persona_role, persona_goal FROM customer_journeys WHERE id = \$1 AND tenant_id = \$2$/.test(s)) {
           const match = journeyRow.id === params[0] && journeyRow.tenant_id === params[1];
           return Promise.resolve({ rows: match ? [journeyRow] : [] });
         }

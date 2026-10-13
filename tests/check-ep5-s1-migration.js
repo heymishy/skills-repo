@@ -84,8 +84,8 @@ async function run() {
       const res = await db.query(`SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name = 'customer_journeys'`);
       const cols = {};
       res.rows.forEach(function(r) { cols[r.column_name] = r.is_nullable; });
-      ok(Object.keys(cols).length === 7, 'AC1: customer_journeys has exactly 7 columns, got ' + Object.keys(cols).length);
-      ['id', 'tenant_id', 'name', 'description', 'product_id', 'created_at', 'updated_at'].forEach(function(c) {
+      ok(Object.keys(cols).length === 10, 'AC1: customer_journeys has exactly 10 columns, got ' + Object.keys(cols).length);
+      ['id', 'tenant_id', 'name', 'description', 'product_id', 'persona_name', 'persona_role', 'persona_goal', 'created_at', 'updated_at'].forEach(function(c) {
         ok(c in cols, 'AC1: customer_journeys has column ' + c);
       });
       ok(cols.tenant_id === 'NO' && cols.name === 'NO', 'AC1: tenant_id and name are NOT NULL');

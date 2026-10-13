@@ -40276,21 +40276,26 @@
             {
               "slug": "jcx-s4",
               "name": "Persona card on the Customer experience tab, pre-populated from the product's own discovery artefacts",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-11T09:29:34.652Z",
+              "updatedAt": "2026-10-13T00:49:17.845Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0,
+                "totalTests": 11,
+                "passing": 11,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s4-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "acVerified": 5,
+              "acTotal": 5,
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/981"
             },
             {
               "slug": "jcx-s5",

@@ -89,7 +89,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     return {
       query: function(sql, params) {
         var s = String(sql).trim();
-        if (/^SELECT id, name, description FROM customer_journeys/.test(s)) {
+        if (/^SELECT id, name, description, product_id, persona_name, persona_role, persona_goal FROM customer_journeys/.test(s)) {
           var match = journeyRow && journeyRow.id === params[0];
           return Promise.resolve({ rows: match ? [journeyRow] : [] });
         }
