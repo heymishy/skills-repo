@@ -83,6 +83,14 @@ function buildDom(bodyContent) {
 (async function() {
   var journeys = require('../src/web-ui/routes/journeys');
 
+  // jcx-s6 update: ep3-s1's own original per-stage annotation block (one
+  // box per stage, "emotion chip" + pain points + opportunities stacked
+  // inside it) was replaced by jcx-s6's own swimlane grid -- the same
+  // underlying user-facing guarantee (emotion/pain points/opportunities
+  // always visible, "Not set" when null, never omitted) now holds across
+  // the grid's own rows rather than inside one per-stage block. Re-pointed
+  // here, not weakened -- see artefacts/2026-10-11-journey-cx-redesign/
+  // stories/jcx-s6.md and spikes/post-release-cx-visual-gap-outcome.md.
   try {
     var pool = makeCanvasMockPool(
       { id: 'j1', name: 'J', description: null },
@@ -93,32 +101,48 @@ function buildDom(bodyContent) {
       await journeys.handleGetJourneyCanvas(req, res, null, pool);
       return res._b.bodyContent;
     });
-    assert.ok(/<span[^>]*class="[^"]*sw-stage-emotion-chip--positive[^"]*"[^>]*>positive<\/span>/.test(out), 'expected an emotion chip element with the sw-stage-emotion-chip--positive modifier class, containing the literal text "positive"');
-    assert.ok(out.indexOf('Checkout is slow') !== -1, 'expected the pain points text to render');
-    assert.ok(out.indexOf('Add express checkout') !== -1, 'expected the opportunities text to render');
-    pass('AC1, AC4 -- Customer experience view shows emotion chip+label, pain points, and opportunities');
-  } catch (e) { fail('AC1, AC4 -- Customer experience view shows emotion chip+label, pain points, and opportunities', e); }
+    // Emotion now renders via the connected curve (jcx-s3/jcx-s6), not a
+    // standalone chip -- same underlying guarantee (text label, never
+    // colour alone, MC-A11Y-02), different element.
+    assert.ok(/sw-emotion-curve-point--positive[\s\S]*?>positive</.test(out), 'expected the emotion curve to carry a text label "positive" for this stage (now via the curve, not a standalone chip)');
+    var painPointsIdx = out.indexOf('sw-cx-grid-row--pain-points');
+    var opportunitiesIdx = out.indexOf('sw-cx-grid-row--opportunities');
+    assert.ok(painPointsIdx !== -1 && opportunitiesIdx !== -1, 'expected pain-points and opportunities swimlane rows to exist');
+    assert.ok(out.slice(painPointsIdx, opportunitiesIdx).indexOf('Checkout is slow') !== -1, 'expected the pain points text to render inside the pain-points row');
+    var endOfOpportunitiesRow = out.indexOf('</ul>', opportunitiesIdx); // the grid's own a11y list closes the row sequence
+    assert.ok(out.slice(opportunitiesIdx, endOfOpportunitiesRow !== -1 ? endOfOpportunitiesRow : out.length).indexOf('Add express checkout') !== -1, 'expected the opportunities text to render inside the opportunities row');
+    pass('AC1, AC4 -- Customer experience view shows emotion (via the curve), pain points, and opportunities');
+  } catch (e) { fail('AC1, AC4 -- Customer experience view shows emotion (via the curve), pain points, and opportunities', e); }
 
   try {
+    // A second, emotion-set stage is required alongside s2 -- if EVERY
+    // stage has emotion null, buildEmotionCurve renders the whole-curve
+    // empty state (jcx-s3 AC3), not a per-point "unset" marker (jcx-s3
+    // AC2), which needs at least one OTHER stage with emotion set.
     var pool = makeCanvasMockPool(
       { id: 'j1', name: 'J', description: null },
-      [{ id: 's2', name: 'Stage 2', position: 0, emotion: null, pain_points: null, opportunities: null }]
+      [
+        { id: 's1', name: 'Stage 1', position: 0, emotion: 'positive', pain_points: 'X', opportunities: 'Y' },
+        { id: 's2', name: 'Stage 2', position: 1, emotion: null, pain_points: null, opportunities: null }
+      ]
     );
     var out = await withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
       var { req, res } = makeMockReqRes();
       await journeys.handleGetJourneyCanvas(req, res, null, pool);
       return res._b.bodyContent;
     });
-    var cxBlockMarker = 'sw-stage-annotations--customer-experience" data-stage-id="s2"';
-    var cxBlockStart = out.indexOf(cxBlockMarker);
-    assert.ok(cxBlockStart !== -1, 'expected to find the Customer experience annotation block for stage s2');
-    var cxBlockEnd = out.indexOf('</div>', cxBlockStart);
-    assert.ok(cxBlockEnd !== -1, 'expected a closing </div> for the Customer experience annotation block');
-    var cxBlockHtml = out.slice(cxBlockStart, cxBlockEnd);
-    var matches = cxBlockHtml.match(/Not set/g) || [];
-    assert.strictEqual(matches.length, 3, 'expected exactly 3 occurrences of "Not set" within the Customer experience annotation block (one per row: emotion, pain points, opportunities), got ' + matches.length);
-    pass('AC2 -- a stage with nothing set shows "Not set" for all three rows, none omitted');
-  } catch (e) { fail('AC2 -- a stage with nothing set shows "Not set" for all three rows, none omitted', e); }
+    // Emotion's own "nothing set" marker is the curve's distinct
+    // sw-emotion-curve-point--unset + "No data yet" text (jcx-s3 AC2),
+    // not a "Not set" string -- pain points/opportunities still use the
+    // plain "Not set" fallback text, each in its own row.
+    assert.ok(/sw-emotion-curve-point--unset[\s\S]*?No data yet/.test(out), 'expected the curve\'s own distinct "No data yet" marker for the unset emotion, not a silent gap');
+    var painPointsIdx = out.indexOf('sw-cx-grid-row--pain-points');
+    var opportunitiesIdx = out.indexOf('sw-cx-grid-row--opportunities');
+    var endOfOpportunitiesRow = out.indexOf('</ul>', opportunitiesIdx);
+    assert.ok(out.slice(painPointsIdx, opportunitiesIdx).indexOf('Not set') !== -1, 'expected "Not set" in the pain-points row');
+    assert.ok(out.slice(opportunitiesIdx, endOfOpportunitiesRow !== -1 ? endOfOpportunitiesRow : out.length).indexOf('Not set') !== -1, 'expected "Not set" in the opportunities row');
+    pass('AC2 -- a stage with nothing set shows its own "no data" marker for every row, none omitted');
+  } catch (e) { fail('AC2 -- a stage with nothing set shows its own "no data" marker for every row, none omitted', e); }
 
   try {
     var pool = makeCanvasMockPool(
