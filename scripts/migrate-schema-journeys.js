@@ -42,6 +42,10 @@ async function migrate(dbOverride) {
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customer_journeys_tenant_id ON customer_journeys(tenant_id)`);
+  // jcx-s4 -- same mirroring rule, same reasoning.
+  await db.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_name TEXT`);
+  await db.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_role TEXT`);
+  await db.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_goal TEXT`);
 
   await db.query(`CREATE TABLE IF NOT EXISTS customer_journey_stages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

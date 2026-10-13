@@ -114,7 +114,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, handlePatchJourneyPersona } = require('./routes/journeys');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -522,6 +522,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() {
       return _creditsPool.query(`CREATE INDEX IF NOT EXISTS idx_customer_journeys_tenant_id ON customer_journeys(tenant_id)`);
+    }).then(function() {
+      // jcx-s4 -- new end-customer persona concept (distinct from this
+      // platform's own pipeline-discovery personas), confirmed via an
+      // ADR-026 reuse-check. Nullable -- a journey with no persona set yet
+      // falls through to the suggestion-editor UI, not an error.
+      return _creditsPool.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_name TEXT`);
+    }).then(function() {
+      return _creditsPool.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_role TEXT`);
+    }).then(function() {
+      return _creditsPool.query(`ALTER TABLE customer_journeys ADD COLUMN IF NOT EXISTS persona_goal TEXT`);
     }).then(function() { console.log('customer_journeys table ready'); })
       .catch(function(err) { console.error('customer_journeys table migration failed:', err.message); });
     // csb-s1 — Auto-migrate customer_journey_stages table (D37: no new adapter
@@ -4110,6 +4120,16 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handleTriggerPlaceholderFeature(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/persona$/) && req.method === 'PATCH') {
+    // jcx-s4 — save the journey's own persona fields (2026-10-11-journey-cx-redesign)
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePatchJourneyPersona(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/journeys\/[^/]+\/stages-order$/) && req.method === 'PATCH') {
