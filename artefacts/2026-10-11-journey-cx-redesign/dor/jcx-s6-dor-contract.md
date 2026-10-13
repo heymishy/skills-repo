@@ -10,6 +10,7 @@ In `src/web-ui/routes/journeys.js`'s own Customer-experience-tab rendering branc
 - Add a dedicated outer container class (`sw-cx-swimlane-grid`) to the Customer-experience-tab's own render branch only — the Delivery tab's own render branch (same function, different conditional) keeps its existing class/layout unchanged.
 - Rebuild the existing accessible-linear-structure mechanism (the visually-hidden `<ul>` `jcx-s3` built for the emotion curve alone) to cover the full new grid — one list item per stage, each carrying that stage's full data set (emotion, pain points, opportunities, actions, touchpoints), in document order.
 - New CSS for the grid/row/column layout, added inline in the same `<style>` block `journeys.js` already uses for this page (no new stylesheet, no new build step).
+- Each swimlane row's own content area becomes a horizontally-scrollable region (`overflow-x: auto`, `tabindex="0"` for keyboard reachability) once stage count exceeds what the viewport fits; the row's own label column stays outside that scrollable region (a separate, non-scrolling grid column) so it never scrolls away — added per spike finding 9 / `jcx-s6` AC7.
 
 ## What will NOT be built
 
@@ -29,6 +30,7 @@ In `src/web-ui/routes/journeys.js`'s own Customer-experience-tab rendering branc
 | AC4 (actions/touchpoints surfaced) | Unit (rendered `bodyContent` contains both fields) + Integration (confirms no query-shape change) | unit, integration |
 | AC5 (accessible linear structure preserved) | Unit: DOM/ARIA inspection of the rebuilt accessible list | unit |
 | AC6 (CX tab visually distinct from Delivery) | Integration: CX container has `sw-cx-swimlane-grid` class, Delivery container does not | integration |
+| AC7 (many-stage horizontal scroll, pinned labels, keyboard-operable) | Playwright at a fixed 1280×800 viewport, 8-stage journey: `scrollWidth` > `clientWidth`; label column `x` unchanged after scroll; keyboard-reachable and scrollable | E2E |
 
 ## Assumptions
 

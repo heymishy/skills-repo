@@ -111,6 +111,23 @@
 
 ---
 
+### 🔴 Scenario 7: A journey with many stages scrolls sideways, without losing the row labels
+
+**Covers:** AC7
+
+**Steps:**
+1. Open a journey with 8 or more stages on the Customer experience tab.
+2. Scroll the stage area sideways.
+3. Try scrolling it using only the keyboard (Tab to it, then arrow keys or Page Down/Up).
+
+**Expected outcome:**
+> The stages scroll sideways so you can see them all. The row labels on the left (Emotion, Customer actions, Touchpoints, Pain points, Opportunities) stay in place while you scroll — they don't disappear off-screen. You can also scroll sideways using only the keyboard, not just a mouse or trackpad.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ## Summary
 
 | Scenario | Result | Notes |
@@ -121,6 +138,7 @@
 | Scenario 4 — actions/touchpoints now visible | | |
 | Scenario 5 — accessible stage-by-stage reading order | | |
 | Scenario 6 — visually distinct from Delivery tab | | |
+| Scenario 7 — many-stage scroll, pinned labels, keyboard-operable 🔴 | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding

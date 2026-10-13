@@ -43,6 +43,8 @@ So that **I can put this view in front of a room or a new team member and have i
 
 **AC6:** Given the restructured layout, When compared side-by-side with the pre-existing Delivery tab, Then the two are visually distinguishable at a glance (e.g. via background tint, typography scale, or de-emphasized/relocated delivery-chrome buttons on the Customer experience tab) — closing the spike's own finding 4 (the two tabs read as structurally identical today).
 
+**AC7:** Given a journey with more stages than fit within the viewport's own width (added per the spike's own finding 9 — this app has no upper bound on stage count, and most journey maps run 4–7 stages, well below what this app must support), When the Customer experience tab renders, Then the swimlane row content scrolls horizontally while each row's own label (Emotion, Customer actions, Touchpoints, Pain points, Opportunities) stays fixed/pinned on the left and does not scroll out of view — matching the documented horizontal-scroll-with-pinned-labels swimlane pattern (Oracle's own published mobile swimlane UI pattern, cited in the spike's Sources).
+
 ## Out of Scope
 
 - Splitting the emotion curve into separate positive/negative "thoughts and feelings" rows — reference-grounded (Hustle Badger) but touches the data model (a second sentiment dimension per stage); logged as a deferred follow-up in `decisions.md`, not built here.
@@ -54,7 +56,7 @@ So that **I can put this view in front of a room or a new team member and have i
 
 - **Performance:** None beyond existing route bounds — this is a rendering/CSS-layout change over already-fetched data, no new queries.
 - **Security:** None — no new input surface, no auth/CSRF change.
-- **Accessibility:** WCAG 2.1 AA; AC5 explicitly preserves the accessible linear reading order through the restructure — this is a CSS-layout-dependent story (grid layout, swimlane alignment, responsive behavior at narrow viewports), so per CLAUDE.md's own B2 rule, every layout-dependent AC (AC1, AC2, AC3, AC6) must be classified at DoR time with either an automated visual-regression test (Playwright screenshot comparison) or an explicit RISK-ACCEPT + manual smoke-test script — not left implicit.
+- **Accessibility:** WCAG 2.1 AA; AC5 explicitly preserves the accessible linear reading order through the restructure — this is a CSS-layout-dependent story (grid layout, swimlane alignment, responsive/many-stage behavior), so per CLAUDE.md's own B2 rule, every layout-dependent AC (AC1, AC2, AC3, AC6, AC7) must be classified at DoR time with either an automated visual-regression test (Playwright screenshot comparison) or an explicit RISK-ACCEPT + manual smoke-test script — not left implicit. AC7's own horizontal scroll must remain keyboard-operable (scrollable region reachable and scrollable via keyboard, not mouse-only).
 - **Audit:** None — no new mutating action.
 
 ## Complexity Rating

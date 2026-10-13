@@ -40352,7 +40352,7 @@
               "name": "Restructure the Customer experience tab into a real timeline + swimlane grid",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-13T07:17:56.535Z",
+              "updatedAt": "2026-10-13T07:31:18.115Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40361,11 +40361,11 @@
               "dorStatus": "signed-off",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
+                "totalTests": 9,
                 "passing": 0,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s6-test-plan.md"
               },
-              "acTotal": 6,
+              "acTotal": 7,
               "acVerified": 0
             }
           ]

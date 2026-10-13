@@ -2,15 +2,15 @@
 
 **Story reference:** artefacts/2026-10-11-journey-cx-redesign/stories/jcx-s6.md
 **Epic reference:** artefacts/2026-10-11-journey-cx-redesign/epics/journey-map-and-placeholder-trigger.md
-**Review reference:** artefacts/2026-10-11-journey-cx-redesign/review/jcx-s6-review-1.md (PASS, 1 MEDIUM resolved below — see Note on AC3/AC6)
+**Review reference:** artefacts/2026-10-11-journey-cx-redesign/review/jcx-s6-review-2.md (PASS, run 2 — AC7 added per spike finding 9; 1-M1 from run 1 and 2-L1 from run 2 both resolved below)
 **Test plan author:** Claude Sonnet 5
-**Date:** 2026-10-13
+**Date:** 2026-10-13 (updated — AC7 added)
 
 ---
 
 ## Note on E2E classification
 
-AC1–AC3 verify the grid's actual rendered column/row layout (left-to-right stage order, swimlane row alignment, curve width/position) — a DOM-simulation environment (jsdom) does not compute real CSS grid/flex layout, so these cannot be reliably unit-tested. Per the `/test-plan` E2E detection gate, these are classified `CSS-layout-dependent` and covered by real Playwright E2E tests (ADR-018 — already configured, no tooling gap), following `jcx-s3`'s own established precedent for this exact feature area. AC4 and AC5 are DOM-presence/structure checks, testable via the real-jsdom-execution pattern already established for `jcx-s1`/`jcx-s3`.
+AC1–AC3 and AC7 verify the grid's actual rendered column/row layout and scroll behaviour (left-to-right stage order, swimlane row alignment, curve width/position, horizontal scroll with pinned labels) — a DOM-simulation environment (jsdom) does not compute real CSS grid/flex layout or scroll geometry, so these cannot be reliably unit-tested. Per the `/test-plan` E2E detection gate, these are classified `CSS-layout-dependent` and covered by real Playwright E2E tests (ADR-018 — already configured, no tooling gap), following `jcx-s3`'s own established precedent for this exact feature area. AC4 and AC5 are DOM-presence/structure checks, testable via the real-jsdom-execution pattern already established for `jcx-s1`/`jcx-s3`.
 
 ## Note on AC3/AC6 (resolves review finding 1-M1)
 
@@ -18,6 +18,10 @@ The review flagged AC3's "no longer leaving a large empty region" and AC6's "vis
 
 - **AC3** is tested as a concrete threshold: the emotion-curve SVG's own rightmost data point's x-coordinate must be at least 80% of the curve row's own container width, for a journey with 3+ stages (Playwright `getBoundingClientRect`/attribute read — real layout required, hence E2E not unit).
 - **AC6** is tested as a concrete DOM-class check, not a visual/E2E check: the Customer experience tab's own outer grid container must carry a dedicated CSS class (e.g. `sw-cx-swimlane-grid`) that the Delivery tab's own container does not carry. This is a plain DOM-presence assertion, testable via jsdom — no real browser rendering needed, since "visually distinguishable" is being satisfied by a class-driven styling difference, not by an assertion about pixel appearance itself.
+
+## Note on AC7 (resolves review finding 2-L1)
+
+AC7's own "more stages than fit the viewport" is relative by nature (viewport width varies) — review run 2 flagged this needs a pinned test fixture, not a floating threshold. Pinned down here: the E2E test fixes the Playwright viewport at 1280×800 (this repo's own existing E2E default) and seeds an 8-stage journey (comfortably beyond the 4–7-stage norm cited in the spike's own Sources, and wide enough at this viewport to force overflow with the story's own ~170px label column + per-stage column widths). The test asserts (a) the swimlane content area's own `scrollWidth` exceeds its `clientWidth` (overflow genuinely occurs), (b) each row's own label column's `getBoundingClientRect().x` stays constant after scrolling the content area horizontally (pinned, not scrolling away), and (c) the scrollable region is reachable and operable via keyboard (`Tab` to it, arrow-key or standard scroll-container keyboard scrolling moves its content) — closing the story's own NFR requirement that the scroll not be mouse-only.
 
 ---
 
@@ -31,6 +35,7 @@ The review flagged AC3's "no longer leaving a large empty region" and AC6's "vis
 | AC4 | `customer_actions`/`touchpoints` surfaced as their own rows | 1 test | 1 test | — | — | — | 🟢 |
 | AC5 | Accessible linear structure preserved through the restructure | 1 test | — | — | — | — | 🟢 |
 | AC6 | CX tab carries a distinct container class vs. the Delivery tab | — | 1 test | — | — | — | 🟢 |
+| AC7 | Many-stage journeys scroll horizontally with pinned row labels, keyboard-operable | — | — | 1 test | — | CSS-layout-dependent | 🟡 |
 
 ---
 
@@ -38,7 +43,7 @@ The review flagged AC3's "no longer leaving a large empty region" and AC6's "vis
 
 | Gap | AC | Gap type | Reason untestable in Jest | Handling |
 |-----|----|----------|---------------------------|---------|
-| Real rendered column/row grid layout (left-to-right order, row alignment, curve width) cannot be verified without real CSS layout computation | AC1, AC2, AC3 | CSS-layout-dependent | jsdom does not compute real CSS grid/flex layout or SVG geometry | E2E test — `tests/e2e/jcx-s6-swimlane-grid.spec.js` (Playwright, ADR-018 already configured — not a tooling gap) |
+| Real rendered column/row grid layout (left-to-right order, row alignment, curve width) and scroll geometry cannot be verified without real CSS layout computation | AC1, AC2, AC3, AC7 | CSS-layout-dependent | jsdom does not compute real CSS grid/flex layout, SVG geometry, or scroll/overflow behaviour | E2E test — `tests/e2e/jcx-s6-swimlane-grid.spec.js` (Playwright, ADR-018 already configured — not a tooling gap) |
 
 ---
 
@@ -55,6 +60,7 @@ The review flagged AC3's "no longer leaving a large empty region" and AC6's "vis
 |----|-------------|--------|-------------------|-------|
 | AC1, AC2, AC3 | A journey with 3+ stages, mixed emotion/pain-points/opportunities/actions/touchpoints values | `seedJourneyWithStages` (reused) | None | |
 | AC4, AC5, AC6 | A rendered canvas with 1+ stages holding `customer_actions`/`touchpoints` data | Synthetic mock pool | None | |
+| AC7 | A journey with 8 stages (forces horizontal overflow at a 1280×800 Playwright viewport) | `seedJourneyWithStages` (reused, called 8 times) | None | |
 
 ### PCI / sensitivity constraints
 
@@ -126,6 +132,13 @@ None.
 - **Precondition:** Real browser, same 3-stage journey with all 3 stages' `emotion` set
 - **Action:** Load the tab
 - **Expected result:** Each curve point has a text element bearing its own stage's name, positioned at/near that point (not only in a separate list); the curve's own rightmost point's X-coordinate is at least 80% of the curve row container's own width
+
+### Many-stage journey scrolls horizontally with row labels pinned, keyboard-operable
+
+- **Verifies:** AC7
+- **Precondition:** Real browser, Playwright viewport fixed at 1280×800, journey with 8 stages
+- **Action:** Load the tab; read the swimlane content area's `scrollWidth`/`clientWidth`; scroll the content area horizontally; tab via keyboard to the scrollable region and scroll it with the keyboard
+- **Expected result:** `scrollWidth` exceeds `clientWidth` (real overflow); each row's own label column `getBoundingClientRect().x` is unchanged after scrolling (pinned, not scrolled away); the scrollable region is reachable and operable via keyboard, not mouse-only
 
 ---
 
