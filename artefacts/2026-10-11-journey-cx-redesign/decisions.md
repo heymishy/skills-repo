@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-13 | DESIGN | /spike (post-release-cx-visual-gap)**
+**Decision:** Proceed directly to a new, tightly-scoped story restructuring the Customer experience tab's own layout into a real timeline + swimlane grid (stage columns left-to-right; emotion curve, touchpoints/actions, pain points, and opportunities each as their own labeled swimlane row) — reusing all existing data and routes (`handleGetJourneyCanvas`, `checkPlaceholderConversions`, persona save/scan) unchanged. Explicitly deferred: splitting the emotion curve into separate positive/negative rows and reframing the persona as first-person "I want/I need" statements — both reference-grounded improvements (confirmed against a direct re-fetch of the Hustle Badger template, one of the operator's own 3 original reference examples), but both touch the data model and don't belong in a layout-only story.
+**Context:** Operator flagged "cx still seems poor" after the full `journey-map-and-placeholder-trigger` epic shipped (`jcx-s1`–`jcx-s5` plus `jcx-hotfix1`/`jcx-hotfix2`). A new spike (`spikes/post-release-cx-visual-gap-outcome.md`) found the root cause: `jcx-s3`/`jcx-s4` closed their own literal ACs (emotion curve exists, persona card exists) without ever acting on the *original* `cjm-best-practice` spike's own headline finding — a swimlane/timeline grid layout. That finding was never turned into its own story.
+**Rationale:** The gap is presentation-layer only, not functional — every underlying route/handler is correct and already shipped. Re-fetching the Hustle Badger template directly (rather than asking the operator to re-share images from an earlier session) confirmed the original spike's own structural finding precisely (persona header, stage columns, touchpoints row, user-stories row, split positive/negative thoughts-and-feelings rows, emotional-tracking row, optional enrichment layers below) and surfaced 2 further gaps (persona framing, split sentiment rows) that are real but data-model-affecting — correctly scoped out of this story rather than silently bundled in or silently dropped.
+**Made by:** Claude (session), confirmed by Hamish King (Platform Owner) via direct reply to the spike's own operator-decision question ("1 and 3").
+**Revisit trigger:** Once this story ships, revisit whether the deferred positive/negative sentiment split and first-person persona framing are worth their own follow-up story — both are now named and traceable, not lost.
+
+---
+
 **2026-10-13 | RISK-ACCEPT | jcx-s4 /verify-completion**
 **Decision:** Accept unit/integration-test evidence plus real jsdom DOM-interaction tests (11/11 passing — including the suggestion-click → reference-text and the submit → save-payload flows, both against the real rendered DOM) as verification, without a live-browser confirmation in an actual Chrome session.
 **Context:** Same unresolved blockers as `jcx-hotfix1`/`jcx-s2`/`jcx-s3` earlier this session: the local dev server's HTTP-hang issue remains unfixed, and no fresh staging/local authenticated browser session is available this session.
