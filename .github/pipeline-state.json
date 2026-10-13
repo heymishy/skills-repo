@@ -40104,6 +40104,26 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/979",
           "dodStatus": "complete",
           "releaseReady": true
+        },
+        {
+          "id": "jcx-hotfix2",
+          "slug": "jcx-hotfix2",
+          "name": "Fix persona-save route rejecting the client's real POST request",
+          "track": "short-track",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 1,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "updatedAt": "2026-10-13T05:54:34.113Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 0,
+            "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix2-test-plan.md"
+          }
         }
       ],
       "metrics": [
