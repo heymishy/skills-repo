@@ -1594,7 +1594,18 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'input.className="sw-stage-name-input";' +
           'input.placeholder="Stage name";' +
           'card.appendChild(input);' +
-          'list.appendChild(card);' +
+          // jcx-hotfix4 -- #sw-journey-stages (list) is hidden (display:none)
+          // in BOTH the Canvas view (ep2-s3) and the Customer-experience
+          // view (jcx-s6), visible only in Delivery. Appending the new,
+          // unsaved card there made it (and the input.focus() call below)
+          // silently invisible/unfocusable from the two views a user
+          // actually works from by default -- confirmed live via
+          // javascript_tool. addBtn itself is NOT inside that hidden
+          // container and is visible in all 3 views, so insert the new
+          // card as its sibling instead. Existing, already-saved stage
+          // cards are unaffected -- this only changes where the transient,
+          // unsaved new-stage input renders before its first save.
+          'addBtn.insertAdjacentElement("beforebegin",card);' +
           'input.focus();' +
           'function save(){' +
             'var name=input.value.trim();' +
