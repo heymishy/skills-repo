@@ -83,6 +83,12 @@ function makeMockReqRes() {
   } catch (e) { fail('AC4 (empty-state marker): an unset stage shows a distinct text marker', e); }
 
   // -- AC5: curve exposes an accessible linear structure --
+  // jcx-s6 update: the curve's own standalone a11y list (sw-emotion-curve-a11y-list)
+  // was superseded by buildCustomerExperienceSwimlaneGrid's single grid-wide
+  // accessible list (sw-cx-a11y-list), covering every field per stage, not
+  // emotion alone -- re-pointed here, not weakened: still verifies the SVG
+  // is aria-hidden and that every stage's own emotion is reachable, in
+  // document order, via a real text alternative.
   try {
     var pool = makeCanvasMockPool(
       { id: 'j1', name: 'J', description: null },
@@ -98,12 +104,19 @@ function makeMockReqRes() {
       return res._b.bodyContent;
     });
     assert.ok(/<svg[^>]*aria-hidden="true"/.test(out), 'expected the SVG itself to be aria-hidden (decorative once the text alternative exists)');
-    assert.ok(/class="sw-emotion-curve-a11y-list[^"]*"/.test(out), 'expected a visually-hidden accessible list alongside the SVG');
-    assert.ok(/<li>Discover: positive<\/li>/.test(out), 'expected the a11y list to name each stage and its emotion in document order');
-    assert.ok(/<li>Buy: negative<\/li>/.test(out), 'expected Buy/negative in the a11y list');
-    assert.ok(/<li>Use: neutral<\/li>/.test(out), 'expected Use/neutral in the a11y list');
-    pass('AC5: the curve exposes an accessible linear structure (aria-hidden SVG + a visually-hidden text list)');
-  } catch (e) { fail('AC5: the curve exposes an accessible linear structure (aria-hidden SVG + a visually-hidden text list)', e); }
+    var listMatch = out.match(/<ul class="sw-cx-a11y-list[^"]*">[\s\S]*?<\/ul>/);
+    assert.ok(listMatch, 'expected a visually-hidden grid-wide accessible list alongside the SVG');
+    var listHtml = listMatch[0];
+    var discoverIdx = listHtml.indexOf('Discover');
+    var buyIdx = listHtml.indexOf('Buy');
+    var useIdx = listHtml.indexOf('Use');
+    assert.ok(discoverIdx !== -1 && buyIdx !== -1 && useIdx !== -1, 'expected all 3 stage names in the a11y list');
+    assert.ok(discoverIdx < buyIdx && buyIdx < useIdx, 'expected stages in document order');
+    assert.ok(/Discover:[\s\S]*?Emotion: positive/.test(listHtml), 'expected Discover/positive in the a11y list');
+    assert.ok(/Buy:[\s\S]*?Emotion: negative/.test(listHtml), 'expected Buy/negative in the a11y list');
+    assert.ok(/Use:[\s\S]*?Emotion: neutral/.test(listHtml), 'expected Use/neutral in the a11y list');
+    pass('AC5: the curve exposes an accessible linear structure (aria-hidden SVG + the grid\'s own visually-hidden text list)');
+  } catch (e) { fail('AC5: the curve exposes an accessible linear structure (aria-hidden SVG + the grid\'s own visually-hidden text list)', e); }
 
   // -- AC3: no stage has any emotion -> friendly empty state, no broken line --
   try {

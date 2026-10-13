@@ -40350,9 +40350,9 @@
             {
               "slug": "jcx-s6",
               "name": "Restructure the Customer experience tab into a real timeline + swimlane grid",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-13T07:31:18.115Z",
+              "updatedAt": "2026-10-13T17:42:52.244Z",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40362,11 +40362,44 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0,
+                "passing": 9,
                 "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s6-test-plan.md"
               },
               "acTotal": 7,
-              "acVerified": 0
+              "acVerified": 7,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "RED: new grid-builder unit/integration tests",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-11-journey-cx-redesign/plans/jcx-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "GREEN: implement buildCustomerExperienceSwimlaneGrid",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-11-journey-cx-redesign/plans/jcx-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "E2E tests for AC1/AC2/AC3/AC7",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-11-journey-cx-redesign/plans/jcx-s6-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Fix jcx-s3 regression",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-11-journey-cx-redesign/plans/jcx-s6-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Full suite + Docker parity + live Chrome re-verify",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-11-journey-cx-redesign/plans/jcx-s6-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }

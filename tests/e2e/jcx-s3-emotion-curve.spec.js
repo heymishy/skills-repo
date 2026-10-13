@@ -102,7 +102,12 @@ withAuth('missing-emotion stage shows an empty-state marker, not a silent gap, a
   await page.waitForSelector('.sw-emotion-curve svg');
 
   await expect(page.locator('.sw-emotion-curve-point--unset')).toHaveCount(1);
-  await expect(page.locator('.sw-emotion-curve-point--unset text')).toHaveText('No data yet');
+  // jcx-s6 -- each point now carries TWO <text> elements (the stage name,
+  // added per jcx-s6 AC3, plus the emotion/status label) -- .last() targets
+  // the status label specifically, matching buildEmotionCurve's own
+  // append order (name first, then "No data yet"/emotion).
+  await expect(page.locator('.sw-emotion-curve-point--unset text').last()).toHaveText('No data yet');
+  await expect(page.locator('.sw-emotion-curve-point--unset text').first()).toHaveText('Buy');
   // Both set stages (Discover, Use) still rendered on either side.
   await expect(page.locator('.sw-emotion-curve-point--positive')).toHaveCount(1);
   await expect(page.locator('.sw-emotion-curve-point--negative')).toHaveCount(1);

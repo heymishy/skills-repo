@@ -839,19 +839,98 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     }).join('');
   }
 
-  // ep3-s1 -- builds one stage's Customer experience annotation markup:
-  // emotion (colour chip + text label, MC-A11Y-02 -- never colour alone),
-  // pain points, opportunities. All three rows always render, "Not set"
-  // when the underlying column is null -- never omitted (AC2).
-  function buildCustomerExperienceAnnotations(s) {
-    var emotionHtml = s.emotion
-      ? '<span class="sw-stage-emotion-chip sw-stage-emotion-chip--' + escHtml(s.emotion) + '">' + escHtml(s.emotion) + '</span>'
-      : 'Not set';
-    return (
-      '<p class="sw-stage-cx-row"><strong>Emotion:</strong> ' + emotionHtml + '</p>' +
-      '<p class="sw-stage-cx-row"><strong>Pain points:</strong> ' + (s.pain_points ? escHtml(s.pain_points) : 'Not set') + '</p>' +
-      '<p class="sw-stage-cx-row"><strong>Opportunities:</strong> ' + (s.opportunities ? escHtml(s.opportunities) : 'Not set') + '</p>'
-    );
+  // jcx-s6 -- replaces ep3-s1's own buildCustomerExperienceAnnotations
+  // (which rendered one stage's CX data as a plain stacked box, per-stage,
+  // inside the shared #sw-journey-stages list). Per the post-release CX
+  // visual-gap spike (spikes/post-release-cx-visual-gap-outcome.md), the
+  // original spike's own swimlane/timeline finding was never actually
+  // built -- this is that build. Renders the WHOLE grid at once (stage
+  // columns + 5 swimlane rows: emotion, customer actions, touchpoints,
+  // pain points, opportunities), not per-stage, so it replaces the old
+  // function entirely rather than being called per-stage inside the list.
+  // AC1, AC2, AC4, AC5, AC6, AC7.
+  function buildCustomerExperienceSwimlaneGrid(stagesForGrid) {
+    // jcx-s6 AC1/AC2/AC7 -- one shared column template drives every row
+    // (header + all data rows), so stage columns stay vertically aligned
+    // whether or not the track is scrolled. minmax(200px,1fr): columns
+    // grow via 1fr to fill the track when it fits (AC3's ≥80%-fill case);
+    // columns floor at 200px and the track overflows/scrolls once
+    // stageCount*200px exceeds the track's own width (AC7).
+    var gridTemplateColumns = 'repeat(' + stagesForGrid.length + ', minmax(200px, 1fr))';
+
+    var headerCellsHtml = stagesForGrid.map(function(s) {
+      return '<div class="sw-cx-grid-cell sw-cx-grid-cell--header" data-stage-id="' + escHtml(s.id) + '">' +
+        '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
+        (s.moment_of_truth ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>' : '') +
+        // jcx-s6 -- .sw-stage-edit is already document-delegated (confirmed
+        // by reading its own click handler), added specifically because it
+        // already needed to work from inside drawflow canvas nodes -- a
+        // context exactly as structurally distant from #sw-journey-stages
+        // as this grid is. Reused here with zero new JS. "Map feature"/
+        // "Add placeholder" are deliberately NOT included -- genuinely
+        // delivery-chrome (AC6), still reachable from the Delivery tab.
+        '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit</a>' +
+      '</div>';
+    }).join('');
+
+    function buildDataRow(rowClass, label, cellsHtml) {
+      return '<div class="sw-cx-grid-row sw-cx-grid-row--' + rowClass + '">' +
+        '<div class="sw-cx-row-label">' + escHtml(label) + '</div>' +
+        '<div class="sw-cx-grid-row-track" tabindex="0">' +
+          '<div class="sw-cx-grid-row-cells" style="grid-template-columns:' + gridTemplateColumns + '">' + cellsHtml + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function buildTextCellsRow(rowClass, label, field) {
+      var cellsHtml = stagesForGrid.map(function(s) {
+        return '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + (s[field] ? escHtml(s[field]) : 'Not set') + '</div>';
+      }).join('');
+      return buildDataRow(rowClass, label, cellsHtml);
+    }
+
+    // The curve is ONE element (not N per-stage cells like the other rows),
+    // so it must explicitly span every column -- CSS grid auto-placement
+    // would otherwise drop it into just the first column, leaving its own
+    // width:100% stretch only the narrowest possible space.
+    var emotionRowHtml = buildDataRow('emotion', 'Emotion', '<div style="grid-column:1 / -1">' + buildEmotionCurve(stagesForGrid) + '</div>');
+    var actionsRowHtml = buildTextCellsRow('actions', 'Customer actions', 'customer_actions');
+    var touchpointsRowHtml = buildTextCellsRow('touchpoints', 'Touchpoints', 'touchpoints');
+    var painPointsRowHtml = buildTextCellsRow('pain-points', 'Pain points', 'pain_points');
+    var opportunitiesRowHtml = buildTextCellsRow('opportunities', 'Opportunities', 'opportunities');
+
+    // jcx-s6 AC5 -- ONE grid-wide accessible linear structure covering
+    // every field, in document order -- supersedes jcx-s3's own
+    // emotion-only a11y list (removed from buildEmotionCurve above).
+    var a11yListHtml = '<ul class="sw-cx-a11y-list sw-visually-hidden">' +
+      stagesForGrid.map(function(s) {
+        return '<li>' + escHtml(s.name) + ': ' +
+          'Emotion: ' + (s.emotion ? escHtml(s.emotion) : 'No emotion data yet') + '. ' +
+          'Customer actions: ' + (s.customer_actions ? escHtml(s.customer_actions) : 'Not set') + '. ' +
+          'Touchpoints: ' + (s.touchpoints ? escHtml(s.touchpoints) : 'Not set') + '. ' +
+          'Pain points: ' + (s.pain_points ? escHtml(s.pain_points) : 'Not set') + '. ' +
+          'Opportunities: ' + (s.opportunities ? escHtml(s.opportunities) : 'Not set') +
+        '</li>';
+      }).join('') +
+    '</ul>';
+
+    // No outer wrapping div here -- the caller's own
+    // .sw-stage-annotations--customer-experience.sw-cx-swimlane-grid div
+    // IS the grid container, matching the persona-card/emotion-curve-container
+    // convention of applying an extra class directly to that one shared
+    // wrapper rather than nesting a second div inside it.
+    return '<div class="sw-cx-grid-row sw-cx-grid-row--header">' +
+        '<div class="sw-cx-row-label"></div>' +
+        '<div class="sw-cx-grid-row-track" tabindex="0">' +
+          '<div class="sw-cx-grid-row-cells" style="grid-template-columns:' + gridTemplateColumns + '">' + headerCellsHtml + '</div>' +
+        '</div>' +
+      '</div>' +
+      emotionRowHtml +
+      actionsRowHtml +
+      touchpointsRowHtml +
+      painPointsRowHtml +
+      opportunitiesRowHtml +
+      a11yListHtml;
   }
 
   // jcx-s3 -- Y-position per emotion value: SVG y increases downward, so
@@ -860,7 +939,6 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // emotion-curve shape" wording.
   var EMOTION_CURVE_Y = { positive: 20, neutral: 60, mixed: 60, negative: 100 };
   var EMOTION_CURVE_COLOR = { positive: 'var(--success)', negative: 'var(--danger)', mixed: 'var(--warn)', neutral: 'var(--ink-2)' };
-  var EMOTION_CURVE_STEP_X = 120;
   var EMOTION_CURVE_HEIGHT = 140;
 
   // jcx-s4 -- persona card (saved state) + editor (unset state, or opened
@@ -913,8 +991,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     return '<div class="sw-persona-card-container">' + cardHtml + editorHtml + '</div>';
   }
 
-  // jcx-s3 -- a connected emotion curve spanning ALL stages, rendered ONCE
-  // (not per-stage, unlike buildCustomerExperienceAnnotations). AC1-AC5.
+  // jcx-s3/jcx-s6 -- a connected emotion curve spanning ALL stages, rendered
+  // ONCE as the grid's own Emotion row (not per-stage). AC1-AC3.
+  //
+  // jcx-s6 -- the curve's own a11y list (jcx-s3's original AC5 mechanism)
+  // is now superseded by buildCustomerExperienceSwimlaneGrid's single
+  // grid-wide accessible list covering every field, not emotion alone --
+  // removed here to avoid two competing lists. jcx-s6 AC3 -- each point now
+  // carries its own stage name directly on the chart (not only in a
+  // separately-scrolled list), and the SVG's own width="100%" (viewBox
+  // kept at a fixed internal coordinate system, preserveAspectRatio="none")
+  // lets it stretch to fill whatever width its own grid row track provides
+  // -- the same track whose CSS grid-template-columns (set by the caller)
+  // already handles the ≥80%-fill case (few stages: columns grow via 1fr
+  // to fill the track) and the many-stage overflow/scroll case (AC7: columns
+  // floor at their own minmax minimum, track overflows, scrolls).
   function buildEmotionCurve(stagesForCurve) {
     var anyEmotionSet = stagesForCurve.some(function(s) { return !!s.emotion; });
     if (!anyEmotionSet) {
@@ -925,13 +1016,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '</div>';
     }
 
-    var padding = 40;
-    var width = Math.max(400, padding * 2 + (stagesForCurve.length - 1) * EMOTION_CURVE_STEP_X);
-    var stepX = stagesForCurve.length > 1 ? (width - padding * 2) / (stagesForCurve.length - 1) : 0;
+    // Fixed internal coordinate system (0..1000 on X) -- the SVG's own
+    // width="100%" + preserveAspectRatio="none" stretches this to whatever
+    // real pixel width its row track provides, so point X positions are
+    // always a simple fraction of 1000, not a real pixel computation.
+    var viewBoxWidth = 1000;
+    var stepX = stagesForCurve.length > 1 ? viewBoxWidth / stagesForCurve.length : viewBoxWidth / 2;
 
     var points = stagesForCurve.map(function(s, idx) {
       return {
-        x: padding + idx * stepX,
+        x: stepX * (idx + 0.5),
         y: s.emotion ? EMOTION_CURVE_Y[s.emotion] : EMOTION_CURVE_Y.neutral,
         emotion: s.emotion,
         name: s.name
@@ -945,31 +1039,28 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     var polylinePoints = points.map(function(p) { return p.x + ',' + p.y; }).join(' ');
 
     var pointsHtml = points.map(function(p) {
+      // jcx-s6 AC3 -- stage name directly on the chart, above the
+      // emotion/"No data yet" label, not only in a separately-scrolled list.
+      var nameLabel = '<text x="' + p.x + '" y="' + (p.y + 22) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">' + escHtml(p.name) + '</text>';
       if (!p.emotion) {
         return '<g class="sw-emotion-curve-point sw-emotion-curve-point--unset">' +
           '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="none" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="2,2"/>' +
-          '<text x="' + p.x + '" y="' + (p.y + 24) + '" text-anchor="middle" font-size="11" fill="var(--ink-2)">No data yet</text>' +
+          nameLabel +
+          '<text x="' + p.x + '" y="' + (p.y + 36) + '" text-anchor="middle" font-size="11" fill="var(--ink-2)">No data yet</text>' +
         '</g>';
       }
       return '<g class="sw-emotion-curve-point sw-emotion-curve-point--' + escHtml(p.emotion) + '">' +
         '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="' + EMOTION_CURVE_COLOR[p.emotion] + '"/>' +
-        '<text x="' + p.x + '" y="' + (p.y + 24) + '" text-anchor="middle" font-size="11" fill="var(--ink)">' + escHtml(p.emotion) + '</text>' +
+        nameLabel +
+        '<text x="' + p.x + '" y="' + (p.y + 36) + '" text-anchor="middle" font-size="11" fill="var(--ink)">' + escHtml(p.emotion) + '</text>' +
       '</g>';
     }).join('');
 
-    // AC5 -- the SVG is decorative once this text alternative exists.
-    var a11yListHtml = '<ul class="sw-emotion-curve-a11y-list sw-visually-hidden">' +
-      points.map(function(p) {
-        return '<li>' + escHtml(p.name) + ': ' + (p.emotion ? escHtml(p.emotion) : 'No emotion data yet') + '</li>';
-      }).join('') +
-    '</ul>';
-
     return '<div class="sw-emotion-curve">' +
-      '<svg width="' + width + '" height="' + EMOTION_CURVE_HEIGHT + '" viewBox="0 0 ' + width + ' ' + EMOTION_CURVE_HEIGHT + '" aria-hidden="true">' +
+      '<svg width="100%" height="' + EMOTION_CURVE_HEIGHT + '" viewBox="0 0 ' + viewBoxWidth + ' ' + EMOTION_CURVE_HEIGHT + '" preserveAspectRatio="none" aria-hidden="true">' +
         '<polyline points="' + polylinePoints + '" fill="none" stroke="var(--line)" stroke-width="2"/>' +
         pointsHtml +
       '</svg>' +
-      a11yListHtml +
     '</div>';
   }
 
@@ -1038,10 +1129,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
               '<button type="submit" class="sw-placeholder-add-submit">Create</button>' +
               '<button type="button" class="sw-placeholder-add-cancel">Cancel</button>' +
             '</form>' +
-          '</div>' +
-          '<div class="sw-stage-annotations sw-stage-annotations--customer-experience" data-stage-id="' + escHtml(s.id) + '">' +
-            buildCustomerExperienceAnnotations(s) +
           '</div>'
+          // jcx-s6 -- the per-stage .sw-stage-annotations--customer-experience
+          // block that used to render here is gone: #sw-journey-stages is now
+          // hidden in the customer-experience view entirely (new CSS rule
+          // below, mirroring the existing canvas-view rule), and
+          // buildCustomerExperienceSwimlaneGrid renders the equivalent data
+          // once, as a real grid, not per-stage.
         );
       }).join('')
     : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>';
@@ -1211,6 +1305,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:12px}' +
       '.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}' +
       '.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}' +
+      // jcx-s6 -- #sw-journey-stages is now also hidden in the
+      // customer-experience view (mirrors the canvas-view rule above): the
+      // per-stage CX annotation blocks it used to carry are gone, replaced
+      // entirely by the swimlane grid below.
+      '.sw-journey-canvas--view-customer-experience #sw-journey-stages{display:none}' +
       '#sw-drawflow-canvas{display:none;height:600px;width:100%}' +
       '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
       // ic-s4 AC1a -- visible, non-default focus style for keyboard-focused
@@ -1252,15 +1351,29 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}' +
       '.sw-persona-reference-text{display:none;width:100%;min-height:50px;font-size:12px;color:var(--ink-2)}' +
       '.sw-persona-reference-text--visible{display:block}' +
-      '.sw-emotion-curve{overflow-x:auto}' +
+      '.sw-emotion-curve{width:100%}' +
       '.sw-emotion-curve-empty{padding:24px;text-align:center;color:var(--ink-2)}' +
       '.sw-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
-      '.sw-stage-cx-row{margin:4px 0}' +
-      '.sw-stage-emotion-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff}' +
-      '.sw-stage-emotion-chip--positive{background:var(--success)}' +
-      '.sw-stage-emotion-chip--negative{background:var(--danger)}' +
-      '.sw-stage-emotion-chip--mixed{background:var(--warn)}' +
-      '.sw-stage-emotion-chip--neutral{background:var(--ink-2)}' +
+      // jcx-s6 -- swimlane grid (AC1/AC2/AC3/AC6/AC7). sw-cx-row-label is
+      // the pinned, non-scrolling label column; sw-cx-grid-row-track is
+      // the ONLY element that scrolls horizontally (overflow-x:auto,
+      // tabindex=0 for keyboard reachability per AC7) -- its inner
+      // sw-cx-grid-row-cells div carries the real CSS grid-template-columns
+      // (set inline per-row by the server, repeat(N, minmax(200px,1fr)):
+      // columns grow via 1fr to fill the track when it fits -- AC3's
+      // ≥80%-fill case -- and floor at 200px, overflowing/scrolling once
+      // stageCount*200px exceeds the track's own width -- AC7).
+      '.sw-cx-swimlane-grid{display:block}' +
+      '.sw-cx-grid-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);padding:10px 0}' +
+      '.sw-cx-grid-row:last-of-type{border-bottom:none}' +
+      '.sw-cx-row-label{flex:0 0 150px;width:150px;font-size:11px;font-weight:700;text-transform:uppercase;' +
+        'letter-spacing:0.03em;color:var(--ink-2);padding:6px 10px}' +
+      '.sw-cx-grid-row-track{flex:1 1 auto;overflow-x:auto}' +
+      '.sw-cx-grid-row-cells{display:grid;column-gap:12px;align-items:start}' +
+      '.sw-cx-grid-cell{font-size:13px;color:var(--ink);padding:6px 10px}' +
+      '.sw-cx-grid-cell--header{font-size:14px;font-weight:700}' +
+      '.sw-cx-grid-cell--header .sw-stage-edit{display:block;margin-top:4px;font-size:12px;font-weight:400}' +
+      '.sw-cx-grid-row--header{background:var(--surface);border-radius:6px 6px 0 0}' +
       '.sw-stage-health{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px}' +
       '.sw-stage-health--covered{color:var(--success)}' +
       '.sw-stage-health--partial{color:var(--warn)}' +
@@ -1340,8 +1453,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-persona-card-outer">' +
         buildPersonaCard(journey, personaSuggestions) +
       '</div>' +
-      '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-emotion-curve-container">' +
-        buildEmotionCurve(stages) +
+      '<div class="sw-stage-annotations sw-stage-annotations--customer-experience sw-cx-swimlane-grid">' +
+        (stages.length
+          ? buildCustomerExperienceSwimlaneGrid(stages)
+          : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>') +
       '</div>' +
       '<div class="sw-journey-stages" id="sw-journey-stages">' +
         stagesHtml +
