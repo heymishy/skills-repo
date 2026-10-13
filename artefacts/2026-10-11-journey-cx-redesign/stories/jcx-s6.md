@@ -4,7 +4,7 @@
 **Discovery reference:** artefacts/2026-10-11-journey-cx-redesign/discovery.md
 **Benefit-metric reference:** artefacts/2026-10-11-journey-cx-redesign/benefit-metric.md
 **Spike reference:** artefacts/2026-10-11-journey-cx-redesign/spikes/post-release-cx-visual-gap-outcome.md
-**Domain:** [web-ui, design]
+**Domain:** [web-ui, ui]
 
 ## User Story
 
