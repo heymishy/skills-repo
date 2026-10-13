@@ -40159,7 +40159,7 @@
           "stage": "branch-complete",
           "health": "green",
           "acTotal": 1,
-          "acVerified": 0,
+          "acVerified": 1,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
@@ -40168,10 +40168,11 @@
             "passing": 3,
             "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix4-test-plan.md"
           },
-          "updatedAt": "2026-10-13T19:41:50.381Z",
+          "updatedAt": "2026-10-13T20:25:55.352Z",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/986"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/986",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [

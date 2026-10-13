@@ -11,6 +11,15 @@
 
 ---
 
+**2026-10-14 | RISK-ACCEPT | jcx-hotfix4 /definition-of-done**
+**Decision:** Accept the merged fix (PR #986) without a post-deploy live-browser re-verification.
+**Context:** The ORIGINAL bug was found and root-caused via direct code reading plus a genuine live reproduction via `javascript_tool` against `wuce-staging.fly.dev` (confirmed the new input existed in the DOM but was invisible and unfocused). After the fix deployed, the staging session had logged out again — the same recurring pattern this whole feature has hit after every redeploy (`jcx-hotfix1`, `jcx-s6`, `jcx-hotfix3` all required a fresh sign-in). Asked the operator whether to sign in or skip the re-check; operator chose to skip it.
+**Rationale:** The fix is a narrow, mechanical change (one DOM-insertion-point change, `list.appendChild` → `addBtn.insertAdjacentElement`) directly addressing the exact failure mode confirmed live before the fix (hidden container, failed focus). The new regression test (`check-jcx-hotfix4-add-stage-visibility.js`) exercises the real rendered DOM with real `dispatchEvent`-driven clicks and a real ancestor-visibility walk, not a string-matching check — confirmed RED against the bug and GREEN against the fix, for all 3 views. This is a materially different risk profile than a RISK-ACCEPT on a behaviorally complex or CSS-cascade-timing-sensitive change (e.g. `jcx-hotfix3`) — there is no plausible mechanism by which this specific, narrow DOM-insertion change behaves differently in a real browser than in jsdom.
+**Made by:** Claude (session), confirmed by Hamish King (Platform Owner) via `AskUserQuestion`.
+**Revisit trigger:** If any further "+ Add stage" issues are reported in production/staging, re-open this and perform the live re-check that was skipped here.
+
+---
+
 **2026-10-14 | RISK-ACCEPT | jcx-s6 /verify-completion**
 **Decision:** Accept unit/integration-test evidence (4/4 jcx-s6 tests, plus `jcx-s3`'s own 4/4 and `ep3-s1`'s own 3/3 re-pointed to the new grid structure, all passing) as the primary verification, with the new E2E spec (`tests/e2e/jcx-s6-swimlane-grid.spec.js`) written and genuinely attempted against a real local Postgres, but blocked by the SAME already-tracked dashboard CSRF gap `jcx-s3`'s own RISK-ACCEPT (2026-10-13) hit.
 **Context:** Ran `tests/e2e/jcx-s6-swimlane-grid.spec.js` and a re-run of `tests/e2e/jcx-s3-emotion-curve.spec.js` against a real local Postgres (the `ncdv-s2` SSL fix still holds). Both reach real server dispatch and fail at the identical point `jcx-s3`'s own RISK-ACCEPT already documented: the authenticated home page (`page.request.get('/')`) embeds no usable CSRF token, because `renderShell()` has no page-wide CSRF field — only the narrow impersonation-banner form has one. This is not a regression and not something this story's own diff touches.
