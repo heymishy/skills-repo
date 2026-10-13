@@ -6,6 +6,30 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { JSDOM } = require('jsdom');
+
+// Same technique as check-jcx-s1-placeholder-feature.js's own
+// extractAllScripts/buildDom -- the persona card's own click/submit
+// handlers live in the SAME feature-picker <script> IIFE jcx-s1's own
+// Add-placeholder/Trigger handlers do, so all 3 blocks must be eval'd
+// together in document order to match real runtime behaviour.
+function extractAllScripts(html) {
+  var scripts = [];
+  var re = /<script>([\s\S]*?)<\/script>/g;
+  var m;
+  while ((m = re.exec(html)) !== null) { scripts.push(m[1]); }
+  assert.ok(scripts.length > 0, 'expected at least one <script> block in the rendered HTML');
+  return scripts;
+}
+function buildDom(bodyContent) {
+  var scripts = extractAllScripts(bodyContent);
+  var dom = new JSDOM('<!DOCTYPE html><html><body>' + bodyContent + '</body></html>', {
+    runScripts: 'outside-only',
+    url: 'http://localhost/journeys/j1'
+  });
+  scripts.forEach(function(src) { dom.window.eval(src); });
+  return dom;
+}
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
@@ -187,6 +211,107 @@ function makeDiscoveryFixture(repoRoot, slug, whoItAffectsText) {
     fs.rmSync(repoRoot, { recursive: true, force: true });
     pass('AC4: a journey with a saved persona renders it, not the original suggestions');
   } catch (e) { fail('AC4: a journey with a saved persona renders it, not the original suggestions', e); }
+
+  // -- (UI, E2E) clicking a suggestion fills the reference text area --
+  try {
+    var repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'jcx-s4-'));
+    makeDiscoveryFixture(repoRoot, 'p1-feat-a', 'Primary: Busy parent who needs quick checkout.');
+    // handleGetJourneyCanvas resolves repoRoot via adapters/repo-root.js's
+    // own getRepoRoot(req), not a parameter -- CLAUDE_REPO_PATH is the
+    // established override point (see adapters/repo-root.js's own
+    // resolution order) for pointing it at this test's own scratch dir.
+    var _origClaudeRepoPath = process.env.CLAUDE_REPO_PATH;
+    process.env.CLAUDE_REPO_PATH = repoRoot;
+    function withMockedPipelineState2(jsonString, fn) {
+      var orig = fs.readFileSync;
+      fs.readFileSync = function(p, enc) {
+        if (String(p).indexOf('pipeline-state.json') !== -1) { return jsonString; }
+        return orig(p, enc);
+      };
+      try { return fn(); } finally { fs.readFileSync = orig; }
+    }
+    var canvasPool = {
+      query: function(sql, params) {
+        var s = String(sql).trim();
+        if (/^SELECT id, name, description, product_id, persona_name, persona_role, persona_goal FROM customer_journeys/.test(s)) {
+          return Promise.resolve({ rows: [{ id: 'j1', name: 'J', description: null, product_id: 'P1', persona_name: null, persona_role: null, persona_goal: null }] });
+        }
+        if (/^SELECT id, name, position, description/.test(s)) { return Promise.resolve({ rows: [] }); }
+        if (/^SELECT DISTINCT feature_slug FROM journeys WHERE product_id = \$1/.test(s)) {
+          return Promise.resolve({ rows: [{ feature_slug: 'p1-feat-a' }] });
+        }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+    var bodyContent = await withMockedPipelineState2(JSON.stringify({ features: [] }), async () => {
+      var req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+      var res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+      await journeys.handleGetJourneyCanvas(req, res, null, canvasPool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+
+    var suggestionBtn = win.document.querySelector('.sw-persona-suggestion-btn');
+    assert.ok(suggestionBtn, 'expected a suggestion button to exist in the rendered DOM');
+    suggestionBtn.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    var refText = win.document.querySelector('.sw-persona-reference-text');
+    assert.strictEqual(refText.value, 'Primary: Busy parent who needs quick checkout.', 'expected the reference text area to fill with the suggestion\'s raw text');
+    assert.ok(refText.classList.contains('sw-persona-reference-text--visible'), 'expected the reference text area to become visible');
+    // AC1 -- never auto-split into the 3 fields.
+    assert.strictEqual(win.document.querySelector('.sw-persona-name-input').value, '', 'expected the name field to remain empty -- no automatic structured extraction');
+    process.env.CLAUDE_REPO_PATH = _origClaudeRepoPath;
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+    pass('(UI, E2E) clicking a suggestion fills the reference text area, never auto-splitting into the 3 fields');
+  } catch (e) { fail('(UI, E2E) clicking a suggestion fills the reference text area, never auto-splitting into the 3 fields', e); }
+
+  // -- (UI, E2E) submitting the editor form POSTs the 3 persona fields --
+  try {
+    function withMockedPipelineState3(jsonString, fn) {
+      var orig = fs.readFileSync;
+      fs.readFileSync = function(p, enc) {
+        if (String(p).indexOf('pipeline-state.json') !== -1) { return jsonString; }
+        return orig(p, enc);
+      };
+      try { return fn(); } finally { fs.readFileSync = orig; }
+    }
+    var canvasPool = {
+      query: function(sql, params) {
+        var s = String(sql).trim();
+        if (/^SELECT id, name, description, product_id, persona_name, persona_role, persona_goal FROM customer_journeys/.test(s)) {
+          return Promise.resolve({ rows: [{ id: 'j1', name: 'J', description: null, product_id: null, persona_name: null, persona_role: null, persona_goal: null }] });
+        }
+        if (/^SELECT id, name, position, description/.test(s)) { return Promise.resolve({ rows: [] }); }
+        return Promise.resolve({ rows: [] });
+      }
+    };
+    var bodyContent = await withMockedPipelineState3(JSON.stringify({ features: [] }), async () => {
+      var req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+      var res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
+      await journeys.handleGetJourneyCanvas(req, res, null, canvasPool);
+      return res._b.bodyContent;
+    });
+    var dom = buildDom(bodyContent);
+    var win = dom.window;
+    var fetchCalls = [];
+    win.fetch = function(url, opts) { fetchCalls.push({ url: url, opts: opts }); return Promise.resolve({ ok: true, json: function() { return Promise.resolve({}); } }); };
+
+    win.document.querySelector('.sw-persona-name-input').value = 'Busy parent';
+    win.document.querySelector('.sw-persona-role-input').value = 'Shopper';
+    win.document.querySelector('.sw-persona-goal-input').value = 'Checkout fast';
+    var form = win.document.querySelector('.sw-persona-editor-form');
+    form.dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(function(resolve) { setTimeout(resolve, 0); });
+
+    assert.strictEqual(fetchCalls.length, 1, 'expected exactly one fetch call on submit');
+    assert.strictEqual(fetchCalls[0].url, '/journeys/j1/persona', 'expected the fetch to target the persona save route');
+    var sentBody = JSON.parse(fetchCalls[0].opts.body);
+    assert.strictEqual(sentBody.persona_name, 'Busy parent');
+    assert.strictEqual(sentBody.persona_role, 'Shopper');
+    assert.strictEqual(sentBody.persona_goal, 'Checkout fast');
+    pass('(UI, E2E) submitting the editor form POSTs all 3 persona fields to the save route');
+  } catch (e) { fail('(UI, E2E) submitting the editor form POSTs all 3 persona fields to the save route', e); }
 
   console.log(`\n[jcx-s4-persona-card] Results: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exitCode = 1;
