@@ -1,0 +1,23 @@
+{
+  "storyId": "jcx-hotfix2",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/983",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 1,
+    "passing": 1
+  },
+  "acTotal": 1,
+  "acVerified": 1,
+  "regressionSuite": {
+    "file": "tests/check-jcx-hotfix2-persona-route-method.js",
+    "totalTests": 1,
+    "passing": 1
+  },
+  "fullSuite": {
+    "filesRun": 745,
+    "failed": 0,
+    "newFailures": 0,
+    "note": "Confirmed RED against the bug and GREEN against the fix; full suite 0 failures against the clean, single-line diff"
+  }
+}

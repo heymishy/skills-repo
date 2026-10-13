@@ -40113,17 +40113,19 @@
           "stage": "definition-of-ready",
           "health": "green",
           "acTotal": 1,
-          "acVerified": 0,
+          "acVerified": 1,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "updatedAt": "2026-10-13T05:54:34.113Z",
+          "updatedAt": "2026-10-13T06:27:07.458Z",
           "testPlan": {
             "status": "written",
             "totalTests": 1,
-            "passing": 0,
+            "passing": 1,
             "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-hotfix2-test-plan.md"
-          }
+          },
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/983"
         }
       ],
       "metrics": [
