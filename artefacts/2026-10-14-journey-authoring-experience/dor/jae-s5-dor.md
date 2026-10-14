@@ -115,4 +115,4 @@ Oversight level: High (solo-operator repo-wide posture — see Sign-off below)
 
 **Oversight level:** High — per `architecture-guardrails.md`'s "Solo operator / W4 RISK-ACCEPT posture" (human oversight defaults to High in this operating context, superseding the epic's own Medium label, which was set before that repo-wide posture was applied here).
 **Sign-off required:** Yes
-**Signed off by:** _Pending — awaiting Hamish King's "Proceed: Yes"._
+**Signed off by:** Hamish King (Platform Owner) — 2026-10-15, via direct `AskUserQuestion` reply ("Proceed").
