@@ -859,8 +859,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     var gridTemplateColumns = 'repeat(' + stagesForGrid.length + ', minmax(200px, 1fr))';
 
     var headerCellsHtml = stagesForGrid.map(function(s) {
-      return '<div class="sw-cx-grid-cell sw-cx-grid-cell--header" data-stage-id="' + escHtml(s.id) + '">' +
-        '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
+      var nameHtml = (s.name && s.name.trim())
+        ? '<span class="sw-stage-name">' + escHtml(s.name) + '</span>'
+        : '<span class="sw-stage-name sw-stage-name--empty">—</span>';
+      return '<div class="sw-cx-grid-cell sw-cx-grid-cell--header" data-stage-id="' + escHtml(s.id) + '" tabindex="0">' +
+        nameHtml +
         (s.moment_of_truth ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>' : '') +
         // jcx-s6 -- .sw-stage-edit is already document-delegated (confirmed
         // by reading its own click handler), added specifically because it
@@ -869,6 +872,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         // as this grid is. Reused here with zero new JS. "Map feature"/
         // "Add placeholder" are deliberately NOT included -- genuinely
         // delivery-chrome (AC6), still reachable from the Delivery tab.
+        // jcx-s7 AC3 -- the cell itself is now also a single-click/keyboard
+        // target for opening the same panel (tabindex above; click/keydown
+        // delegation below) -- this link stays as a clear, visible label
+        // for what the larger target does, not the only way to reach it.
         '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit</a>' +
       '</div>';
     }).join('');
@@ -884,7 +891,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
 
     function buildTextCellsRow(rowClass, label, field) {
       var cellsHtml = stagesForGrid.map(function(s) {
-        return '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + (s[field] ? escHtml(s[field]) : 'Not set') + '</div>';
+        // jcx-s7 AC4 -- empty values get a muted, visually-dulled em-dash
+        // treatment (sw-cx-grid-cell--empty), distinct from a real value --
+        // .trim() matters: a whitespace-only value must still count as
+        // empty, matching this codebase's own existing emptiness convention.
+        return (s[field] && s[field].trim())
+          ? '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + escHtml(s[field]) + '</div>'
+          : '<div class="sw-cx-grid-cell sw-cx-grid-cell--empty" data-stage-id="' + escHtml(s.id) + '">—</div>';
       }).join('');
       return buildDataRow(rowClass, label, cellsHtml);
     }
@@ -1291,8 +1304,14 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:13px}' +
       '.sw-stage-panel-field textarea:focus,.sw-stage-panel-field select:focus{border-color:var(--accent);outline:none}' +
       '.sw-stage-panel-field--checkbox{display:flex;align-items:center;gap:8px}' +
-      '.sw-stage-panel-saved{display:none;font-size:12px;color:var(--success)}' +
+      // jcx-s7 AC1 -- the base/default color is now muted (var(--ink-2)),
+      // not success-green: a re-read of the actual .catch handler below
+      // found it reused THIS SAME success-colored element/class for its
+      // own error text, so a failed save could visually read as a
+      // successful one. --error now overrides to var(--danger) explicitly.
+      '.sw-stage-panel-saved{display:none;font-size:12px;color:var(--ink-2)}' +
       '.sw-stage-panel-saved--visible{display:inline}' +
+      '.sw-stage-panel-saved--error{color:var(--danger)}' +
       '.sw-stage-moment-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;color:var(--warn)}' +
       '.sw-stage-card{cursor:grab}' +
       '.sw-stage-reorder-controls{display:inline-flex;gap:2px;margin-left:8px;vertical-align:middle}' +
@@ -1374,14 +1393,26 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       // --customer-experience{display:block}' rule below -- the grid
       // container already carries both classes, so no extra rule is needed
       // or safe to add here.
-      '.sw-cx-grid-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);padding:10px 0}' +
+      // jcx-s7 AC5 -- 10px/12px were off the repo's own 8px spacing scale
+      // (neither a multiple of 8, nor matching each other); normalized to
+      // 8px both here and on sw-cx-grid-row-cells' own column-gap below.
+      '.sw-cx-grid-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);padding:8px 0}' +
       '.sw-cx-grid-row:last-of-type{border-bottom:none}' +
       '.sw-cx-row-label{flex:0 0 150px;width:150px;font-size:11px;font-weight:700;text-transform:uppercase;' +
         'letter-spacing:0.03em;color:var(--ink-2);padding:6px 10px}' +
       '.sw-cx-grid-row-track{flex:1 1 auto;overflow-x:auto}' +
-      '.sw-cx-grid-row-cells{display:grid;column-gap:12px;align-items:start}' +
+      '.sw-cx-grid-row-cells{display:grid;column-gap:8px;align-items:start}' +
       '.sw-cx-grid-cell{font-size:13px;color:var(--ink);padding:6px 10px}' +
-      '.sw-cx-grid-cell--header{font-size:14px;font-weight:700}' +
+      // jcx-s7 AC4 -- muted/dulled treatment for an empty cell or an
+      // empty/default stage name, distinct from a real value.
+      '.sw-cx-grid-cell--empty{color:var(--ink-2)}' +
+      '.sw-stage-name--empty{color:var(--ink-2)}' +
+      // jcx-s7 AC3 -- the header cell is now a single-click/keyboard
+      // target for opening the edit panel (not only the nested link);
+      // cursor + focus-visible style signal that without relying on a
+      // double-click convention (see spike's own correction note).
+      '.sw-cx-grid-cell--header{font-size:14px;font-weight:700;cursor:pointer}' +
+      '.sw-cx-grid-cell--header:focus-visible{outline:2px solid var(--accent);outline-offset:2px}' +
       '.sw-cx-grid-cell--header .sw-stage-edit{display:block;margin-top:4px;font-size:12px;font-weight:400}' +
       '.sw-cx-grid-row--header{background:var(--surface);border-radius:6px 6px 0 0}' +
       '.sw-stage-health{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px}' +
@@ -1548,6 +1579,15 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'document.addEventListener("keydown", function(ke){' +
             'var active=document.activeElement;' +
             'if(!active||!active.classList||!active.classList.contains("sw-drawflow-node"))return;' +
+            // jcx-s7 AC3 -- Enter/Space on a focused drawflow node also
+            // opens the edit panel (same single-click convention extended
+            // to keyboard) -- checked before the arrow-key movement branch
+            // below so it does not fall through to "else return".
+            'if(ke.key==="Enter"||ke.key===" "){' +
+              'var nodeEditLink=active.querySelector(".sw-stage-edit");' +
+              'if(nodeEditLink){ke.preventDefault();openPanel(nodeEditLink.getAttribute("data-stage-id"));}' +
+              'return;' +
+            '}' +
             'var STEP=20,dx=0,dy=0;' +
             'if(ke.key==="ArrowLeft")dx=-STEP;' +
             'else if(ke.key==="ArrowRight")dx=STEP;' +
@@ -1610,7 +1650,31 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'function save(){' +
             'var name=input.value.trim();' +
             'submitJson("/journeys/"+journeyId+"/stages","POST",{name:name,_csrf:csrfToken})' +
-              '.then(function(){window.location.reload();})' +
+              // jcx-s7 AC2 -- window.location.reload() here violated this
+              // repo's own documented web-ui-patterns.md rule ("Client-side
+              // DOM patch vs. full page reload after a POST action"): the
+              // canvas has live, in-progress client state (the open edit
+              // panel, any typed-but-unsaved field text) that a reload
+              // discarded, and it always bounced the user back to the
+              // default Canvas view regardless of which view they were on.
+              // Patch this one card in place instead, from the response's
+              // own {id, name, position} -- no reload, view unchanged.
+              '.then(function(resp){' +
+                'card.classList.remove("sw-stage-card--new");' +
+                'card.setAttribute("data-stage-id",resp.id);' +
+                'card.innerHTML="";' +
+                'var nameSpan=document.createElement("span");' +
+                'nameSpan.className="sw-stage-name";' +
+                'nameSpan.textContent=resp.name;' +
+                'var editLink=document.createElement("a");' +
+                'editLink.href="#";' +
+                'editLink.className="sw-stage-edit";' +
+                'editLink.setAttribute("data-stage-id",resp.id);' +
+                'editLink.textContent="Edit stage";' +
+                'card.appendChild(nameSpan);' +
+                'card.appendChild(editLink);' +
+                'stageData[resp.id]={id:resp.id,name:resp.name,position:resp.position};' +
+              '})' +
               '.catch(function(e){' +
                 'input.classList.add("sw-stage-name-input--error");' +
                 'input.setAttribute("aria-invalid","true");' +
@@ -1670,6 +1734,42 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'if(!link)return;' +
         'ev.preventDefault();' +
         'openPanel(link.getAttribute("data-stage-id"));' +
+      '});' +
+      // jcx-s7 AC3 -- a single click (or Enter/Space when keyboard-focused)
+      // anywhere on the swimlane grid's own header cell also opens the
+      // panel, not only the small nested .sw-stage-edit link -- matches
+      // Touchpoint Dashboard's own "click the cell" convention (NOT
+      // double-click, see spike's own correction note: double-click is
+      // the wrong pattern to borrow from Smaply here). Clicks on the
+      // nested link itself are left to the listener above (it already
+      // calls openPanel, and ev.target.closest(".sw-stage-edit") below
+      // makes this one a no-op for that exact click -- avoids a double-open).
+      'document.addEventListener("click",function(ev){' +
+        'var cell=ev.target.closest&&ev.target.closest(".sw-cx-grid-cell--header");' +
+        'if(!cell)return;' +
+        'if(ev.target.closest(".sw-stage-edit"))return;' +
+        'openPanel(cell.getAttribute("data-stage-id"));' +
+      '});' +
+      'document.addEventListener("keydown",function(ev){' +
+        'if(ev.key!=="Enter"&&ev.key!==" ")return;' +
+        'var cell=document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".sw-cx-grid-cell--header");' +
+        'if(!cell)return;' +
+        'ev.preventDefault();' +
+        'openPanel(cell.getAttribute("data-stage-id"));' +
+      '});' +
+      // jcx-s7 AC3 -- same single-click convention extended to a drawflow
+      // canvas node: the node itself has no own data-stage-id attribute,
+      // so fall back to reading it off the node's own nested .sw-stage-edit
+      // link (already present, ic-s1's own precedent). Map feature/Add
+      // placeholder clicks are explicitly excluded -- they keep their own
+      // distinct behaviour, this must not intercept them.
+      'document.addEventListener("click",function(ev){' +
+        'var node=ev.target.closest&&ev.target.closest(".sw-drawflow-node");' +
+        'if(!node)return;' +
+        'if(ev.target.closest(".sw-stage-edit,.sw-stage-map-feature,.sw-stage-add-placeholder"))return;' +
+        'var nodeEditLink=node.querySelector(".sw-stage-edit");' +
+        'if(!nodeEditLink)return;' +
+        'openPanel(nodeEditLink.getAttribute("data-stage-id"));' +
       '});' +
       // ep1-s4 -- drag-and-drop + keyboard reorder, sharing one submit
       // path (submitOrder). Native HTML5 drag-and-drop is kanban-view.js's
@@ -1807,12 +1907,25 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'function save(){' +
           'if(!panelStageId)return;' +
           'var value=f==="moment_of_truth"?el.checked:el.value;' +
+          // jcx-s7 AC1 -- a re-read of this handler's own .catch (below)
+          // found it reused the SAME success-colored element/class for its
+          // error text -- a failed save could visually read as successful.
+          // Fixed via a dedicated --error class (CSS, var(--danger)), a
+          // real "Saving..." in-flight state, and -- rather than adding a
+          // save-sequence token to guard a stale setTimeout (review finding
+          // 1-M1) -- removing the auto-hide timeout entirely: every state
+          // is now genuinely persistent (matches the AC's own "persistent"
+          // framing and the spike's Notion/Linear/Figma/GitLab research),
+          // which removes the race condition's root cause rather than
+          // guarding around it.
+          'panelSaved.textContent="Saving…";' +
+          'panelSaved.classList.remove("sw-stage-panel-saved--error");' +
+          'panelSaved.classList.add("sw-stage-panel-saved--visible");' +
           'submitJson("/journeys/"+journeyId+"/stages/"+panelStageId,"PATCH",{field:f,value:value,_csrf:csrfToken})' +
             '.then(function(){' +
               'stageData[panelStageId][f]=value;' +
               'panelSaved.textContent="Saved";' +
-              'panelSaved.classList.add("sw-stage-panel-saved--visible");' +
-              'setTimeout(function(){panelSaved.classList.remove("sw-stage-panel-saved--visible");},1500);' +
+              'panelSaved.classList.remove("sw-stage-panel-saved--error");' +
               // AC3 -- toggling moment_of_truth updates THAT stage card's own
               // visible indicator in place, without a page reload.
               'if(f==="moment_of_truth"){' +
@@ -1829,7 +1942,8 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
               '}' +
             '})' +
             '.catch(function(e){' +
-              'panelSaved.textContent="Error: "+e.message;' +
+              'panelSaved.textContent="Failed to save — Retry: "+e.message;' +
+              'panelSaved.classList.add("sw-stage-panel-saved--error");' +
               'panelSaved.classList.add("sw-stage-panel-saved--visible");' +
             '});' +
         '}' +
