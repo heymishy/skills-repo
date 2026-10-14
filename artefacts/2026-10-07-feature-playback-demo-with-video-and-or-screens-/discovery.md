@@ -33,10 +33,12 @@ The outer loop pipeline is now mature enough (discovery → DoD, multi-epic, mul
 A governed **Feature Playback Package** skill that, given a DoD-validated feature, produces a structured demo artefact. The MVP output is:
 
 1. A **structured walkthrough document** — framed around the feature's ACs and benefit metrics, not just "here's what we built." Each section maps to a specific AC or metric.
-2. **Screenshots** — captured (assisted or automated via Playwright or equivalent) at the key UI states that demonstrate each AC being met.
-3. A **video recording** — a screen-capture walkthrough (generated or guided) narrated against the AC/metric frame.
+2. **Screenshots** — captured (assisted or automated via Playwright or equivalent) at the key, repeatable, stable UI states that demonstrate each AC being met — the best candidates for automation per the `best-practice-grounding-outcome.md` spike. Automated capture does not remove the engineer's own editorial review before the package is considered complete.
+3. A **video recording** — a screen-capture walkthrough (generated or guided), narration optional rather than a forced choice; machine-generated (human-reviewable) captions and a text transcript are produced alongside every recording as a baseline MVP output, not a later enhancement — see the new Accessibility constraint below.
 
-The skill guides the engineer through what to capture, in what order, using the feature's existing DoD artefacts, test plans, and benefit metrics as the script. It does not require the engineer to author the demo from scratch.
+The skill guides the engineer through what to capture, in what order, using the feature's own DoD artefact — specifically its AC Coverage table and Metric Signal section, not raw E2E test file content — as the script. It does not require the engineer to author the demo from scratch.
+
+**Amended 2026-10-14, per `spikes/best-practice-grounding-outcome.md`:** the three changes above (stable-UI-state automation boundary, optional narration with auto-transcription as the baseline, DoD-sourced script over raw E2E content) resolve what was previously open assumption language into concrete MVP commitments, grounded in external best-practice sources.
 
 The demo package becomes a governed artefact stored in `artefacts/[feature-slug]/playback/` alongside the DoD.
 
@@ -53,15 +55,17 @@ The demo package becomes a governed artefact stored in `artefacts/[feature-slug]
 
 ## Assumptions and risks
 
-[ASSUMPTION] Playwright (already a devDependency for E2E tests) can be used to drive screenshot capture against the live or staging environment — unconfirmed, requires /clarify to determine whether the staging environment is reliably accessible for this purpose.
+[RESOLVED 2026-10-14, per spike] Playwright (already a devDependency for E2E tests) can be used to drive screenshot capture against the live or staging environment — confirmed as established best practice (BrowserStack, Playwright MCP), scoped specifically to AC-mapped, stable, repeatable UI states; `/clarify` should still confirm staging's own reliable accessibility for this purpose, but the mechanism itself is no longer an open assumption.
 
-[ASSUMPTION] The feature's E2E test suite (or a subset of it) can serve as the "script" for the video walkthrough — unconfirmed; some features may have E2E tests that are too low-level or too terse to work as a sponsor-facing narrative.
+[RESOLVED 2026-10-14, per spike] The walkthrough script is sourced from the feature's own DoD artefact — its AC Coverage table and Metric Signal section — not from raw E2E test file content, which the original risk correctly flagged as often too low-level or terse for a sponsor-facing narrative.
 
-[ASSUMPTION] Chrome's built-in screen recording (or a Node.js equivalent like `puppeteer-screen-recorder`) is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling.
+[ASSUMPTION] Chrome's built-in screen recording (or a Node.js equivalent like `puppeteer-screen-recorder`) is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling. No best-practice source addressed this directly; stays open, correctly deferred to `/definition`, and needs named compliance sign-off if a regulated tenant adopts this skill.
 
-[ASSUMPTION] Engineers are willing to narrate or annotate a screen recording, rather than the package being fully silent — unconfirmed; silent video with on-screen annotations may be the only viable option for teams operating in restricted audio environments.
+[RESOLVED 2026-10-14, per spike] Engineers are not required to narrate — narration is optional by default, with auto-transcription (not a forced human-narration decision) as the MVP's own baseline mechanism for turning a recording into structured, searchable documentation. This also closes the regulated/restricted-audio-environment concern: a silent recording with an auto-generated transcript is already the MVP's own default path, not a fallback.
 
-The primary risk is that the "generated or assisted" spectrum is wide — a fully automated package (Playwright drives everything, no engineer input) and a guided-manual package (engineer does the recording, skill tells them what to capture) have very different implementation paths. The MVP must commit to one end of this spectrum or define the boundary clearly.
+The primary risk is that the "generated or assisted" spectrum is wide — a fully automated package (Playwright drives everything, no engineer input) and a guided-manual package (engineer does the recording, skill tells them what to capture) have very different implementation paths. Per the spike, the MVP commits to: automated capture at AC-mapped stable states, DoD-sourced script, optional narration with auto-transcription as baseline — human editorial review remains mandatory before a package ships, which is the one point not fully automated by design.
+
+**[Added 2026-10-14, per spike] Known risk — accessibility gap:** shipping video content with no caption/transcript mechanism would be a real, avoidable WCAG AA gap, inconsistent with how every other feature in this platform has been built this cycle (every story's own DoR carries an explicit Accessibility NFR, checked against the MC-A11Y-01/MC-A11Y-02 guardrails). Closed by the new Accessibility constraint above — not fully mitigated until `/definition` actually specifies the caption-generation mechanism.
 
 ---
 
@@ -81,19 +85,18 @@ The primary risk is that the "generated or assisted" spectrum is wide — a full
 - The playback artefact must be stored in the standard artefact directory structure (`artefacts/[feature-slug]/playback/`) — not in an external service or platform.
 - Video format must be compatible with async sharing (MP4 or equivalent) — no proprietary format that requires specific player software.
 - The skill must work for features delivered via the git-native surface type (Phase 1 MVP); multi-surface playback is out of scope.
+- **[Added 2026-10-14, per spike] Accessibility:** every generated video must ship with machine-generated, human-reviewable captions and a standalone text transcript — WCAG AA baseline, consistent with this platform's own established MC-A11Y accessibility practice enforced on every other story. Not an optional enhancement.
 
 ---
 
 ## /clarify recommendation
 
-This discovery contains 4 unconfirmed assumptions that affect scope and implementation path. Before proceeding to `/benefit-metric`, run `/clarify` to resolve:
+**[Updated 2026-10-14, per spike]** 2 of the original 4 assumptions are now resolved (see Assumptions and risks above) — the screenshot-capture mechanism and the walkthrough-script source. Before proceeding to `/benefit-metric`, run `/clarify` to resolve what remains:
 
-- [ASSUMPTION] Playwright can be used to drive screenshot capture against the live or staging environment — unconfirmed, requires /clarify to determine whether the staging environment is reliably accessible for this purpose.
-- [ASSUMPTION] The feature's E2E test suite can serve as the "script" for the video walkthrough — unconfirmed; some features may have E2E tests that are too low-level or too terse to work as a sponsor-facing narrative.
-- [ASSUMPTION] Chrome's built-in screen recording or a Node.js equivalent is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling.
-- [ASSUMPTION] Engineers are willing to narrate or annotate a screen recording — unconfirmed; silent video with on-screen annotations may be the only viable option.
+- [ASSUMPTION] Chrome's built-in screen recording or a Node.js equivalent is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling. The spike found no best-practice source resolving this; it is a genuine implementation-tooling decision for `/clarify`/`/definition`, not a research gap.
+- [CONFIRM] Whether staging is reliably accessible for Playwright-driven capture in THIS repo's own environment specifically (the spike confirmed the mechanism is sound in general; this repo's own staging-accessibility reality still needs a direct check, same as any other story's own environment assumption).
 
-The most critical clarification is the first: if the staging environment is not reliably accessible, the automated screenshot/video path is not viable and the MVP must be guided-manual rather than generated.
+The most critical remaining clarification is the first: if a regulated-environment screen-recording restriction applies, the video-capture mechanism (not the overall package concept) is what needs to change.
 
 ---
 
