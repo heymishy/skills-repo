@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-14T05:21:21.372Z",
+      "updatedAt": "2026-10-14T05:23:56.528Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40533,29 +40533,59 @@
             {
               "slug": "jae-s1",
               "name": "Seed a new journey with a default starting-skeleton template",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T04:56:42.867Z"
+              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s1-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "jae-s2",
               "name": "Collapse stage creation into one guided action -- the edit panel opens automatically after naming a new stage",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T04:56:42.868Z"
+              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s2-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "jae-s3",
               "name": "Extend the discovery-artefact-scan suggestion pattern to stage-level fields",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T04:56:42.868Z"
+              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s3-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
