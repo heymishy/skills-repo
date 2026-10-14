@@ -40613,7 +40613,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T09:14:01.588Z",
+              "updatedAt": "2026-10-14T09:27:04.731Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 7,
@@ -40625,7 +40625,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "dodStatus": "not-started",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/991"
             }
