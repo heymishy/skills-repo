@@ -1,8 +1,8 @@
 # Discovery: Journey authoring experience — guided creation, smarter defaults, templates
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-10-14
-**Approved by:** [Pending]
+**Approved by:** Hamish King — Platform Owner — 2026-10-14
 **Author:** Claude (session), drafted from existing spike research, confirmed section-by-section with Hamish King (Platform Owner) via /clarify
 
 ---
@@ -83,7 +83,7 @@ Deferred from this MVP (see Out of Scope): the AI-generation fast-follow itself 
 
 ## Approved By
 
-[Pending]
+Hamish King — Platform Owner — 2026-10-14
 
 ---
 
