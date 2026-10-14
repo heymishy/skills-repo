@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T18:24:47.741Z",
+      "updatedAt": "2026-10-14T18:39:44.204Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40643,7 +40643,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T18:24:47.740Z",
+              "updatedAt": "2026-10-14T18:39:44.204Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -40658,7 +40658,8 @@
               "prStatus": "none",
               "dodStatus": "not-started",
               "dorArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor.md",
-              "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md",
+              "dorSignedOffAt": "2026-10-14T18:39:44.202Z"
             }
           ]
         }
