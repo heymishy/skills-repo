@@ -18,7 +18,7 @@ So that **I can scan "what covers what, and what's still missing" across the who
 
 ## Architecture Constraints
 
-- **Reuse over invention (ADR-026).** The new `buildDeliverySwimlaneGrid(stagesForGrid)` function is modelled directly on the existing `buildCustomerExperienceSwimlaneGrid` (same file, `journeys.js`): same `gridTemplateColumns = 'repeat(N, minmax(200px, 1fr))'` formula, same `buildDataRow(rowClass, label, cellsHtml)` helper shape, same header-cell pattern (stage name, moment-of-truth badge, `.sw-stage-edit` link — all three copied verbatim from the CX grid's own header cell). No second grid mechanism is invented; CSS classes are namespaced (`sw-delivery-grid-*` mirroring `sw-cx-grid-*`) but structurally identical, matching the spike's own explicit "Not recommended: inventing a new grid/table mechanism" guidance.
+- **One canonical grid-shell builder, not a second derivation (ADR-026 + ADR-028).** `buildCustomerExperienceSwimlaneGrid` (same file, `journeys.js`) is refactored to extract its shared mechanics — the `gridTemplateColumns = 'repeat(N, minmax(200px, 1fr))'` formula, the `buildDataRow(rowClass, label, cellsHtml)` cell/track/pinned-label-wrapper shape, and the visually-hidden accessible-list pattern — into one canonical builder (e.g. `buildSwimlaneGridShell(stagesForGrid, { buildHeaderCell, rows, buildA11yEntry })`) that both the existing CX grid and the new `buildDeliverySwimlaneGrid` call. Per ADR-028 ("a derived structure needs exactly one canonical builder — every consumer reads from it, none re-derive it"), this story does NOT copy the CX grid's mechanics a second time into an independent `buildDeliverySwimlaneGrid` implementation. This is a behaviour-preserving refactor: `buildCustomerExperienceSwimlaneGrid`'s own rendered output must be byte-identical before and after, confirmed by its existing test suite passing unchanged — a dedicated task (not folded into the Delivery-build task) runs that suite before any Delivery-specific code is written, establishing the refactor is safe in isolation. CSS classes for the new grid are namespaced (`sw-delivery-grid-*` mirroring `sw-cx-grid-*`); the header-cell content itself differs per view (CX: stage name, moment-of-truth badge, `.sw-stage-edit` link; Delivery: the same three plus `.sw-stage-reorder-controls`), supplied to the shared builder via the `buildHeaderCell` callback, not by forking the builder.
 - **Reorder controls move into the header cell.** Unlike the CX grid's header cell (which deliberately omits `Map feature`/`Add placeholder` as "genuinely delivery-chrome" per `jcx-s6`'s own comment), the Delivery grid's header cell additionally renders the existing `.sw-stage-reorder-controls` (up/down buttons) — today's only surface for reordering stages, since `#sw-journey-stages` (the card stack being replaced) is the only view where they currently render. No change to the reorder buttons' own markup, `aria-label`s, or their existing click handler (`data-direction`/`data-stage-id` read exactly as today).
 - **Map feature / Add placeholder live inside the Mapped features cell, not a dedicated row (`decisions.md`, 2026-10-15).** Each stage's Mapped features cell contains, in order: `buildDeliveryAnnotations(stageId)`'s existing output unmodified (no-mappings / placeholder / missing-feature / normal-mapping-with-metrics — all 4 existing cases, byte-identical markup), then the existing `.sw-stage-map-feature` button, the existing `.sw-stage-add-placeholder` button, and the existing `.sw-placeholder-add-form` (inline, toggled via its existing `sw-placeholder-add-form--open` class) — all four pieces of markup are moved into the grid cell unchanged; none of their classes, data attributes, or the JS that finds them by those classes/attributes (`fpOpen`, the `.sw-stage-add-placeholder` click handler, `jcxSubmitJson`, the placeholder-trigger/remove delegated handlers) are modified by this story.
 - **Health badge becomes its own grid row.** `buildHealthIndicator(stageId)`'s existing output (icon + accessible label, unchanged, MC-A11Y-02) renders as one `buildDataRow('health', 'Coverage status', cellsHtml)` row — a direct per-stage cell analogue of the CX grid's `buildTextCellsRow`, but using `buildHealthIndicator` instead of a plain field read, since health is computed, not a stored field.
@@ -51,7 +51,7 @@ So that **I can scan "what covers what, and what's still missing" across the who
 
 ## Out of Scope
 
-- **Any change to the Customer-experience grid, its CSS, or its JS** — read as the reuse source only.
+- **Any OBSERVABLE change to the Customer-experience grid's rendered output or behaviour** — its existing test suite must pass unchanged. Its internal implementation IS touched (the ADR-028 canonical-builder extraction above), by design — this is a refactor, not new CX functionality, and is not a loophole for behavioural changes to CX.
 - **Any change to the Canvas view** — covered separately by the drawflow node-styling spike/story.
 - **A dedicated "Actions" row for Map feature/Add placeholder** — explicitly decided against; see `decisions.md`, 2026-10-15.
 - **Changing the health-badge icon/colour/label design** — reused as-is.
@@ -66,5 +66,9 @@ So that **I can scan "what covers what, and what's still missing" across the who
 
 ## Complexity Rating
 
-**Rating:** 1
+**Rating:** 2
 **Scope stability:** Stable
+
+<!-- Raised from 1 to 2 at /review run 1 (finding 1-H2): this story now includes a
+     behaviour-preserving refactor of already-shipped CX grid internals (ADR-028
+     canonical-builder extraction), not purely additive Delivery-view work. -->

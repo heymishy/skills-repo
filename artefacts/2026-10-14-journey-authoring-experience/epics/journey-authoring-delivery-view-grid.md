@@ -6,15 +6,17 @@
 
 ## Goal
 
-When this epic is complete, the Delivery view no longer renders a per-stage vertical stack of cards (stage name, health badge, moment-of-truth badge, reorder controls, Edit stage/Map feature/Add placeholder, followed by a separate delivery-annotations block). Instead it renders a swimlane grid — one column per stage, reusing `jcx-s6`'s own `.sw-cx-grid-*` mechanism (`buildDataRow`, shared `gridTemplateColumns`, horizontal scroll with a pinned label column, muted empty-state cells) per ADR-026 — with Map feature and Add placeholder living inside each stage's Mapped features cell (`decisions.md`, 2026-10-15). No new grid mechanism is built; this is a second, namespaced application of an already-validated one.
+When this epic is complete, the Delivery view no longer renders a per-stage vertical stack of cards (stage name, health badge, moment-of-truth badge, reorder controls, Edit stage/Map feature/Add placeholder, followed by a separate delivery-annotations block). Instead it renders a swimlane grid — one column per stage, with Map feature and Add placeholder living inside each stage's Mapped features cell (`decisions.md`, 2026-10-15).
 
----CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    GRID[Existing: buildCustomerExperienceSwimlaneGrid]\n    NEWGRID[New: buildDeliverySwimlaneGrid]\n    ROUTE[routes/journeys.js]\n    ROUTE -->|jcx-s6, unchanged| GRID\n    ROUTE -->|this epic, reuses .sw-cx-grid-* CSS/JS per ADR-026| NEWGRID"}}---
+**Per ADR-028** ("a derived structure needs exactly one canonical builder — every consumer reads from it, none re-derive it"), the shared grid-shell mechanics (`gridTemplateColumns` formula, the `buildDataRow` cell/track/pinned-label wrapper, the focusable header-cell pattern, the visually-hidden accessible-list pattern) are extracted from `buildCustomerExperienceSwimlaneGrid` into one canonical builder both the existing CX grid and the new Delivery grid call — not re-derived a second time. This is a behaviour-preserving refactor: `buildCustomerExperienceSwimlaneGrid`'s own rendered output and existing test suite are unchanged; only its internals are reorganised to share mechanics with the new `buildDeliverySwimlaneGrid`.
+
+---CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    SHELL[New canonical builder: buildSwimlaneGridShell per ADR-028]\n    CX[buildCustomerExperienceSwimlaneGrid - refactored to call SHELL]\n    DELIVERY[New: buildDeliverySwimlaneGrid - calls SHELL]\n    ROUTE[routes/journeys.js]\n    CX -->|column template, data-row, a11y-list mechanics| SHELL\n    DELIVERY -->|same shared mechanics, different row content| SHELL\n    ROUTE -->|jcx-s6 content unchanged| CX\n    ROUTE -->|this epic, new content| DELIVERY"}}---
 
 ## Out of Scope
 
-- **Any change to the Customer-experience tab's own grid** — `buildCustomerExperienceSwimlaneGrid` and its CSS/JS are read as the reuse source, not modified.
+- **Any OBSERVABLE change to the Customer-experience tab's own grid** — its rendered output and existing test suite are unchanged. Its internals ARE touched, by design, per ADR-028: the shared grid-shell mechanics it already implements are extracted into one canonical builder this epic's new Delivery grid also calls, rather than re-derived a second time. This is a mandated refactor, not new CX functionality.
 - **Any change to Canvas view's drawflow nodes** — covered separately by `spikes/canvas-node-styling-outcome.md`, not this epic.
-- **A new grid/table mechanism** — explicitly rejected by `delivery-view-design-outcome.md`'s own "Not recommended" section; this epic is namespacing and reusing the existing mechanism, not inventing a second one.
+- **A new, independent grid/table mechanism** — explicitly rejected by `delivery-view-design-outcome.md`'s own "Not recommended" section and by ADR-028; this epic shares the existing mechanism via one canonical builder, not a second parallel one.
 - **Changing the health-badge concept or its existing icon/colour treatment** (`Covered`/`Needs metrics`/`No coverage`) — confirmed sound by the spike's own research; only its container (card → grid cell) changes.
 - **Reordering mechanics** (`sw-stage-move`, drag) — unchanged in behaviour; this epic only relocates where the controls render (into the header cell, matching the Customer-experience grid's own existing `.sw-stage-edit`-in-header-cell convention).
 
@@ -30,10 +32,10 @@ When this epic is complete, the Delivery view no longer renders a per-stage vert
 
 ## Human Oversight Level
 
-**Oversight:** Low
-**Rationale:** Pure reuse of an already-shipped, already-reviewed grid mechanism (`jcx-s6`) with a CSS/markup restructure and no new data flow, no new adapter, no new route beyond what already exists for `Map feature`/`Add placeholder` (`sw-feature-picker`, `sw-placeholder-add-form` — unchanged). Matches the Low oversight rationale already used for `jae-s1`–`jae-s3`.
+**Oversight:** Medium
+**Rationale:** The Delivery-view build itself is low-risk reuse (no new data flow, no new adapter, no new route beyond what already exists for `Map feature`/`Add placeholder`). Raised from Low to Medium because this epic also refactors `buildCustomerExperienceSwimlaneGrid` — already-shipped, already-reviewed, already-live code — to extract a canonical builder per ADR-028. That refactor must be verified not to change the CX grid's own observable behaviour (its existing test suite must pass unchanged), which is a real regression surface `jae-s1`–`jae-s3` never touched.
 
 ## Complexity Rating
 
-**Rating:** 1
+**Rating:** 2
 **Scope Stability:** Stable
