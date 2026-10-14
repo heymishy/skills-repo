@@ -43,6 +43,8 @@
 - The reorder endpoint's own request/response handling is unchanged; only the reorder buttons' render location moves.
 - `buildHealthIndicator` and `buildDeliveryAnnotations` are called exactly as they are today — no signature change.
 
+**Amendment (2026-10-15, found at `/implementation-plan`, before any code written):** This contract originally claimed "no change to the reorder buttons' own wiring." That was wrong — close reading of the actual client script found the existing reorder mechanism (`reorderDom`/`getStageIds` against `#sw-journey-stages`) assumes one `.sw-stage-card` element per stage, which no longer exists once a stage's content spans 3 row containers. Corrected per `decisions.md` (2026-10-15): on a successful reorder, the page reloads instead of an in-place DOM move; on failure, the existing error banner shows with no reload. Drag-and-drop reordering is out of scope for the Delivery grid. The delegated `jcxList` placeholder-trigger/cancel listener is re-targeted from `#sw-journey-stages` to the new grid's own wrapper element — logic unchanged, target element changed. This amendment does not change any AC's observable outcome and does not require a new `/review` or `/definition-of-ready` cycle; H3/H7/H9 remain satisfied under the corrected design.
+
 ## Estimated touch points
 
 **Files:** `src/web-ui/routes/journeys.js` (refactor + new function + CSS + wiring), `tests/check-jae-s5-delivery-swimlane-grid.js` (new), `tests/e2e/jae-s5-delivery-swimlane-grid.spec.js` (new)

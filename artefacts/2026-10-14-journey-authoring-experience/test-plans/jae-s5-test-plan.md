@@ -32,7 +32,7 @@ This story refactors `buildCustomerExperienceSwimlaneGrid` (already-shipped, alr
 | AC2 | Zero-mapping stage shows the existing empty-state text, muted-empty cell styling | 1 test | — | — | — | — | 🟢 |
 | AC3 | Map feature button reachable and wired identically inside the grid cell | 1 test | — | — | — | — | 🟢 |
 | AC4 | Add placeholder form reachable and wired identically inside the grid cell | 1 test | — | — | — | — | 🟢 |
-| AC5 | Reorder buttons render in the header cell, unchanged wiring | 1 test | — | — | — | — | 🟢 |
+| AC5 | Reorder buttons render in the header cell; success reloads, failure shows the error banner (mechanism corrected at `/implementation-plan`) | 2 tests | — | — | — | — | 🟢 |
 | AC6 | 0-stage journey shows the existing empty-state fallback, not an empty grid shell | 1 test | — | — | — | — | 🟢 |
 | AC7 | One shared visually-hidden accessible list covers every stage | 1 test | — | — | — | — | 🟢 |
 | AC8 | Column order, cell alignment, pinned-label horizontal scroll | — | — | 1 test | — | CSS-layout-dependent | 🟡 |
@@ -119,6 +119,14 @@ None.
 - **Action:** Render the Delivery grid
 - **Expected result:** Each header cell contains `.sw-stage-reorder-controls` with its existing up/down `<button data-stage-id data-direction aria-label>` markup, byte-identical to today's card-stack version; the first stage's "up" button and the last stage's "down" button are `disabled`
 - **Edge case:** Yes — single-stage case (no reorder controls render at all, matching today's `stages.length > 1` guard)
+
+### AC5 (unit, added at `/implementation-plan` — corrects the reorder mechanism, `decisions.md` 2026-10-15): reorder success reloads, failure does not
+
+- **Verifies:** AC5's corrected behaviour (reload-on-success, not in-place DOM move)
+- **Precondition:** Rendered canvas HTML (source text, not executed in a browser)
+- **Action:** Extract the client `<script>` block's own reorder-submit handler
+- **Expected result:** The success branch of the reorder PATCH's `.then(...)` calls `window.location.reload()`; it does NOT call `reorderDom`/`list.appendChild` for the Delivery grid's own stage columns (that mechanism is removed, not merely unused). The failure branch's `.catch(...)` still shows `sw-stage-reorder-error` and does NOT call `window.location.reload()`
+- **Edge case:** Yes — the failure path is the edge case, asserted in the same test
 
 ### AC6 (unit): 0-stage journey shows the existing empty-state fallback
 
