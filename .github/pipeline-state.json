@@ -40643,7 +40643,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T18:55:38.204Z",
+              "updatedAt": "2026-10-14T19:47:54.877Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -40664,31 +40664,31 @@
                 {
                   "id": "task-1",
                   "name": "Extract buildSwimlaneGridShell -- refactor CX grid (ADR-028)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Build buildDeliverySwimlaneGrid, wire Delivery view",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Rewrite reorder mechanism, retarget list/jcxList",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Remove #sw-journey-stages, stagesHtml, dead CSS",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "E2E spec -- AC1 alignment, AC8 pinned-label scroll",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 }
               ]
