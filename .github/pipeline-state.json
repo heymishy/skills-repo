@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T08:29:27.402Z",
+      "updatedAt": "2026-10-14T08:41:55.585Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40506,10 +40506,10 @@
           "id": "m2",
           "name": "Fields populated without manual prompting",
           "target": ">=40% of new stages reach >=3 populated fields at first save within 4 weeks of release",
-          "baseline": "Unknown -- real DB query pending before release",
+          "baseline": "3 of 7 stages (42.9%) on wuce-staging -- staging data, contaminated by manual test-session authoring, not a clean pre-feature baseline (n=7, tiny sample)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "Queried directly via flyctl ssh + node/pg against wuce-staging Postgres, 2026-10-14. See benefit-metric.md for the full caveat and exact query.",
           "contributingStories": []
         },
         {
