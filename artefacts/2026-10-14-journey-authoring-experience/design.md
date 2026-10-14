@@ -1,6 +1,6 @@
 # Design: Journey Authoring Experience — Guided Creation, Smarter Defaults, Templates
 
-**Status:** Draft
+**Status:** Reviewed — confirmed by Hamish King (Platform Owner), 2026-10-14
 **Feature:** 2026-10-14-journey-authoring-experience
 **Contributors:** Hamish King — Platform Owner; Claude (session) — drafted from already-reviewed stories, the published mockup, and the `whole-journey-experience-across-views` spike
 **Date:** 2026-10-14
