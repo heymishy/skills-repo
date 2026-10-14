@@ -2605,3 +2605,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Live-verifying jae-s1/s2/s3 on wuce-staging.fly.dev surfaced an unrelated visual-design finding: the Canvas view's own drawflow stage-node boxes render with a bright, saturated cyan fill that does not match the rest of the app's muted surface/border token palette (var(--surface)/var(--line) used everywhere else). Pre-existing styling, not touched by any story in this session (jae-s1 through jae-s4) or by the journey-cx-redesign epic's own jcx-s1 through jcx-s7. Flagged by the operator directly from live screenshots. Worth a dedicated design spike against the Canvas/drawflow node styling before it becomes a story -- not fixed inline here to avoid unplanned scope creep into an unrelated branch."
   source: operator-manual
+
+- date: 2026-10-15
+  session-phase: 2026-10-14-journey-authoring-experience / Delivery-view redesign + Canvas styling spikes
+  signal-type: learning
+  signal-text: "Root cause confirmed for the 2026-10-14 Canvas cyan-fill gap signal: it is drawflow's own unmodified vendor default stylesheet (drawflow@^0.0.60, served as-is at /vendor/drawflow.min.css -- background:#0ff, selected:red, input port:#ff0, connector stroke:#4682b4), not app-side CSS drift. journeys.js never overrides any of the vendor node/port/connector rules. Verdict FIX, documented in spikes/canvas-node-styling-outcome.md: override via the app's own existing --surface/--line/--accent-soft tokens in journeys.js's existing style block, matching the polyline stroke convention the Customer-experience view already uses."
+  source: agent-auto
+
+- date: 2026-10-15
+  session-phase: 2026-10-14-journey-authoring-experience / Delivery-view redesign (journey-authoring-delivery-view-grid epic)
+  signal-type: decision
+  signal-text: "Operator resolved the delivery-view-design-outcome spike's own open P2 question: Map feature/Add placeholder actions live inside the Mapped features grid cell (not a dedicated actions row) in the new Delivery swimlane grid. Logged in decisions.md 2026-10-15. New epic journey-authoring-delivery-view-grid and story jae-s5 (8 ACs) written, reusing jcx-s6's buildCustomerExperienceSwimlaneGrid pattern per ADR-026; added to pipeline-state.json (integrity check: 0 fail). jae-s5 is at stage=definition -- /test-plan and /definition-of-ready not yet run."
+  source: agent-auto
