@@ -22,7 +22,7 @@
 ### Verification strength summary
 - `unit`: 4
 - `integration`: 2 (one AC — AC1 — covered by both a unit and an integration test)
-- `live-verified`: 0 — not yet performed this session
+- `live-verified`: partial (AC3 only) — attempted 2026-10-14 on `wuce-staging.fly.dev`: created a journey linked to the "skills-framework" product and opened the stage-edit panel; no suggestion button appeared for `customer_actions`/`pain_points`, confirming the no-match path degrades gracefully in a real deployed environment (AC3). Did not confirm the suggestion-RENDERS path (AC1) live — no product on staging was found, in the time available, with a `journeys`-table `feature_slug` pointing at a feature whose `discovery.md` has a non-empty Problem Statement and is readable from the deployed app's own `repoRoot`. Follow-up action #1 below is narrowed accordingly.
 
 ---
 
@@ -78,7 +78,7 @@ None. All 5 ACs implemented exactly as scoped. The Out of Scope section's items 
 **COMPLETE — NO DEVIATIONS**
 
 **Follow-up actions:**
-1. **Owner: future session.** Live-verify this story on staging (open a stage whose journey's product has a linked feature with real discovery content; confirm suggestion buttons render and fill correctly) once convenient — not yet performed this session.
+1. **Owner: future session.** Partially done, 2026-10-14 (see Verification strength summary above — the no-match/AC3 path is confirmed live). Still open: find or set up a staging journey whose product genuinely has a linked feature with readable discovery content, and confirm a suggestion button actually renders and fills correctly (AC1) — this remains unconfirmed in the real deployed environment.
 2. **Owner: future session, product.** Per `discovery.md`'s own named risk, check real usage data once available: does the deterministic scan have enough real coverage (are most new journeys linked to a feature with its own discovery.md)? If coverage is low, this is the trigger to bring forward the AI-generation fast-follow rather than waiting out a longer measurement window.
 3. **Owner: future session.** `jae-s1`'s own DoD follow-up (run the real pre-release baseline DB query for M2) should happen now that all 3 epic stories are merged — the "pre-epic" baseline window has closed.
 

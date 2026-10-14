@@ -21,7 +21,7 @@
 
 ### Verification strength summary
 - `unit`: 5 (real jsdom DOM interaction, mocked `fetch`)
-- `live-verified`: 0 — not yet performed this session
+- `live-verified`: 1 (AC1/AC2) — confirmed 2026-10-14 on `wuce-staging.fly.dev`: clicked "+ Add stage," typed a stage name ("Resolve a support ticket"), submitted — the Edit stage panel opened automatically with focus visibly in the Description field, matching AC1/AC2 exactly. AC3/AC4/AC5 were not separately re-exercised live — already covered by unit tests, no live-only risk identified.
 
 ---
 
@@ -77,8 +77,8 @@ None. All 5 ACs implemented exactly as scoped. AC5 was added during `/review` (r
 **COMPLETE — NO DEVIATIONS**
 
 **Follow-up actions:**
-1. **Owner: future session.** Live-verify this story on staging (click "+ Add stage," name it, confirm the panel opens automatically with focus in Description) once convenient — not yet performed this session.
-2. **Owner: future session.** Build the session-timing instrument M1's own benefit-metric row names (stage-creation-to-first-complete-save sequence) — does not exist yet; needed before M1 can be measured at all.
+1. ~~Live-verify this story on staging~~ — **Done, 2026-10-14.** Confirmed on `wuce-staging.fly.dev` (see Verification strength summary above).
+2. **Owner: future session.** Build the session-timing instrument M1's own benefit-metric row names (stage-creation-to-first-complete-save sequence) — does not exist yet; needed before M1 can be measured at all. Still open — not part of this session's live-verification pass.
 
 ---
 

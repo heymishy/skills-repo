@@ -21,7 +21,7 @@
 ### Verification strength summary
 - `unit`: 1
 - `integration`: 3
-- `live-verified`: 0 — not yet performed this session (no live-verification request made for this specific story)
+- `live-verified`: 1 (AC1/AC2) — confirmed 2026-10-14 on `wuce-staging.fly.dev`: created a new journey with the "Start with a default stage outline" checkbox checked (default-on, matching AC1); the 5-stage skeleton (Evaluate/Discover/Purchase/Onboard/Retain) rendered correctly on the Canvas view immediately after creation, matching AC2. AC3 (unchecked → zero stages) and AC4 (tenant scoping) were not separately re-exercised live — already covered by integration tests, no live-only risk identified for either.
 
 ---
 
@@ -76,8 +76,8 @@ None. All 4 ACs implemented exactly as scoped; the Out of Scope section's items 
 **COMPLETE — NO DEVIATIONS**
 
 **Follow-up actions:**
-1. **Owner: future session.** Live-verify this story on staging (create a journey with the checkbox checked, confirm the 5-stage skeleton renders correctly in both Canvas and Customer-experience views) once convenient — not yet performed this session.
-2. **Owner: future session, product.** Run the real pre-release baseline DB query for M2 (per `benefit-metric.md`'s own "Action before release" note) before this epic's remaining stories (`jae-s2`, `jae-s3`) also ship, so the baseline reflects pre-epic state, not a partially-shipped one.
+1. ~~Live-verify this story on staging~~ — **Done, 2026-10-14.** Confirmed on `wuce-staging.fly.dev` (see Verification strength summary above). The Customer-experience view's own rendering of the 5-stage skeleton was not separately re-checked live (Canvas view confirmation was sufficient to validate the seeding mechanism itself, which both views read from the same underlying data).
+2. **Owner: future session, product.** ~~Run the real pre-release baseline DB query for M2~~ — **Done, 2026-10-14** (see `benefit-metric.md` M2 and commit `bf011bbf`). Caveated as staging-test-data, not a clean baseline.
 
 ---
 
