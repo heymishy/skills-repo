@@ -55,3 +55,12 @@
 **Rationale:** Same rationale shape as the `jae-s4` override: the operator's own direction, given with the original discovery boundary's purpose already understood (keeping `jae-s1`–`jae-s3` narrowly scoped to pre-first-save authoring, and protecting `jcx-s6`/`jcx-s7`'s already-shipped CX grid from being redone). The Delivery-view redesign is a materially different concern (reviewing delivery coverage, not creating a stage) that reuses, rather than redoes, the protected CX grid mechanism — the epic's own Out of Scope section (as corrected per finding 1-H2) commits to no observable change to the CX grid's own behaviour.
 **Made by:** Hamish King (Platform Owner), via direct `AskUserQuestion` reply.
 **Revisit trigger:** None needed — this is a final decision, not a placeholder pending further confirmation.
+
+---
+
+**2026-10-15 | RISK-ACCEPT | W4 — solo-operator, no second reviewer (first log for this feature)**
+**Decision:** W4 (verification script reviewed by a domain expert distinct from the author) is risk-accepted for every story in this feature, per `architecture-guardrails.md`'s own "Solo operator / W4 RISK-ACCEPT posture" section — a uniform, repo-wide posture, not a per-story judgment. This is the first W4 log for this feature slug (`2026-10-14-journey-authoring-experience`); no individual entry is needed for `jae-s1`–`jae-s4` or any future story in this feature beyond this one.
+**Context:** `jae-s5`'s own `/definition-of-ready` run surfaced W4 as applicable; checking `decisions.md` found no prior W4 entry logged for this feature despite 4 earlier stories already having passed DoR this session — an omission in those earlier runs, closed here rather than carried forward silently.
+**Rationale:** This repository is operated by a single engineer (Hamish King); the operator is also the reviewer and final approver for every artefact in this pipeline. Per the architecture guardrail, human oversight for this operating context defaults to High for exactly this reason — not because any one story's complexity demands it.
+**Made by:** Established repo-wide posture (`architecture-guardrails.md`), applied here per `/definition-of-ready`'s own W4 check.
+**Revisit trigger:** If a second operator onboards or this repository moves into regulated-enterprise operation, per the guardrail's own stated trigger.
