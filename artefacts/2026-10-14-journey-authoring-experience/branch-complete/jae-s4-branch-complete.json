@@ -1,0 +1,23 @@
+{
+  "storyId": "jae-s4",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/991",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 7,
+    "passing": 7
+  },
+  "acTotal": 7,
+  "acVerified": 7,
+  "regressionSuite": {
+    "file": "tests/check-jae-s4-ai-field-suggestion.js",
+    "totalTests": 7,
+    "passing": 7
+  },
+  "fullSuite": {
+    "filesRun": 753,
+    "failed": 3,
+    "newFailures": 0,
+    "note": "The 3 pre-existing, unrelated missing-dependency failures (drawflow.min.js ENOENT) -- confirmed present on clean master, unrelated to this story's own files. RED/GREEN confirmed via a revert/reapply cycle on src/modules/skill-turn-executor.js, src/web-ui/routes/journeys.js, src/web-ui/server.js, src/web-ui/adapters/field-suggestion-ai.js."
+  }
+}

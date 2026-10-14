@@ -114,7 +114,8 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // as line 105's migratePodsSchema or line 110's signals-panel above, two
 // completely unrelated features that happen to reuse the same generic
 // story-slug shorthand.
-const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, handlePatchJourneyPersona } = require('./routes/journeys');
+const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, handlePatchJourneyPersona, handleGetAiFieldSuggestion } = require('./routes/journeys');
+const { setGenerateAiFieldSuggestion, realGenerateAiFieldSuggestion } = require('./adapters/field-suggestion-ai'); // jae-s4
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -236,6 +237,16 @@ if (process.env.NODE_ENV !== 'test') {
   console.log('[wugs-s1] repo-path fetch adapter wired');
   setGuardrailPrAdapter(realCreateGuardrailPr);
   console.log('[wugs-s6] guardrail PR adapter wired');
+}
+
+// jae-s4 / D37 mandatory separate wiring task -- wire the real LLM-based
+// field-suggestion adapter (reuses skill-turn-executor.js's own Anthropic
+// call path unmodified, per ADR-026). Never wired in NODE_ENV=test (tests
+// call setGenerateAiFieldSuggestion() themselves with a mock), matching the
+// pattern already used by the adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setGenerateAiFieldSuggestion(realGenerateAiFieldSuggestion);
+  console.log('[jae-s4] AI field-suggestion adapter wired');
 }
 
 // rb-s4 / D37 mandatory separate wiring task -- wire the real export
@@ -4121,6 +4132,11 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handleTriggerPlaceholderFeature(req, res, null, _pshPool);
     });
+
+  } else if (pathname.match(/^\/journeys\/[^/]+\/stages\/[^/]+\/ai-suggestion$/) && req.method === 'GET') {
+    // jae-s4 — on-demand LLM-generated fallback field suggestion (2026-10-14-journey-authoring-experience)
+    req.params = { id: pathname.split('/')[2], stageId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handleGetAiFieldSuggestion(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/journeys\/[^/]+\/persona$/) && req.method === 'POST') {
     // jcx-s4 — save the journey's own persona fields (2026-10-11-journey-cx-redesign)

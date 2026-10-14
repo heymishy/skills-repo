@@ -40613,11 +40613,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T08:52:59.322Z",
+              "updatedAt": "2026-10-14T09:14:01.588Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 7,
-                "passing": 0,
+                "passing": 7,
                 "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s4-test-plan.md"
               },
               "acTotal": 7,
@@ -40625,8 +40625,9 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "none",
-              "dodStatus": "not-started"
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/991"
             }
           ]
         }

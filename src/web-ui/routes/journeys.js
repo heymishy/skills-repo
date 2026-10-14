@@ -11,6 +11,7 @@ var { escHtml } = require('../utils/html-shell');
 var _csrf = require('../middleware/csrf'); // jcg-s1 -- CSRF guard, matching every other mutating form handler in this app
 var _repoRootAdapter = require('../adapters/repo-root'); // ep2-s1 -- reuses the existing local-disk repo-root pattern, already used by products.js
 var _personaScanner = require('../adapters/persona-scanner'); // jcx-s4 -- pure file-read scan of discovery.md's own "Who It Affects" sections
+var _fieldSuggestionAi = require('../adapters/field-suggestion-ai'); // jae-s4 -- D37 injectable LLM-fallback suggestion adapter
 
 // ep1-s3 -- allowlist of customer_journey_stages columns the side panel may
 // PATCH. Never interpolate a client-supplied field name into SQL without
@@ -649,6 +650,77 @@ async function getFieldSuggestions(pool, productId, repoRoot) {
   );
   var featureSlugs = fr.rows.map(function(r) { return r.feature_slug; });
   return _personaScanner.scanForFieldSuggestions(featureSlugs, repoRoot);
+}
+
+var AI_SUGGESTION_FIELDS = ['customer_actions', 'pain_points'];
+
+/**
+ * GET /journeys/:id/stages/:stageId/ai-suggestion?field=<field> — jae-s4:
+ * on-demand LLM-generated fallback suggestion, called lazily by the client
+ * only when the stage-edit panel opens AND jae-s3's own deterministic scan
+ * (getFieldSuggestions) already returned nothing for this field. Never
+ * called from handleGetJourneyCanvas's own render path (AC1a) -- a real
+ * network round-trip here must not add latency to every canvas page load.
+ * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
+ * @param {object} req
+ * @param {object} res
+ * @param {*} _next unused
+ * @param {object} pool
+ */
+async function handleGetAiFieldSuggestion(req, res, _next, pool) {
+  var tenantId = req.session && req.session.tenantId;
+  var journeyId = req.params && req.params.id;
+  var stageId = req.params && req.params.stageId;
+  var field = req.query && req.query.field;
+
+  function notFound(msg) {
+    if (res.status) { res.status(404).json({ error: msg }); }
+    else { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end(msg); }
+  }
+  function badRequest(msg) {
+    if (res.status) { res.status(400).json({ error: msg }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: msg })); }
+  }
+
+  if (AI_SUGGESTION_FIELDS.indexOf(field) === -1) { badRequest('invalid field'); return; }
+
+  var jr = await pool.query(
+    `SELECT id, name, product_id FROM customer_journeys WHERE id = $1 AND tenant_id = $2`,
+    [journeyId, tenantId]
+  );
+  if (!jr.rows[0]) { notFound('journey not found'); return; }
+  var journey = jr.rows[0];
+
+  var sr = await pool.query(
+    `SELECT id, name FROM customer_journey_stages WHERE id = $1 AND journey_id = $2`,
+    [stageId, journeyId]
+  );
+  if (!sr.rows[0]) { notFound('stage not found'); return; }
+  var stage = sr.rows[0];
+
+  var featureSlug = null;
+  if (journey.product_id) {
+    var fr = await pool.query(
+      `SELECT feature_slug FROM journeys WHERE product_id = $1 AND feature_slug IS NOT NULL LIMIT 1`,
+      [journey.product_id]
+    );
+    featureSlug = fr.rows[0] ? fr.rows[0].feature_slug : null;
+  }
+
+  var stageContext = { stageName: stage.name, journeyName: journey.name, featureSlug: featureSlug || undefined };
+  // AC5: the real adapter already catches its own errors internally and
+  // resolves to null, but this route-level guard holds the same
+  // degrade-silently invariant regardless of which adapter implementation
+  // is wired (including a test double with no internal catch of its own).
+  var suggestion;
+  try {
+    suggestion = await _fieldSuggestionAi.generateAiFieldSuggestion(stageContext, field);
+  } catch (_) {
+    suggestion = null;
+  }
+
+  if (res.status) { res.status(200).json({ suggestion: suggestion }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ suggestion: suggestion })); }
 }
 
 /**
@@ -1430,6 +1502,11 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-field-suggestions{margin:-8px 0 14px 0}' +
       '.sw-field-suggestion-btn{display:block;width:100%;text-align:left;padding:6px;margin-bottom:4px;' +
         'border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}' +
+      // jae-s4 AC1 -- the AI-generated fallback suggestion is visually
+      // distinguished by its own border style AND its own "AI suggestion:"
+      // text prefix (set in openPanel above) -- label text, not colour
+      // alone, per MC-A11Y-02.
+      '.sw-field-suggestion-btn--ai{border-style:dashed}' +
       '.sw-emotion-curve{width:100%}' +
       '.sw-emotion-curve-empty{padding:24px;text-align:center;color:var(--ink-2)}' +
       '.sw-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
@@ -1792,6 +1869,34 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
             'btn.textContent=sugg.featureSlug+": "+sugg.problemText;' +
             'container.appendChild(btn);' +
           '});' +
+        '});' +
+        // jae-s4 AC1/AC1a/AC2/AC5 -- the LLM-generated fallback suggestion
+        // is fetched lazily, per field, ONLY when the panel opens (never
+        // during the canvas GET render -- AC1a) and ONLY for a field the
+        // deterministic scan just above left with no suggestion rendered
+        // (AC2 -- the deterministic suggestion always takes priority).
+        // Any fetch failure or an empty/null suggestion silently renders
+        // nothing (AC5) -- no error surfaced to the operator.
+        '["customer_actions","pain_points"].forEach(function(f){' +
+          'if(s[f])return;' +
+          'var container=document.getElementById("sw-field-suggestions-"+f);' +
+          'if(!container||container.children.length)return;' +
+          'var requestedStageId=stageId;' +
+          'fetch("/journeys/"+journeyId+"/stages/"+stageId+"/ai-suggestion?field="+f,{credentials:"same-origin"})' +
+            '.then(function(r){return r.ok?r.json():null;})' +
+            '.then(function(data){' +
+              'if(panelStageId!==requestedStageId)return;' +
+              'if(!data||!data.suggestion)return;' +
+              'if(document.getElementById("sw-stage-field-"+f).value)return;' +
+              'var btn=document.createElement("button");' +
+              'btn.type="button";' +
+              'btn.className="sw-field-suggestion-btn sw-field-suggestion-btn--ai";' +
+              'btn.setAttribute("data-field",f);' +
+              'btn.setAttribute("data-text",data.suggestion);' +
+              'btn.textContent="AI suggestion: "+data.suggestion;' +
+              'container.appendChild(btn);' +
+            '})' +
+            '.catch(function(){});' +
         '});' +
         'panel.classList.add("sw-stage-panel--open");' +
         'panel.setAttribute("aria-hidden","false");' +
@@ -2492,4 +2597,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions, getPersonaSuggestions, handlePatchJourneyPersona, getFieldSuggestions };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions, getPersonaSuggestions, handlePatchJourneyPersona, getFieldSuggestions, handleGetAiFieldSuggestion };
