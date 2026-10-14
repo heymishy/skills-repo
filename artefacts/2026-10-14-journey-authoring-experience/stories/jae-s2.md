@@ -22,6 +22,7 @@ So that **I don't have to separately discover and click the small "Edit stage" l
 - **No data model change, no new route.** Purely a client-side sequencing change to the EXISTING stage-add success handler in `journeys.js`.
 - **Must not regress `jcx-s7`'s own AC2 (no `window.location.reload()`, view unchanged after save)** — the panel opening automatically must not reintroduce a reload or a view-reset; the DOM-patch-then-open-panel sequence must happen entirely client-side, in the currently active view.
 - **Must not regress the panel's own existing focus-trap/Escape-to-close/Tab-cycling behaviour (`jcx-s1`'s own AC5)** — auto-opening the panel is just an earlier call to the SAME `openPanel` function that already handles focus correctly; no new focus-management code is introduced.
+- **`openPanel` must reset the save-indicator on every open (found during `/review`, run 1, finding 1-H1).** `jcx-s7`'s own save-indicator states are fully persistent by design (no auto-hide timer) — but `openPanel` never clears `panelSaved`'s own text/classes today. Making the panel auto-open on every stage creation (this story's own AC1) converts a rare pre-existing edge case (a stale indicator from a prior stage showing on a later manual open) into something hit routinely. Fix: `openPanel` clears `panelSaved.textContent`, removes `sw-stage-panel-saved--error`, and removes `sw-stage-panel-saved--visible` at the START of every open — a small, targeted addition to `openPanel` itself, not a new mechanism.
 
 ## Dependencies
 
@@ -38,9 +39,11 @@ So that **I don't have to separately discover and click the small "Edit stage" l
 
 **AC4:** Given the auto-open behaviour from AC1, When the panel opens, Then the active canvas view (Canvas / Customer experience / Delivery) remains unchanged, and `window.location.reload()` is still never called — this story must not regress `jcx-s7`'s own AC2.
 
+**AC5 (added per `/review` finding 1-H1):** Given a stage whose panel was previously opened and left in a "Saved" or "Failed to save — Retry" state (from editing a DIFFERENT, earlier stage), When `openPanel` is called for a NEW stage — whether via this story's own auto-open (AC1) or any existing manual trigger — Then the save-indicator's text and classes (`sw-stage-panel-saved--error`, `sw-stage-panel-saved--visible`) are all reset/cleared before the panel becomes visible — no stale save-outcome text from a previous stage is ever shown for a stage that hasn't been edited yet.
+
 ## Out of Scope
 
-- **Any change to the panel's own 8 fields, their save mechanism, or the save-feedback indicator** — `jcx-s7` already closed these; this story only changes WHEN the panel opens, not what's inside it or how it saves.
+- **Any change to the panel's own 8 fields or their save mechanism** — `jcx-s7` already closed these; this story only changes WHEN the panel opens (and, per AC5, resets the indicator's own stale-carryover state on open) — not what's inside the fields or how each field saves.
 - **Auto-opening the panel for a template-seeded stage (`jae-s1`) at journey-creation time** — those 5 stages are created in a bulk server-side insert with no individual client-side success handler to hook into; this story only changes the manually-triggered "+ Add stage" flow. A template-seeded stage's panel still opens via the normal mechanism (a later, explicit click/keyboard-activation on it).
 - **Forcing the operator to fill any field before the panel can be closed** — explicitly rejected per AC3; a name-only stage remains a valid, complete save.
 - **Any change to the Add-stage button's own visibility across views** — already fixed by `jcx-hotfix4`, unchanged here.

@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-14T04:52:16.915Z",
+      "updatedAt": "2026-10-14T04:56:42.868Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40534,19 +40534,28 @@
               "slug": "jae-s1",
               "name": "Seed a new journey with a default starting-skeleton template",
               "stage": "definition",
-              "health": "green"
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-14T04:56:42.867Z"
             },
             {
               "slug": "jae-s2",
               "name": "Collapse stage creation into one guided action -- the edit panel opens automatically after naming a new stage",
               "stage": "definition",
-              "health": "green"
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-14T04:56:42.868Z"
             },
             {
               "slug": "jae-s3",
               "name": "Extend the discovery-artefact-scan suggestion pattern to stage-level fields",
               "stage": "definition",
-              "health": "green"
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-14T04:56:42.868Z"
             }
           ]
         }

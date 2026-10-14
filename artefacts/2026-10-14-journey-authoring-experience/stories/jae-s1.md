@@ -22,6 +22,7 @@ So that **I begin from a familiar shape rather than staring at an empty journey,
 - **No data model change.** The 5-stage default skeleton (`Evaluate`, `Discover`, `Purchase`, `Onboard`, `Retain` — per the `cjm-best-practice` spike's own research) is a hardcoded constant in `journeys.js`, not a new `templates` table. A template library (plural, selectable) is explicitly out of scope for this story.
 - **Multi-tenancy (ADR-025).** Seeded stages are inserted with the exact same `tenant_id` as the journey they belong to, via the same session-derived `tenantId` `handlePostJourneys` already uses — no new tenant-scoping logic needed.
 - **Opt-out, not forced.** The existing "+ New journey" modal gets one new checkbox ("Start with a default stage outline"), checked by default — an operator who wants a genuinely blank journey can uncheck it before submitting. No new modal, no new route.
+- **Named wire format (added per `/review` finding 1-M1).** The checkbox's state is sent as a new `seedDefaultStages` boolean field in the existing `POST /journeys` body (default `true` if omitted, matching "checked by default"). `handlePostJourneys` reads `req.body.seedDefaultStages !== false` (so `false` is the only value that suppresses seeding) and performs the 5-stage insert loop only when that evaluates `true`, immediately after the journey's own INSERT succeeds, within the same transaction.
 
 ## Dependencies
 
