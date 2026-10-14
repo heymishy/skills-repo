@@ -133,14 +133,18 @@ function buildDom(bodyContent) {
     });
     // Emotion's own "nothing set" marker is the curve's distinct
     // sw-emotion-curve-point--unset + "No data yet" text (jcx-s3 AC2),
-    // not a "Not set" string -- pain points/opportunities still use the
-    // plain "Not set" fallback text, each in its own row.
+    // not a muted-empty cell -- pain points/opportunities still render
+    // their own "nothing set" marker in each row, each in its own cell.
+    // jcx-s7 AC4 update: the plain "Not set" text was replaced with a
+    // muted, visually-dulled em-dash treatment (sw-cx-grid-cell--empty) --
+    // re-pointed here, not weakened -- see
+    // artefacts/2026-10-11-journey-cx-redesign/stories/jcx-s7.md.
     assert.ok(/sw-emotion-curve-point--unset[\s\S]*?No data yet/.test(out), 'expected the curve\'s own distinct "No data yet" marker for the unset emotion, not a silent gap');
     var painPointsIdx = out.indexOf('sw-cx-grid-row--pain-points');
     var opportunitiesIdx = out.indexOf('sw-cx-grid-row--opportunities');
     var endOfOpportunitiesRow = out.indexOf('</ul>', opportunitiesIdx);
-    assert.ok(out.slice(painPointsIdx, opportunitiesIdx).indexOf('Not set') !== -1, 'expected "Not set" in the pain-points row');
-    assert.ok(out.slice(opportunitiesIdx, endOfOpportunitiesRow !== -1 ? endOfOpportunitiesRow : out.length).indexOf('Not set') !== -1, 'expected "Not set" in the opportunities row');
+    assert.ok(out.slice(painPointsIdx, opportunitiesIdx).indexOf('sw-cx-grid-cell--empty') !== -1, 'expected the muted-empty marker in the pain-points row');
+    assert.ok(out.slice(opportunitiesIdx, endOfOpportunitiesRow !== -1 ? endOfOpportunitiesRow : out.length).indexOf('sw-cx-grid-cell--empty') !== -1, 'expected the muted-empty marker in the opportunities row');
     pass('AC2 -- a stage with nothing set shows its own "no data" marker for every row, none omitted');
   } catch (e) { fail('AC2 -- a stage with nothing set shows its own "no data" marker for every row, none omitted', e); }
 
