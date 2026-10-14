@@ -615,6 +615,26 @@ async function getPersonaSuggestions(pool, productId, repoRoot) {
 }
 
 /**
+ * jae-s3 -- mirrors getPersonaSuggestions exactly (ADR-026, same query
+ * shape, same product_id -> feature_slug resolution, same "no match is
+ * not an error" behaviour), delegating to the Problem-Statement scanner
+ * instead of the Who-It-Affects one.
+ * @param {object} pool
+ * @param {string} productId
+ * @param {string} repoRoot
+ * @returns {Promise<Array<{featureSlug: string, problemText: string}>>}
+ */
+async function getFieldSuggestions(pool, productId, repoRoot) {
+  if (!productId) return [];
+  var fr = await pool.query(
+    `SELECT DISTINCT feature_slug FROM journeys WHERE product_id = $1 AND feature_slug IS NOT NULL`,
+    [productId]
+  );
+  var featureSlugs = fr.rows.map(function(r) { return r.feature_slug; });
+  return _personaScanner.scanForFieldSuggestions(featureSlugs, repoRoot);
+}
+
+/**
  * PATCH /journeys/:id/persona — save the journey's own persona fields.
  * Dual response mode: res.status/res.json (test mock) or res.writeHead/res.end (real HTTP).
  * @param {object} req
@@ -718,6 +738,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   var personaSuggestions = journey.persona_name
     ? []
     : await getPersonaSuggestions(pool, journey.product_id, repoRoot);
+
+  // jae-s3 -- scoped to the journey's own product, same as personaSuggestions
+  // above; per-field suppression (AC4, empty-field-only) happens client-side
+  // in openPanel, since the SAME suggestion list applies to every stage in
+  // this journey, but whether a given stage's own field is already filled
+  // in is per-stage, not known until the panel opens for that stage.
+  var fieldSuggestions = await getFieldSuggestions(pool, journey.product_id, repoRoot);
 
   var sr = await pool.query(
     `SELECT id, name, position, description, customer_actions, touchpoints, channel, emotion, pain_points, opportunities, moment_of_truth, position_x, position_y
@@ -1249,6 +1276,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // id, client-side -- avoids a second round-trip when the panel opens.
   var stageDataJson = JSON.stringify(stages);
 
+  // jae-s3 -- same suggestion list applies to every stage in this journey
+  // (scoped by product, not by stage); embedded once, consumed by openPanel.
+  var fieldSuggestionsJson = JSON.stringify(fieldSuggestions);
+
   // ep1-s3 -- side panel markup. No existing DESIGN.md layout pattern matches
   // a click-to-open side panel exactly; this reuses html-shell.js's own
   // off-canvas-drawer precedent for the <768px behaviour and
@@ -1267,6 +1298,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<label class="sw-stage-panel-field">Customer actions' +
         '<textarea id="sw-stage-field-customer_actions" data-field="customer_actions"></textarea>' +
       '</label>' +
+      // jae-s3 -- suggestion buttons are injected/cleared by openPanel
+      // itself (per-stage: whether this field is currently empty is
+      // per-stage, even though the suggestion list is per-journey).
+      '<div id="sw-field-suggestions-customer_actions" class="sw-field-suggestions" data-field="customer_actions"></div>' +
       '<label class="sw-stage-panel-field">Touchpoints' +
         '<textarea id="sw-stage-field-touchpoints" data-field="touchpoints"></textarea>' +
       '</label>' +
@@ -1285,6 +1320,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '<label class="sw-stage-panel-field">Pain points' +
         '<textarea id="sw-stage-field-pain_points" data-field="pain_points"></textarea>' +
       '</label>' +
+      '<div id="sw-field-suggestions-pain_points" class="sw-field-suggestions" data-field="pain_points"></div>' +
       '<label class="sw-stage-panel-field">Opportunities' +
         '<textarea id="sw-stage-field-opportunities" data-field="opportunities"></textarea>' +
       '</label>' +
@@ -1370,6 +1406,13 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}' +
       '.sw-persona-reference-text{display:none;width:100%;min-height:50px;font-size:12px;color:var(--ink-2)}' +
       '.sw-persona-reference-text--visible{display:block}' +
+      // jae-s3 -- reuses sw-persona-suggestion-btn's own exact styling
+      // convention (ADR-026), just a different container class since
+      // these sit directly under a field's own textarea, not inside a
+      // <ul> list.
+      '.sw-field-suggestions{margin:-8px 0 14px 0}' +
+      '.sw-field-suggestion-btn{display:block;width:100%;text-align:left;padding:6px;margin-bottom:4px;' +
+        'border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px}' +
       '.sw-emotion-curve{width:100%}' +
       '.sw-emotion-curve-empty{padding:24px;text-align:center;color:var(--ink-2)}' +
       '.sw-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
@@ -1528,6 +1571,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
       'var stageData={};' +
       (stageDataJson) + '.forEach(function(s){stageData[s.id]=s;});' +
+      'var fieldSuggestions=' + (fieldSuggestionsJson) + ';' +
       // ic-s1 AC6 -- load-guard: fail loudly (console.error + a visible
       // fallback message in the canvas container), never silently, if the
       // drawflow asset failed to load -- matches csd-s1's own
@@ -1699,6 +1743,26 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           'var el=document.getElementById("sw-stage-field-"+f);' +
           'if(!el)return;' +
           'if(f==="moment_of_truth"){el.checked=!!s[f];}else{el.value=s[f]||"";}' +
+        '});' +
+        // jae-s3 AC1/AC3/AC4 -- a suggestion is offered for a field ONLY
+        // when (a) a suggestion exists for this journey's own product and
+        // (b) the field is currently empty for THIS stage -- never offered
+        // as an option to overwrite real content, and never shown at all
+        // when there is nothing to suggest.
+        '["customer_actions","pain_points"].forEach(function(f){' +
+          'var container=document.getElementById("sw-field-suggestions-"+f);' +
+          'if(!container)return;' +
+          'container.innerHTML="";' +
+          'if(s[f]||!fieldSuggestions.length)return;' +
+          'fieldSuggestions.forEach(function(sugg){' +
+            'var btn=document.createElement("button");' +
+            'btn.type="button";' +
+            'btn.className="sw-field-suggestion-btn";' +
+            'btn.setAttribute("data-field",f);' +
+            'btn.setAttribute("data-text",sugg.problemText);' +
+            'btn.textContent=sugg.featureSlug+": "+sugg.problemText;' +
+            'container.appendChild(btn);' +
+          '});' +
         '});' +
         'panel.classList.add("sw-stage-panel--open");' +
         'panel.setAttribute("aria-hidden","false");' +
@@ -2166,6 +2230,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           '}' +
         '}' +
       '});' +
+      // jae-s3 AC2 -- clicking a field suggestion fills that FIELD directly
+      // (not a separate reference box) -- the operator still has to blur
+      // the field (or otherwise trigger the existing autosave) for it to
+      // actually save, exactly as every other field edit already works.
+      'document.addEventListener("click",function(ev){' +
+        'var fieldSuggestionBtn=ev.target.closest&&ev.target.closest(".sw-field-suggestion-btn");' +
+        'if(!fieldSuggestionBtn)return;' +
+        'var targetField=document.getElementById("sw-stage-field-"+fieldSuggestionBtn.getAttribute("data-field"));' +
+        'if(targetField)targetField.value=fieldSuggestionBtn.getAttribute("data-text")||"";' +
+      '});' +
       'document.addEventListener("submit",function(ev){' +
         'var form=ev.target.closest&&ev.target.closest(".sw-persona-editor-form");' +
         'if(!form)return;' +
@@ -2379,4 +2453,4 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
   }
 }
 
-module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions, getPersonaSuggestions, handlePatchJourneyPersona };
+module.exports = { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, checkPlaceholderConversions, getPersonaSuggestions, handlePatchJourneyPersona, getFieldSuggestions };
