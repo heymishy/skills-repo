@@ -40477,6 +40477,20 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-10-14-journey-authoring-experience",
+      "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-10-14T04:44:20.922Z",
+      "discoveryStatus": "clarified",
+      "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
