@@ -1250,51 +1250,83 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
     '</span>';
   }
 
-  // AC4: each saved stage renders with its name, an "Edit stage" affordance
-  // that opens the side panel (ep1-s3's own scope), and -- when applicable --
-  // a visible moment-of-truth indicator.
-  var stagesHtml = stages.length
-    ? stages.map(function(s, idx) {
-        var isFirst = idx === 0;
-        var isLast = idx === stages.length - 1;
-        // ep1-s4 -- up/down keyboard-accessible reorder alternative, only
-        // rendered when there is more than one stage to reorder against.
-        var reorderControls = stages.length > 1
-          ? '<span class="sw-stage-reorder-controls">' +
-              '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="up"' + (isFirst ? ' disabled' : '') + ' aria-label="Move stage up">' + ARROW_UP_ICON + '</button>' +
-              '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="down"' + (isLast ? ' disabled' : '') + ' aria-label="Move stage down">' + ARROW_DOWN_ICON + '</button>' +
-            '</span>'
-          : '';
-        return (
-          '<div class="sw-stage-card" data-stage-id="' + escHtml(s.id) + '" draggable="true">' +
-            '<span class="sw-stage-name">' + escHtml(s.name) + '</span>' +
-            buildHealthIndicator(s.id) +
-            (s.moment_of_truth
-              ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>'
-              : '') +
-            reorderControls +
-            '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit stage</a>' +
-            '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
-            '<button type="button" class="sw-stage-add-placeholder" data-stage-id="' + escHtml(s.id) + '">Add placeholder</button>' +
-          '</div>' +
-          '<div class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + escHtml(s.id) + '">' +
-            buildDeliveryAnnotations(s.id) +
-            '<form class="sw-placeholder-add-form" data-stage-id="' + escHtml(s.id) + '">' +
-              '<label for="sw-placeholder-name-' + escHtml(s.id) + '">Placeholder name</label>' +
-              '<input type="text" id="sw-placeholder-name-' + escHtml(s.id) + '" class="sw-placeholder-name-input" required>' +
-              '<button type="submit" class="sw-placeholder-add-submit">Create</button>' +
-              '<button type="button" class="sw-placeholder-add-cancel">Cancel</button>' +
-            '</form>' +
-          '</div>'
-          // jcx-s6 -- the per-stage .sw-stage-annotations--customer-experience
-          // block that used to render here is gone: #sw-journey-stages is now
-          // hidden in the customer-experience view entirely (new CSS rule
-          // below, mirroring the existing canvas-view rule), and
-          // buildCustomerExperienceSwimlaneGrid renders the equivalent data
-          // once, as a real grid, not per-stage.
-        );
-      }).join('')
-    : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>';
+  // jae-s5 -- replaces the per-stage .sw-stage-card/.sw-stage-annotations
+  // --delivery card-stack loop (#sw-journey-stages, removed below) with a
+  // swimlane grid, reusing buildSwimlaneGridShell (ADR-028) -- the same
+  // shared mechanics the CX grid uses. 2 data rows: Coverage status
+  // (computed, via buildHealthIndicator) and Mapped features
+  // (buildDeliveryAnnotations's own existing per-stage output, plus the
+  // existing Map feature/Add placeholder/placeholder-add-form markup,
+  // moved in unchanged -- decisions.md 2026-10-15). Reorder controls
+  // render in the header cell (unlike the CX grid's header cell, which
+  // deliberately omits them -- see jcx-s6's own comment above) since this
+  // is the only view with a reorder surface.
+  function buildDeliverySwimlaneGrid(stagesForGrid) {
+    function buildHeaderCell(s) {
+      var nameHtml = (s.name && s.name.trim())
+        ? '<span class="sw-stage-name">' + escHtml(s.name) + '</span>'
+        : '<span class="sw-stage-name sw-stage-name--empty">—</span>';
+      var isFirst = stagesForGrid[0] === s;
+      var isLast = stagesForGrid[stagesForGrid.length - 1] === s;
+      var reorderControls = stagesForGrid.length > 1
+        ? '<span class="sw-stage-reorder-controls">' +
+            '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="up"' + (isFirst ? ' disabled' : '') + ' aria-label="Move stage up">' + ARROW_UP_ICON + '</button>' +
+            '<button type="button" class="sw-stage-move" data-stage-id="' + escHtml(s.id) + '" data-direction="down"' + (isLast ? ' disabled' : '') + ' aria-label="Move stage down">' + ARROW_DOWN_ICON + '</button>' +
+          '</span>'
+        : '';
+      return '<div class="sw-cx-grid-cell sw-cx-grid-cell--header" data-stage-id="' + escHtml(s.id) + '" tabindex="0">' +
+        nameHtml +
+        (s.moment_of_truth ? '<span class="sw-stage-moment-badge">' + MOMENT_OF_TRUTH_ICON + ' Moment of truth</span>' : '') +
+        reorderControls +
+        '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit</a>' +
+      '</div>';
+    }
+
+    var coverageCellsHtml = stagesForGrid.map(function(s) {
+      return '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + buildHealthIndicator(s.id) + '</div>';
+    }).join('');
+
+    // buildDeliveryAnnotations's own existing 4-case output (no mappings /
+    // placeholder / missing-feature / normal-mapping-with-metrics) is moved
+    // in unchanged, followed by the existing Map feature/Add placeholder
+    // buttons and the inline placeholder-add-form -- all 4 pieces of
+    // markup byte-identical to today's card-stack version (decisions.md
+    // 2026-10-15). The "No features mapped" case already carries its own
+    // muted styling (.sw-stage-annotations-empty, existing CSS rule) --
+    // no new empty-cell class needed here.
+    var mappedFeaturesCellsHtml = stagesForGrid.map(function(s) {
+      return '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' +
+        buildDeliveryAnnotations(s.id) +
+        '<button type="button" class="sw-stage-map-feature" data-stage-id="' + escHtml(s.id) + '">Map feature</button>' +
+        '<button type="button" class="sw-stage-add-placeholder" data-stage-id="' + escHtml(s.id) + '">Add placeholder</button>' +
+        '<form class="sw-placeholder-add-form" data-stage-id="' + escHtml(s.id) + '">' +
+          '<label for="sw-placeholder-name-' + escHtml(s.id) + '">Placeholder name</label>' +
+          '<input type="text" id="sw-placeholder-name-' + escHtml(s.id) + '" class="sw-placeholder-name-input" required>' +
+          '<button type="submit" class="sw-placeholder-add-submit">Create</button>' +
+          '<button type="button" class="sw-placeholder-add-cancel">Cancel</button>' +
+        '</form>' +
+      '</div>';
+    }).join('');
+
+    var rows = [
+      { rowClass: 'coverage-status', label: 'Coverage status', cellsHtml: coverageCellsHtml },
+      { rowClass: 'mapped-features', label: 'Mapped features', cellsHtml: mappedFeaturesCellsHtml }
+    ];
+
+    function buildA11yEntry(s) {
+      var health = HEALTH_META[computeStageHealth(s.id)].label;
+      var mappings = mappingsByStage[s.id] || [];
+      var mappedSummary = mappings.length === 0 ? 'No features mapped' : mappings.length + ' feature mapping(s)';
+      return escHtml(s.name) + '. Coverage status: ' + escHtml(health) + '. Mapped features: ' + escHtml(mappedSummary);
+    }
+
+    return buildSwimlaneGridShell(stagesForGrid, {
+      buildHeaderCell: buildHeaderCell,
+      rows: rows,
+      a11yListClass: 'sw-delivery-a11y-list',
+      buildA11yEntry: buildA11yEntry
+    });
+  }
 
   // ep3-s2 AC4 -- X counts only 'covered' stages; Y is the total stage
   // count regardless of health state.
@@ -1475,12 +1507,6 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-annotations{display:none;margin:4px 0 12px 0;padding:8px 10px;' +
         'border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:12px}' +
       '.sw-journey-canvas--view-delivery .sw-stage-annotations--delivery{display:block}' +
-      '.sw-journey-canvas--view-canvas #sw-journey-stages{display:none}' +
-      // jcx-s6 -- #sw-journey-stages is now also hidden in the
-      // customer-experience view (mirrors the canvas-view rule above): the
-      // per-stage CX annotation blocks it used to carry are gone, replaced
-      // entirely by the swimlane grid below.
-      '.sw-journey-canvas--view-customer-experience #sw-journey-stages{display:none}' +
       '#sw-drawflow-canvas{display:none;height:600px;width:100%}' +
       '.sw-journey-canvas--view-canvas #sw-drawflow-canvas{display:block}' +
       // ic-s4 AC1a -- visible, non-default focus style for keyboard-focused
@@ -1663,8 +1689,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           ? buildCustomerExperienceSwimlaneGrid(stages)
           : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>') +
       '</div>' +
-      '<div class="sw-journey-stages" id="sw-journey-stages">' +
-        stagesHtml +
+      '<div class="sw-stage-annotations sw-stage-annotations--delivery sw-delivery-swimlane-grid">' +
+        (stages.length
+          ? buildDeliverySwimlaneGrid(stages)
+          : '<p class="sw-journey-stages-empty">No stages yet. Add your first stage.</p>') +
       '</div>' +
       '<span id="sw-stage-reorder-error" class="sw-stage-reorder-error" aria-live="polite"></span>' +
       '<button type="button" id="sw-add-stage-btn">+ Add stage</button>' +
@@ -1774,7 +1802,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
           '__icS1CanvasEl.textContent=\"Canvas failed to load. Please refresh the page.\";' +
         '}' +
       '}' +
-      'var list=document.getElementById("sw-journey-stages");' +
+      'var list=document.querySelector(".sw-stage-annotations--delivery.sw-delivery-swimlane-grid");' +
       'var addBtn=document.getElementById("sw-add-stage-btn");' +
       'var panel=document.getElementById("sw-stage-panel");' +
       'var panelClose=document.getElementById("sw-stage-panel-close");' +
@@ -1996,70 +2024,38 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         'if(!nodeEditLink)return;' +
         'openPanel(nodeEditLink.getAttribute("data-stage-id"));' +
       '});' +
-      // ep1-s4 -- drag-and-drop + keyboard reorder, sharing one submit
-      // path (submitOrder). Native HTML5 drag-and-drop is kanban-view.js's
-      // own existing convention in this codebase, reused here, not
-      // reinvented (dataTransfer.setData/getData shape matches it).
+      // jae-s5 -- the old reorderDom/getStageIds/submitOrder (DOM-order-
+      // is-source-of-truth, list.appendChild(card) as the move primitive)
+      // assumed one .sw-stage-card element per stage. That no longer
+      // holds: a stage's content now spans 3 separate row containers
+      // (header, coverage-status, mapped-features), with no single
+      // per-stage element to move. Corrected per decisions.md (2026-10-15):
+      // on success, reload (the server rebuilds the whole grid from the
+      // newly-ordered stages); on failure, the SAME existing error banner,
+      // no reload. Drag-and-drop is out of scope for this grid (AC5 never
+      // required it) -- only the up/down buttons remain.
       'var reorderError=document.getElementById("sw-stage-reorder-error");' +
-      'function getStageIds(){' +
-        'return Array.prototype.slice.call(list.querySelectorAll(".sw-stage-card")).map(function(c){return c.getAttribute("data-stage-id");});' +
-      '}' +
-      'function reorderDom(orderIds){' +
-        'orderIds.forEach(function(id){' +
-          'var card=list.querySelector(\'.sw-stage-card[data-stage-id="\'+id+\'"]\');' +
-          'if(card)list.appendChild(card);' +
-        '});' +
-      '}' +
-      'function submitOrder(newOrderIds){' +
-        'var snapshot=getStageIds();' +
-        'reorderDom(newOrderIds);' +
-        'submitJson("/journeys/"+journeyId+"/stages-order","PATCH",{stageIds:newOrderIds,_csrf:csrfToken})' +
-          '.catch(function(){' +
-            'reorderDom(snapshot);' +
-            'if(reorderError){' +
-              'reorderError.textContent="Stage order not saved — please try again";' +
-              'reorderError.classList.add("sw-stage-reorder-error--visible");' +
-              'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
-            '}' +
-          '});' +
-      '}' +
       'if(list){' +
-        'list.addEventListener("dragstart",function(ev){' +
-          'var card=ev.target.closest&&ev.target.closest(".sw-stage-card");' +
-          'if(!card)return;' +
-          'ev.dataTransfer.setData("text/plain",card.getAttribute("data-stage-id"));' +
-          'ev.dataTransfer.effectAllowed="move";' +
-        '});' +
-        'list.addEventListener("dragover",function(ev){' +
-          'if(!ev.target.closest||!ev.target.closest(".sw-stage-card"))return;' +
-          'ev.preventDefault();' +
-        '});' +
-        'list.addEventListener("drop",function(ev){' +
-          'ev.preventDefault();' +
-          'var draggedId=ev.dataTransfer.getData("text/plain");' +
-          'if(!draggedId)return;' +
-          'var targetCard=ev.target.closest&&ev.target.closest(".sw-stage-card");' +
-          'var ids=getStageIds();' +
-          'var fromIdx=ids.indexOf(draggedId);' +
-          'if(fromIdx===-1)return;' +
-          'ids.splice(fromIdx,1);' +
-          'var toIdx=targetCard?ids.indexOf(targetCard.getAttribute("data-stage-id")):ids.length;' +
-          'if(toIdx===-1)toIdx=ids.length;' +
-          'ids.splice(toIdx,0,draggedId);' +
-          'submitOrder(ids);' +
-        '});' +
         'list.addEventListener("click",function(ev){' +
           'var btn=ev.target.closest&&ev.target.closest(".sw-stage-move");' +
           'if(!btn||btn.disabled)return;' +
           'var id=btn.getAttribute("data-stage-id");' +
           'var direction=btn.getAttribute("data-direction");' +
-          'var ids=getStageIds();' +
+          'var ids=Array.prototype.slice.call(list.querySelectorAll(".sw-cx-grid-cell--header")).map(function(c){return c.getAttribute("data-stage-id");});' +
           'var idx=ids.indexOf(id);' +
           'if(idx===-1)return;' +
           'var swapIdx=direction==="up"?idx-1:idx+1;' +
           'if(swapIdx<0||swapIdx>=ids.length)return;' +
           'var tmp=ids[idx];ids[idx]=ids[swapIdx];ids[swapIdx]=tmp;' +
-          'submitOrder(ids);' +
+          'submitJson("/journeys/"+journeyId+"/stages-order","PATCH",{stageIds:ids,_csrf:csrfToken})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(){' +
+              'if(reorderError){' +
+                'reorderError.textContent="Stage order not saved — please try again";' +
+                'reorderError.classList.add("sw-stage-reorder-error--visible");' +
+                'setTimeout(function(){reorderError.classList.remove("sw-stage-reorder-error--visible");},3000);' +
+              '}' +
+            '});' +
         '});' +
       '}' +
       'if(panelClose)panelClose.addEventListener("click",closePanel);' +
@@ -2300,7 +2296,7 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       // reach that other block's `list`/`reorderError`/`submitJson` locals;
       // everything here is looked up or defined fresh, matching fmSave's
       // own raw-fetch convention a few lines above.
-      'var jcxList=document.getElementById("sw-journey-stages");' +
+      'var jcxList=document.querySelector(".sw-stage-annotations--delivery.sw-delivery-swimlane-grid");' +
       'var jcxReorderError=document.getElementById("sw-stage-reorder-error");' +
       'function jcxShowError(msg){' +
         'if(!jcxReorderError)return;' +

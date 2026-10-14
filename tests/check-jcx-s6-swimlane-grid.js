@@ -83,9 +83,14 @@ async function renderCanvas(journeyRow, stageRows, mappingRows) {
     // opening marker and the NEXT row's opening marker as bounds, and
     // assert the expected text falls strictly between them.
     var swimlaneGridIdx = html.indexOf('sw-cx-swimlane-grid');
-    var journeyStagesIdx = html.indexOf('id="sw-journey-stages"');
+    // jae-s5 -- #sw-journey-stages (the old boundary marker here) was
+    // removed along with the card-stack it wrapped; id="sw-stage-reorder-
+    // error" is the next still-existing sibling marker in document order,
+    // preserving this assertion's own original intent (the CX grid renders
+    // before the content that follows it in bodyContent).
+    var reorderErrorIdx = html.indexOf('id="sw-stage-reorder-error"');
     assert.ok(swimlaneGridIdx !== -1, 'expected a sw-cx-swimlane-grid container to exist');
-    assert.ok(swimlaneGridIdx < journeyStagesIdx, 'expected the swimlane grid to render before #sw-journey-stages');
+    assert.ok(swimlaneGridIdx < reorderErrorIdx, 'expected the swimlane grid to render before id="sw-stage-reorder-error"');
     var actionsIdx = html.indexOf('sw-cx-grid-row--actions');
     var touchpointsIdx = html.indexOf('sw-cx-grid-row--touchpoints');
     var painPointsIdx = html.indexOf('sw-cx-grid-row--pain-points');
