@@ -40481,16 +40481,48 @@
     {
       "slug": "2026-10-14-journey-authoring-experience",
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-10-14T04:45:39.909Z",
+      "updatedAt": "2026-10-14T04:47:02.856Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time-to-first-complete stage",
+          "target": ">=40% reduction from measured pre-feature baseline",
+          "baseline": "Not yet established -- to be measured pre-release",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Fields populated without manual prompting",
+          "target": ">=40% of new stages reach >=3 populated fields at first save within 4 weeks of release",
+          "baseline": "Unknown -- real DB query pending before release",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Operator CX judgment of the authoring flow itself",
+          "target": "Operator judges the guided-creation flow as no longer clunky",
+          "baseline": "Operator-stated gap, 2026-10-14 (not numerically anchored)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
