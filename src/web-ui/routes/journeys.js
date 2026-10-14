@@ -1691,6 +1691,10 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
                 'card.appendChild(nameSpan);' +
                 'card.appendChild(editLink);' +
                 'stageData[resp.id]={id:resp.id,name:resp.name,position:resp.position};' +
+                // jae-s2 AC1 -- collapse the 2-step "name, then separately
+                // find Edit stage" flow into one guided action: open the
+                // panel for this exact new stage right away.
+                'openPanel(resp.id);' +
               '})' +
               '.catch(function(e){' +
                 'input.classList.add("sw-stage-name-input--error");' +
@@ -1710,6 +1714,14 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '}' +
       'function openPanel(stageId){' +
         'var s=stageData[stageId];if(!s)return;' +
+        // jae-s2 AC5 -- reset the save-indicator's own stale text/classes
+        // on EVERY open, before anything else. jcx-s7 made its 3 states
+        // fully persistent (no auto-hide timer) -- without this reset, a
+        // "Saved" or "Failed to save" message from a DIFFERENT, previously
+        // edited stage would still be showing when this one opens.
+        'panelSaved.textContent="";' +
+        'panelSaved.classList.remove("sw-stage-panel-saved--error");' +
+        'panelSaved.classList.remove("sw-stage-panel-saved--visible");' +
         'panelStageId=stageId;' +
         'panelTriggerEl=document.activeElement;' +
         'panelFields.forEach(function(f){' +
