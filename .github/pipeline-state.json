@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T18:17:14.238Z",
+      "updatedAt": "2026-10-14T18:20:34.548Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40639,21 +40639,21 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T18:17:14.236Z",
+              "updatedAt": "2026-10-14T18:20:34.546Z",
               "testPlan": {
-                "status": "not-started",
-                "totalTests": 0,
+                "status": "written",
+                "totalTests": 9,
                 "passing": 0,
-                "artefact": null
+                "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s5-test-plan.md"
               },
               "acTotal": 8,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": false,
+              "e2eToolingRequired": true,
               "dorStatus": "not-started",
               "prStatus": "none",
               "dodStatus": "not-started"

@@ -47,7 +47,7 @@ So that **I can scan "what covers what, and what's still missing" across the who
 
 **AC7:** Given the Delivery grid is rendered, When a screen reader user navigates it, Then a single visually-hidden accessible list (`sw-delivery-a11y-list`) exposes every stage's name, coverage status, and mapped-feature summary in document order — matching `jcx-s6` AC5's own accessible-list convention for the CX grid, not a new accessibility pattern.
 
-**AC8 (CSS-layout classification, CLAUDE.md B2):** The column-width/scroll/alignment behaviour this story introduces (minmax(200px,1fr) columns, horizontal scroll with a pinned label column) is explicitly RISK-ACCEPTed rather than covered by an automated visual regression test — logged in `decisions.md` with a corresponding manual smoke-test step (verify the grid at 3 stage counts: 1, 4, and 8+ stages, in both light and dark mode) added to this story's verification script and a post-deployment smoke-test item added to `workspace/state.json` `pendingActions`. This mirrors how `jcx-s6`'s own equivalent layout behaviour was handled (no new Playwright screenshot baseline exists for either grid).
+**AC8 (CSS-layout classification, CLAUDE.md B2 — corrected at `/test-plan`):** The column-width/scroll/alignment behaviour this story introduces (minmax(200px,1fr) columns, horizontal scroll with a pinned label column) is CSS-layout-dependent, but — unlike this story's own first draft, which defaulted to RISK-ACCEPT — Playwright E2E tooling IS already configured for this exact behaviour (ADR-018; `tests/e2e/jcx-s6-swimlane-grid.spec.js` already covers the identical column-layout/pinned-scroll mechanics for the CX grid this story reuses). Per the test-plan skill's own Step 3a, option 1 (a real E2E test) is used instead of a RISK-ACCEPT: a new `tests/e2e/jae-s5-delivery-swimlane-grid.spec.js`, modelled directly on `jcx-s6`'s own spec, covers column order, cell alignment, and pinned-label horizontal scroll for the Delivery grid. No manual-only smoke step or `decisions.md` RISK-ACCEPT entry is needed for this AC.
 
 ## Out of Scope
 
@@ -62,7 +62,7 @@ So that **I can scan "what covers what, and what's still missing" across the who
 - **Performance:** No new query; `buildDeliverySwimlaneGrid` iterates the same already-loaded `stages`/`mappingsByStage`/`featuresBySlug` data `buildDeliveryAnnotations` and the old card-stack loop already iterated today — no additional render cost beyond restructuring existing markup.
 - **Accessibility:** WCAG 2.1 AA — reuses `jcx-s6`'s own accessible-list, focusable-header-cell, and keyboard-track conventions directly; reorder buttons keep their existing `aria-label`s unchanged.
 - **Security:** No new database query shape, no new route, no new input surface.
-- **Layout risk:** See AC8 — RISK-ACCEPT + manual smoke test, not a new Playwright baseline, per CLAUDE.md's B2 rule.
+- **Layout risk:** See AC8 — covered by a new Playwright E2E spec (tooling already configured, ADR-018), not a RISK-ACCEPT, per CLAUDE.md's B2 rule and the test-plan skill's own Step 3a.
 
 ## Complexity Rating
 
