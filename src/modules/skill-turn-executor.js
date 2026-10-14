@@ -635,7 +635,7 @@ function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirst
  * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
  * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
  * @param {string}  token          — GitHub access token (only used for copilot provider)
- * @param {{stage?: string, scenarioName?: string, model?: string, tenantId?: string, sessionId?: string}} [meta] — bri-s3.1 mock-gateway routing; s6.1 tenantId/sessionId for prompt-cache scoping (Decision 8)
+ * @param {{stage?: string, scenarioName?: string, model?: string, tenantId?: string, sessionId?: string, maxTokens?: number}} [meta] — bri-s3.1 mock-gateway routing; s6.1 tenantId/sessionId for prompt-cache scoping (Decision 8); jae-s4 maxTokens — optional per-call override of the env-var-derived default, for a short, cost-bounded caller (e.g. a one-off suggestion) that should never request a full skill-turn-sized budget. Omitted by every existing caller, which keeps the existing env-var-or-32768 behaviour unchanged.
  * @returns {Promise<string>}      — the model's response text
  */
 function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
@@ -644,7 +644,7 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
   }
 
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
-  const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
+  const maxTokens = (meta && meta.maxTokens) || parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
   // s6.1: activate Decision 8 — thread tenantId/sessionId through to _anthropicSystem()
   // so the prompt-cache scope comment is genuinely tenant-differentiated in production.

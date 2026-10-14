@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T08:41:55.585Z",
+      "updatedAt": "2026-10-14T08:52:45.073Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40598,6 +40598,36 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/990",
               "dodStatus": "complete"
+            }
+          ]
+        },
+        {
+          "slug": "journey-authoring-ai-suggestions",
+          "name": "Operators get a real LLM-generated starting suggestion for stage-level fields when the deterministic scan finds nothing",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "jae-s4",
+              "name": "LLM-generated fallback suggestion for customer_actions/pain_points when the deterministic scan finds nothing",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-14T09:14:01.588Z",
+              "testPlan": {
+                "status": "all-passing",
+                "totalTests": 7,
+                "passing": 7,
+                "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s4-test-plan.md"
+              },
+              "acTotal": 7,
+              "acVerified": 7,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/991"
             }
           ]
         }

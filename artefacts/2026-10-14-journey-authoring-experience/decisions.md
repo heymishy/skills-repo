@@ -2,6 +2,17 @@
 
 ---
 
+**2026-10-14 | SCOPE | Operator override**
+**Decision:** Proceed to scope and build the AI-generation fast-follow (`jae-s4`) now, overriding the original data-driven gate ("once the deterministic scan ships and has real usage data") confirmed via `/clarify` and re-confirmed in the `ai-generation-fast-follow-scoping-outcome.md` spike earlier the same day.
+**Context:** The operator asked to action all 4 outstanding follow-ups from this feature together, and when presented with the choice to wait for `jae-s3`'s own real usage data vs. proceed now, explicitly chose to override the gate.
+**Rationale:** This is the operator's own informed call, made with the original gate's reasoning already surfaced to them (the scoping spike's own "What was found" section). The underlying risk the gate was protecting against (building something that turns out to be unnecessary once the deterministic scan's real coverage is known) is accepted as a known trade-off, not overlooked.
+**Made by:** Hamish King (Platform Owner), via direct `AskUserQuestion` reply.
+**Revisit trigger:** None needed — this is a final decision, not a placeholder pending further confirmation.
+
+---
+
+---
+
 **2026-10-14 | SCOPE | /clarify**
 **Decision:** The AI/LLM-generated field-suggestion mechanism is explicitly sequenced as a fast-follow story, not an open "maybe" — the deterministic discovery-artefact-scan (extending `jcx-s4`'s own existing persona-suggestion pattern) ships as this MVP's own suggestion mechanism; a real LLM-based generation mechanism is named and planned as a separate next story once the deterministic mechanism's real coverage is known from usage.
 **Context:** `/discovery` proposed building the cheaper, already-proven deterministic pattern first, but left open whether that alone would be considered "done" for MVP, or whether AI generation needed to ship alongside it.
