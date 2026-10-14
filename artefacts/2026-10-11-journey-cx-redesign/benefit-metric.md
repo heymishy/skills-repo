@@ -60,7 +60,7 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Operator CX judgment vs. reference bar | `jcx-s3` (emotion curve), `jcx-s4` (persona card), `jcx-s6` (swimlane/timeline restructure — post-release spike found the structural gap `jcx-s3`/`jcx-s4` didn't close) | Covered |
+| M1 — Operator CX judgment vs. reference bar | `jcx-s3` (emotion curve), `jcx-s4` (persona card), `jcx-s6` (swimlane/timeline restructure), `jcx-hotfix4` (Add-stage visibility fix), `jcx-s7` (save-error color bug, view-reset-on-save standards violation, empty-state/entry-point/spacing polish — `cx-interaction-design-polish` spike) | Covered |
 | M2 — Placeholder-feature trigger actually used | `jcx-s1` (data model + trigger), `jcx-s2` (auto-conversion), `jcx-s5` (authorization hardening) | Covered |
 | M3 — Emotion/persona data actually populated | `jcx-s3` (emotion), `jcx-s4` (persona, discovery-seeded) | Covered |
 

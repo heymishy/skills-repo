@@ -40449,6 +40449,27 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/984",
               "dodStatus": "complete"
+            },
+            {
+              "slug": "jcx-s7",
+              "name": "Fix the misleading save-error color, the view-reset-on-save standards violation, and empty-state/entry-point/spacing polish",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-11-journey-cx-redesign/test-plans/jcx-s7-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "updatedAt": "2026-10-14T03:32:05.507Z",
+              "dorStatus": "signed-off"
             }
           ]
         }
