@@ -15,6 +15,12 @@ AC8 is CSS-layout-dependent (column order, cell alignment, pinned-label horizont
 
 ---
 
+## Note on an 11th test added during implementation (closes a traceability gap)
+
+The Architecture Constraints section requires `#sw-journey-stages`, its `stagesHtml` card-loop, and its 2 dead `display:none` CSS rules to be fully removed, not left as dead markup. A dedicated source-level unit test for this was written during implementation but not originally listed as its own row below — added here for traceability: **"Architecture Constraints: `#sw-journey-stages` and its 2 dead CSS rules are fully removed"** (unit, source-text assertion, no gap). This brings the real total to 11 unit/integration tests (`pipeline-state.json` `testPlan.totalTests`/`passing` corrected to match at `/verify-completion`).
+
+---
+
 ## Note on the ADR-028 refactor safety check
 
 This story refactors `buildCustomerExperienceSwimlaneGrid` (already-shipped, already-tested) to extract a canonical `buildSwimlaneGridShell` builder. Two safety nets, both mandatory, neither a story AC in its own right (they protect existing behaviour, not new behaviour):
