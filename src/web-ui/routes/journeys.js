@@ -965,16 +965,16 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
   // pain points, opportunities), not per-stage, so it replaces the old
   // function entirely rather than being called per-stage inside the list.
   // AC1, AC2, AC4, AC5, AC6, AC7.
+  //
+  // jae-s5 -- the column-template/data-row/track/pinned-label/accessible-
+  // list mechanics below are now shared with the new Delivery grid via
+  // buildSwimlaneGridShell (ADR-028: one canonical builder, two callers,
+  // not two independent derivations of the same grid mechanics). This
+  // function's own rendered output is byte-identical to before this
+  // refactor -- confirmed by tests/check-jcx-s6-swimlane-grid.js passing
+  // unchanged.
   function buildCustomerExperienceSwimlaneGrid(stagesForGrid) {
-    // jcx-s6 AC1/AC2/AC7 -- one shared column template drives every row
-    // (header + all data rows), so stage columns stay vertically aligned
-    // whether or not the track is scrolled. minmax(200px,1fr): columns
-    // grow via 1fr to fill the track when it fits (AC3's ≥80%-fill case);
-    // columns floor at 200px and the track overflows/scrolls once
-    // stageCount*200px exceeds the track's own width (AC7).
-    var gridTemplateColumns = 'repeat(' + stagesForGrid.length + ', minmax(200px, 1fr))';
-
-    var headerCellsHtml = stagesForGrid.map(function(s) {
+    function buildHeaderCell(s) {
       var nameHtml = (s.name && s.name.trim())
         ? '<span class="sw-stage-name">' + escHtml(s.name) + '</span>'
         : '<span class="sw-stage-name sw-stage-name--empty">—</span>';
@@ -994,7 +994,73 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
         // for what the larger target does, not the only way to reach it.
         '<a href="#" class="sw-stage-edit" data-stage-id="' + escHtml(s.id) + '">Edit</a>' +
       '</div>';
-    }).join('');
+    }
+
+    function buildTextCellsRow(field) {
+      return stagesForGrid.map(function(s) {
+        // jcx-s7 AC4 -- empty values get a muted, visually-dulled em-dash
+        // treatment (sw-cx-grid-cell--empty), distinct from a real value --
+        // .trim() matters: a whitespace-only value must still count as
+        // empty, matching this codebase's own existing emptiness convention.
+        return (s[field] && s[field].trim())
+          ? '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + escHtml(s[field]) + '</div>'
+          : '<div class="sw-cx-grid-cell sw-cx-grid-cell--empty" data-stage-id="' + escHtml(s.id) + '">—</div>';
+      }).join('');
+    }
+
+    // The curve is ONE element (not N per-stage cells like the other rows),
+    // so it must explicitly span every column -- CSS grid auto-placement
+    // would otherwise drop it into just the first column, leaving its own
+    // width:100% stretch only the narrowest possible space.
+    var rows = [
+      { rowClass: 'emotion', label: 'Emotion', cellsHtml: '<div style="grid-column:1 / -1">' + buildEmotionCurve(stagesForGrid) + '</div>' },
+      { rowClass: 'actions', label: 'Customer actions', cellsHtml: buildTextCellsRow('customer_actions') },
+      { rowClass: 'touchpoints', label: 'Touchpoints', cellsHtml: buildTextCellsRow('touchpoints') },
+      { rowClass: 'pain-points', label: 'Pain points', cellsHtml: buildTextCellsRow('pain_points') },
+      { rowClass: 'opportunities', label: 'Opportunities', cellsHtml: buildTextCellsRow('opportunities') }
+    ];
+
+    // jcx-s6 AC5 -- ONE grid-wide accessible linear structure covering
+    // every field, in document order -- supersedes jcx-s3's own
+    // emotion-only a11y list (removed from buildEmotionCurve above).
+    function buildA11yEntry(s) {
+      return escHtml(s.name) + ': ' +
+        'Emotion: ' + (s.emotion ? escHtml(s.emotion) : 'No emotion data yet') + '. ' +
+        'Customer actions: ' + (s.customer_actions ? escHtml(s.customer_actions) : 'Not set') + '. ' +
+        'Touchpoints: ' + (s.touchpoints ? escHtml(s.touchpoints) : 'Not set') + '. ' +
+        'Pain points: ' + (s.pain_points ? escHtml(s.pain_points) : 'Not set') + '. ' +
+        'Opportunities: ' + (s.opportunities ? escHtml(s.opportunities) : 'Not set');
+    }
+
+    // No outer wrapping div here -- the caller's own
+    // .sw-stage-annotations--customer-experience.sw-cx-swimlane-grid div
+    // IS the grid container, matching the persona-card/emotion-curve-container
+    // convention of applying an extra class directly to that one shared
+    // wrapper rather than nesting a second div inside it.
+    return buildSwimlaneGridShell(stagesForGrid, {
+      buildHeaderCell: buildHeaderCell,
+      rows: rows,
+      a11yListClass: 'sw-cx-a11y-list',
+      buildA11yEntry: buildA11yEntry
+    });
+  }
+
+  // jae-s5 -- ADR-028 canonical builder. The ONLY place that computes the
+  // shared column template, builds a data row (pinned label + scrollable
+  // track + grid cells), and assembles the visually-hidden accessible
+  // list. buildCustomerExperienceSwimlaneGrid (above) and
+  // buildDeliverySwimlaneGrid (below) both call this -- neither re-derives
+  // these mechanics independently. opts: { buildHeaderCell(s) -> html,
+  // rows: [{rowClass, label, cellsHtml}], a11yListClass: string,
+  // buildA11yEntry(s) -> html (used as one <li> per stage) }.
+  function buildSwimlaneGridShell(stagesForGrid, opts) {
+    // jcx-s6 AC1/AC2/AC7 -- one shared column template drives every row
+    // (header + all data rows), so stage columns stay vertically aligned
+    // whether or not the track is scrolled. minmax(200px,1fr): columns
+    // grow via 1fr to fill the track when it fits (AC3's ≥80%-fill case);
+    // columns floor at 200px and the track overflows/scrolls once
+    // stageCount*200px exceeds the track's own width (AC7).
+    var gridTemplateColumns = 'repeat(' + stagesForGrid.length + ', minmax(200px, 1fr))';
 
     function buildDataRow(rowClass, label, cellsHtml) {
       return '<div class="sw-cx-grid-row sw-cx-grid-row--' + rowClass + '">' +
@@ -1005,60 +1071,21 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '</div>';
     }
 
-    function buildTextCellsRow(rowClass, label, field) {
-      var cellsHtml = stagesForGrid.map(function(s) {
-        // jcx-s7 AC4 -- empty values get a muted, visually-dulled em-dash
-        // treatment (sw-cx-grid-cell--empty), distinct from a real value --
-        // .trim() matters: a whitespace-only value must still count as
-        // empty, matching this codebase's own existing emptiness convention.
-        return (s[field] && s[field].trim())
-          ? '<div class="sw-cx-grid-cell" data-stage-id="' + escHtml(s.id) + '">' + escHtml(s[field]) + '</div>'
-          : '<div class="sw-cx-grid-cell sw-cx-grid-cell--empty" data-stage-id="' + escHtml(s.id) + '">—</div>';
-      }).join('');
-      return buildDataRow(rowClass, label, cellsHtml);
-    }
-
-    // The curve is ONE element (not N per-stage cells like the other rows),
-    // so it must explicitly span every column -- CSS grid auto-placement
-    // would otherwise drop it into just the first column, leaving its own
-    // width:100% stretch only the narrowest possible space.
-    var emotionRowHtml = buildDataRow('emotion', 'Emotion', '<div style="grid-column:1 / -1">' + buildEmotionCurve(stagesForGrid) + '</div>');
-    var actionsRowHtml = buildTextCellsRow('actions', 'Customer actions', 'customer_actions');
-    var touchpointsRowHtml = buildTextCellsRow('touchpoints', 'Touchpoints', 'touchpoints');
-    var painPointsRowHtml = buildTextCellsRow('pain-points', 'Pain points', 'pain_points');
-    var opportunitiesRowHtml = buildTextCellsRow('opportunities', 'Opportunities', 'opportunities');
-
-    // jcx-s6 AC5 -- ONE grid-wide accessible linear structure covering
-    // every field, in document order -- supersedes jcx-s3's own
-    // emotion-only a11y list (removed from buildEmotionCurve above).
-    var a11yListHtml = '<ul class="sw-cx-a11y-list sw-visually-hidden">' +
-      stagesForGrid.map(function(s) {
-        return '<li>' + escHtml(s.name) + ': ' +
-          'Emotion: ' + (s.emotion ? escHtml(s.emotion) : 'No emotion data yet') + '. ' +
-          'Customer actions: ' + (s.customer_actions ? escHtml(s.customer_actions) : 'Not set') + '. ' +
-          'Touchpoints: ' + (s.touchpoints ? escHtml(s.touchpoints) : 'Not set') + '. ' +
-          'Pain points: ' + (s.pain_points ? escHtml(s.pain_points) : 'Not set') + '. ' +
-          'Opportunities: ' + (s.opportunities ? escHtml(s.opportunities) : 'Not set') +
-        '</li>';
-      }).join('') +
+    var headerCellsHtml = stagesForGrid.map(opts.buildHeaderCell).join('');
+    var rowsHtml = opts.rows.map(function(row) {
+      return buildDataRow(row.rowClass, row.label, row.cellsHtml);
+    }).join('');
+    var a11yListHtml = '<ul class="' + opts.a11yListClass + ' sw-visually-hidden">' +
+      stagesForGrid.map(function(s) { return '<li>' + opts.buildA11yEntry(s) + '</li>'; }).join('') +
     '</ul>';
 
-    // No outer wrapping div here -- the caller's own
-    // .sw-stage-annotations--customer-experience.sw-cx-swimlane-grid div
-    // IS the grid container, matching the persona-card/emotion-curve-container
-    // convention of applying an extra class directly to that one shared
-    // wrapper rather than nesting a second div inside it.
     return '<div class="sw-cx-grid-row sw-cx-grid-row--header">' +
         '<div class="sw-cx-row-label"></div>' +
         '<div class="sw-cx-grid-row-track" tabindex="0">' +
           '<div class="sw-cx-grid-row-cells" style="grid-template-columns:' + gridTemplateColumns + '">' + headerCellsHtml + '</div>' +
         '</div>' +
       '</div>' +
-      emotionRowHtml +
-      actionsRowHtml +
-      touchpointsRowHtml +
-      painPointsRowHtml +
-      opportunitiesRowHtml +
+      rowsHtml +
       a11yListHtml;
   }
 
