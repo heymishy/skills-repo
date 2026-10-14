@@ -40639,7 +40639,7 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -40659,7 +40659,39 @@
               "dodStatus": "not-started",
               "dorArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md",
-              "dorSignedOffAt": "2026-10-14T18:39:44.202Z"
+              "dorSignedOffAt": "2026-10-14T18:39:44.202Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extract buildSwimlaneGridShell -- refactor CX grid (ADR-028)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Build buildDeliverySwimlaneGrid, wire Delivery view",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Rewrite reorder mechanism, retarget list/jcxList",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Remove #sw-journey-stages, stagesHtml, dead CSS",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "E2E spec -- AC1 alignment, AC8 pinned-label scroll",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
+                }
+              ]
             }
           ]
         }
