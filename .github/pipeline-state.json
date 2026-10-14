@@ -40639,19 +40639,19 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T19:47:54.877Z",
+              "updatedAt": "2026-10-14T19:59:57.246Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0,
+                "totalTests": 11,
+                "passing": 11,
                 "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s5-test-plan.md"
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -40691,7 +40691,8 @@
                   "tddState": "done",
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
