@@ -40639,11 +40639,11 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T19:59:57.246Z",
+              "updatedAt": "2026-10-14T20:01:23.567Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
@@ -40655,7 +40655,7 @@
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "none",
+              "prStatus": "draft",
               "dodStatus": "not-started",
               "dorArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md",
@@ -40692,7 +40692,8 @@
                   "file": "artefacts/2026-10-14-journey-authoring-experience/plans/jae-s5-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/992"
             }
           ]
         }
