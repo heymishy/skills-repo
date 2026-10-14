@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-14T05:23:56.528Z",
+      "updatedAt": "2026-10-14T05:33:54.923Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40533,11 +40533,11 @@
             {
               "slug": "jae-s1",
               "name": "Seed a new journey with a default starting-skeleton template",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "updatedAt": "2026-10-14T05:33:54.496Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -40547,16 +40547,17 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jae-s2",
               "name": "Collapse stage creation into one guided action -- the edit panel opens automatically after naming a new stage",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "updatedAt": "2026-10-14T05:33:54.644Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -40566,16 +40567,17 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "jae-s3",
               "name": "Extend the discovery-artefact-scan suggestion pattern to stage-level fields",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:23:56.528Z",
+              "updatedAt": "2026-10-14T05:33:54.782Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -40585,7 +40587,8 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -40604,39 +40607,40 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer",
-          "status": "not-assessed",
-          "evidence": null,
-          "assessedBy": null,
-          "assessedAt": null
+          "status": "met",
+          "evidence": "jae-s1 AC4 and jae-s3 AC5 each directly verify tenant-scoping, not assumed from reuse",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-14T05:33:54.923Z"
         },
         {
           "id": "ADR-026",
           "category": "adr",
           "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
           "status": "met",
-          "evidence": "jae-s1 reuses handlePostJourneyStage insert shape; jae-s2 reuses openPanel verbatim; jae-s3 reuses getPersonaSuggestions/extractWhoItAffects shape exactly",
-          "assessedBy": "/definition",
-          "assessedAt": "2026-10-14T04:52:16.915Z"
+          "evidence": "All 3 stories reuse existing functions/patterns verbatim, confirmed in each DoR contract",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-14T05:33:54.923Z"
         },
         {
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed",
-          "evidence": null,
-          "assessedBy": null,
-          "assessedAt": null
+          "status": "met",
+          "evidence": "Native checkbox (jae-s1), verified real focus-move (jae-s2), reused accessible button pattern (jae-s3)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-14T05:33:54.923Z"
         },
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status (icons/labels present)",
-          "status": "not-assessed",
-          "evidence": null,
-          "assessedBy": null,
-          "assessedAt": null
+          "status": "met",
+          "evidence": "Native checkbox (jae-s1), verified real focus-move (jae-s2), reused accessible button pattern (jae-s3)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-14T05:33:54.923Z"
         }
-      ]
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
