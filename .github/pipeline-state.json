@@ -40639,11 +40639,11 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T18:39:44.204Z",
+              "updatedAt": "2026-10-14T18:55:38.204Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,

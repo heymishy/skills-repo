@@ -64,3 +64,12 @@
 **Rationale:** This repository is operated by a single engineer (Hamish King); the operator is also the reviewer and final approver for every artefact in this pipeline. Per the architecture guardrail, human oversight for this operating context defaults to High for exactly this reason — not because any one story's complexity demands it.
 **Made by:** Established repo-wide posture (`architecture-guardrails.md`), applied here per `/definition-of-ready`'s own W4 check.
 **Revisit trigger:** If a second operator onboards or this repository moves into regulated-enterprise operation, per the guardrail's own stated trigger.
+
+---
+
+**2026-10-15 | RISK-ACCEPT | jae-s5 /branch-setup baseline flake**
+**Decision:** `tests/check-pcr-s1-test-runner.js` failed in the `jae-s5` worktree's full-suite baseline run (`npm test`: 752/753 passed) but passed cleanly (14/14) when run standalone (`node tests/check-pcr-s1-test-runner.js`). Acknowledged as a pre-existing, full-suite-only ordering flake and not investigated further before proceeding — unrelated to `jae-s5`'s own scope (`src/web-ui/routes/journeys.js`), which this test file does not touch.
+**Context:** `/branch-setup`'s own baseline-verification step requires explicit acknowledgement before proceeding past a failing baseline.
+**Rationale:** The isolated run confirms the underlying check itself is correct; the failure only appears under full-suite execution, which points at shared state or ordering between test files (consistent with other test-runner side effects already observed this run, e.g. stray `artefacts/test-slug/`, `artefacts/2026-10-14-discovery/`, `workspace/test-tmp-inf5/`/`test-tmp-mig4/` left in the worktree by other test files) rather than a defect `jae-s5`'s own changes could have caused or will interact with.
+**Made by:** Hamish King (Platform Owner), via direct `AskUserQuestion` reply.
+**Revisit trigger:** If this same flake recurs across multiple stories' own baseline runs, it is worth a dedicated investigation into the full-suite's shared state/ordering, rather than re-acknowledging it story by story.
