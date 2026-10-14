@@ -1,0 +1,23 @@
+{
+  "storyId": "jae-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/988",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "regressionSuite": {
+    "file": "tests/check-jae-s1-default-skeleton.js",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "fullSuite": {
+    "filesRun": 750,
+    "failed": 3,
+    "newFailures": 0,
+    "note": "The 3 failures (check-ic-s1-canvas-render.js, check-ic-s3-canvas-pan-zoom.js, check-ic-s4-keyboard-node-movement.js) are the same pre-existing, unrelated missing-dependency gap (node_modules/drawflow/dist/drawflow.min.js absent even on master) already confirmed across multiple prior PRs this session -- not a regression from this story."
+  }
+}

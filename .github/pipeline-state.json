@@ -40533,22 +40533,25 @@
             {
               "slug": "jae-s1",
               "name": "Seed a new journey with a default starting-skeleton template",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:33:54.496Z",
+              "updatedAt": "2026-10-14T08:12:07.133Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s1-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/988",
+              "dodStatus": "complete"
             },
             {
               "slug": "jae-s2",
