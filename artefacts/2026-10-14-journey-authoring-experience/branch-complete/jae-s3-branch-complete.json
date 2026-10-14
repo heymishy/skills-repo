@@ -1,0 +1,23 @@
+{
+  "storyId": "jae-s3",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/990",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 6,
+    "passing": 6
+  },
+  "acTotal": 5,
+  "acVerified": 5,
+  "regressionSuite": {
+    "file": "tests/check-jae-s3-field-suggestions.js",
+    "totalTests": 6,
+    "passing": 6
+  },
+  "fullSuite": {
+    "filesRun": 750,
+    "failed": 5,
+    "newFailures": 0,
+    "note": "The 3 pre-existing, unrelated missing-dependency gap (drawflow.min.js) plus 1 resource-contention flake (check-shr1-schema-harness.js) from running 3 concurrent full-suite runs across worktrees -- confirmed passing cleanly in isolation, unrelated to this story's own files. Re-confirmed passing together with jae-s1 and jae-s2 on merged master post-merge."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "storyId": "jae-s2",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/989",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 5,
+    "passing": 5
+  },
+  "acTotal": 5,
+  "acVerified": 5,
+  "regressionSuite": {
+    "file": "tests/check-jae-s2-guided-creation.js",
+    "totalTests": 5,
+    "passing": 5
+  },
+  "fullSuite": {
+    "filesRun": 750,
+    "failed": 5,
+    "newFailures": 0,
+    "note": "The 3 pre-existing, unrelated missing-dependency gap (drawflow.min.js) plus 2 resource-contention flakes (check-pcr-s1-test-runner.js, .github/scripts/check-viz-syntax.js) from running 3 concurrent full-suite runs across worktrees -- both confirmed passing cleanly in isolation, neither related to this story's own files. Re-confirmed passing together with jae-s1 and jae-s3 on merged master post-merge."
+  }
+}

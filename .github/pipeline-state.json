@@ -40481,9 +40481,9 @@
     {
       "slug": "2026-10-14-journey-authoring-experience",
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T05:33:54.923Z",
+      "updatedAt": "2026-10-14T08:29:27.402Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40528,7 +40528,7 @@
         {
           "slug": "journey-authoring-guided-creation",
           "name": "Operators can go from a blank journey to a usably-complete first stage without hunting for the edit panel or starting from nothing",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "jae-s1",
@@ -40556,42 +40556,48 @@
             {
               "slug": "jae-s2",
               "name": "Collapse stage creation into one guided action -- the edit panel opens automatically after naming a new stage",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:33:54.644Z",
+              "updatedAt": "2026-10-14T08:29:16.125Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s2-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/989",
+              "dodStatus": "complete"
             },
             {
               "slug": "jae-s3",
               "name": "Extend the discovery-artefact-scan suggestion pattern to stage-level fields",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T05:33:54.782Z",
+              "updatedAt": "2026-10-14T08:29:16.317Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0,
+                "totalTests": 6,
+                "passing": 6,
                 "artefact": "artefacts/2026-10-14-journey-authoring-experience/test-plans/jae-s3-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/990",
+              "dodStatus": "complete"
             }
           ]
         }
