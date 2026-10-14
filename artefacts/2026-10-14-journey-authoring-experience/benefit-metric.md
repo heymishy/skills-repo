@@ -60,9 +60,9 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Time-to-first-complete stage | Not yet assigned — populated at `/definition` | Not yet covered |
-| M2 — Fields populated without manual prompting | Not yet assigned — populated at `/definition` | Not yet covered |
-| M3 — Operator CX judgment of the authoring flow | Not yet assigned — populated at `/definition` | Not yet covered |
+| M1 — Time-to-first-complete stage | `jae-s2` (guided creation — primary), `jae-s1` (template — secondary, removes the "what do I name it" hesitation) | Covered |
+| M2 — Fields populated without manual prompting | `jae-s3` (field suggestions — primary), `jae-s1` (template — secondary, starting shape) | Covered |
+| M3 — Operator CX judgment of the authoring flow | `jae-s1`, `jae-s2`, `jae-s3` (all 3 together are the complete authoring-flow redesign this metric judges) | Covered |
 
 ---
 

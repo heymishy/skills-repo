@@ -40481,9 +40481,9 @@
     {
       "slug": "2026-10-14-journey-authoring-experience",
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-14T04:47:02.856Z",
+      "updatedAt": "2026-10-14T04:52:16.915Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40521,6 +40521,81 @@
           "lastMeasured": null,
           "evidence": null,
           "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "user-journey",
+      "epics": [
+        {
+          "slug": "journey-authoring-guided-creation",
+          "name": "Operators can go from a blank journey to a usably-complete first stage without hunting for the edit panel or starting from nothing",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "jae-s1",
+              "name": "Seed a new journey with a default starting-skeleton template",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "jae-s2",
+              "name": "Collapse stage creation into one guided action -- the edit panel opens automatically after naming a new stage",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "jae-s3",
+              "name": "Extend the discovery-artefact-scan suggestion pattern to stage-level fields",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: story artefact before/alongside src/ changes",
+          "status": "met",
+          "evidence": "All 3 stories reference this epic/discovery/benefit-metric chain, committed before implementation begins",
+          "assessedBy": "/definition",
+          "assessedAt": "2026-10-14T04:52:16.915Z"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "not-assessed",
+          "evidence": null,
+          "assessedBy": null,
+          "assessedAt": null
+        },
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
+          "status": "met",
+          "evidence": "jae-s1 reuses handlePostJourneyStage insert shape; jae-s2 reuses openPanel verbatim; jae-s3 reuses getPersonaSuggestions/extractWhoItAffects shape exactly",
+          "assessedBy": "/definition",
+          "assessedAt": "2026-10-14T04:52:16.915Z"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed",
+          "evidence": null,
+          "assessedBy": null,
+          "assessedAt": null
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "not-assessed",
+          "evidence": null,
+          "assessedBy": null,
+          "assessedAt": null
         }
       ]
     }
