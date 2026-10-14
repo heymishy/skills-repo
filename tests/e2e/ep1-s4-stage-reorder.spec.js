@@ -9,6 +9,18 @@
 // KNOWN GAP (pre-existing, logged in decisions.md D5, not introduced by this
 // story): src/web-ui/adapters/fake-test-db.js has no in-memory backing for
 // customer_journeys/customer_journey_stages. Requires a real DATABASE_URL.
+//
+// jae-s5 (decisions.md 2026-10-15) -- rewritten. The original AC1/AC2 both
+// drove `.sw-stage-card` via drag-and-drop inside #sw-journey-stages;
+// neither exists any more -- the Delivery view's card stack was replaced by
+// a swimlane grid (tests/e2e/jae-s5-delivery-swimlane-grid.spec.js covers
+// its own column-alignment/scroll ACs), and drag-and-drop reordering was
+// explicitly scoped out (AC5 never required it; only the up/down buttons
+// remain). These 2 tests now exercise the up/down button path instead,
+// asserting the SAME two outcomes the originals proved (a reorder
+// persists; a failed reorder shows the exact existing error text) via the
+// mechanism that actually exists today (reload-on-success, no DOM-revert
+// needed since nothing is optimistically moved any more).
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
@@ -22,22 +34,6 @@ function extractCsrfToken(html) {
   if (hiddenInput) return hiddenInput[1];
   const jsVar = html.match(/var csrfToken=("(?:[^"\\]|\\.)*")/);
   return jsVar ? JSON.parse(jsVar[1]) : null;
-}
-
-/**
- * Manual pointer-sequence drag, mirroring tests/e2e/s3.1-drag-to-advance.spec.js's
- * own documented approach (more reliable for native draggable="true" elements
- * than Playwright's dragTo()).
- */
-async function dragAndDrop(page, sourceSelector, targetSelector) {
-  const source = page.locator(sourceSelector);
-  const target = page.locator(targetSelector);
-  const sourceBox = await source.boundingBox();
-  const targetBox = await target.boundingBox();
-  await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 10 });
-  await page.mouse.up();
 }
 
 async function seedJourneyWithStages(request, stageNames) {
@@ -60,37 +56,53 @@ async function seedJourneyWithStages(request, stageNames) {
   return journeyId;
 }
 
-withAuth('AC1: dragging a stage card to a new position persists the new order', async ({ page }) => {
+async function openDeliveryView(page, journeyId) {
+  await page.goto('/journeys/' + journeyId);
+  await page.locator('.sw-canvas-view-toggle-btn[data-view="delivery"]').click();
+}
+
+withAuth('AC1 (superseded, jae-s5): clicking the up button moves a stage earlier and persists after reload', async ({ page }) => {
   const request = page.context().request;
   const journeyId = await seedJourneyWithStages(request, ['Discover', 'Compare', 'Buy']);
 
-  await page.goto('/journeys/' + journeyId);
-  await page.waitForLoadState('networkidle');
+  await openDeliveryView(page, journeyId);
+  await page.waitForSelector('.sw-delivery-swimlane-grid');
 
-  await dragAndDrop(page, '.sw-stage-card >> nth=0', '.sw-stage-card >> nth=2');
-  await page.waitForTimeout(300);
+  // Move the 3rd stage ("Buy") up once -- its own "up" button is the
+  // 2nd .sw-stage-move button in that header cell (index 0 = up, 1 = down).
+  const buyHeader = page.locator('.sw-delivery-swimlane-grid .sw-cx-grid-cell--header', { hasText: 'Buy' });
+  await buyHeader.locator('.sw-stage-move[data-direction="up"]').click();
 
-  await page.reload();
+  // Success reloads the page (jae-s5's own reorder-mechanism decision) --
+  // wait for the navigation, then re-open Delivery view post-reload.
   await page.waitForLoadState('networkidle');
-  const namesAfterReload = await page.locator('.sw-stage-name').allTextContents();
-  expect(namesAfterReload[0], 'AC1: the dragged stage is no longer first after a real reload').not.toBe('Discover');
+  await page.locator('.sw-canvas-view-toggle-btn[data-view="delivery"]').click();
+  await page.waitForSelector('.sw-delivery-swimlane-grid');
+
+  const namesAfter = await page.locator('.sw-delivery-swimlane-grid .sw-stage-name').allTextContents();
+  expect(namesAfter[1], 'AC1: "Buy" moved from last to the middle position after one "up" click and a reload').toBe('Buy');
 });
 
-withAuth('AC2: a reorder whose PATCH fails rolls back visually and shows the exact error text', async ({ page }) => {
+withAuth('AC2 (superseded, jae-s5): a reorder whose PATCH fails shows the exact error text, no reload', async ({ page }) => {
   const request = page.context().request;
   const journeyId = await seedJourneyWithStages(request, ['Discover', 'Compare']);
 
   await page.route('**/stages-order', function(route) { route.abort('failed'); });
 
-  await page.goto('/journeys/' + journeyId);
-  await page.waitForLoadState('networkidle');
+  await openDeliveryView(page, journeyId);
+  await page.waitForSelector('.sw-delivery-swimlane-grid');
 
-  const namesBefore = await page.locator('.sw-stage-name').allTextContents();
-  await dragAndDrop(page, '.sw-stage-card >> nth=0', '.sw-stage-card >> nth=1');
+  const namesBefore = await page.locator('.sw-delivery-swimlane-grid .sw-stage-name').allTextContents();
+  const compareHeader = page.locator('.sw-delivery-swimlane-grid .sw-cx-grid-cell--header', { hasText: 'Compare' });
+  await compareHeader.locator('.sw-stage-move[data-direction="up"]').click();
   await page.waitForTimeout(500);
 
-  const namesAfter = await page.locator('.sw-stage-name').allTextContents();
-  expect(namesAfter, 'AC2: order reverts to its pre-drag state after a failed save').toEqual(namesBefore);
+  // jae-s5: no reload happens on failure (only on success) -- the grid's
+  // own column order is therefore still exactly what it was before the
+  // click, with no DOM-revert step needed (nothing was optimistically
+  // moved in the first place).
+  const namesAfter = await page.locator('.sw-delivery-swimlane-grid .sw-stage-name').allTextContents();
+  expect(namesAfter, 'AC2: order is unchanged after a failed save (no reload happened)').toEqual(namesBefore);
 
   const errorEl = page.locator('#sw-stage-reorder-error');
   await expect(errorEl, 'AC2: exact toast text shown on save failure').toHaveText('Stage order not saved — please try again');

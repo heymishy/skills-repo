@@ -242,9 +242,15 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
     const res = makeMockRes();
     await handleGetJourneyCanvas(req, res, null, pool);
-    assert.ok(/class="sw-stage-card" data-stage-id="s1" draggable="true"/.test(res._b.bodyContent), 'expected draggable="true" on stage cards');
-    pass('AC1 (wiring shape): stage cards are draggable');
-  } catch (e) { fail('AC1 (wiring shape): stage cards are draggable', e); }
+    // jae-s5 (decisions.md 2026-10-15) -- the .sw-stage-card/#sw-journey-
+    // stages card stack this assertion originally tested was replaced by a
+    // swimlane grid; drag-and-drop reordering was explicitly scoped out
+    // (AC5 never required it). This now asserts the intentional absence,
+    // not a regression -- the grid's own markup is covered by
+    // tests/check-jae-s5-delivery-swimlane-grid.js.
+    assert.ok(!/class="sw-stage-card"/.test(res._b.bodyContent), 'expected the draggable .sw-stage-card markup to be gone (superseded by the Delivery swimlane grid, decisions.md 2026-10-15)');
+    pass('AC1 (wiring shape, superseded): draggable stage cards intentionally removed, replaced by the Delivery swimlane grid');
+  } catch (e) { fail('AC1 (wiring shape, superseded): draggable stage cards intentionally removed, replaced by the Delivery swimlane grid', e); }
 
   // ── AC3 (render) ────────────────────────────────────────────────────────
   try {
@@ -288,11 +294,19 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const res = makeMockRes();
     await handleGetJourneyCanvas(req, res, null, pool);
     const script = extractScript(res._b.bodyContent);
-    const submitOrderBody = extractFunctionBody(script, 'submitOrder');
-    assert.ok(/reorderDom\(snapshot\)/.test(submitOrderBody), 'expected submitOrder\'s failure branch to restore the DOM snapshot');
-    assert.ok(submitOrderBody.indexOf('Stage order not saved — please try again') !== -1, 'expected the EXACT toast text in submitOrder\'s failure branch');
-    pass('AC2 (shape): the drop handler reverts to the pre-drop snapshot and shows the exact toast text on failure');
-  } catch (e) { fail('AC2 (shape): the drop handler reverts to the pre-drop snapshot and shows the exact toast text on failure', e); }
+    // jae-s5 (decisions.md 2026-10-15) -- the DOM-snapshot-restore
+    // mechanism (reorderDom(snapshot)) this assertion originally tested no
+    // longer exists: reordering now reloads the page on success (the
+    // server rebuilds the grid in the new order), so there is no optimistic
+    // DOM state to revert on failure. The exact failure-toast TEXT is
+    // unchanged -- only the recovery mechanism changed (asserted here);
+    // the full new mechanism is covered by
+    // tests/check-jae-s5-delivery-swimlane-grid.js.
+    assert.ok(script.indexOf('function reorderDom(') === -1, 'expected the old reorderDom snapshot-restore function to be gone');
+    assert.ok(script.indexOf('Stage order not saved — please try again') !== -1, 'expected the EXACT toast text to still be shown on a failed reorder');
+    assert.ok(/window\.location\.reload\(\)/.test(script), 'expected a successful reorder to reload the page instead of restoring a DOM snapshot');
+    pass('AC2 (shape, superseded): reorder failure keeps the same toast text; success reloads instead of restoring a DOM snapshot');
+  } catch (e) { fail('AC2 (shape, superseded): reorder failure keeps the same toast text; success reloads instead of restoring a DOM snapshot', e); }
 
   // ── AC3 (click wiring) ──────────────────────────────────────────────────
   try {
@@ -304,10 +318,16 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const res = makeMockRes();
     await handleGetJourneyCanvas(req, res, null, pool);
     const script = extractScript(res._b.bodyContent);
-    const occurrences = script.split('submitOrder(').length - 1;
-    assert.ok(occurrences >= 3, 'expected submitOrder to be defined once and called from at least 2 call sites (drop + move button), found ' + occurrences + ' occurrence(s)');
-    pass('AC3 (click wiring): the move-button handler shares submitOrder with the drop handler -- proves one shared mechanism');
-  } catch (e) { fail('AC3 (click wiring): the move-button handler shares submitOrder with the drop handler -- proves one shared mechanism', e); }
+    // jae-s5 (decisions.md 2026-10-15) -- the shared-submitOrder-function
+    // design this assertion originally proved (one function, 2 call sites:
+    // drag-drop + move button) no longer applies now that drag-and-drop is
+    // removed -- there is genuinely only ONE reorder entry point left (the
+    // move-button click handler), which posts to the same endpoint inline.
+    // This now asserts that single remaining call site is wired correctly.
+    assert.ok(script.indexOf('addEventListener("dragstart"') === -1, 'expected drag-and-drop to be gone -- the move button is the only reorder entry point now');
+    assert.ok(/stages-order","PATCH"/.test(script), 'expected the move-button click handler to still POST to the same stages-order endpoint');
+    pass('AC3 (click wiring, superseded): drag-and-drop removed -- the move button is the sole reorder entry point, same endpoint');
+  } catch (e) { fail('AC3 (click wiring, superseded): drag-and-drop removed -- the move button is the sole reorder entry point, same endpoint', e); }
 
   // ── AC4 ─────────────────────────────────────────────────────────────────
   try {

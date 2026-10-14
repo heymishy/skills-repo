@@ -136,9 +136,19 @@ function extractFirstScript(html) {
 // next "</div>" -- the container's own content includes nested
 // sw-feature-mapping-row divs, so a naive scan would close too early.
 function extractDeliveryAnnotationsHtml(html, stageId) {
-  var marker = 'class="sw-stage-annotations sw-stage-annotations--delivery" data-stage-id="' + stageId + '"';
-  var markerIdx = html.indexOf(marker);
-  assert.ok(markerIdx !== -1, 'expected a sw-stage-annotations--delivery container for stage ' + stageId);
+  // jae-s5 -- the old per-stage ".sw-stage-annotations--delivery[data-
+  // stage-id]" container (one per stage) was replaced by the Delivery
+  // swimlane grid's own "Mapped features" row, with one
+  // .sw-cx-grid-cell[data-stage-id] per stage inside that row
+  // specifically -- the Coverage status row's cells share the exact same
+  // class/attribute shape, so this must scope to the mapped-features row
+  // first, not just find any matching cell anywhere on the page.
+  var rowMarker = 'sw-cx-grid-row--mapped-features';
+  var rowIdx = html.indexOf(rowMarker);
+  assert.ok(rowIdx !== -1, 'expected a sw-cx-grid-row--mapped-features row to exist');
+  var marker = 'class="sw-cx-grid-cell" data-stage-id="' + stageId + '"';
+  var markerIdx = html.indexOf(marker, rowIdx);
+  assert.ok(markerIdx !== -1, 'expected a Mapped features cell for stage ' + stageId);
   var openTagEnd = html.indexOf('>', markerIdx) + 1;
   var pos = openTagEnd;
   var depth = 1;
