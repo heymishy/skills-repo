@@ -2,6 +2,15 @@
 
 ---
 
+**2026-10-14 | RISK-ACCEPT | jcx-s7 /definition-of-done**
+**Decision:** Accept 8/8 real jsdom unit-test evidence (RED/GREEN confirmed) plus one re-pointed regression test as the primary verification for jcx-s7's 5 ACs, with the new E2E spec (`tests/e2e/jcx-s7-panel-entry-and-save-feedback.spec.js`) written to the DoR's own B2 classification but not executed against a live/local server this session.
+**Context:** AC3's visual/size portion (real click-target area, keyboard focus-visible rendering) is CSS-layout-dependent per CLAUDE.md's own B2 rule and requires real browser rendering, not jsdom. The spec was written following `jcx-s3`/`jcx-s6`'s own established Playwright conventions, but this session did not run it against a live server before closing out the story.
+**Rationale:** The FUNCTIONAL portion of AC3 (does a click on the header cell actually call `openPanel` with the right stage, does the nested link still work without a double-fire) is fully covered by real jsdom DOM-interaction tests (AC3a/AC3b), closing review finding 1-M2 directly. Only the purely visual confirmation (is the real rendered hit-area bigger, does a real focus-visible outline render) is unverified live. This is a narrower, lower-risk gap than a fully-unverified AC — the implementation is a small, mechanical CSS/markup addition (a `cursor:pointer`/`:focus-visible` rule and a `tabindex` attribute) with low likelihood of real-browser-specific divergence from the jsdom-confirmed functional behavior.
+**Made by:** Claude (session), consistent with this session's own established pattern for CSS-layout-dependent ACs with a written-but-not-yet-live-run E2E spec.
+**Revisit trigger:** Run the E2E spec for real against a live/local server and update `jcx-s7-dod.md`'s own outcome.
+
+---
+
 **2026-10-14 | FIX | jcx-hotfix4 (found during cx-interaction-design-polish spike)**
 **Decision:** Fix "+ Add stage" so the new, unsaved stage-name input is inserted as a sibling of the Add-stage button itself (always visible) rather than inside `#sw-journey-stages` (hidden in both the Canvas and Customer-experience views, visible only in Delivery).
 **Context:** Operator asked for a deeper, multi-source research spike on CX/journey-mapping patterns, then redirected mid-spike to also cover the step-by-step authoring/editing flow itself ("the journey of making a journey"), not just the rendered grid's visual polish. Reading `journeys.js`'s own stage-creation code and reproducing the click live via `javascript_tool` confirmed a real, long-standing functional defect: clicking "+ Add stage" from the Canvas view (the page's own default) or the Customer-experience view silently does nothing visible — the new input exists in the DOM but its container stays `display:none` and it never receives focus. Only the Delivery view ever worked. This predates `jcx-s6` (the underlying `#sw-journey-stages{display:none}` rule for the Canvas view is from `ep2-s3`'s own 3-view toggle); `jcx-s6` only extended the same already-broken pattern to the Customer-experience view too, following its own established precedent.
