@@ -54,6 +54,23 @@ async function handlePostJourneys(req, res, _next, pool) {
   );
   var journeyId = r.rows[0].id;
 
+  // jae-s1 AC2 -- seeds a hardcoded default stage outline unless the
+  // operator explicitly opted out (checkbox unchecked -> seedDefaultStages:
+  // false). Reuses handlePostJourneyStage's own exact single-stage INSERT
+  // shape (name + position only, every other column stays null) -- called
+  // 5 times here rather than via a second HTTP round-trip, matching this
+  // file's own existing convention of calling shared query logic directly.
+  if (req.body && req.body.seedDefaultStages !== false) {
+    var defaultStageNames = ['Evaluate', 'Discover', 'Purchase', 'Onboard', 'Retain'];
+    for (var i = 0; i < defaultStageNames.length; i++) {
+      await pool.query(
+        `INSERT INTO customer_journey_stages (journey_id, tenant_id, name, position)
+         VALUES ($1, $2, $3, $4)`,
+        [journeyId, tenantId, defaultStageNames[i], i]
+      );
+    }
+  }
+
   // AC1: redirect to the canvas shell.
   if (res.status) { res.status(201).json({ id: journeyId }); } // test mock path
   else { res.writeHead(302, { 'Location': '/journeys/' + journeyId }); res.end(); }
@@ -2294,6 +2311,11 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
           products.map(function(p) { return '<option value="' + escHtml(p.product_id) + '">' + escHtml(p.name) + '</option>'; }).join('') +
         '</select>' +
       '</label>' +
+      // jae-s1 AC1 -- checked by default; the operator unchecks it for a
+      // genuinely blank journey (AC3).
+      '<label class="sw-new-journey-field sw-new-journey-field--checkbox">' +
+        '<input type="checkbox" id="sw-new-journey-seed-default" checked> Start with a default stage outline' +
+      '</label>' +
       '<span id="sw-new-journey-error" class="sw-new-journey-error" aria-live="polite"></span>' +
       '<button type="button" id="sw-new-journey-submit">Create journey</button>' +
     '</div>' +
@@ -2306,6 +2328,10 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
       '.sw-new-journey-field{display:block;font-size:13px;color:var(--ink-2);margin-bottom:14px}' +
       '.sw-new-journey-field input,.sw-new-journey-field textarea,.sw-new-journey-field select{display:block;width:100%;margin-top:6px;' +
         'background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:13px}' +
+      // jae-s1 -- override the generic full-width rule above for the
+      // checkbox variant; a checkbox is not a full-width bordered field.
+      '.sw-new-journey-field--checkbox{display:flex;align-items:center;gap:8px}' +
+      '.sw-new-journey-field--checkbox input{display:inline;width:auto;margin-top:0;padding:0;border:none;background:none}' +
       '.sw-new-journey-error{display:block;font-size:12px;color:var(--danger);margin-bottom:8px}' +
       '.sw-journey-list-card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}' +
       '.sw-journey-list-name{font-size:15px;font-weight:600;color:var(--ink)}' +
@@ -2349,13 +2375,14 @@ async function handleGetCustomerJourneysList(req, res, _next, pool) {
           'var name=document.getElementById("sw-new-journey-name").value.trim();' +
           'var description=document.getElementById("sw-new-journey-description").value.trim();' +
           'var productId=document.getElementById("sw-new-journey-product").value||null;' +
+          'var seedDefaultStages=document.getElementById("sw-new-journey-seed-default").checked;' +
           'if(!name){errorEl.textContent="Name is required";return;}' +
           // ep4-s1 -- POST /journeys (ep1-s1, unchanged) responds with a real
           // 302 redirect on success, which fetch() auto-follows -- the
           // success-path response body is the canvas page's HTML, not JSON.
           // r.redirected/r.url must be checked BEFORE any .json() call, or a
           // successful creation looks like a parse-error failure.
-          'fetch("/journeys",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,description:description,productId:productId,_csrf:csrfToken})})' +
+          'fetch("/journeys",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,description:description,productId:productId,seedDefaultStages:seedDefaultStages,_csrf:csrfToken})})' +
             '.then(function(r){' +
               'if(r.redirected){window.location.href=r.url;return;}' +
               'return r.json().then(function(j){throw new Error((j&&j.error)||"Request failed");});' +
