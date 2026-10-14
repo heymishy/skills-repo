@@ -14,6 +14,7 @@
 | Template-seeding latency | No perceptible delay — 5 sequential INSERTs within the same transaction `handlePostJourneys` already opens | Manual observation during DoD live-browser confirmation | jae-s1 |
 | Guided-creation panel auto-open | No new network call — a sequencing change to already-executing client-side code | Manual observation | jae-s2 |
 | Field-suggestion scan latency | Same cost profile as `jcx-s4`'s own already-proven persona-suggestion scan (bounded by linked feature-slug count per product, typically small) | Manual observation | jae-s3 |
+| Delivery-grid render | No new query; renders from the same already-loaded `stages`/`mappingsByStage`/`featuresBySlug` data the old card-stack loop already iterated | Code review at DoR | jae-s5 |
 
 **Source:** Story AC / direct reuse of established precedent from the parent `2026-10-11-journey-cx-redesign` feature's own NFR profile — no formal load-test SLO warranted at this scale.
 
@@ -27,6 +28,7 @@
 | Multi-tenancy | `getFieldSuggestions` returns the same tenant-scoped result `getPersonaSuggestions` already returns for an equivalent cross-tenant scenario; verified directly, not assumed identical | ADR-025, direct reuse of `jcx-s4`'s own established pattern | jae-s3 |
 | Reuse over invention | `extractProblemStatement`/`getFieldSuggestions` mirror `extractWhoItAffects`/`getPersonaSuggestions`'s own existing shape exactly — no new query pattern, no new file-access surface | ADR-026 | jae-s3 |
 | No new mutating surface beyond existing patterns | Guided-creation's auto-open is a client-side sequencing change only; template-seeding reuses the existing single-stage INSERT shape N times | ADR-025 | jae-s1, jae-s2 |
+| Reuse over invention | `buildDeliverySwimlaneGrid` calls the same canonical `buildSwimlaneGridShell` the existing CX grid uses (ADR-028 extraction) — no new render mechanism, no new query shape | ADR-026, ADR-028 | jae-s5 |
 
 **Data classification:**
 - [x] Internal — non-public but low sensitivity (journey/stage business data, same classification as the rest of the parent journey feature — not PII, not commercially restricted)
@@ -76,6 +78,7 @@
 | WCAG 2.1 AA — new checkbox | Native, labeled `<input type="checkbox">`, keyboard-operable by default HTML semantics | jae-s1 |
 | WCAG 2.1 AA — auto-open focus | Focus genuinely moves to the first editable field on auto-open — verified directly via `document.activeElement`, not assumed because `openPanel` already does this elsewhere | jae-s2 |
 | WCAG 2.1 AA — suggestion buttons | Reuse `jcx-s4`'s own already-accessible `sw-persona-suggestion-btn` markup/CSS exactly — native `<button>`, no custom widget | jae-s3 |
+| WCAG 2.1 AA — Delivery grid | Reuses `jcx-s6`'s own accessible-list, focusable-header-cell, and keyboard-operable scroll-track conventions directly via the shared `buildSwimlaneGridShell` builder — no new accessibility pattern | jae-s5 |
 
 **Source:** `product/constraints.md` #9 (hard floor, carried forward from the parent feature's own discovery.md), direct reuse of established accessible patterns per ADR-026.
 

@@ -40483,7 +40483,7 @@
       "name": "Journey authoring experience -- guided creation, smarter defaults, templates",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-10-14T18:20:34.548Z",
+      "updatedAt": "2026-10-14T18:24:47.741Z",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-14-journey-authoring-experience/discovery.md",
       "track": "standard",
@@ -40639,11 +40639,11 @@
             {
               "slug": "jae-s5",
               "name": "Restructure the Delivery view from a per-stage card stack into a swimlane grid",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T18:20:34.546Z",
+              "updatedAt": "2026-10-14T18:24:47.740Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -40654,9 +40654,11 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
-              "dorStatus": "not-started",
+              "dorStatus": "signed-off",
               "prStatus": "none",
-              "dodStatus": "not-started"
+              "dodStatus": "not-started",
+              "dorArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md"
             }
           ]
         }
@@ -40685,9 +40687,9 @@
           "category": "adr",
           "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
           "status": "met",
-          "evidence": "All 3 stories reuse existing functions/patterns verbatim, confirmed in each DoR contract",
+          "evidence": "jae-s5 reuses buildSwimlaneGridShell / CX grid mechanics per /review run 2 (0 findings)",
           "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-14T05:33:54.923Z"
+          "assessedAt": "2026-10-14T18:24:47.741Z"
         },
         {
           "id": "MC-A11Y-01",
@@ -40706,6 +40708,15 @@
           "evidence": "Native checkbox (jae-s1), verified real focus-move (jae-s2), reused accessible button pattern (jae-s3)",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-10-14T05:33:54.923Z"
+        },
+        {
+          "id": "ADR-028",
+          "category": "adr",
+          "label": "A derived structure needs exactly one canonical builder",
+          "status": "met",
+          "evidence": "jae-s5 extracts buildSwimlaneGridShell as the one canonical builder for both grids; /review run 2 Category E score 5, finding 1-H2 resolved",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-14T18:24:47.741Z"
         }
       ],
       "stories": []
