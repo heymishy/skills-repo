@@ -90,6 +90,24 @@ await (async function () {
   } catch (e) { fail('AC2 (unit): single-file and multi-file shapes', e); }
 })();
 
+// AC3 (unit): captions and transcript exist alongside every video, marked human-reviewable
+await (async function () {
+  const { generateCaptionsForVideo } = require('../scripts/playback-capture');
+  const { setGenerateCaptionsAndTranscript } = require('../src/web-ui/adapters/caption-transcript');
+  const written = {};
+  const writeFile = (p, c) => { written[p] = c; };
+  setGenerateCaptionsAndTranscript(() => ({ captions: 'WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nStep one.\n', transcript: 'Step one.' }));
+  try {
+    const result = await generateCaptionsForVideo('artefacts/f1/playback/video/clip-0.webm', 'Step one.', writeFile);
+    assert.strictEqual(result.captionPath, 'artefacts/f1/playback/video/clip-0.vtt');
+    assert.strictEqual(result.transcriptPath, 'artefacts/f1/playback/video/clip-0.transcript.txt');
+    assert.strictEqual(result.reviewed, false, 'expected newly-generated captions/transcript to be unreviewed');
+    assert.ok(written[result.captionPath].startsWith('WEBVTT'), 'expected caption file written');
+    assert.strictEqual(written[result.transcriptPath], 'Step one.', 'expected transcript file written');
+    pass('AC3 (unit): captions and transcript exist alongside every video, marked human-reviewable');
+  } catch (e) { fail('AC3 (unit): captions and transcript exist alongside every video', e); }
+})();
+
 console.log(`\n[fpd-s2-video-walkthrough-and-accessibility] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 

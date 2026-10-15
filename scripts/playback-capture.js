@@ -8,6 +8,7 @@
 // module-level default.
 
 const fs = require('fs');
+const { generateCaptionsAndTranscript } = require('../src/web-ui/adapters/caption-transcript');
 
 function checkDodGate(state, featureSlug) {
   const feature = (state.features || []).find(f => f.slug === featureSlug);
@@ -154,9 +155,28 @@ async function captureVideoRecording({ browser, featureSlug, clips }) {
   return results;
 }
 
+// fpd-s2: generates captions + a standalone transcript for one video via the
+// D37 adapter, writes both to disk, and marks them unreviewed until the
+// engineer explicitly confirms (AC3) -- automated generation never sets
+// reviewed: true itself.
+function captionTranscriptPaths(videoPath) {
+  const base = videoPath.replace(/\.webm$/, '');
+  return { captionPath: `${base}.vtt`, transcriptPath: `${base}.transcript.txt` };
+}
+
+async function generateCaptionsForVideo(videoPath, interactionSequenceText, writeFileFn) {
+  const write = writeFileFn || ((p, c) => fs.writeFileSync(p, c, 'utf8'));
+  const { captionPath, transcriptPath } = captionTranscriptPaths(videoPath);
+  const result = await generateCaptionsAndTranscript(videoPath, interactionSequenceText);
+  write(captionPath, result.captions);
+  write(transcriptPath, result.transcript);
+  return { captionPath, transcriptPath, reviewed: false };
+}
+
 module.exports = {
   checkDodGate, parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets,
   generateWalkthroughMarkdown, captureAcScreenshots, embedScreenshotPaths,
   getPackageStatus, markPackageReviewed,
   captureVideoRecording,
+  generateCaptionsForVideo,
 };
