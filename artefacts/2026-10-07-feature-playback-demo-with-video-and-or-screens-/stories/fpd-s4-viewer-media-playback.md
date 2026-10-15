@@ -19,6 +19,7 @@ So that **I can confirm a feature does what it claims without downloading files 
 ## Architecture Constraints
 
 - **Serves existing files directly — no new storage.** Screenshots (PNG) and video (`.webm`, per `fpd-s2`'s own corrected format) are served from the same `artefacts/[feature-slug]/playback/` files `fpd-s1`/`fpd-s2` already produce — no copy, no separate CDN or hosting layer (discovery's own Constraints section).
+- **Renders into `fpd-s3`'s own canonical structure — not a second traversal (ADR-028).** This story is the second consumer of the feature/story/AC structure `fpd-s3` builds (or reuses, per that story's own `/trace`/dashboard reuse-check). It adds media rendering to each existing AC section `fpd-s3` already produces; it does not re-walk the feature/epic/story/AC hierarchy independently.
 - **Native `<video>` element, no custom player.** `.webm` plays natively; no third-party video player library is introduced (ADR-026 — reuse the platform, don't add a dependency for something the browser already does).
 - **Captions track wired to the native player.** The video element exposes the caption file `fpd-s2` produces (e.g. a `<track kind="captions">` element) — not a separate, disconnected caption viewer.
 - **Playback-only (discovery Out of Scope item 5).** No trim/edit/annotate controls — standard native video controls only.

@@ -40858,8 +40858,11 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-15T08:30:32.122Z"
             }
           ]
         },
@@ -40871,8 +40874,11 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-15T08:30:32.122Z"
             }
           ]
         },
@@ -40884,19 +40890,25 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-15T08:30:32.122Z"
             },
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-15T08:30:32.122Z"
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-15T08:26:07.883Z",
+      "updatedAt": "2026-10-15T08:30:32.122Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
@@ -41196,7 +41208,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "na",
+          "evidence": "review/fpd-s1-review-1.md, review/fpd-s3-review-1.md -- not applicable, no new query shape introduced",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-15T08:30:32.122Z"
         }
       ]
     }
