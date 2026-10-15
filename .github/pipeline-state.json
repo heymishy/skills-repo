@@ -40858,19 +40858,19 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:17:29.559Z",
+              "updatedAt": "2026-10-15T10:38:40.906Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s1-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -40881,52 +40881,53 @@
                 {
                   "id": "task-1",
                   "name": "DoD/benefit-metric parsing + AC gate check (AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Parse DoD AC Coverage table + generate walkthrough sections (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Metric Signal section sourced from benefit-metric.md targets (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Screenshot capture logic + embedding (AC3, script-logic portion)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Package status -- pending-review until editorial confirmation (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "Integration test -- multi-story DoD, no cross-story mixing (AC1 integration)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-7",
                   "name": "skills/feature-playback/SKILL.md + check-skill-contracts.js entry",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 },
                 {
                   "id": "task-8",
                   "name": "E2E spec -- real capture against a running app (AC3, RISK-ACCEPT)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
