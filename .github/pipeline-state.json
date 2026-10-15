@@ -40957,11 +40957,11 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T18:54:40.193Z",
+              "updatedAt": "2026-10-15T18:56:05.690Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -41032,7 +41032,9 @@
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/995"
             }
           ]
         },
