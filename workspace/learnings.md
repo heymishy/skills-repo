@@ -3224,3 +3224,80 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **Signal-type:** gap
 **Signal-text:** Live-verifying jae-s1/s2/s3 on wuce-staging.fly.dev surfaced an unrelated visual-design finding: the Canvas view own drawflow stage-node boxes render with a bright, saturated cyan fill that does not match the rest of the app muted surface/border token palette (var(--surface)/var(--line) used everywhere else). Pre-existing styling, not touched by any story in this session (jae-s1 through jae-s4) or by the journey-cx-redesign epic own jcx-s1 through jcx-s7. Flagged by the operator directly from live screenshots. Worth a dedicated design spike against the Canvas/drawflow node styling before it becomes a story -- not fixed inline to avoid unplanned scope creep into an unrelated branch.
 **Source:** operator-manual (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — Canvas cyan-fill gap root-caused to unmodified drawflow vendor CSS
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / Delivery-view redesign + Canvas styling spikes
+**Signal-type:** learning
+**Signal-text:** Root cause confirmed for the 2026-10-14 Canvas cyan-fill gap signal: it is drawflow's own unmodified vendor default stylesheet (drawflow@^0.0.60, served as-is at /vendor/drawflow.min.css -- background:#0ff, selected:red, input port:#ff0, connector stroke:#4682b4), not app-side CSS drift. journeys.js never overrides any of the vendor node/port/connector rules. Verdict FIX, documented in spikes/canvas-node-styling-outcome.md: override via the app's own existing --surface/--line/--accent-soft tokens in journeys.js's existing style block, matching the polyline stroke convention the Customer-experience view already uses.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — Delivery-view grid P2 placement resolved; jae-s5 written
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / Delivery-view redesign (journey-authoring-delivery-view-grid epic)
+**Signal-type:** decision
+**Signal-text:** Operator resolved the delivery-view-design-outcome spike's own open P2 question: Map feature/Add placeholder actions live inside the Mapped features grid cell (not a dedicated actions row) in the new Delivery swimlane grid. New epic journey-authoring-delivery-view-grid and story jae-s5 (8 ACs) written, reusing jcx-s6's buildCustomerExperienceSwimlaneGrid pattern per ADR-026.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — jae-s5 /review caught two real HIGH findings a self-authored /definition pass missed
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / jae-s5 /review
+**Signal-type:** pattern
+**Signal-text:** /review run 1 on jae-s5 (Delivery-view grid) caught 2 real HIGH findings an author-written definition pass missed: (1) the story expanded scope into territory this feature's own discovery.md explicitly names out of scope ("display/mechanics layer"), with no logged override; (2) the story's Architecture Constraints described copying jcx-s6's swimlane-grid mechanics a second time, a direct ADR-028 violation (one canonical builder per derived structure). Both fixed before test-plan: an operator-confirmed scope-override decision logged, and the story/epic rewritten to extract a shared buildSwimlaneGridShell builder instead of re-deriving the CX grid's mechanics -- confirmed via /review run 2, PASS. Both findings came from checking the story against two artefacts the same-session author had already read but not cross-checked against the new story text -- a live demonstration of why /review runs as a distinct, skeptical pass rather than being folded into /definition.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — When a story defaults a CSS-layout AC to RISK-ACCEPT, check for a reusable E2E spec first
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / jae-s5 /test-plan
+**Signal-type:** learning
+**Signal-text:** jae-s5's story draft defaulted AC8's CSS-layout-dependent behaviour to RISK-ACCEPT. /test-plan's own Step 3a caught this was the wrong call: Playwright is already configured (ADR-018) and tests/e2e/jcx-s6-swimlane-grid.spec.js already covers the structurally identical column-layout/pinned-scroll mechanics for the grid jae-s5 reuses -- a real E2E test was clearly available and cheap (reuse the existing spec as a template), not a tooling gap. Corrected AC8 to require a new E2E spec instead. Worth generalising: when a story's CSS-layout classification defaults to RISK-ACCEPT, check whether an E2E spec already exists for a structurally similar/reused mechanism before accepting the risk -- reuse may make the real-test option cheaper than the manual-smoke alternative, not just more rigorous.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — W4 RISK-ACCEPT first-log gap, and epic oversight labels as a floor not a ceiling
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / jae-s5 /definition-of-ready
+**Signal-type:** gap
+**Signal-text:** jae-s5's own W4 check at /definition-of-ready found no prior W4 RISK-ACCEPT entry logged in this feature's decisions.md, despite architecture-guardrails.md's own "Solo operator / W4 RISK-ACCEPT posture" requiring exactly one such log per feature -- and despite jae-s1 through jae-s4 all having already passed their own DoR runs this same session without it being logged. Closed now (first W4 entry for this feature). Also found: the epic journey-authoring-delivery-view-grid labelled its own Human Oversight Level as Medium, but architecture-guardrails.md's repo-wide posture states oversight defaults to High for this solo-operator context regardless of story complexity -- the DoR sign-off correctly overrode the epic's own Medium label to High. Worth a generalised check: any future epic-level Human Oversight Level in this repo should be read as a floor the DoR's own repo-wide posture can raise, not a ceiling -- epics written before this posture was documented (2026-09-06) may still carry stale Low/Medium labels.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — A signed-off DoR contract's "no change to X's wiring" claim was wrong; caught by reading the client script before coding
+
+**Session-phase:** 2026-10-14-journey-authoring-experience / jae-s5 /implementation-plan
+**Signal-type:** gap
+**Signal-text:** A signed-off DoR contract's claim of "no change to the reorder buttons' own wiring" was found wrong only once the actual client script in journeys.js was read line-by-line at /implementation-plan, ahead of writing any code. A SECOND, more dangerous finding in the same read: the "+ Add stage" button's own click handler is gated by a shared DOM container reference (list/jcxList both pointing at the same #sw-journey-stages id) -- naively deleting that container (rather than re-targeting the variable) would have silently disabled "+ Add stage" in ALL THREE views, not just the one being changed. Pattern worth generalising: before deleting or restructuring a shared DOM container referenced by multiple delegated-listener variables, grep every live reference to that exact id/class across the whole file first, not just the renders the story's own ACs describe.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — A spike's tooling recommendation still needs the D2-platform gate re-checked at /definition
+
+**Session-phase:** 2026-10-07-feature-playback-demo-with-video-and-or-screens- / /definition (fpd-s2, D2-platform gate)
+**Signal-type:** gap
+**Signal-text:** An earlier video-capture-mechanism spike recommended an ffmpeg encoding step (.webm to MP4) without checking real availability of ffmpeg in any actual delivery environment. /definition's own mandatory D2-platform gate caught this: `ffmpeg -version` returned "command not found" in this session's own sandbox, with no confirmation it exists anywhere else this skill would run. Corrected by dropping the encoding step entirely -- discovery's own Constraints section already said "MP4 or equivalent", and Playwright's native .webm output satisfies that directly. Worth generalising: a spike's own tooling recommendation should be re-checked against the D2-platform gate at /definition time even when the spike itself felt thorough -- "best practice says X" and "X is actually available here" are different claims, and only the second one makes an AC valid.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-15 — ADR-028 citation gap at /review; architecture-guardrails.md's registry block is missing ADR-026 through ADR-031
+
+**Session-phase:** 2026-10-07-feature-playback-demo-with-video-and-or-screens- / /review (fpd-s4)
+**Signal-type:** pattern
+**Signal-text:** /review's own Category E check caught a real MEDIUM gap in fpd-s4 (the second consumer of fpd-s3's own feature/story/AC traversal): the story's Architecture Constraints didn't explicitly cite ADR-028, even though the relationship was implied by the Dependencies section. Fixed inline before the review report was written. Separately, while seeding the feature-level guardrails[] array from architecture-guardrails.md's own machine-readable "Guardrails Registry" YAML block, found that block only lists ADR-025 -- ADR-026 through ADR-031 all exist as real, documented ADRs in the file's own prose section but were never added to the registry block, so /review's own guardrails-compliance-matrix update mechanism can't track them even when a story correctly cites and applies them. Not fixed here (out of scope for this feature) -- worth a dedicated small fix to architecture-guardrails.md's own registry block.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-16 — A test file patched once for a brittle hardcoded-count assertion can still have un-converted siblings
+
+**Session-phase:** 2026-10-07-feature-playback-demo-with-video-and-or-screens- / fpd-s1 /verify-completion
+**Signal-type:** pattern
+**Signal-text:** A fresh full regression suite run after fpd-s1's implementation (756 files) surfaced exactly one failure: tests/check-md-2-skill-contracts.js T1.3 hardcoded an exact skill-count match ("41 skill(s)") that fpd-s1's own legitimate new feature-playback skill registration bumped to 42. The same file's own T1.2 assertion already carries a comment explaining it was converted away from this identical brittleness for the identical reason (s3fw-s1), after breaking 3 times in one prior session -- but T1.3 itself was never converted. Fixed by applying the same tolerant >= threshold to T1.3. Worth generalising: when a test file has ALREADY been patched once for a brittle hardcoded-count pattern, grep that same file for sibling assertions using the identical anti-pattern before assuming the single fix closed the whole class of bug -- a partial fix is easy to miss until the next unrelated change trips the un-converted sibling.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-16 — A RISK-ACCEPT named only in test-plan/DoR prose is not the same as a logged decisions.md entry
+
+**Session-phase:** 2026-10-07-feature-playback-demo-with-video-and-or-screens- / fpd-s1 /definition-of-done
+**Signal-type:** gap
+**Signal-text:** /definition-of-done's own UI-evidence gate check surfaced that fpd-s1 AC3's real-browser capture RISK-ACCEPT had only ever been named in test-plan.md/dor.md prose -- it was never logged as its own dedicated decisions.md entry, which should have happened at /definition-of-ready sign-off per CLAUDE.md's own B2 rule (three required parts: decisions.md entry + verification-script step + pendingActions item). The verification-script step and the underlying reasoning existed correctly; only the formal decisions.md log itself was missing, and nothing caught it until DoD's own gate re-checked for it. Logged retroactively and transparently. Worth a generalised /improve candidate: make /definition-of-ready's own B2 classification step itself write the decisions.md entry inline when it classifies a gap as RISK-ACCEPT, rather than relying on /definition-of-done's later gate check to catch an entry that was never written.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
+
+## 2026-10-16 — benefit-metric.md's prose coverage matrix and pipeline-state.json's contributingStories field can silently drift apart
+
+**Session-phase:** 2026-10-07-feature-playback-demo-with-video-and-or-screens- / fpd-s1 /definition-of-done
+**Signal-type:** gap
+**Signal-text:** pipeline-state.json's metrics[].contributingStories arrays were empty for all three of this feature's metrics (M1/M2/M3) despite benefit-metric.md's own Metric Coverage Matrix naming the contributing stories in prose -- the structured field was never populated at /benefit-metric time. /definition-of-done's own Step 6 reads this field literally, so left empty it would have silently skipped every metric assessment for every story in this feature, forever, with no error. Fixed by populating all three arrays to match the prose matrix exactly. Worth generalising: a /definition-of-ready or /benefit-metric hard-block checking that every story named in the prose matrix also appears in the matching metric's own contributingStories array would catch this class of gap before DoD time, not after.
+**Source:** agent-auto (promoted from workspace/capture-log.md at checkpoint)
