@@ -40755,6 +40755,41 @@
         }
       ],
       "stories": []
+    },
+    {
+      "slug": "2026-10-15-canvas-node-styling-fix",
+      "name": "Override drawflow's vendor-default node/port/connector colours with the app's own design tokens",
+      "track": "short",
+      "stage": "review",
+      "health": "green",
+      "epics": [],
+      "metrics": [],
+      "stories": [
+        {
+          "id": "cnsf-s1",
+          "slug": "cnsf-s1",
+          "name": "Override drawflow vendor-default node/port/connector colours with app design tokens",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-10-15T04:28:22.966Z",
+          "testPlan": {
+            "status": "not-started",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": null
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "not-started",
+          "prStatus": "none",
+          "dodStatus": "not-started"
+        }
+      ],
+      "updatedAt": "2026-10-15T04:28:22.967Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
