@@ -1,6 +1,6 @@
 # Discovery: Feature Playback Demo Package
 
-**Status:** Draft — pending approval
+**Status:** Clarified — pending approval
 **Date:** 2026-10-07
 **Feature slug:** 2026-10-07-feature-playback-demo-with-video-and-or-screens
 
@@ -59,7 +59,7 @@ The demo package becomes a governed artefact stored in `artefacts/[feature-slug]
 
 [RESOLVED 2026-10-14, per spike] The walkthrough script is sourced from the feature's own DoD artefact — its AC Coverage table and Metric Signal section — not from raw E2E test file content, which the original risk correctly flagged as often too low-level or terse for a sponsor-facing narrative.
 
-[ASSUMPTION] Chrome's built-in screen recording (or a Node.js equivalent like `puppeteer-screen-recorder`) is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling. No best-practice source addressed this directly; stays open, correctly deferred to `/definition`, and needs named compliance sign-off if a regulated tenant adopts this skill.
+[RESOLVED 2026-10-15, per `/clarify` + `spikes/video-capture-mechanism-outcome.md`] The capture mechanism is Playwright's own built-in `recordVideo` browser-context option — not a human manually using Chrome's own screen-record UI, and not `puppeteer-screen-recorder`/`puppeteer-capture`. Zero new npm dependency (Playwright is already a devDependency, ADR-018); reuses the exact tool already proven in this repo's own E2E suite (ADR-026). Playwright writes `.webm`; an `ffmpeg` encoding step (a new tool-availability requirement, not an npm dependency — `/definition` must confirm it's available wherever this skill runs) converts to MP4 per the Constraints section's own format requirement. The regulated-environment screen-recording-restriction concern is independently closed by the Accessibility constraint's own silent-recording-plus-transcript default (see below) — a fully automated, programmatic capture is not the same restricted category as a human operating OS-level screen-recording software, but this distinction should still be confirmed with compliance before a regulated tenant adopts this skill.
 
 [RESOLVED 2026-10-14, per spike] Engineers are not required to narrate — narration is optional by default, with auto-transcription (not a forced human-narration decision) as the MVP's own baseline mechanism for turning a recording into structured, searchable documentation. This also closes the regulated/restricted-audio-environment concern: a silent recording with an auto-generated transcript is already the MVP's own default path, not a fallback.
 
@@ -91,14 +91,15 @@ The primary risk is that the "generated or assisted" spectrum is wide — a full
 
 ## /clarify recommendation
 
-**[Updated 2026-10-14, per spike]** 2 of the original 4 assumptions are now resolved (see Assumptions and risks above) — the screenshot-capture mechanism and the walkthrough-script source. Before proceeding to `/benefit-metric`, run `/clarify` to resolve what remains:
-
-- [ASSUMPTION] Chrome's built-in screen recording or a Node.js equivalent is an acceptable video capture mechanism — unconfirmed; regulated environments may restrict screen recording tooling. The spike found no best-practice source resolving this; it is a genuine implementation-tooling decision for `/clarify`/`/definition`, not a research gap.
-- [CONFIRM] Whether staging is reliably accessible for Playwright-driven capture in THIS repo's own environment specifically (the spike confirmed the mechanism is sound in general; this repo's own staging-accessibility reality still needs a direct check, same as any other story's own environment assumption).
-
-The most critical remaining clarification is the first: if a regulated-environment screen-recording restriction applies, the video-capture mechanism (not the overall package concept) is what needs to change.
+**[Resolved 2026-10-15, via `/clarify`]** All 4 original assumptions are now resolved — see Assumptions and risks above and the Clarification log below. Ready to proceed to `/benefit-metric`.
 
 ---
+
+## Clarification log
+
+[2026-10-15] Clarified via `/clarify`:
+- Q: Video capture mechanism for the playback package's screen recording — which should the MVP use?  A: Operator asked for real research rather than a snap pick, flagging that "Chrome's built-in recording" conflated manual and programmatic capture and asking which gives the best result — routed to `/spike` per `/clarify`'s own convention. Spike (`spikes/video-capture-mechanism-outcome.md`) found Playwright's own built-in `recordVideo` is the established, zero-new-dependency path (reuses the exact tool already proven in this repo's E2E suite, ADR-026), with no independent evidence that `puppeteer-screen-recorder`/`puppeteer-capture` produces a better result — only a competing tool's own self-interested comparison. `ffmpeg` is needed as a new tool-availability requirement (not an npm dependency) to encode Playwright's `.webm` output to the MP4 format the Constraints section already requires.
+- Q: Is this repo's own staging environment reliably accessible for Playwright-driven screenshot capture, or is that itself unconfirmed?  A: Confirmed accessible — this session's own E2E specs are already written against a local/staging webServer target, proving the mechanism; a separate, already-logged sandbox-specific Postgres-reachability gap (`decisions.md` D5, this session) is an execution-environment limitation, not a staging-access problem.
 
 ## Attribution
 
@@ -112,4 +113,4 @@ The most critical remaining clarification is the first: if a regulated-environme
 - Pending
 
 ---
-*Status: Draft. Update to "Approved" with approver name and date before proceeding to /benefit-metric.*
+*Status: Clarified. Update to "Approved" with approver name and date before proceeding to /benefit-metric.*
