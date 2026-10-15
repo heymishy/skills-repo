@@ -1609,6 +1609,19 @@ async function handleGetJourneyCanvas(req, res, _next, pool) {
       '.sw-stage-health--covered{color:var(--success)}' +
       '.sw-stage-health--partial{color:var(--warn)}' +
       '.sw-stage-health--none{color:var(--danger)}' +
+      // cnsf-s1 -- override drawflow's own vendor-default node/port/
+      // connector colours (background:#0ff, selected:red, input port
+      // #ff0, connector stroke #4682b4 -- confirmed via direct read of
+      // node_modules/drawflow/dist/drawflow.min.css) with the app's own
+      // design tokens. #sw-drawflow-canvas is an ID selector, which always
+      // outranks any number of class selectors regardless of source
+      // order -- no change to the existing <style>-before-<link> ordering,
+      // no !important. Node width/padding/position are untouched
+      // (out of scope) -- only colour/border/stroke values are set.
+      '#sw-drawflow-canvas .drawflow-node{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px}' +
+      '#sw-drawflow-canvas .drawflow-node.selected{background:var(--accent-soft);border-color:var(--accent)}' +
+      '#sw-drawflow-canvas .drawflow-node .input,#sw-drawflow-canvas .drawflow-node .output{background:var(--surface);border:2px solid var(--line)}' +
+      '#sw-drawflow-canvas .connection .main-path{stroke:var(--line);stroke-width:2px}' +
       '.sw-journey-health-summary{font-size:13px;color:var(--ink-2);margin-bottom:8px}' +
     '</style>' +
     // ic-s1 -- the drawflow stylesheet must actually be requested, or node
