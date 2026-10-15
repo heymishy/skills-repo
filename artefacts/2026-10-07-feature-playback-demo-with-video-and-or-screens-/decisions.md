@@ -26,3 +26,12 @@
 **Rationale:** Same uniform posture already applied to every other feature this session — the operator is also the reviewer and final approver.
 **Made by:** Established repo-wide posture (`architecture-guardrails.md`), applied here per `/definition-of-ready`'s own W4 check.
 **Revisit trigger:** A second operator onboarding, or regulated-enterprise adoption.
+
+---
+
+**2026-10-15 | SCOPE (collateral fix) | fpd-s1 /verify-completion**
+**Decision:** `tests/check-md-2-skill-contracts.js`'s own T1.3 assertion was converted from a hardcoded exact match (`"41 skill(s)"`) to the same tolerant `>=` threshold its sibling assertion T1.2 already uses, for the same reason (`s3fw-s1`).
+**Context:** `fpd-s1` Task 7 registers a new `feature-playback` entry in `check-skill-contracts.js`'s `CONTRACTS` array (required by this story's own AC5 entry-condition structural check), which legitimately bumps the real skill count from 41 to 42. `check-md-2-skill-contracts.js` T1.3 hardcoded the exact prior count, and failed on the full regression run as a direct, expected consequence of this story's own Task 7 — not a defect in Task 7's own implementation. T1.2 in the same file already carries a comment explaining it was converted away from this exact brittleness for the identical reason, after breaking 3 times in one prior session (`evcg-s1`, `psms-s1`).
+**Rationale:** This is not new scope — it is a one-line fix to a pre-existing test's own brittleness, directly and unavoidably triggered by this story's own named Task 7, following the exact precedent already established in the same file for the same failure mode. Fixing it inline (rather than working around it) keeps the regression suite's "0 failures" evidence genuine rather than papering over a real, if trivial, defect in a sibling test.
+**Made by:** Claude (session), during `fpd-s1` `/verify-completion` — surfaced by a fresh full-suite run (756 files), fixed, re-verified (756/756, 0 failures) before any completion claim.
+**Revisit trigger:** None — this closes the gap; any future new skill registration is now tolerated by all three assertions in this file (T1.2, T1.3, T3.2).
