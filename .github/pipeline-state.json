@@ -40858,11 +40858,21 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T08:30:32.122Z"
+              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s1-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             }
           ]
         },
@@ -40874,11 +40884,21 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T08:30:32.122Z"
+              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s2-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             }
           ]
         },
@@ -40890,25 +40910,45 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T08:30:32.122Z"
+              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s3-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T08:30:32.122Z"
+              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s4-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-15T08:30:32.122Z",
+      "updatedAt": "2026-10-15T09:33:07.633Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
