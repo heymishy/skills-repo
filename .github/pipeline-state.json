@@ -40769,19 +40769,19 @@
           "id": "cnsf-s1",
           "slug": "cnsf-s1",
           "name": "Override drawflow vendor-default node/port/connector colours with app design tokens",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-10-15T05:00:30.851Z",
+          "updatedAt": "2026-10-15T05:21:57.116Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-10-15-canvas-node-styling-fix/test-plans/cnsf-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -40794,10 +40794,11 @@
             {
               "id": "task-1",
               "name": "Add 4 CSS override rules + test",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-10-15-canvas-node-styling-fix/plans/cnsf-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "updatedAt": "2026-10-15T04:31:15.281Z"
