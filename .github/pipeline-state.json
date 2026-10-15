@@ -40858,11 +40858,11 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "updatedAt": "2026-10-15T10:00:22.263Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -40872,7 +40872,11 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s1-dor-contract.md",
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
             }
           ]
         },
@@ -40884,11 +40888,11 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T09:39:40.835Z",
+              "updatedAt": "2026-10-15T10:00:22.263Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -40898,7 +40902,11 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s2-dor-contract.md",
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
             }
           ]
         },
@@ -40910,11 +40918,11 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "updatedAt": "2026-10-15T10:00:22.263Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -40924,16 +40932,20 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s3-dor-contract.md",
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
             },
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "updatedAt": "2026-10-15T10:00:22.263Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -40943,7 +40955,11 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor-contract.md",
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
             }
           ]
         }
