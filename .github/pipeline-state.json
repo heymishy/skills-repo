@@ -40803,6 +40803,54 @@
         }
       ],
       "updatedAt": "2026-10-15T05:23:04.295Z"
+    },
+    {
+      "slug": "2026-10-07-feature-playback-demo-with-video-and-or-screens-",
+      "name": "Feature Playback Demo Package",
+      "stage": "benefit-metric",
+      "health": "green",
+      "discoveryStatus": "approved",
+      "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Acceptance loop closure rate",
+          "target": ">=80% of DoD-validated features produce and share a complete playback package within 5 business days of DoD, over a rolling 90-day window",
+          "baseline": "0% -- no feature in this repo has ever produced a playback package",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Sponsor feedback re-entry rate",
+          "target": "100% of change-requested feedback formalised as a new discovery artefact within 10 business days",
+          "baseline": "Not yet established -- mechanism does not exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Demo preparation time",
+          "target": "<=45 minutes of engineer active input time per package",
+          "baseline": "Ad hoc, estimated 2-4 hours per feature (operator estimate, not instrumented)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "slicingStrategy": null,
+      "epics": [],
+      "updatedAt": "2026-10-15T06:24:39.154Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

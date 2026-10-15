@@ -1,6 +1,6 @@
 # Discovery: Feature Playback Demo Package
 
-**Status:** Clarified — pending approval
+**Status:** Approved
 **Date:** 2026-10-07
 **Feature slug:** 2026-10-07-feature-playback-demo-with-video-and-or-screens
 
@@ -121,7 +121,7 @@ The primary risk is that the "generated or assisted" spectrum is wide — a full
 - Pending
 
 **Approved By:**
-- Pending
+- Hamish King — Platform Owner — 2026-10-15
 
 ---
-*Status: Clarified. Update to "Approved" with approver name and date before proceeding to /benefit-metric.*
+*Status: Approved. Proceeding to /benefit-metric.*
