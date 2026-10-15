@@ -40643,7 +40643,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-14T20:01:23.567Z",
+              "updatedAt": "2026-10-15T04:26:03.422Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
@@ -40655,7 +40655,7 @@
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "dodStatus": "not-started",
               "dorArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-10-14-journey-authoring-experience/dor/jae-s5-dor-contract.md",
