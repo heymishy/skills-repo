@@ -8,6 +8,7 @@
 // module-level default.
 
 const fs = require('fs');
+const { generateCaptionsAndTranscript } = require('../src/web-ui/adapters/caption-transcript');
 
 function checkDodGate(state, featureSlug) {
   const feature = (state.features || []).find(f => f.slug === featureSlug);
@@ -132,11 +133,66 @@ function markPackageReviewed(statusPath, readFileFn, writeFileFn) {
   const current = JSON.parse(read(statusPath));
   current.status = 'complete';
   current.reviewedAt = new Date().toISOString();
+  // fpd-s2: also confirm every video's own captions/transcript -- the
+  // single review gate now covers accessibility artefacts, not just
+  // screenshots (AC5).
+  if (Array.isArray(current.videos)) {
+    current.videos = current.videos.map(v => Object.assign({}, v, { reviewed: true }));
+  }
   write(statusPath, JSON.stringify(current, null, 2));
+}
+
+// fpd-s2: the real completeness gate -- a package is NOT complete while any
+// video's own captions/transcript are still unreviewed, even if the
+// top-level status field claims "complete" (AC5).
+function isPackageComplete(statusObj) {
+  if (statusObj.status !== 'complete') return false;
+  if (Array.isArray(statusObj.videos) && statusObj.videos.some(v => !v.reviewed)) return false;
+  return true;
+}
+
+// fpd-s2: Playwright recordVideo capture. One browser context per clip --
+// the engineer's own choice of single combined walkthrough vs. several
+// per-AC/per-flow clips (AC2) is just the length of `clips`, no branching
+// logic difference.
+async function captureVideoRecording({ browser, featureSlug, clips }) {
+  const dir = `artefacts/${featureSlug}/playback/video/`;
+  const results = [];
+  for (const clip of clips) {
+    const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
+    const page = await context.newPage();
+    if (clip.run) await clip.run(page);
+    await context.close();
+    const video = page.video ? page.video() : null;
+    const path = video ? await video.path() : null;
+    results.push({ name: clip.name, path });
+  }
+  return results;
+}
+
+// fpd-s2: generates captions + a standalone transcript for one video via the
+// D37 adapter, writes both to disk, and marks them unreviewed until the
+// engineer explicitly confirms (AC3) -- automated generation never sets
+// reviewed: true itself.
+function captionTranscriptPaths(videoPath) {
+  const base = videoPath.replace(/\.webm$/, '');
+  return { captionPath: `${base}.vtt`, transcriptPath: `${base}.transcript.txt` };
+}
+
+async function generateCaptionsForVideo(videoPath, interactionSequenceText, writeFileFn) {
+  const write = writeFileFn || ((p, c) => fs.writeFileSync(p, c, 'utf8'));
+  const { captionPath, transcriptPath } = captionTranscriptPaths(videoPath);
+  const result = await generateCaptionsAndTranscript(videoPath, interactionSequenceText);
+  write(captionPath, result.captions);
+  write(transcriptPath, result.transcript);
+  return { captionPath, transcriptPath, reviewed: false };
 }
 
 module.exports = {
   checkDodGate, parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets,
   generateWalkthroughMarkdown, captureAcScreenshots, embedScreenshotPaths,
   getPackageStatus, markPackageReviewed,
+  captureVideoRecording,
+  generateCaptionsForVideo,
+  isPackageComplete,
 };
