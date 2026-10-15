@@ -60,9 +60,9 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Acceptance loop closure rate | TBD at `/definition` | Gap — no stories written yet |
-| M2 — Sponsor feedback re-entry rate | TBD at `/definition` | Gap — no stories written yet |
-| M3 — Demo preparation time | TBD at `/definition` | Gap — no stories written yet |
+| M1 — Acceptance loop closure rate | `fpd-s1` (produces the package), `fpd-s2` (completes it — video is required), `fpd-s3`/`fpd-s4` (makes it genuinely shareable/reviewable, not just produced) | Covered |
+| M2 — Sponsor feedback re-entry rate | `fpd-s3`, `fpd-s4` (a traceable, evidence-visible package is what makes specific feedback likely) | Covered |
+| M3 — Demo preparation time | `fpd-s1` (DoD-sourced script + automated screenshots), `fpd-s2` (automated recording + auto-transcription) | Covered |
 
 ---
 
