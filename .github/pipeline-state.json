@@ -40858,11 +40858,11 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:16:39.945Z",
+              "updatedAt": "2026-10-15T10:17:29.559Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -40876,7 +40876,57 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s1-dor-contract.md",
-              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "DoD/benefit-metric parsing + AC gate check (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Parse DoD AC Coverage table + generate walkthrough sections (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Metric Signal section sourced from benefit-metric.md targets (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Screenshot capture logic + embedding (AC3, script-logic portion)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Package status -- pending-review until editorial confirmation (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Integration test -- multi-story DoD, no cross-story mixing (AC1 integration)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "skills/feature-playback/SKILL.md + check-skill-contracts.js entry",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "E2E spec -- real capture against a running app (AC3, RISK-ACCEPT)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s1-plan.md"
+                }
+              ]
             }
           ]
         },
