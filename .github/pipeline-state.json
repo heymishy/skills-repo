@@ -40769,11 +40769,11 @@
           "id": "cnsf-s1",
           "slug": "cnsf-s1",
           "name": "Override drawflow vendor-default node/port/connector colours with app design tokens",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-10-15T04:49:10.139Z",
+          "updatedAt": "2026-10-15T05:00:30.851Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
