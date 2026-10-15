@@ -40824,8 +40824,13 @@
           "baseline": "0% -- no feature in this repo has ever produced a playback package",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "fpd-s1 ships only the document+screenshot portion of the package; video (fpd-s2) and the viewer (fpd-s3/fpd-s4) have not shipped yet, so no complete package exists to measure closure rate against.",
+          "contributingStories": [
+            "fpd-s1",
+            "fpd-s2",
+            "fpd-s3",
+            "fpd-s4"
+          ]
         },
         {
           "id": "m2",
@@ -40835,7 +40840,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fpd-s3",
+            "fpd-s4"
+          ]
         },
         {
           "id": "m3",
@@ -40844,8 +40852,11 @@
           "baseline": "Ad hoc, estimated 2-4 hours per feature (operator estimate, not instrumented)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Only the document+screenshot automation (fpd-s1) has shipped; fpd-s2's video/caption automation has not landed yet, so a representative end-to-end timed run is not yet meaningful.",
+          "contributingStories": [
+            "fpd-s1",
+            "fpd-s2"
+          ]
         }
       ],
       "slicingStrategy": "walking-skeleton",
@@ -40853,16 +40864,16 @@
         {
           "slug": "feature-playback-core-package",
           "name": "Engineers can produce a reviewable, AC-mapped demo package from a DoD-validated feature without authoring it from scratch",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:40:39.888Z",
+              "updatedAt": "2026-10-15T17:41:33.860Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -40928,8 +40939,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/994"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/994",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dod/fpd-s1-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             }
           ]
         },
@@ -41311,7 +41327,10 @@
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-15T17:41:33.860Z",
+          "evidence": "fpd-s1: Playwright reused as a devDependency only via a plain page argument (no new npm dependency); unit test chain (tests/check-fpd-s1-*.js) never requires @playwright/test -- only the separate E2E spec does."
         },
         {
           "id": "ADR-025",
