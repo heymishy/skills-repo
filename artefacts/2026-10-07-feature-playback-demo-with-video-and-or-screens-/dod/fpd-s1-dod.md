@@ -89,7 +89,7 @@ Scope deviations: None
 Test gaps: None (one execution-only RISK-ACCEPT, not a missing test)
 
 **Follow-up actions:**
-1. Run the post-deployment smoke test for AC3 (`tests/e2e/fpd-s1-walkthrough-capture.spec.js`) once a reachable Postgres/staging environment is available — logged in `workspace/state.json` `pendingActions`.
+1. ~~Run the post-deployment smoke test for AC3~~ — **partially resolved 2026-10-16**: AC3's core real-world claim (a DoD-validated feature's UI reaches a genuinely stable, non-spinner state with a stable selector) was live-verified via Claude-in-Chrome against `wuce-staging.fly.dev` (see `decisions.md` 2026-10-16 RESOLVED note). The literal `tests/e2e/fpd-s1-walkthrough-capture.spec.js` run itself is still blocked by this sandbox's own missing Postgres — run it against a real DATABASE_URL once available and record the result in `decisions.md`.
 2. Proceed to `fpd-s2` (video walkthrough + captions/transcript) — the next story in the walking-skeleton sequence.
 
 ---
