@@ -133,7 +133,22 @@ function markPackageReviewed(statusPath, readFileFn, writeFileFn) {
   const current = JSON.parse(read(statusPath));
   current.status = 'complete';
   current.reviewedAt = new Date().toISOString();
+  // fpd-s2: also confirm every video's own captions/transcript -- the
+  // single review gate now covers accessibility artefacts, not just
+  // screenshots (AC5).
+  if (Array.isArray(current.videos)) {
+    current.videos = current.videos.map(v => Object.assign({}, v, { reviewed: true }));
+  }
   write(statusPath, JSON.stringify(current, null, 2));
+}
+
+// fpd-s2: the real completeness gate -- a package is NOT complete while any
+// video's own captions/transcript are still unreviewed, even if the
+// top-level status field claims "complete" (AC5).
+function isPackageComplete(statusObj) {
+  if (statusObj.status !== 'complete') return false;
+  if (Array.isArray(statusObj.videos) && statusObj.videos.some(v => !v.reviewed)) return false;
+  return true;
 }
 
 // fpd-s2: Playwright recordVideo capture. One browser context per clip --
@@ -179,4 +194,5 @@ module.exports = {
   getPackageStatus, markPackageReviewed,
   captureVideoRecording,
   generateCaptionsForVideo,
+  isPackageComplete,
 };

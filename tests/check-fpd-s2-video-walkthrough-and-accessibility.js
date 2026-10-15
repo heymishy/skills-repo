@@ -125,6 +125,22 @@ await (async function () {
   } catch (e) { fail('AC4 (unit): silent recording still produces a transcript', e); }
 })();
 
+// AC5 (unit): package not complete while captions/transcript unreviewed for any video
+(function () {
+  const { isPackageComplete, markPackageReviewed } = require('../scripts/playback-capture');
+  const store = {};
+  const readFile = (p) => store[p];
+  const writeFile = (p, c) => { store[p] = c; };
+  const statusPath = 'artefacts/f1/playback/package-status.json';
+  writeFile(statusPath, JSON.stringify({ status: 'complete', videos: [{ name: 'walkthrough', reviewed: false }] }));
+  try {
+    assert.strictEqual(isPackageComplete(JSON.parse(readFile(statusPath))), false, 'expected incomplete while a video is unreviewed, even if status says complete');
+    markPackageReviewed(statusPath, readFile, writeFile);
+    assert.strictEqual(isPackageComplete(JSON.parse(readFile(statusPath))), true, 'expected complete once markPackageReviewed confirms every video');
+    pass('AC5 (unit): package not complete while captions/transcript unreviewed for any video');
+  } catch (e) { fail('AC5 (unit): package not complete while captions/transcript unreviewed', e); }
+})();
+
 console.log(`\n[fpd-s2-video-walkthrough-and-accessibility] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
