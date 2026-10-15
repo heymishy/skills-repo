@@ -23,6 +23,7 @@ Same reasoning as `fpd-s1`: real video recording against a live app is real-brow
 | AC3 | Captions + transcript exist alongside every video, marked human-reviewable | 1 test | — | — | — | — | 🟢 |
 | AC4 | Silent recording still gets a transcript (from interaction sequence/on-screen text) | 1 test | — | — | — | — | 🟢 |
 | AC5 | Package not complete while captions/transcript missing or unreviewed | 1 test | — | — | — | — | 🟢 |
+| AC6 | D37 adapter: wired behaviour is traceably correct per input; unwired throws the exact stub error | — | 1 test | — | — | — | 🟢 |
 
 ---
 
@@ -100,6 +101,26 @@ AC1's real-recording portion — see Coverage gaps above.
 - **Precondition:** A fixture package with captions/transcript generated but not yet marked reviewed
 - **Action:** Check the package's own completion status
 - **Expected result:** Status is not `"complete"`; after the engineer explicitly confirms review, it becomes `"complete"` — mirrors `fpd-s1`'s own AC4 pattern, extended to accessibility artefacts
+- **Edge case:** No
+
+---
+
+## Integration Tests
+
+### AC6 (integration): D37 adapter — behavioural wiring test, not a reference-assignment check
+
+- **Verifies:** AC6
+- **Precondition:** `setGenerateCaptionsAndTranscript` wired to a real implementation; the underlying transcription call itself mocked (not the adapter) to a function that derives its return text from its own input (e.g. echoes identifying content from each distinct fixture recording) — the D37 behavioural-correctness shape, not a "was a reference assigned" check
+- **Action:** Call the wired adapter twice, once per two distinct fixture recordings with different, individually-verifiable content
+- **Expected result:** The two returned caption/transcript outputs differ from each other AND each is individually traceable to its own recording's input — directly analogous to the `resolveRoleForTenant` fix precedent named in `CLAUDE.md`
+- **Edge case:** No
+
+### AC6 (unit): unwired adapter throws the exact D37 stub error
+
+- **Verifies:** AC6 (unwired case)
+- **Precondition:** Fresh `require` of the adapter module, no `setGenerateCaptionsAndTranscript` call made
+- **Action:** Call `generateCaptionsAndTranscript` directly
+- **Expected result:** Throws `Error('Adapter not wired: generateCaptionsAndTranscript. Call setGenerateCaptionsAndTranscript() with a real implementation before use.')` exactly
 - **Edge case:** No
 
 ---
