@@ -40760,7 +40760,7 @@
       "slug": "2026-10-15-canvas-node-styling-fix",
       "name": "Override drawflow's vendor-default node/port/connector colours with the app's own design tokens",
       "track": "short",
-      "stage": "review",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "metrics": [],
@@ -40769,11 +40769,11 @@
           "id": "cnsf-s1",
           "slug": "cnsf-s1",
           "name": "Override drawflow vendor-default node/port/connector colours with app design tokens",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-10-15T05:21:57.116Z",
+          "updatedAt": "2026-10-15T05:23:04.293Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -40785,7 +40785,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dodStatus": "not-started",
           "dorArtefact": "artefacts/2026-10-15-canvas-node-styling-fix/dor/cnsf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-10-15-canvas-node-styling-fix/dor/cnsf-s1-dor-contract.md",
@@ -40798,10 +40798,11 @@
               "file": "artefacts/2026-10-15-canvas-node-styling-fix/plans/cnsf-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/993"
         }
       ],
-      "updatedAt": "2026-10-15T04:31:15.281Z"
+      "updatedAt": "2026-10-15T05:23:04.295Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
