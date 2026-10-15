@@ -40858,11 +40858,11 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:00:22.263Z",
+              "updatedAt": "2026-10-15T10:16:39.945Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
