@@ -40769,16 +40769,16 @@
           "id": "cnsf-s1",
           "slug": "cnsf-s1",
           "name": "Override drawflow vendor-default node/port/connector colours with app design tokens",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-10-15T04:28:22.966Z",
+          "updatedAt": "2026-10-15T04:31:15.280Z",
           "testPlan": {
-            "status": "not-started",
-            "totalTests": 0,
+            "status": "written",
+            "totalTests": 6,
             "passing": 0,
-            "artefact": null
+            "artefact": "artefacts/2026-10-15-canvas-node-styling-fix/test-plans/cnsf-s1-test-plan.md"
           },
           "acTotal": 6,
           "acVerified": 0,
@@ -40789,7 +40789,7 @@
           "dodStatus": "not-started"
         }
       ],
-      "updatedAt": "2026-10-15T04:28:22.967Z"
+      "updatedAt": "2026-10-15T04:31:15.281Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
