@@ -116,6 +116,7 @@ const { handleGetSignalsPanelHtml, handlePostDismissSignal, handlePostUndismissS
 // story-slug shorthand.
 const { handlePostJourneys, handleGetJourneyCanvas, handlePostJourneyStage, handlePatchJourneyStage, handlePatchJourneyStagesOrder, handleGetCustomerJourneysList, handlePostFeatureMapping, handleDeleteFeatureMapping, handlePatchJourneyStagePosition, handlePostPlaceholderFeature, handleTriggerPlaceholderFeature, handlePatchJourneyPersona, handleGetAiFieldSuggestion } = require('./routes/journeys');
 const { setGenerateAiFieldSuggestion, realGenerateAiFieldSuggestion } = require('./adapters/field-suggestion-ai'); // jae-s4
+const { setGenerateCaptionsAndTranscript, realGenerateCaptionsAndTranscript } = require('./adapters/caption-transcript'); // fpd-s2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -247,6 +248,17 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setGenerateAiFieldSuggestion(realGenerateAiFieldSuggestion);
   console.log('[jae-s4] AI field-suggestion adapter wired');
+}
+
+// fpd-s2 / D37 mandatory separate wiring task -- wire the real caption/
+// transcript adapter (derives captions/transcript from the scripted
+// interaction-sequence text, no external speech-to-text provider -- see
+// decisions.md). Never wired in NODE_ENV=test (tests call
+// setGenerateCaptionsAndTranscript() themselves with a mock), matching the
+// pattern already used by the adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setGenerateCaptionsAndTranscript(realGenerateCaptionsAndTranscript);
+  console.log('[fpd-s2] Caption/transcript adapter wired');
 }
 
 // rb-s4 / D37 mandatory separate wiring task -- wire the real export
