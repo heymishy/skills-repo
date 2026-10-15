@@ -40773,7 +40773,7 @@
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-10-15T05:23:04.293Z",
+          "updatedAt": "2026-10-15T06:09:08.363Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -40785,7 +40785,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "dodStatus": "not-started",
           "dorArtefact": "artefacts/2026-10-15-canvas-node-styling-fix/dor/cnsf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-10-15-canvas-node-styling-fix/dor/cnsf-s1-dor-contract.md",
