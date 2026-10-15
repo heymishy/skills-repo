@@ -480,6 +480,17 @@ const CONTRACTS = [
       'No corpus rules affected',
     ],
   },
+  {
+    skill: 'feature-playback',
+    file:  'skills/feature-playback/SKILL.md',
+    required: [
+      'dodStatus: "complete"',
+      'checkDodGate',
+      'pending-review',
+      'markPackageReviewed',
+      'not a general-purpose demo tool',
+    ],
+  },
 ];
 
 // ── invariants applied to every SKILL.md ──────────────────────────────────────
