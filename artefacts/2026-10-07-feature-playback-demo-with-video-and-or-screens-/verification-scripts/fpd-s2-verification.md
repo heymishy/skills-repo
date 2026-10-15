@@ -94,3 +94,19 @@
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
+
+---
+
+### Scenario 6: Two different videos get genuinely different captions/transcripts, not identical boilerplate
+
+**Covers:** AC6
+
+**Steps:**
+1. Produce two packages for two different features with clearly different content.
+2. Compare their captions/transcripts.
+
+**Expected outcome:**
+> The two sets of captions/transcripts are genuinely different from each other and each one accurately reflects its own video's own content — not the same generic text copied for both.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**

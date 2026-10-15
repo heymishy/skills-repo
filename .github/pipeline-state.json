@@ -40888,14 +40888,14 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T09:33:07.633Z",
+              "updatedAt": "2026-10-15T09:39:40.835Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
+                "totalTests": 7,
                 "passing": 0,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s2-test-plan.md"
               },
-              "acTotal": 5,
+              "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true
