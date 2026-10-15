@@ -8,6 +8,8 @@ let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
 function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err}`); failed++; }
 
+(async function () {
+
 // AC6 (unit): unwired adapter throws the exact D37 stub error -- run FIRST,
 // before any other test calls setGenerateCaptionsAndTranscript, so the
 // module's own unwired default is still active.
@@ -39,5 +41,30 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC6 (integration): behavioural wiring', e); }
 })();
 
+// AC1 (unit): recording script's own logic -- correct context options, correct output path
+await (async function () {
+  const { captureVideoRecording } = require('../scripts/playback-capture');
+  const calls = [];
+  const fakeBrowser = {
+    newContext: async (opts) => {
+      calls.push(opts);
+      return {
+        newPage: async () => ({ video: () => ({ path: async () => `${opts.recordVideo.dir}clip-0.webm` }) }),
+        close: async () => {},
+      };
+    },
+  };
+  try {
+    const results = await captureVideoRecording({ browser: fakeBrowser, featureSlug: 'f1', clips: [{ name: 'walkthrough' }] });
+    assert.strictEqual(calls.length, 1, 'expected newContext called once');
+    assert.strictEqual(calls[0].recordVideo.dir, 'artefacts/f1/playback/video/');
+    assert.ok(calls[0].recordVideo.size && calls[0].recordVideo.size.width, 'expected a recordVideo size option');
+    assert.strictEqual(results[0].path, 'artefacts/f1/playback/video/clip-0.webm');
+    pass("AC1 (unit): recording script's own logic -- correct context options, correct output path");
+  } catch (e) { fail("AC1 (unit): recording script's own logic", e); }
+})();
+
 console.log(`\n[fpd-s2-video-walkthrough-and-accessibility] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
+
+})();

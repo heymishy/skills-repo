@@ -135,8 +135,28 @@ function markPackageReviewed(statusPath, readFileFn, writeFileFn) {
   write(statusPath, JSON.stringify(current, null, 2));
 }
 
+// fpd-s2: Playwright recordVideo capture. One browser context per clip --
+// the engineer's own choice of single combined walkthrough vs. several
+// per-AC/per-flow clips (AC2) is just the length of `clips`, no branching
+// logic difference.
+async function captureVideoRecording({ browser, featureSlug, clips }) {
+  const dir = `artefacts/${featureSlug}/playback/video/`;
+  const results = [];
+  for (const clip of clips) {
+    const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
+    const page = await context.newPage();
+    if (clip.run) await clip.run(page);
+    await context.close();
+    const video = page.video ? page.video() : null;
+    const path = video ? await video.path() : null;
+    results.push({ name: clip.name, path });
+  }
+  return results;
+}
+
 module.exports = {
   checkDodGate, parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets,
   generateWalkthroughMarkdown, captureAcScreenshots, embedScreenshotPaths,
   getPackageStatus, markPackageReviewed,
+  captureVideoRecording,
 };
