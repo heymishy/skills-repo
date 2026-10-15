@@ -17,3 +17,12 @@
 **Rationale:** Same rationale as every other ADR-028 application this session (`jae-s5`) — avoid a second independent derivation of "walk the feature/epic/story/AC structure" if one already exists.
 **Made by:** Claude (session), consistent with the discovery's own already-logged direction.
 **Revisit trigger:** None — this is a standing implementation-time check, resolved when `fpd-s3` is actually built.
+
+---
+
+**2026-10-15 | RISK-ACCEPT | W4 — solo-operator, no second reviewer (first log for this feature)**
+**Decision:** W4 (verification script reviewed by a domain expert) is risk-accepted for every story in this feature, per `architecture-guardrails.md`'s own "Solo operator / W4 RISK-ACCEPT posture" — a uniform, repo-wide posture, not a per-story judgment. First W4 log for `2026-10-07-feature-playback-demo-with-video-and-or-screens-`.
+**Context:** `fpd-s1` through `fpd-s4`'s own `/definition-of-ready` run surfaced W4 as applicable.
+**Rationale:** Same uniform posture already applied to every other feature this session — the operator is also the reviewer and final approver.
+**Made by:** Established repo-wide posture (`architecture-guardrails.md`), applied here per `/definition-of-ready`'s own W4 check.
+**Revisit trigger:** A second operator onboarding, or regulated-enterprise adoption.
