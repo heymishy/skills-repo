@@ -40957,19 +40957,19 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T18:37:33.028Z",
+              "updatedAt": "2026-10-15T18:54:40.193Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0,
+                "passing": 7,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s2-test-plan.md"
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -40980,58 +40980,59 @@
                 {
                   "id": "task-1",
                   "name": "D37 adapter module -- stub throws when unwired (AC6, unwired case)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Real implementation -- interaction-sequence-derived captions/transcript (AC6, behavioural wiring)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Wire the real implementation in server.js (separate task, D37 rule item 3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Video capture -- context options, output path (AC1, script-logic portion)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Single-file vs multi-file shapes, same mechanism (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "Captions/transcript generation step -- files exist, reviewed:false (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-7",
                   "name": "Silent recording still produces a transcript (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-8",
                   "name": "Package incomplete while captions/transcript unreviewed (AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 },
                 {
                   "id": "task-9",
                   "name": "E2E spec -- real recording against a running app (AC1, RISK-ACCEPT)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
