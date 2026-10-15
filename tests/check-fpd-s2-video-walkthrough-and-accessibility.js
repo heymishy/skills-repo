@@ -108,6 +108,23 @@ await (async function () {
   } catch (e) { fail('AC3 (unit): captions and transcript exist alongside every video', e); }
 })();
 
+// AC4 (unit): silent recording still produces a transcript, sourced from the interaction sequence
+await (async function () {
+  const { generateCaptionsForVideo } = require('../scripts/playback-capture');
+  const { setGenerateCaptionsAndTranscript, realGenerateCaptionsAndTranscript } = require('../src/web-ui/adapters/caption-transcript');
+  setGenerateCaptionsAndTranscript(realGenerateCaptionsAndTranscript);
+  const written = {};
+  const writeFile = (p, c) => { written[p] = c; };
+  const silentInteractionSequence = 'Step 1: open the Canvas view (no narration).\nStep 2: drag a node into place (no narration).';
+  try {
+    const result = await generateCaptionsForVideo('artefacts/f1/playback/video/silent-clip.webm', silentInteractionSequence, writeFile);
+    const transcript = written[result.transcriptPath];
+    assert.ok(transcript && transcript.length > 0, 'expected a non-empty transcript even with no narration audio');
+    assert.ok(transcript.includes('drag a node into place'), 'expected transcript sourced from the interaction sequence, not left empty');
+    pass('AC4 (unit): silent recording still produces a transcript, sourced from the interaction sequence');
+  } catch (e) { fail('AC4 (unit): silent recording still produces a transcript', e); }
+})();
+
 console.log(`\n[fpd-s2-video-walkthrough-and-accessibility] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
