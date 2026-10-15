@@ -64,6 +64,32 @@ await (async function () {
   } catch (e) { fail("AC1 (unit): recording script's own logic", e); }
 })();
 
+// AC2 (unit): single-file and multi-file shapes both work via the same mechanism
+await (async function () {
+  const { captureVideoRecording } = require('../scripts/playback-capture');
+  function makeFakeBrowser() {
+    const calls = [];
+    return {
+      calls,
+      newContext: async (opts) => {
+        calls.push(opts);
+        return { newPage: async () => ({ video: () => ({ path: async () => `${opts.recordVideo.dir}c${calls.length}.webm` }) }), close: async () => {} };
+      },
+    };
+  }
+  try {
+    const single = makeFakeBrowser();
+    const singleResults = await captureVideoRecording({ browser: single, featureSlug: 'f1', clips: [{ name: 'walkthrough' }] });
+    assert.strictEqual(singleResults.length, 1, 'expected exactly 1 output file for the single-file shape');
+
+    const multi = makeFakeBrowser();
+    const multiResults = await captureVideoRecording({ browser: multi, featureSlug: 'f1', clips: [{ name: 'ac1' }, { name: 'ac2' }, { name: 'ac3' }] });
+    assert.strictEqual(multiResults.length, 3, 'expected exactly 3 output files for the multi-file shape');
+    assert.strictEqual(multi.calls.length, 3, 'expected one context/recording per sequence, no branching logic difference beyond count');
+    pass('AC2 (unit): single-file and multi-file shapes both work via the same mechanism');
+  } catch (e) { fail('AC2 (unit): single-file and multi-file shapes', e); }
+})();
+
 console.log(`\n[fpd-s2-video-walkthrough-and-accessibility] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
