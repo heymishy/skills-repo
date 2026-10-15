@@ -64,8 +64,16 @@ process.stdout.write('\n[md-2-skill-contracts] T1: skill-contracts passes after 
     stdout.trim().slice(-200)
   );
   assert(
-    'T1.3 — output reports 41 skills',
-    /41\s+skill/.test(stdout),
+    // fpd-s1: was a hardcoded exact-count match ('41 skill'), the same
+    // brittleness T1.2 above was already converted away from for the same
+    // reason (s3fw-s1) -- registering any later, unrelated skill in
+    // check-skill-contracts.js (here, feature-playback) bumps this count
+    // and breaks an exact match. Converted to the same tolerant >= threshold.
+    'T1.3 — output reports at least 41 skills',
+    (() => {
+      const m = stdout.match(/(\d+)\s+skill/);
+      return m && parseInt(m[1], 10) >= 41;
+    })(),
     stdout.trim().slice(-200)
   );
 }
