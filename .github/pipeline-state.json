@@ -40824,7 +40824,7 @@
           "baseline": "0% -- no feature in this repo has ever produced a playback package",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "fpd-s1 ships only the document+screenshot portion of the package; video (fpd-s2) and the viewer (fpd-s3/fpd-s4) have not shipped yet, so no complete package exists to measure closure rate against.",
+          "evidence": "fpd-s2 completes the doc+screenshots+video trio, but the package is not genuinely shareable/reviewable until fpd-s3/fpd-s4 (the viewer) ship.",
           "contributingStories": [
             "fpd-s1",
             "fpd-s2",
@@ -40852,7 +40852,7 @@
           "baseline": "Ad hoc, estimated 2-4 hours per feature (operator estimate, not instrumented)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Only the document+screenshot automation (fpd-s1) has shipped; fpd-s2's video/caption automation has not landed yet, so a representative end-to-end timed run is not yet meaningful.",
+          "evidence": "fpd-s1 and fpd-s2 automation has both shipped, but no real, representative timed run across the whole pipeline has been attempted yet.",
           "contributingStories": [
             "fpd-s1",
             "fpd-s2"
@@ -40952,16 +40952,16 @@
         {
           "slug": "feature-playback-video-accessibility",
           "name": "The playback package includes a screen-capture video walkthrough that ships with captions and a transcript from day one",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T18:56:05.690Z",
+              "updatedAt": "2026-10-16T06:27:17.703Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -41033,8 +41033,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/995"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/995",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dod/fpd-s2-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             }
           ]
         },
