@@ -50,6 +50,55 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (unit): review page scope/benefit summary', e); }
 })();
 
+// AC3 (unit) + AC4 (unit): per-story AC sections, sourced from the DoD table, real epic/story order
+(function () {
+  const { buildFeaturePlaybackStructure } = require('../src/web-ui/routes/playback');
+  const path = require('path');
+  const store = {};
+  // Fixture: 2 epics, story slugs chosen so alphabetical order would differ
+  // from pipeline-state.json's own real array order (AC4's own deliberate check).
+  const state = {
+    features: [{
+      slug: 'f1',
+      epics: [
+        { slug: 'epic-z', name: 'Epic Z (first in real order)', stories: [{ slug: 'story-z', name: 'Story Z' }] },
+        { slug: 'epic-a', name: 'Epic A (second in real order)', stories: [{ slug: 'story-a', name: 'Story A' }] },
+      ],
+    }],
+  };
+  store[path.join('/repo', '.github', 'pipeline-state.json')] = JSON.stringify(state);
+  const dodZ = ['## AC Coverage', '', '| AC | Satisfied? | Evidence | Verification method | Deviation |', '|----|----|----|----|----|',
+    '| AC1 — Z does a thing | ✅ | Z evidence | Automated test | None |'].join('\n');
+  const dodA = ['## AC Coverage', '', '| AC | Satisfied? | Evidence | Verification method | Deviation |', '|----|----|----|----|----|',
+    '| AC1 — A does a thing | ✅ | A evidence | Automated test | None |'].join('\n');
+  store[path.join('/repo', 'artefacts', 'f1', 'dod', 'story-z-dod.md')] = dodZ;
+  store[path.join('/repo', 'artefacts', 'f1', 'dod', 'story-a-dod.md')] = dodA;
+  const fakeFs = {
+    existsSync: (p) => p === '/repo' || Object.prototype.hasOwnProperty.call(store, p) || p === path.join('/repo', 'artefacts', 'f1'),
+    readdirSync: (dir, opts) => {
+      if (dir === path.join('/repo', 'artefacts', 'f1')) return [{ name: 'dod', isDirectory: () => true, isFile: () => false }];
+      if (dir === path.join('/repo', 'artefacts', 'f1', 'dod')) return [
+        { name: 'story-z-dod.md', isDirectory: () => false, isFile: () => true },
+        { name: 'story-a-dod.md', isDirectory: () => false, isFile: () => true },
+      ];
+      return [];
+    },
+    readFileSync: (p) => {
+      if (store[p] !== undefined) return store[p];
+      throw new Error('ENOENT: ' + p);
+    },
+  };
+  try {
+    const structure = buildFeaturePlaybackStructure('/repo', 'f1', fakeFs);
+    assert.strictEqual(structure.stories.length, 2, 'expected 2 stories');
+    assert.strictEqual(structure.stories[0].slug, 'story-z', 'expected story-z first -- real pipeline-state.json order, not alphabetical');
+    assert.strictEqual(structure.stories[1].slug, 'story-a', 'expected story-a second');
+    assert.strictEqual(structure.stories[0].acRows[0].description, 'Z does a thing', 'expected AC text sourced verbatim from the DoD table');
+    assert.strictEqual(structure.stories[1].acRows[0].description, 'A does a thing');
+    pass('AC3+AC4 (unit): per-story AC sections from the DoD table, real epic/story order preserved');
+  } catch (e) { fail('AC3+AC4 (unit): per-story AC sections', e); }
+})();
+
 console.log(`\n[fpd-s3-viewer-route-and-traceability-structure] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 

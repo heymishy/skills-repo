@@ -11,13 +11,18 @@ const fs = require('fs');
 const path = require('path');
 
 // dir: current directory being walked (changes per recursive call); base: the fixed root all paths are reported relative to
-const walkDir = (dir, base) => {
+// fsImpl: fpd-s3 -- optional injectable fs implementation (defaults to the
+// real `fs` module), so a fixture filesystem can exercise this without
+// touching disk. Additive -- every existing call site that omits it is
+// unaffected.
+const walkDir = (dir, base, fsImpl) => {
+  const impl = fsImpl || fs;
   let results = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const entries = impl.readdirSync(dir, { withFileTypes: true });
   entries.forEach((entry) => {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      results = results.concat(walkDir(full, base));
+      results = results.concat(walkDir(full, base, impl));
     } else if (entry.isFile()) {
       const rel = path.relative(base, full).split(path.sep).join('/');
       const parts = rel.split('/');
@@ -29,12 +34,13 @@ const walkDir = (dir, base) => {
   return results;
 };
 
-const readPipelineStateForSlug = (repoRoot, featureSlug) => {
+const readPipelineStateForSlug = (repoRoot, featureSlug, fsImpl) => {
+  const impl = fsImpl || fs;
   const statePath = path.join(repoRoot, '.github', 'pipeline-state.json');
-  if (!fs.existsSync(statePath)) return null;
+  if (!impl.existsSync(statePath)) return null;
   let state;
   try {
-    state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    state = JSON.parse(impl.readFileSync(statePath, 'utf8'));
   } catch (_) {
     return null;
   }
@@ -100,8 +106,9 @@ const classifyDivergence = (traceResult) => {
   return Object.assign({}, traceResult, { artefacts, stories });
 };
 
-const buildArtefactTrace = (repoRoot, featureSlug) => {
-  if (!fs.existsSync(repoRoot)) {
+const buildArtefactTrace = (repoRoot, featureSlug, fsImpl) => {
+  const impl = fsImpl || fs;
+  if (!impl.existsSync(repoRoot)) {
     return { status: 'not-yet-synced' };
   }
 
@@ -112,9 +119,9 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
   // One fallback branch only (ADR-028) -- do not duplicate this logic in
   // features.js, artefact-list.js, or artefact-fetcher.js; those modules
   // should call buildArtefactTrace instead (cat-s4/cat-s5 wire this).
-  if (fs.existsSync(primaryDir)) {
+  if (impl.existsSync(primaryDir)) {
     resolvedDir = primaryDir;
-  } else if (fs.existsSync(archivedDir)) {
+  } else if (impl.existsSync(archivedDir)) {
     resolvedDir = archivedDir;
   }
 
@@ -122,9 +129,9 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
     return { status: 'not-found' };
   }
 
-  const artefacts = walkDir(resolvedDir, resolvedDir);
+  const artefacts = walkDir(resolvedDir, resolvedDir, impl);
 
-  const feature = readPipelineStateForSlug(repoRoot, featureSlug);
+  const feature = readPipelineStateForSlug(repoRoot, featureSlug, impl);
   let epics = [];
   let stories = [];
   if (feature) {
