@@ -83,6 +83,36 @@ function makeRes() {
   } catch (e) { fail('Media resolution (unit): single combined walkthrough video', e); }
 })();
 
+// buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media
+(function () {
+  const { buildFeaturePlaybackStructure } = require('../src/web-ui/routes/playback');
+  const store = {};
+  const state = {
+    features: [{ slug: 'f1', epics: [{ slug: 'e1', name: 'Epic One', stories: [{ slug: 's1', name: 'Story One' }] }] }],
+  };
+  store[path.join('/repo', '.github', 'pipeline-state.json')] = JSON.stringify(state);
+  store[path.join('/repo', 'artefacts', 'f1', 'dod', 's1-dod.md')] = [
+    '## AC Coverage', '', '| AC | Satisfied? | Evidence | Verification method | Deviation |', '|----|----|----|----|----|',
+    '| AC1 — thing works | ✅ | proof | Automated test | None |',
+  ].join('\n');
+  const screenshotPath = path.join('/repo', 'artefacts', 'f1', 'playback', 'screenshots', 'AC1.png');
+  const fakeFs = {
+    existsSync: (p) => p === '/repo' || Object.prototype.hasOwnProperty.call(store, p) || p === screenshotPath || p === path.join('/repo', 'artefacts', 'f1') || p === path.join('/repo', 'artefacts', 'f1', 'dod'),
+    readdirSync: (dir) => {
+      if (dir === path.join('/repo', 'artefacts', 'f1')) return [{ name: 'dod', isDirectory: () => true, isFile: () => false }];
+      if (dir === path.join('/repo', 'artefacts', 'f1', 'dod')) return [{ name: 's1-dod.md', isDirectory: () => false, isFile: () => true }];
+      return [];
+    },
+    readFileSync: (p) => { if (store[p] !== undefined) return store[p]; throw new Error('ENOENT: ' + p); },
+  };
+  try {
+    const structure = buildFeaturePlaybackStructure('/repo', 'f1', fakeFs);
+    const ac1 = structure.stories[0].acRows[0];
+    assert.strictEqual(ac1.media.screenshotPath, 'artefacts/f1/playback/screenshots/AC1.png');
+    pass('buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media');
+  } catch (e) { fail('buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media', e); }
+})();
+
 console.log(`\n[fpd-s4-viewer-media-playback] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 

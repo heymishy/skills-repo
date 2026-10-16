@@ -61,7 +61,12 @@ function buildFeaturePlaybackStructure(repoRoot, featureSlug, fsImpl) {
     let acRows = [];
     if (dodArtefact) {
       const content = impl.readFileSync(path.join(trace.resolvedDir, dodArtefact.path), 'utf8');
-      acRows = parseDodAcCoverage(content);
+      // fpd-s4: attach each AC's own resolved media -- the one new,
+      // genuinely-incremental layer on top of this already-canonical
+      // structure (ADR-028), not a second traversal.
+      acRows = parseDodAcCoverage(content).map((ac) => Object.assign({}, ac, {
+        media: resolveAcMedia(repoRoot, featureSlug, ac.acId, impl),
+      }));
     }
     return Object.assign({}, story, { acRows });
   });
