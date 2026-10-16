@@ -41114,25 +41114,26 @@
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:00:22.263Z",
+              "updatedAt": "2026-10-16T20:06:32.668Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
-                "passing": 0,
+                "totalTests": 6,
+                "passing": 6,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s4-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor.md",
               "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor-contract.md",
-              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z",
+              "verifyStatus": "passed"
             }
           ]
         }
