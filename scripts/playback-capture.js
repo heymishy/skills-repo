@@ -9,6 +9,12 @@
 
 const fs = require('fs');
 const { generateCaptionsAndTranscript } = require('../src/web-ui/adapters/caption-transcript');
+// fpd-s3 hotfix: moved to src/utils/dod-parsing.js -- a production route
+// handler also needs these, and scripts/ is never copied into the
+// deployed Docker image (see that module's own header comment for the
+// full incident). Re-exported here unchanged so every existing caller of
+// this module keeps working with no change required on their part.
+const { parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets } = require('../src/utils/dod-parsing');
 
 function checkDodGate(state, featureSlug) {
   const feature = (state.features || []).find(f => f.slug === featureSlug);
@@ -21,62 +27,6 @@ function checkDodGate(state, featureSlug) {
     );
   }
   return { ok: true, feature };
-}
-
-function parseMarkdownTable(markdown, headingText) {
-  const lines = markdown.split('\n');
-  const headingIdx = lines.findIndex(l => l.trim() === `## ${headingText}`);
-  if (headingIdx === -1) return [];
-  let i = headingIdx + 1;
-  while (i < lines.length && !lines[i].trim().startsWith('|')) i++;
-  if (i >= lines.length) return [];
-  const headerCells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
-  i += 2; // skip header + separator row
-  const rows = [];
-  while (i < lines.length && lines[i].trim().startsWith('|')) {
-    const cells = lines[i].split('|').map(c => c.trim()).filter((c, idx, arr) => !(idx === 0 && c === '') && !(idx === arr.length - 1 && c === ''));
-    const row = {};
-    headerCells.forEach((h, idx) => { row[h] = cells[idx] || ''; });
-    rows.push(row);
-    i++;
-  }
-  return rows;
-}
-
-function parseDodAcCoverage(dodMarkdown) {
-  return parseMarkdownTable(dodMarkdown, 'AC Coverage').map(row => {
-    const acCell = row['AC'] || '';
-    const match = acCell.match(/^(AC\d+)\s*—\s*(.*)$/);
-    return {
-      acId: match ? match[1] : acCell,
-      description: match ? match[2] : acCell,
-      satisfied: row['Satisfied?'] || '',
-      evidence: row['Evidence'] || '',
-      verificationMethod: row['Verification method'] || '',
-      deviation: row['Deviation'] || '',
-    };
-  });
-}
-
-function parseDodMetricSignal(dodMarkdown) {
-  return parseMarkdownTable(dodMarkdown, 'Metric Signal').map(row => ({
-    metric: row['Metric'] || '',
-    signal: row['Signal'] || '',
-    evidence: row['Evidence'] || '',
-    dateMeasured: row['Date measured'] || '',
-  }));
-}
-
-function parseBenefitMetricTargets(benefitMetricContent) {
-  const targets = {};
-  const blocks = (benefitMetricContent || '').split(/^### /m).slice(1);
-  for (const block of blocks) {
-    const nameLine = block.split('\n')[0].trim();
-    const name = nameLine.replace(/^Metric \d+:\s*/, '');
-    const targetMatch = block.match(/\|\s*\*\*Target\*\*\s*\|\s*(.+?)\s*\|/);
-    if (targetMatch) targets[name] = targetMatch[1].trim();
-  }
-  return targets;
 }
 
 function generateWalkthroughMarkdown({ featureSlug, storyDods, benefitMetricContent }) {
