@@ -16,6 +16,7 @@ const { buildArtefactTrace } = require('../adapters/artefact-trace');
 // (always deployed); scripts/playback-capture.js now re-exports from there
 // unchanged for its own existing callers.
 const { parseDodAcCoverage, parseBenefitMetricTargets } = require('../../utils/dod-parsing');
+const { captionTranscriptPaths } = require('../../utils/playback-paths');
 const { escHtml } = require('../utils/html-shell');
 const { renderShellWithNav } = require('./products');
 const { getRepoRoot } = require('../adapters/repo-root');
@@ -147,8 +148,52 @@ async function handleGetPlaybackReview(req, res, featureSlug, pool) {
   res.end(html);
 }
 
+// AC1, AC5: screenshot path for one AC, if the file actually exists.
+function resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+  const impl = fsImpl || fs;
+  const relPath = `artefacts/${featureSlug}/playback/screenshots/${acId}.png`;
+  return impl.existsSync(path.join(repoRoot, relPath)) ? relPath : null;
+}
+
+// AC2, AC5: video path for one AC -- a per-AC-named clip if one exists,
+// else the single combined walkthrough file if the video/ directory
+// contains exactly one .webm (AC2's own "or is covered by the feature's
+// single combined walkthrough" case), else null (no evidence yet).
+function resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+  const impl = fsImpl || fs;
+  const videoDir = path.join(repoRoot, 'artefacts', featureSlug, 'playback', 'video');
+  if (!impl.existsSync(videoDir)) return null;
+  const perAcRel = `artefacts/${featureSlug}/playback/video/${acId}.webm`;
+  if (impl.existsSync(path.join(repoRoot, perAcRel))) return perAcRel;
+  const files = impl.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
+  if (files.length === 1) return `artefacts/${featureSlug}/playback/video/${files[0]}`;
+  return null;
+}
+
+// AC3, AC4: given a resolved video path, derive caption/transcript paths
+// (ADR-026 -- reuses fpd-s2's own naming convention) and confirm they
+// actually exist on disk -- never render a reference to a file that isn't
+// really there.
+function resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl) {
+  const impl = fsImpl || fs;
+  if (!videoPath) return { captionPath: null, transcriptPath: null };
+  const { captionPath, transcriptPath } = captionTranscriptPaths(videoPath);
+  return {
+    captionPath: impl.existsSync(path.join(repoRoot, captionPath)) ? captionPath : null,
+    transcriptPath: impl.existsSync(path.join(repoRoot, transcriptPath)) ? transcriptPath : null,
+  };
+}
+
+function resolveAcMedia(repoRoot, featureSlug, acId, fsImpl) {
+  const screenshotPath = resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl);
+  const videoPath = resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl);
+  const { captionPath, transcriptPath } = resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl);
+  return { screenshotPath, videoPath, captionPath, transcriptPath };
+}
+
 module.exports = {
   listPlaybackFeatures, extractMarkdownSection, buildFeaturePlaybackStructure,
   renderPlaybackListHtml, renderPlaybackReviewHtml,
   handleGetPlaybackList, handleGetPlaybackReview,
+  resolveAcMedia,
 };
