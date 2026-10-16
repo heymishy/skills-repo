@@ -41051,11 +41051,11 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:00:22.263Z",
+              "updatedAt": "2026-10-16T07:18:58.377Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -41069,7 +41069,39 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s3-dor.md",
               "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s3-dor-contract.md",
-              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "List DoD-validated features with a playback package (AC1, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Scope/benefit summary -- problem statement + named metrics, verbatim (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Per-story AC sections from the DoD Coverage table, real epic/story order (AC3, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "ADR-028 compliance check (integration)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "HTML rendering + route handlers + server.js registration",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "fpd-s4",
