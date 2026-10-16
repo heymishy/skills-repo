@@ -18,4 +18,19 @@ function listPlaybackFeatures(repoRoot, state, existsSyncFn) {
     .map((f) => ({ slug: f.slug, name: f.name || f.slug }));
 }
 
-module.exports = { listPlaybackFeatures };
+// AC2: extracts one ## heading's own content verbatim, case-insensitive
+// (real discovery.md files use "## Problem statement"; templates/discovery.md
+// uses "## Problem Statement" -- confirmed case drift by direct comparison).
+function extractMarkdownSection(markdown, headingText) {
+  const lines = markdown.split('\n');
+  const headingRe = new RegExp(`^##\\s+${headingText}\\s*$`, 'i');
+  const startIdx = lines.findIndex((l) => headingRe.test(l.trim()));
+  if (startIdx === -1) return '';
+  let endIdx = lines.length;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    if (/^##\s+/.test(lines[i].trim())) { endIdx = i; break; }
+  }
+  return lines.slice(startIdx + 1, endIdx).join('\n').trim();
+}
+
+module.exports = { listPlaybackFeatures, extractMarkdownSection };

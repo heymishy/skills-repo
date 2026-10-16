@@ -28,6 +28,28 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC1+AC5 (unit): viewer lists only DoD-validated features with a playback package', e); }
 })();
 
+// AC2 (unit): review page opens with the scope/benefit summary, not re-authored
+(function () {
+  const { extractMarkdownSection } = require('../src/web-ui/routes/playback');
+  const { parseBenefitMetricTargets } = require('../scripts/playback-capture');
+  const discoveryContent = [
+    '# Discovery: Thing', '', '## Problem statement', '', 'Engineers waste time doing X by hand.', '',
+    '## Who it affects', '', 'Everyone.',
+  ].join('\n');
+  const benefitMetricContent = [
+    '### Metric 1: Widget load time', '', '| Field | Value |', '|----|----|', '| **Target** | ≤500ms p95 |',
+    '### Metric 2: Setup time', '', '| Field | Value |', '|----|----|', '| **Target** | ≤10min |',
+  ].join('\n');
+  try {
+    const problemStatement = extractMarkdownSection(discoveryContent, 'Problem statement');
+    assert.strictEqual(problemStatement, 'Engineers waste time doing X by hand.');
+    const targets = parseBenefitMetricTargets(benefitMetricContent);
+    assert.strictEqual(targets['Widget load time'], '≤500ms p95');
+    assert.strictEqual(targets['Setup time'], '≤10min');
+    pass('AC2 (unit): review page scope/benefit summary sourced verbatim, not re-authored');
+  } catch (e) { fail('AC2 (unit): review page scope/benefit summary', e); }
+})();
+
 console.log(`\n[fpd-s3-viewer-route-and-traceability-structure] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
