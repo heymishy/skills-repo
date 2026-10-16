@@ -102,11 +102,33 @@ function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, 
     else flatStories.push(s);
   });
 
+  // fpd-s4: renders an AC's own screenshot/video/captions/transcript into
+  // its existing section (ADR-028 -- not a second structure). Native
+  // <video> only, no third-party player (Architecture Constraints).
+  const renderAcMediaHtml = (media) => {
+    if (!media || (!media.screenshotPath && !media.videoPath)) {
+      return '<p class="playback-ac__empty">No evidence captured for this AC yet.</p>';
+    }
+    const imgHtml = media.screenshotPath
+      ? `<img class="playback-ac__screenshot" src="/playback-media/${encodeURIComponent(media.screenshotPath)}" alt="Screenshot evidence" style="max-width:100%;border-radius:6px;border:1px solid var(--line)">`
+      : '';
+    const trackHtml = media.captionPath
+      ? `<track kind="captions" src="/playback-media/${encodeURIComponent(media.captionPath)}" default>`
+      : '';
+    const videoHtml = media.videoPath
+      ? `<video class="playback-ac__video" controls style="max-width:100%;border-radius:6px"><source src="/playback-media/${encodeURIComponent(media.videoPath)}" type="video/webm">${trackHtml}</video>`
+      : '';
+    const transcriptHtml = media.transcriptPath
+      ? `<p><a class="playback-ac__transcript-link" href="/playback-media/${encodeURIComponent(media.transcriptPath)}" target="_blank" rel="noopener">View transcript</a></p>`
+      : '';
+    return imgHtml + videoHtml + transcriptHtml;
+  };
+
   const renderStorySection = (story) => {
     const acHtml = (story.acRows || []).length === 0
       ? '<p class="playback-story__no-acs">No AC Coverage data available for this story yet.</p>'
       : story.acRows.map((ac) =>
-          `<div class="playback-ac"><h4>${escHtml(ac.acId)} — ${escHtml(ac.description)}</h4><p>${escHtml(ac.evidence)}</p></div>`
+          `<div class="playback-ac"><h4>${escHtml(ac.acId)} — ${escHtml(ac.description)}</h4><p>${escHtml(ac.evidence)}</p>${renderAcMediaHtml(ac.media)}</div>`
         ).join('');
     return `<div class="sw-card playback-story"><h3 class="sw-section-title">${escHtml(story.name || story.slug)}</h3>${acHtml}</div>`;
   };

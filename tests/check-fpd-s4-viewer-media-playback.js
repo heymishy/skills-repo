@@ -113,6 +113,45 @@ function makeRes() {
   } catch (e) { fail('buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media', e); }
 })();
 
+// Rendering (unit): screenshot, video+captions track, transcript link, and empty-state all render correctly
+(function () {
+  const { renderPlaybackReviewHtml } = require('../src/web-ui/routes/playback');
+  const structureWithEvidence = {
+    epics: [{ slug: 'e1', name: 'Epic One' }],
+    stories: [{
+      slug: 's1', name: 'Story One', epicSlug: 'e1',
+      acRows: [{ acId: 'AC1', description: 'Thing works', evidence: 'proof', media: {
+        screenshotPath: 'artefacts/f1/playback/screenshots/AC1.png',
+        videoPath: 'artefacts/f1/playback/video/AC1.webm',
+        captionPath: 'artefacts/f1/playback/video/AC1.vtt',
+        transcriptPath: 'artefacts/f1/playback/video/AC1.transcript.txt',
+      } }],
+    }],
+  };
+  const structureNoEvidence = {
+    epics: [{ slug: 'e1', name: 'Epic One' }],
+    stories: [{
+      slug: 's1', name: 'Story One', epicSlug: 'e1',
+      acRows: [{ acId: 'AC2', description: 'Nothing yet', evidence: 'n/a', media: {
+        screenshotPath: null, videoPath: null, captionPath: null, transcriptPath: null,
+      } }],
+    }],
+  };
+  try {
+    const htmlWithEvidence = renderPlaybackReviewHtml('f1', '', {}, structureWithEvidence);
+    assert.ok(htmlWithEvidence.includes('<img') && htmlWithEvidence.includes('AC1.png'), 'expected an <img> referencing the screenshot');
+    assert.ok(htmlWithEvidence.includes('<video') && htmlWithEvidence.includes('AC1.webm'), 'expected a native <video> referencing the clip');
+    assert.ok(htmlWithEvidence.includes('<track') && htmlWithEvidence.includes('AC1.vtt'), 'expected a captions <track> wired to the caption file');
+    assert.ok(htmlWithEvidence.includes('AC1.transcript.txt'), 'expected a standalone transcript link reachable without playback');
+    assert.ok(!htmlWithEvidence.includes('third-party'), 'sanity: no third-party player markup');
+
+    const htmlNoEvidence = renderPlaybackReviewHtml('f1', '', {}, structureNoEvidence);
+    assert.ok(htmlNoEvidence.includes('No evidence captured for this AC yet'), 'expected an explicit empty-state message');
+    assert.ok(!htmlNoEvidence.includes('<img'), 'expected no broken <img> for a no-evidence AC');
+    pass('Rendering (unit): screenshot, video+captions, transcript link, and empty-state all render correctly');
+  } catch (e) { fail('Rendering (unit): screenshot, video+captions, transcript link, empty-state', e); }
+})();
+
 console.log(`\n[fpd-s4-viewer-media-playback] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
