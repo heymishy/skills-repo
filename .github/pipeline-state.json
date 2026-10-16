@@ -41114,11 +41114,11 @@
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T10:00:22.263Z",
+              "updatedAt": "2026-10-16T19:37:44.015Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41132,7 +41132,45 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor.md",
               "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s4-dor-contract.md",
-              "dorSignedOffAt": "2026-10-15T10:00:22.263Z"
+              "dorSignedOffAt": "2026-10-15T10:00:22.263Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Move captionTranscriptPaths into src/ (deployment-safety, before anything else needs it)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Resolve screenshot/video/caption/transcript paths per AC (AC1, AC2, AC4, AC5 foundation)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Attach media to each AC row in the canonical structure (ADR-028 -- no second traversal)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Render the media into each AC section (AC1, AC2, AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Media-serving route, with the mandatory path-traversal guard",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "E2E spec -- real caption sync during real playback (AC3, RISK-ACCEPT)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
+                }
+              ]
             }
           ]
         }
