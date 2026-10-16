@@ -60,22 +60,26 @@ function buildFeaturePlaybackStructure(repoRoot, featureSlug, fsImpl) {
   return { epics: trace.epics, stories };
 }
 
+// Reuses the shared .sw-card/.sw-section-title classes already defined in
+// html-shell.js's own injected stylesheet (features.js's own established
+// convention) rather than inventing unstyled, CSS-less class names -- the
+// page gets baseline visual consistency with the rest of the app for free.
 function renderPlaybackListHtml(features) {
   if (!features || features.length === 0) {
-    return '<p class="playback-list__empty">No DoD-validated features with a playback package yet.</p>';
+    return '<div class="sw-card playback-list"><p>No DoD-validated features with a playback package yet.</p></div>';
   }
   const items = features.map((f) =>
     `<li><a href="/playback/${encodeURIComponent(f.slug)}">${escHtml(f.name)}</a></li>`
   ).join('');
-  return `<ul class="playback-list">${items}</ul>`;
+  return `<div class="sw-card playback-list"><h2 class="sw-section-title">Playback packages</h2><ul class="sw-list">${items}</ul></div>`;
 }
 
 function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, structure) {
   const summaryHtml =
-    `<section class="playback-summary"><h2>Scope</h2><p>${escHtml(problemStatement || 'No problem statement on file.')}</p>` +
-    `<h2>Benefit</h2><ul>${Object.keys(metricTargets || {}).map((name) =>
+    `<div class="sw-card playback-summary"><h2 class="sw-section-title">Scope</h2><p>${escHtml(problemStatement || 'No problem statement on file.')}</p>` +
+    `<h2 class="sw-section-title">Benefit</h2><ul class="sw-list">${Object.keys(metricTargets || {}).map((name) =>
       `<li>${escHtml(name)}: ${escHtml(metricTargets[name])}</li>`
-    ).join('')}</ul></section>`;
+    ).join('')}</ul></div>`;
 
   const epicsBySlug = {};
   (structure.epics || []).forEach((e) => { epicsBySlug[e.slug] = { name: e.name, stories: [] }; });
@@ -91,7 +95,7 @@ function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, 
       : story.acRows.map((ac) =>
           `<div class="playback-ac"><h4>${escHtml(ac.acId)} — ${escHtml(ac.description)}</h4><p>${escHtml(ac.evidence)}</p></div>`
         ).join('');
-    return `<section class="playback-story"><h3>${escHtml(story.name || story.slug)}</h3>${acHtml}</section>`;
+    return `<div class="sw-card playback-story"><h3 class="sw-section-title">${escHtml(story.name || story.slug)}</h3>${acHtml}</div>`;
   };
 
   const epicSections = (structure.epics || []).map((e) => {
