@@ -9,13 +9,25 @@ let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
 function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err}`); failed++; }
 
+// A real stream.Writable, not a plain duck-typed object: Task 5's route
+// handler pipes a file stream into res for a legitimate media path
+// (fs.createReadStream(...).pipe(res)), and Node's .pipe() requires a true
+// Writable (it calls dest.on('drain', ...) internally) -- a bare object
+// with just write()/end() methods throws as soon as pipe() is called.
+const { Writable } = require('stream');
 function makeRes() {
   const state = { status: 200, body: '' };
-  return {
-    writeHead: function (code) { state.status = code; },
-    end: function (body) { state.body = body || ''; },
-    _get: function () { return state; },
-  };
+  const res = new Writable({
+    write(chunk, encoding, callback) {
+      state.body += chunk.toString();
+      callback();
+    },
+  });
+  res.writeHead = function (code) { state.status = code; };
+  const realEnd = res.end.bind(res);
+  res.end = function (body) { if (body) state.body += body; realEnd(); };
+  res._get = function () { return state; };
+  return res;
 }
 
 (async function () {
@@ -150,6 +162,39 @@ function makeRes() {
     assert.ok(!htmlNoEvidence.includes('<img'), 'expected no broken <img> for a no-evidence AC');
     pass('Rendering (unit): screenshot, video+captions, transcript link, and empty-state all render correctly');
   } catch (e) { fail('Rendering (unit): screenshot, video+captions, transcript link, empty-state', e); }
+})();
+
+// Path traversal guard (unit, CLAUDE.md mandatory): a path outside artefacts/<slug>/playback/ is rejected with 400, nothing served
+await (async function () {
+  const { handleGetPlaybackMedia } = require('../src/web-ui/routes/playback');
+  const repoRootModule = require('../src/web-ui/adapters/repo-root');
+  const fsNode = require('fs');
+  const os = require('os');
+  const tmpRoot = fsNode.mkdtempSync(path.join(os.tmpdir(), 'fpd-s4-traversal-test-'));
+  fsNode.mkdirSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 'screenshots'), { recursive: true });
+  fsNode.writeFileSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 'screenshots', 'AC1.png'), 'fake-png-bytes');
+  fsNode.writeFileSync(path.join(tmpRoot, 'secret.txt'), 'should never be servable');
+  repoRootModule.setRepoRoot(tmpRoot);
+  try {
+    // Legitimate path: serves correctly
+    const okRes = makeRes();
+    await handleGetPlaybackMedia({ session: { accessToken: 'tok' } }, okRes, 'artefacts/f1/playback/screenshots/AC1.png');
+    assert.strictEqual(okRes._get().status, 200, 'expected a legitimate media path to serve 200');
+
+    // Traversal attempt: rejected
+    const badRes = makeRes();
+    await handleGetPlaybackMedia({ session: { accessToken: 'tok' } }, badRes, '../secret.txt');
+    assert.strictEqual(badRes._get().status, 400, 'expected a traversal attempt to be rejected with 400');
+    assert.ok(!badRes._get().body.includes('should never be servable'), 'expected the secret file content to never be served');
+
+    // Wrong shape (not under playback/screenshots or playback/video): also rejected
+    const badRes2 = makeRes();
+    await handleGetPlaybackMedia({ session: { accessToken: 'tok' } }, badRes2, 'artefacts/f1/discovery.md');
+    assert.strictEqual(badRes2._get().status, 400, 'expected a path outside the playback/ media shape to be rejected with 400');
+
+    pass('Path traversal guard (unit): a path outside artefacts/<slug>/playback/ is rejected with 400, nothing served');
+  } catch (e) { fail('Path traversal guard (unit)', e); }
+  finally { repoRootModule.setRepoRoot(null); fsNode.rmSync(tmpRoot, { recursive: true, force: true }); }
 })();
 
 console.log(`\n[fpd-s4-viewer-media-playback] Results: ${passed} passed, ${failed} failed`);

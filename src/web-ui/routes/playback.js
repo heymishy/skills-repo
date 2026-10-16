@@ -218,9 +218,42 @@ function resolveAcMedia(repoRoot, featureSlug, acId, fsImpl) {
   return { screenshotPath, videoPath, captionPath, transcriptPath };
 }
 
+// Task 5: media-serving route. CLAUDE.md path traversal guard (ougl) is
+// mandatory here -- requestedPath comes straight off the URL. Two layers:
+// (1) an allowlist shape, since only files resolveAcMedia itself would ever
+// hand back are servable (screenshots/video/captions/transcripts under a
+// feature's own playback/ dir) -- rejects e.g. discovery.md even though it
+// resolves inside repoRoot; (2) path.resolve + startsWith(repoRoot) against
+// that same traversal class CLAUDE.md names explicitly (../secret.txt).
+const MEDIA_PATH_RE = /^artefacts\/[^/]+\/playback\/(screenshots|video)\/[^/]+\.(png|webm|vtt|txt)$/;
+const MEDIA_CONTENT_TYPES = { '.png': 'image/png', '.webm': 'video/webm', '.vtt': 'text/vtt', '.txt': 'text/plain' };
+
+async function handleGetPlaybackMedia(req, res, requestedPath) {
+  if (!MEDIA_PATH_RE.test(requestedPath)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Invalid media path');
+    return;
+  }
+  const repoRoot = getRepoRoot(req);
+  const resolved = path.resolve(repoRoot, requestedPath);
+  if (!resolved.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Invalid media path');
+    return;
+  }
+  if (!fs.existsSync(resolved)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
+  const contentType = MEDIA_CONTENT_TYPES[path.extname(resolved)] || 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': contentType });
+  fs.createReadStream(resolved).pipe(res);
+}
+
 module.exports = {
   listPlaybackFeatures, extractMarkdownSection, buildFeaturePlaybackStructure,
   renderPlaybackListHtml, renderPlaybackReviewHtml,
   handleGetPlaybackList, handleGetPlaybackReview,
-  resolveAcMedia,
+  resolveAcMedia, handleGetPlaybackMedia,
 };
