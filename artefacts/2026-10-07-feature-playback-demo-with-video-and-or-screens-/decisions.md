@@ -83,6 +83,8 @@
 **Made by:** Claude (session), during `fpd-s3`'s own `/verify-completion`'s live browser render check.
 **Revisit trigger:** Once this PR merges and a real deployment exists, live-verify `/playback` and `/playback/:slug` via Claude-in-Chrome against a real DoD-validated feature with a real playback package — logged as a post-deployment smoke-test item in `workspace/state.json` `pendingActions`.
 
+**[PARTIALLY RESOLVED 2026-10-17, post-hotfix deployment]** `/playback` (the list route) confirmed live by the operator directly (not Claude-in-Chrome — the extension's own OAuth session did not persist across this deploy, same recurring gap already logged elsewhere): navigated to `https://wuce-staging.fly.dev/playback`, authenticated, and observed the correct, genuinely-styled empty-state page ("No DoD-validated features with a playback package yet") — no crash, no unstyled raw HTML, `.sw-card`/`.sw-section-title` rendering as intended. Independently cross-checked via `fly status`/`fly logs`: the machine is `started` on the new post-hotfix image, serving real CSRF/auth/login events, no crash-loop. This closes AC1's and AC5's own live-rendering claim for the (currently universal) no-package case. **STILL OPEN:** `/playback/:slug` (the per-feature review page, AC2-AC4's own visual rendering) remains unverified live — no feature in the repo has a real `artefacts/[slug]/playback/walkthrough.md` yet (`fpd-s1`'s own capture was never actually run for real), so there is nothing to click through to yet. Revisit once a real playback package exists.
+
 ---
 
 **2026-10-17 | INCIDENT | fpd-s3 — staging deploy crash-looped for ~10 hours: `scripts/` is never copied into the production Docker image**
