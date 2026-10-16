@@ -110,6 +110,26 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('ADR-028 compliance (integration)', e); }
 })();
 
+// Rendering (unit): list HTML and review-page HTML contain the expected content
+(function () {
+  const { renderPlaybackListHtml, renderPlaybackReviewHtml } = require('../src/web-ui/routes/playback');
+  try {
+    const listHtml = renderPlaybackListHtml([{ slug: 'f1', name: 'Feature One' }]);
+    assert.ok(listHtml.includes('Feature One'), 'expected feature name in list HTML');
+    assert.ok(listHtml.includes('/playback/f1'), 'expected a link to the review page');
+
+    const reviewHtml = renderPlaybackReviewHtml('f1', 'Engineers waste time doing X.', { 'Widget load time': '≤500ms p95' }, {
+      epics: [{ slug: 'e1', name: 'Epic One' }],
+      stories: [{ slug: 's1', name: 'Story One', epicSlug: 'e1', acRows: [{ acId: 'AC1', description: 'Thing works', evidence: 'proof' }] }],
+    });
+    assert.ok(reviewHtml.includes('Engineers waste time doing X.'), 'expected verbatim problem statement in review HTML');
+    assert.ok(reviewHtml.includes('≤500ms p95'), 'expected verbatim metric target in review HTML');
+    assert.ok(reviewHtml.includes('Story One'), 'expected story section');
+    assert.ok(reviewHtml.includes('Thing works'), 'expected AC text from the DoD table');
+    pass('Rendering (unit): list and review-page HTML contain expected content');
+  } catch (e) { fail('Rendering (unit): list and review-page HTML', e); }
+})();
+
 console.log(`\n[fpd-s3-viewer-route-and-traceability-structure] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
