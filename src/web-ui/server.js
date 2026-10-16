@@ -23,6 +23,7 @@ const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('
 const { checkModelRoutingDrift }                                     = require('./config/model-routing'); // psrc-verify-s3
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
+const { handleGetPlaybackList, handleGetPlaybackReview } = require('./routes/playback'); // fpd-s3
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -3224,6 +3225,19 @@ async function router(req, res) {
     const featureSlug = pathname.slice('/features/'.length);
     authGuard(req, res, async () => {
       await handleGetFeatureArtefacts(req, res, featureSlug, _pshPool);
+    });
+
+  } else if (pathname === '/playback' && req.method === 'GET') {
+    // fpd-s3
+    authGuard(req, res, async () => {
+      await handleGetPlaybackList(req, res, _pshPool);
+    });
+
+  } else if (pathname.startsWith('/playback/') && req.method === 'GET') {
+    // fpd-s3
+    const playbackFeatureSlug = pathname.slice('/playback/'.length);
+    authGuard(req, res, async () => {
+      await handleGetPlaybackReview(req, res, playbackFeatureSlug, _pshPool);
     });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
