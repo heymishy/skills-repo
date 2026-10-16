@@ -3,6 +3,16 @@
 // (2026-10-07-feature-playback-demo-with-video-and-or-screens-).
 // Story: artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/stories/fpd-s3-viewer-route-and-traceability-structure.md
 const assert = require('assert');
+const path = require('path');
+
+function makeRes() {
+  const state = { status: 200, body: '' };
+  return {
+    writeHead: function (code) { state.status = code; },
+    end: function (body) { state.body = body || ''; },
+    _get: function () { return state; },
+  };
+}
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
@@ -128,6 +138,71 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     assert.ok(reviewHtml.includes('Thing works'), 'expected AC text from the DoD table');
     pass('Rendering (unit): list and review-page HTML contain expected content');
   } catch (e) { fail('Rendering (unit): list and review-page HTML', e); }
+})();
+
+// Route/handler E2E coverage check (verify-completion mandatory): dispatch-
+// level integration test exercising the REAL handleGetPlaybackList/
+// handleGetPlaybackReview handlers (auth-free here -- authGuard wraps auth
+// at server.js dispatch, not inside the handler, so this does not need to
+// re-test authGuard itself) against a synthetic-but-real repoRoot written to
+// disk under os.tmpdir() -- the same precedent cat-s4's own AC5 route-level
+// test established for handleGetFeatureArtefacts. This feature's own real
+// repo has no feature with an actual playback/walkthrough.md yet (fpd-s1's
+// own capture was never really run, only unit-tested -- same D5 gap), so a
+// synthetic root with real files is the only way to exercise the real file-
+// reading code paths without depending on production data that doesn't
+// exist. Proves the whole real pipeline (real pipeline-state.json -> real
+// buildArtefactTrace -> real DoD file -> real parseDodAcCoverage -> real
+// renderShellWithNav with a stubbed pool) end to end, in-process, with no
+// live Postgres required.
+await (async function () {
+  const fsNode = require('fs');
+  const os = require('os');
+  const routes = require('../src/web-ui/routes/playback');
+  const repoRootModule = require('../src/web-ui/adapters/repo-root');
+  const FEATURE_SLUG = 'fpd-s3-route-fixture';
+  const tmpRoot = fsNode.mkdtempSync(path.join(os.tmpdir(), 'fpd-s3-route-test-'));
+  const featureDir = path.join(tmpRoot, 'artefacts', FEATURE_SLUG);
+  fsNode.mkdirSync(path.join(tmpRoot, '.github'), { recursive: true });
+  fsNode.mkdirSync(path.join(featureDir, 'playback'), { recursive: true });
+  fsNode.mkdirSync(path.join(featureDir, 'dod'), { recursive: true });
+  fsNode.writeFileSync(path.join(featureDir, 'playback', 'walkthrough.md'), '# Walkthrough\n');
+  fsNode.writeFileSync(path.join(featureDir, 'discovery.md'), '## Problem statement\n\nReal engineers waste real time.\n\n## Who it affects\n\nEveryone.\n');
+  fsNode.writeFileSync(path.join(featureDir, 'benefit-metric.md'), '### Metric 1: Real widget speed\n\n| Field | Value |\n|----|----|\n| **Target** | fast |\n');
+  fsNode.writeFileSync(path.join(featureDir, 'dod', 's1-dod.md'),
+    '## AC Coverage\n\n| AC | Satisfied? | Evidence | Verification method | Deviation |\n|----|----|----|----|----|\n| AC1 — real thing works | ✅ | real evidence text | Automated test | None |\n'
+  );
+  fsNode.writeFileSync(path.join(tmpRoot, '.github', 'pipeline-state.json'), JSON.stringify({
+    features: [{
+      slug: FEATURE_SLUG,
+      name: 'Fixture Feature',
+      epics: [{ slug: 'e1', name: 'Fixture Epic', stories: [{ slug: 's1', name: 'Fixture Story' }] }],
+    }],
+  }));
+
+  const pool = { query: function () { return Promise.resolve({ rows: [] }); } };
+  const req = { session: { accessToken: 'tok', login: 'user', tenantId: 't1' } };
+
+  repoRootModule.setRepoRoot(tmpRoot);
+  try {
+    const listRes = makeRes();
+    await routes.handleGetPlaybackList(req, listRes, pool);
+    assert.ok(listRes._get().body.includes(`/playback/${encodeURIComponent(FEATURE_SLUG)}`), 'expected the list page to link to the fixture feature\'s own review page');
+
+    const reviewRes = makeRes();
+    await routes.handleGetPlaybackReview(req, reviewRes, FEATURE_SLUG, pool);
+    const reviewBody = reviewRes._get().body;
+    assert.ok(reviewBody.includes('Real engineers waste real time.'), 'expected the real discovery.md problem statement text in the rendered review page');
+    assert.ok(reviewBody.includes('fast'), 'expected a real benefit-metric.md metric target in the rendered review page');
+    assert.ok(reviewBody.includes('Fixture Story'), 'expected the real story section in the rendered review page');
+    assert.ok(reviewBody.includes('real thing works'), 'expected the real DoD AC text in the rendered review page');
+    pass('Route/handler (integration): real handlers render real files on disk end to end, no mocked fs');
+  } catch (e) {
+    fail('Route/handler (integration): real handlers render real files on disk end to end', e);
+  } finally {
+    repoRootModule.setRepoRoot(null);
+    fsNode.rmSync(tmpRoot, { recursive: true, force: true });
+  }
 })();
 
 console.log(`\n[fpd-s3-viewer-route-and-traceability-structure] Results: ${passed} passed, ${failed} failed`);
