@@ -41051,11 +41051,11 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-16T07:52:15.074Z",
+              "updatedAt": "2026-10-16T07:53:56.447Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -41102,7 +41102,9 @@
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s3-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/996"
             },
             {
               "slug": "fpd-s4",
