@@ -99,6 +99,17 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC3+AC4 (unit): per-story AC sections', e); }
 })();
 
+// ADR-028 compliance (integration): one canonical traversal, reused not re-derived
+(function () {
+  const fsNode = require('fs');
+  try {
+    const source = fsNode.readFileSync(require.resolve('../src/web-ui/routes/playback'), 'utf8');
+    assert.ok(/require\(['"]\.\.\/adapters\/artefact-trace['"]\)/.test(source), 'expected playback.js to call buildArtefactTrace, not re-derive its own feature/epic/story traversal');
+    assert.ok(!/\(feature\.epics\s*\|\|\s*\[\]\)\.forEach/.test(source), 'expected no second independent epics[].forEach traversal in playback.js');
+    pass('ADR-028 compliance (integration): playback.js reuses buildArtefactTrace, no second derivation');
+  } catch (e) { fail('ADR-028 compliance (integration)', e); }
+})();
+
 console.log(`\n[fpd-s3-viewer-route-and-traceability-structure] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
