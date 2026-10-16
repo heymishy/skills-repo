@@ -124,10 +124,10 @@ async function captureVideoRecording({ browser, featureSlug, clips }) {
 // D37 adapter, writes both to disk, and marks them unreviewed until the
 // engineer explicitly confirms (AC3) -- automated generation never sets
 // reviewed: true itself.
-function captionTranscriptPaths(videoPath) {
-  const base = videoPath.replace(/\.webm$/, '');
-  return { captionPath: `${base}.vtt`, transcriptPath: `${base}.transcript.txt` };
-}
+// fpd-s4 hotfix lesson: captionTranscriptPaths itself now lives in
+// src/utils/playback-paths.js, not here -- scripts/ is never deployed, and
+// fpd-s4's own production route needs this same convention too.
+const { captionTranscriptPaths } = require('../src/utils/playback-paths');
 
 async function generateCaptionsForVideo(videoPath, interactionSequenceText, writeFileFn) {
   const write = writeFileFn || ((p, c) => fs.writeFileSync(p, c, 'utf8'));
