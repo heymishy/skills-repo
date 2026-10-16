@@ -8,7 +8,14 @@
 const fs = require('fs');
 const path = require('path');
 const { buildArtefactTrace } = require('../adapters/artefact-trace');
-const { parseDodAcCoverage, parseBenefitMetricTargets } = require('../../../scripts/playback-capture');
+// fpd-s3 hotfix: was requiring ../../../scripts/playback-capture -- scripts/
+// is never copied into the production Docker image (Dockerfile's own
+// explicit COPY allowlist: src/, skills/, product/, artefacts/, .github/
+// only), so this crashed staging on boot with MODULE_NOT_FOUND. Moved the
+// two functions this route actually needs into src/utils/dod-parsing.js
+// (always deployed); scripts/playback-capture.js now re-exports from there
+// unchanged for its own existing callers.
+const { parseDodAcCoverage, parseBenefitMetricTargets } = require('../../utils/dod-parsing');
 const { escHtml } = require('../utils/html-shell');
 const { renderShellWithNav } = require('./products');
 const { getRepoRoot } = require('../adapters/repo-root');
