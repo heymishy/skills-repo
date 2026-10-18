@@ -176,8 +176,21 @@ function authenticateStagingSession(baseUrl, secret) {
 // convention exactly (artefacts/<feature>/playback/<story>/screenshots/<acId>.png).
 // A standalone function, not a refactor of captureAcScreenshots itself -- the new
 // CLI entrypoint needs this same shape at a new call site.
+// rpca-s1-hotfix1: featureSlug comes directly from the CLI's own argv -- unlike
+// captureAcScreenshots' own existing callers (which only ever pass a known,
+// already-validated AC list), this is untrusted-shaped input. Guards the
+// resolved path stays within the repo root, same pattern as
+// src/web-ui/routes/playback.js's own existing path-traversal guard
+// (web-ui-patterns.md).
 function buildScreenshotPath(featureSlug, storySlug, acId) {
-  return `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${acId}.png`;
+  const path = require('path');
+  const relPath = `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${acId}.png`;
+  const repoRoot = path.resolve(__dirname, '..');
+  const resolvedPath = path.resolve(repoRoot, relPath);
+  if (!resolvedPath.startsWith(repoRoot + path.sep)) {
+    throw new Error(`Refusing to build a screenshot path outside the repo root -- check the feature-slug argument: "${featureSlug}"`);
+  }
+  return relPath;
 }
 
 // rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
