@@ -34,9 +34,11 @@
 
 ## Estimated touch points
 
-**Files:** `src/utils/dod-parsing.js` (modify), `src/web-ui/routes/playback.js` (modify), `scripts/playback-capture.js` (modify), `.github/workflows/staging-deploy.yml` (modify), `tests/check-fpd-s5-close-the-real-capture-loop.js` (new), `artefacts/2026-06-14-web-ui-pm-flow/playback/**` (replaced with a real capture)
+**Files:** `src/utils/dod-parsing.js` (modify), `src/web-ui/routes/playback.js` (modify), `scripts/playback-capture.js` (modify), `.github/workflows/staging-deploy.yml` (modify), `tests/check-fpd-s5-close-the-real-capture-loop.js` (new), `tests/check-fpd-s1-walkthrough-document-and-screenshots.js` (modify), `tests/check-fpd-s2-video-walkthrough-and-accessibility.js` (modify), `artefacts/2026-06-14-web-ui-pm-flow/playback/**` (replaced with a real capture)
 **Services:** None
 **APIs:** None
+
+**[Amended 2026-10-18, found during implementation planning, before any code written]** `captureAcScreenshots`/`captureVideoRecording` gain a required `storySlug` parameter as part of AC2's path-namespacing fix. `fpd-s1`'s and `fpd-s2`'s own existing tests call both functions without `storySlug` and assert against the old, flat path shape — left unmodified, the full regression suite would break (those two already-shipped stories' own tests would start failing, not because their behaviour regressed, but because the path convention they assert against changed underneath them). Both test files are now explicit touch points: updated to pass `storySlug` and assert the new, story-namespaced path shape. This is the same `modified together, not left to drift` principle the Architecture Constraints section already named for `playback.js`/`fpd-s4`'s own resolve* functions, extended to cover `fpd-s1`'s/`fpd-s2`'s own test fixtures too.
 
 ## H8-ext — Cross-story schema dependency check
 
