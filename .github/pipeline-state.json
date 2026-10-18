@@ -41305,9 +41305,9 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-10-18T09:18:54.850Z",
+              "updatedAt": "2026-10-18T09:59:34.960Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -41323,7 +41323,27 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s6-dor.md",
               "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s6-dor-contract.md",
-              "dorSignedOffAt": "2026-10-18T09:18:54.850Z"
+              "dorSignedOffAt": "2026-10-18T09:18:54.850Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "computeAcCoverageSummary -- counts total/captured ACs (AC1-AC3 logic)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "renderCoverageSummaryHtml -- distinct wording for zero/partial/full coverage (AC1-AC3 text)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire summary into renderPlaybackReviewHtml -- placement (AC1) and no-regression (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s6-plan.md"
+                }
+              ]
             }
           ]
         }
