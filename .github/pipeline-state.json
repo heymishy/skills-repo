@@ -41305,16 +41305,26 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-10-18T09:07:37.769Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-10-18T09:10:27.839Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s6-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-18T09:07:37.769Z",
+      "updatedAt": "2026-10-18T09:10:27.839Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
