@@ -27,4 +27,8 @@
 **Made by:** Claude (session), during `/definition-of-ready` for `rpca-s1`.
 **Revisit trigger:** Once the operator (or a configured CI run) executes the real manual scenario for any of these ACs, record the result here and in the corresponding story's own DoD artefact, same pattern `fpd-s5` AC4 used when it was closed for real.
 
+**[RESOLVED 2026-10-19, rpca-s1 AC1/AC2 only]** The operator retrieved the real `E2E_STAGING_AUTH_STUB_SECRET` via `fly ssh console -a wuce-staging` (first waking the suspended machine with a plain HTTP request — `fly status` showed it `suspended`, a GET to `https://wuce-staging.fly.dev/` returned it to `started`), set it as a local environment variable, and ran `node scripts/playback-capture.js 2026-10-11-journey-cx-redesign` directly from the `feature/rpca-s1` worktree. Real authentication succeeded (~5-6s, no browser login prompt), and a real 144670-byte screenshot was saved to `artefacts/2026-10-11-journey-cx-redesign/playback/rpca-s1-proof/screenshots/AC1.png` — viewed directly and confirmed as a real, legible capture of the live page (sidebar nav, Scope/Benefit card, `fpd-s6`'s own live coverage summary all visible). Full detail in `verification-scripts/rpca-s1-verification.md`, Scenarios 1-2. **`rpca-s3`'s own AC1 (real video capture) remains open** — same root cause, not yet executed, since `rpca-s3` hasn't been built yet.
+
+**Secondary finding from this real run (LOW, not blocking):** the CLI prints nothing on success — no confirmation message. None of `rpca-s1`'s own 4 ACs require one, so this isn't a gap against the story as written, but it's a real usability rough edge worth a small follow-up polish item (a one-line "Captured [acId] -> [path]" on success).
+
 ---

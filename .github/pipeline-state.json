@@ -41713,25 +41713,54 @@
             {
               "slug": "rpca-s1",
               "name": "CLI entrypoint authenticates against staging and captures one real screenshot end to end",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:51:53.519Z",
+              "updatedAt": "2026-10-18T21:28:19.562Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s1-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s1-dor-contract.md",
-              "dorSignedOffAt": "2026-10-18T19:51:53.519Z"
+              "dorSignedOffAt": "2026-10-18T19:51:53.519Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "buildScreenshotPath -- path-construction helper (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "authenticateStagingSession -- proven against a local mock server (AC1 logic)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "runCli entrypoint -- missing-secret named error (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Confirm secret never leaks in output (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1002"
             },
             {
               "slug": "rpca-s2",
