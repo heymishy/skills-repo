@@ -40887,13 +40887,14 @@
           "baseline": "0% -- no feature in this repo has ever produced a playback package",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "fpd-s5 proved the real capture mechanism works end to end for the first time (real screenshot rendering live for pmf.3), but this was a deliberate fix-validation exercise months after pmf.3's own DoD, not a feature using the mechanism within its own real workflow -- mechanism working is necessary but not sufficient for this metric to move.",
+          "evidence": "fpd-s6 reduces sponsor review friction (coverage summary) but no real sponsor-sharing/feedback cycle has used it yet -- recording honestly, consistent with fpd-s5's own DoD.",
           "contributingStories": [
             "fpd-s1",
             "fpd-s2",
             "fpd-s3",
             "fpd-s4",
-            "fpd-s5"
+            "fpd-s5",
+            "fpd-s6"
           ]
         },
         {
@@ -40903,11 +40904,12 @@
           "baseline": "Not yet established -- mechanism does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "fpd-s5 proved the real capture mechanism works end to end for the first time (real screenshot rendering live for pmf.3), but this was a deliberate fix-validation exercise months after pmf.3's own DoD, not a feature using the mechanism within its own real workflow -- mechanism working is necessary but not sufficient for this metric to move.",
+          "evidence": "fpd-s6 reduces sponsor review friction (coverage summary) but no real sponsor-sharing/feedback cycle has used it yet -- recording honestly, consistent with fpd-s5's own DoD.",
           "contributingStories": [
             "fpd-s3",
             "fpd-s4",
-            "fpd-s5"
+            "fpd-s5",
+            "fpd-s6"
           ]
         },
         {
@@ -41305,9 +41307,9 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-18T17:59:32.965Z",
+              "updatedAt": "2026-10-18T18:06:24.255Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -41346,7 +41348,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1001"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1001",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             }
           ]
         }
@@ -41418,9 +41423,9 @@
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
-          "evidence": "fpd-s6 DoR H9 -- AC3 implementation constrained to text-distinct wording, not colour alone",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-18T09:18:54.850Z"
+          "evidence": "fpd-s6 DoD -- live browser check confirmed full-coverage wording (\"Full coverage -- ...\") is textually distinct from partial, not colour-only",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-18T18:06:24.255Z"
         },
         {
           "id": "ADR-001",
