@@ -202,6 +202,8 @@ const CONTRACTS = [
       'production-observed',
       'UI-evidence gate',
       'Verification strength: [n unit',
+      'Feature-completion trace check',
+      'Run /trace before /release',
     ],
   },
   {

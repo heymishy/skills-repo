@@ -243,7 +243,17 @@ Save to `artefacts/[feature]/dod/[story-slug]-dod.md`.
 >
 > [If COMPLETE WITH DEVIATIONS or INCOMPLETE:]
 > Follow-up actions: [list]
+
+**Feature-completion trace check (mandatory, before the /release prompt below):** After writing this story's own state update, check `.github/pipeline-state.json` — does every story across every epic in this story's own feature now show `dodStatus: "complete"`? If not, skip this check silently and go straight to the /release prompt below.
+
+If every story is now complete, check `artefacts/[feature]/trace/` for a report. If none exists, or the most recent one is dated before this story's own DoD date:
+
+> ⚠️ **Run /trace before /release** — every story in this feature just reached DoD-complete, but the full chain (metric orphans, scope deviations, broken references across the whole feature) has never been checked, or was last checked before this story shipped. /release does not check this.
 >
+> Reply: yes - run /trace now - or skip - proceed to /release anyway (not recommended)
+
+If a trace report already exists dated on or after this story's own DoD date, state that explicitly and proceed directly to the prompt below without re-asking.
+
 > Ready to run /release when all stories in this feature are DoD-complete?
 > Reply: yes - or there are more stories to process first
 
