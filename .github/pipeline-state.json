@@ -41242,7 +41242,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-15T09:33:07.633Z",
+      "updatedAt": "2026-10-18T06:11:22.835Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
@@ -41549,8 +41549,36 @@
           "evidence": "review/fpd-s1-review-1.md, review/fpd-s3-review-1.md -- not applicable, no new query shape introduced",
           "assessedBy": "/review",
           "assessedAt": "2026-10-15T08:30:32.122Z"
+        },
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "label": "Reuse an existing entity/primitive when its shape already covers a new concept, rather than introducing a new one",
+          "status": "met",
+          "evidence": "Genuinely followed and enforced across fpd-s1-fpd-s5 (confirmed by /trace 2026-10-18); exists in architecture-guardrails.md prose but has no guardrails-registry YAML entry -- registry data-quality gap, not a compliance violation",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-18T06:11:22.835Z"
+        },
+        {
+          "id": "ADR-027",
+          "category": "adr",
+          "label": "Live SaaS-user-facing mechanisms are ordinary application code, not governed SKILL.md skills",
+          "status": "met",
+          "evidence": "Genuinely followed and enforced across fpd-s1-fpd-s5 (confirmed by /trace 2026-10-18); exists in architecture-guardrails.md prose but has no guardrails-registry YAML entry -- registry data-quality gap, not a compliance violation",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-18T06:11:22.835Z"
+        },
+        {
+          "id": "ADR-028",
+          "category": "adr",
+          "label": "A derived structure needs exactly one canonical builder -- every consumer reads from it, none re-derive it",
+          "status": "met",
+          "evidence": "Genuinely followed and enforced across fpd-s1-fpd-s5 (confirmed by /trace 2026-10-18); exists in architecture-guardrails.md prose but has no guardrails-registry YAML entry -- registry data-quality gap, not a compliance violation",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-18T06:11:22.835Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
