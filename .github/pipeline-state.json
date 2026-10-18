@@ -23928,7 +23928,7 @@
       "stage": "branch-setup",
       "health": "green",
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-16T02:38:43.550Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
@@ -24543,7 +24543,8 @@
         }
       ],
       "slicingStrategy": "walking-skeleton",
-      "lastImprove": "2026-08-16"
+      "lastImprove": "2026-08-16",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-16-team-management-shared-shell-migration",
@@ -25782,7 +25783,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-08-26T07:57:36.611Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "track": "standard",
       "guardrails": [
         {
@@ -26476,7 +26477,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-21-live-role-recheck-tenant-collapse",
@@ -27464,7 +27466,7 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-29T02:05:43.915Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "metrics": [
         {
           "id": "M1",
@@ -28129,7 +28131,8 @@
           "date": "2026-08-27T19:33:37.702Z"
         }
       ],
-      "lastImprove": "2026-08-29"
+      "lastImprove": "2026-08-29",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-29-diagram-validation-and-types",
@@ -28137,7 +28140,7 @@
       "stage": "definition-of-done",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-08-29T07:19:03.640Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -28484,7 +28487,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-30-fix-p35-validate-trace-timeout-flake",
@@ -29024,7 +29028,7 @@
       "stage": "definition",
       "discoveryStatus": "clarified",
       "health": "green",
-      "updatedAt": "2026-09-10T01:25:46.285Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29525,7 +29529,8 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "not-assessed"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-01-sse-reconnect-on-resume",
@@ -29778,7 +29783,7 @@
       "stage": "branch-setup",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-01T20:29:54.008Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -30195,7 +30200,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-09-01-artefact-commit-durability-gap",
@@ -30203,7 +30209,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T04:14:25.123Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -30313,7 +30319,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-02-product-dashboard-triage",
@@ -30321,7 +30328,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T19:37:42.902Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -30588,7 +30595,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-09-03-pipeline-state-archive-completed-features",
@@ -31790,7 +31798,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-09-05T02:48:59.317Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "track": "standard",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -31968,7 +31976,8 @@
           "assessedAt": "2026-09-05T10:38:48.530Z"
         }
       ],
-      "designArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/design.md"
+      "designArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/design.md",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-05-bare-slug-story-grouping-fix",
@@ -32144,7 +32153,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-09-06T00:58:45.982Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -32982,7 +32991,8 @@
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-07T18:48:47.610Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-08-session-origin-badge",
@@ -32991,7 +33001,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-08T05:28:37.669Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -33706,7 +33716,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-09-08T05:28:37.669Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-09-doc-matrix-column-bugs",
@@ -34641,7 +34652,7 @@
           "slug": "wsd-s1",
           "name": "Extract cli-advance.js's mutation core into a reusable, state-object-based function",
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "reviewStatus": "passed",
@@ -34653,14 +34664,15 @@
           "acVerified": 0,
           "updatedAt": "2026-09-14T20:55:33.145Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/888",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "blocker": "Trace 2026-10-18: feature declares real NFRs but nfr-profile.md does not exist -- see trace/2026-10-18-trace.md."
         },
         {
           "id": "wsd-s2",
           "slug": "wsd-s2",
           "name": "GitHub-API-backed pipeline-state writer for the production container, wired by environment, with failure visibility",
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "reviewStatus": "passed",
@@ -34672,7 +34684,8 @@
           "acVerified": 0,
           "updatedAt": "2026-09-14T21:22:20.578Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/889",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "blocker": "Trace 2026-10-18: feature declares real NFRs but nfr-profile.md does not exist -- see trace/2026-10-18-trace.md."
         },
         {
           "id": "wsd-s3",
@@ -34706,7 +34719,8 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-15T03:10:58.868Z"
+      "updatedAt": "2026-10-18T07:37:17.601Z",
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-09-14-wsd-s2-live-verification-throwaway",
@@ -35494,7 +35508,7 @@
       "name": "psrc-s1 sonnet verification (throwaway, 3-story)",
       "health": "green",
       "track": "standard",
-      "updatedAt": "2026-09-29T02:01:01.613Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "stories": [
         {
           "id": "psrc-verify-s1",
@@ -35507,7 +35521,9 @@
           "updatedAt": "2026-09-29T01:06:28.724Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s1-dor.md",
           "oversightLevel": "low",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "health": "amber",
+          "blocker": "Trace 2026-10-18: dodStatus=complete but no DoD or alternate evidence trail exists -- see trace/2026-10-18-trace.md Finding 1."
         },
         {
           "id": "psrc-verify-s2",
@@ -35520,7 +35536,9 @@
           "updatedAt": "2026-09-29T01:06:28.725Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s2-dor.md",
           "oversightLevel": "low",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "health": "amber",
+          "blocker": "Trace 2026-10-18: dodStatus=complete but no DoD or alternate evidence trail exists -- see trace/2026-10-18-trace.md Finding 1."
         },
         {
           "id": "psrc-verify-s3",
@@ -35541,7 +35559,8 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/924",
           "dodStatus": "complete"
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "new-feature-53a4408e",
@@ -35561,7 +35580,7 @@
       "health": "green",
       "track": "standard",
       "discoveryStatus": "approved",
-      "updatedAt": "2026-09-18T09:44:09.252Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "stories": [],
       "metrics": [
         {
@@ -36405,7 +36424,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-18-new",
@@ -36512,7 +36532,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-09-24T04:25:26.741Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -37081,7 +37101,8 @@
         }
       ],
       "slicingStrategy": "vertical-slice",
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-26-tenant-admin-bootstrap",
@@ -37323,7 +37344,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-29T18:47:13.767Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "track": "standard",
       "guardrails": [
         {
@@ -37697,7 +37718,8 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "slicingStrategy": "risk-first",
-      "epics": []
+      "epics": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-28-weeb-ui-learnings-and-improvements",
@@ -37708,7 +37730,7 @@
       "name": "Web UI Learnings and Improvements Integration",
       "track": "standard",
       "health": "green",
-      "updatedAt": "2026-09-30T18:16:29.380Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "metrics": [
         {
           "id": "m1",
@@ -38296,7 +38318,8 @@
           "assessedAt": "2026-10-03T23:47:55.753Z"
         }
       ],
-      "slicingStrategy": "walking-skeleton"
+      "slicingStrategy": "walking-skeleton",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-09-30-review-split-coverage-check",
@@ -38441,7 +38464,7 @@
       "name": "Signals Panel Triage UX",
       "track": "standard",
       "health": "green",
-      "updatedAt": "2026-10-04T06:13:54.548Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "metrics": [
         {
           "id": "m1",
@@ -38737,7 +38760,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-10-04T06:13:54.548Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-10-04-trace-validation-ps1-parity-fix",
@@ -39857,7 +39881,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-10T08:50:06.033Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-10-infinite-canvas/discovery.md",
       "track": "standard",
@@ -40058,7 +40082,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-10-11-journey-cx-redesign",
@@ -40226,7 +40251,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-11T09:30:36.884Z",
+      "updatedAt": "2026-10-18T07:37:17.601Z",
       "discoveryStatus": "clarified",
       "artefact": "artefacts/2026-10-11-journey-cx-redesign/discovery.md",
       "track": "standard",
@@ -40485,7 +40510,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-10-14-journey-authoring-experience",
