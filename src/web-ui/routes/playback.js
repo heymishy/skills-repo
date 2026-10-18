@@ -293,5 +293,5 @@ module.exports = {
   renderPlaybackListHtml, renderPlaybackReviewHtml,
   handleGetPlaybackList, handleGetPlaybackReview,
   resolveAcMedia, handleGetPlaybackMedia,
-  computeAcCoverageSummary,
+  computeAcCoverageSummary, renderCoverageSummaryHtml,
 };

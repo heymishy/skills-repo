@@ -67,6 +67,38 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC3 (unit): computeAcCoverageSummary reports full-coverage correctly', e); }
 })();
 
+// AC1 (unit): renderCoverageSummaryHtml renders the exact partial-coverage wording
+(function () {
+  const { renderCoverageSummaryHtml } = require('../src/web-ui/routes/playback');
+  try {
+    const html = renderCoverageSummaryHtml({ total: 3, captured: 1 });
+    assert.ok(html.includes('1 of 3 ACs have captured evidence'), 'expected exact "M of N" wording');
+    pass('AC1 (unit): renderCoverageSummaryHtml renders the exact partial-coverage wording');
+  } catch (e) { fail('AC1 (unit): renderCoverageSummaryHtml renders the exact partial-coverage wording', e); }
+})();
+
+// AC2 (unit): renderCoverageSummaryHtml states the zero-coverage case plainly, not omitted
+(function () {
+  const { renderCoverageSummaryHtml } = require('../src/web-ui/routes/playback');
+  try {
+    const html = renderCoverageSummaryHtml({ total: 3, captured: 0 });
+    assert.ok(html.includes('0 of 3 ACs have captured evidence yet'), 'expected exact zero-coverage wording');
+    pass('AC2 (unit): renderCoverageSummaryHtml states the zero-coverage case plainly, not omitted');
+  } catch (e) { fail('AC2 (unit): renderCoverageSummaryHtml states the zero-coverage case plainly, not omitted', e); }
+})();
+
+// AC3 (unit): renderCoverageSummaryHtml's full-coverage wording is textually distinct from partial, not colour-only (MC-A11Y-02)
+(function () {
+  const { renderCoverageSummaryHtml } = require('../src/web-ui/routes/playback');
+  try {
+    const fullHtml = renderCoverageSummaryHtml({ total: 2, captured: 2 });
+    const partialHtml = renderCoverageSummaryHtml({ total: 3, captured: 1 });
+    assert.ok(fullHtml.includes('Full coverage'), 'expected full-coverage wording to say "Full coverage"');
+    assert.ok(!partialHtml.includes('Full coverage'), 'expected partial-coverage wording to NOT say "Full coverage"');
+    pass("AC3 (unit): renderCoverageSummaryHtml's full-coverage wording is textually distinct from partial, not colour-only (MC-A11Y-02)");
+  } catch (e) { fail("AC3 (unit): renderCoverageSummaryHtml's full-coverage wording is textually distinct from partial, not colour-only (MC-A11Y-02)", e); }
+})();
+
 console.log(`\n[fpd-s6-review-page-coverage-summary] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
