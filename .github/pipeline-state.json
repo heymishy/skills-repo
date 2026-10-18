@@ -41307,7 +41307,7 @@
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-18T17:50:36.306Z",
+              "updatedAt": "2026-10-18T17:59:32.965Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -41345,7 +41345,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1001"
             }
           ]
@@ -41690,7 +41690,8 @@
           "assessedAt": "2026-10-18T06:11:22.835Z"
         }
       ],
-      "traceStatus": "passed"
+      "traceStatus": "passed",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
