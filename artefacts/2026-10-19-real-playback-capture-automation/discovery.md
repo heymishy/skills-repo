@@ -1,8 +1,8 @@
 # Discovery: Real Playback Capture Automation
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-10-19
-**Approved by:** [Pending]
+**Approved by:** Hamish King — Platform Owner — 2026-10-19
 **Author:** Claude Sonnet 5 (session), with Hamish King
 
 ---
@@ -67,11 +67,11 @@ The Feature Playback mechanism's own screenshot/video capture (`scripts/playback
 
 ## Reviewers
 
-- [Pending]
+- Hamish King — Platform Owner
 
 ## Approved By
 
-[Pending]
+Hamish King — Platform Owner — 2026-10-19
 
 ---
 

@@ -41703,13 +41703,14 @@
       "name": "Real Playback Capture Automation",
       "stage": "discovery",
       "health": "green",
-      "updatedAt": "2026-10-18T18:58:59.595Z",
+      "updatedAt": "2026-10-18T19:00:05.507Z",
       "epics": [],
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "track": "standard"
+      "track": "standard",
+      "discoveryStatus": "approved"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
