@@ -27,7 +27,7 @@ No AC triggers a CSS-layout-dependent pattern (no drag-drop, no coordinate/`getB
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Real authentication against `wuce-staging` | — | — | — | 1 scenario | External-dependency (needs real secret + real deployed instance) | 🔴 |
-| AC2 | Real screenshot captured and saved | — | — | — | 1 scenario | External-dependency (same as AC1) | 🔴 |
+| AC2 | Real screenshot captured and saved | 1 test | — | — | 1 scenario | External-dependency (navigation/capture part only — the save-path construction is unit-tested) | 🔴 |
 | AC3 | Missing env var fails with a clear error | 1 test | — | — | — | — | 🟢 |
 | AC4 | Secret value never appears in output | 1 test | — | — | — | — | 🟢 |
 
@@ -40,7 +40,7 @@ Additionally: `authenticateStagingSession`'s own HTTP request-construction and r
 | Gap | AC | Gap type | Reason untestable in this repo's own test runner | Handling |
 |-----|----|----------|---------------------------------------------------|---------|
 | Real authentication against the real deployed `wuce-staging` | AC1 | External-dependency | Requires a real `E2E_STAGING_AUTH_STUB_SECRET` value, which this sandbox does not hold (deliberately not pulled ad hoc, per the operator's own earlier decision to scope this properly first) | Request-construction/response-parsing logic covered by a mock-server integration test; AC1's own real-world claim is a manual scenario, 🔴, run by the operator (who can retrieve the secret) or in CI with the secret as a configured env var |
-| Real screenshot produced and saved from a real page | AC2 | External-dependency | Same root cause as AC1 — no real session without the real secret | Manual scenario, 🔴, same execution path as AC1 |
+| Real screenshot produced and saved from a real page | AC2 | External-dependency | Same root cause as AC1 — no real session without the real secret. (Narrower than AC1's own gap: the save-path construction itself is unit-tested; only the real navigation/capture step is gapped.) | Manual scenario, 🔴, same execution path as AC1 |
 
 ---
 
@@ -71,6 +71,14 @@ AC1/AC2 — see Coverage gaps above. Acknowledged, not silently skipped.
 ---
 
 ## Unit Tests
+
+### AC2 (unit): the save path for a captured screenshot matches the existing convention exactly
+
+- **Verifies:** AC2
+- **Precondition:** None — pure function test
+- **Action:** Call the path-construction function (reusing `captureAcScreenshots`'s own existing convention) with a fixture `featureSlug`, `storySlug`, and `acId`
+- **Expected result:** Returns `artefacts/[featureSlug]/playback/[storySlug]/screenshots/[acId].png` — exactly the same shape `fpd-s1`'s and `fpd-s5`'s own existing tests already assert for this convention, confirming this new call site didn't diverge from it
+- **Edge case:** No
 
 ### AC3 (unit): CLI fails immediately with a clear error when the secret env var is missing
 
