@@ -20,6 +20,7 @@ So that **I can judge at a glance whether a package is ready to review properly 
 
 - **Extends `renderPlaybackReviewHtml` in place — does not introduce a second rendering path (ADR-026).** The summary is computed from the same `structure.epics`/`structure.stories`/`ac.media` shape `renderStorySection`/`renderAcMediaHtml` already consume; it does not re-fetch or re-derive data from a different source.
 - **No new route or endpoint.** The coverage count is computed server-side inside the existing `GET /playback/:slug` handler path, at render time, from data already being iterated for the per-story sections — not a second pass requiring new I/O.
+- **MC-A11Y-02 (Colour not sole indicator of gate status) applies to AC3's "visibly different state/treatment" for full vs. partial coverage.** The distinction must be carried by text/label, not colour alone — e.g. different wording ("Full coverage" vs. "M of N ACs have captured evidence") satisfies this; a colour-only badge change does not. (Found at /review, run 1, finding 1-M2.)
 
 ## Dependencies
 

@@ -41305,14 +41305,16 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "definition",
-              "health": "green",
-              "updatedAt": "2026-10-18T09:01:21.859Z"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-10-18T09:07:37.769Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-18T09:01:21.859Z",
+      "updatedAt": "2026-10-18T09:07:37.769Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
@@ -41378,7 +41380,10 @@
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status (icons/labels present)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "fpd-s6 review run 1 finding 1-M2 -- resolved same session, MC-A11Y-02 added to story Architecture Constraints",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-18T09:07:37.769Z"
         },
         {
           "id": "ADR-001",
@@ -41623,11 +41628,11 @@
         {
           "id": "ADR-026",
           "category": "adr",
-          "label": "Reuse an existing entity/primitive when its shape already covers a new concept, rather than introducing a new one",
+          "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
           "status": "met",
-          "evidence": "Genuinely followed and enforced across fpd-s1-fpd-s5 (confirmed by /trace 2026-10-18); exists in architecture-guardrails.md prose but has no guardrails-registry YAML entry -- registry data-quality gap, not a compliance violation",
-          "assessedBy": "/trace",
-          "assessedAt": "2026-10-18T06:11:22.835Z"
+          "evidence": "fpd-s6 review run 1 -- correctly cites ADR-026, extends renderPlaybackReviewHtml in place, no duplicate rendering path",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-18T09:07:37.769Z"
         },
         {
           "id": "ADR-027",
