@@ -16,6 +16,7 @@ const { buildArtefactTrace } = require('../adapters/artefact-trace');
 // (always deployed); scripts/playback-capture.js now re-exports from there
 // unchanged for its own existing callers.
 const { parseDodAcCoverage, parseBenefitMetricTargets } = require('../../utils/dod-parsing');
+const { captionTranscriptPaths } = require('../../utils/playback-paths');
 const { escHtml } = require('../utils/html-shell');
 const { renderShellWithNav } = require('./products');
 const { getRepoRoot } = require('../adapters/repo-root');
@@ -60,7 +61,12 @@ function buildFeaturePlaybackStructure(repoRoot, featureSlug, fsImpl) {
     let acRows = [];
     if (dodArtefact) {
       const content = impl.readFileSync(path.join(trace.resolvedDir, dodArtefact.path), 'utf8');
-      acRows = parseDodAcCoverage(content);
+      // fpd-s4: attach each AC's own resolved media -- the one new,
+      // genuinely-incremental layer on top of this already-canonical
+      // structure (ADR-028), not a second traversal.
+      acRows = parseDodAcCoverage(content).map((ac) => Object.assign({}, ac, {
+        media: resolveAcMedia(repoRoot, featureSlug, ac.acId, impl),
+      }));
     }
     return Object.assign({}, story, { acRows });
   });
@@ -96,11 +102,33 @@ function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, 
     else flatStories.push(s);
   });
 
+  // fpd-s4: renders an AC's own screenshot/video/captions/transcript into
+  // its existing section (ADR-028 -- not a second structure). Native
+  // <video> only, no third-party player (Architecture Constraints).
+  const renderAcMediaHtml = (media) => {
+    if (!media || (!media.screenshotPath && !media.videoPath)) {
+      return '<p class="playback-ac__empty">No evidence captured for this AC yet.</p>';
+    }
+    const imgHtml = media.screenshotPath
+      ? `<img class="playback-ac__screenshot" src="/playback-media/${encodeURIComponent(media.screenshotPath)}" alt="Screenshot evidence" style="max-width:100%;border-radius:6px;border:1px solid var(--line)">`
+      : '';
+    const trackHtml = media.captionPath
+      ? `<track kind="captions" src="/playback-media/${encodeURIComponent(media.captionPath)}" default>`
+      : '';
+    const videoHtml = media.videoPath
+      ? `<video class="playback-ac__video" controls style="max-width:100%;border-radius:6px"><source src="/playback-media/${encodeURIComponent(media.videoPath)}" type="video/webm">${trackHtml}</video>`
+      : '';
+    const transcriptHtml = media.transcriptPath
+      ? `<p><a class="playback-ac__transcript-link" href="/playback-media/${encodeURIComponent(media.transcriptPath)}" target="_blank" rel="noopener">View transcript</a></p>`
+      : '';
+    return imgHtml + videoHtml + transcriptHtml;
+  };
+
   const renderStorySection = (story) => {
     const acHtml = (story.acRows || []).length === 0
       ? '<p class="playback-story__no-acs">No AC Coverage data available for this story yet.</p>'
       : story.acRows.map((ac) =>
-          `<div class="playback-ac"><h4>${escHtml(ac.acId)} — ${escHtml(ac.description)}</h4><p>${escHtml(ac.evidence)}</p></div>`
+          `<div class="playback-ac"><h4>${escHtml(ac.acId)} — ${escHtml(ac.description)}</h4><p>${escHtml(ac.evidence)}</p>${renderAcMediaHtml(ac.media)}</div>`
         ).join('');
     return `<div class="sw-card playback-story"><h3 class="sw-section-title">${escHtml(story.name || story.slug)}</h3>${acHtml}</div>`;
   };
@@ -147,8 +175,85 @@ async function handleGetPlaybackReview(req, res, featureSlug, pool) {
   res.end(html);
 }
 
+// AC1, AC5: screenshot path for one AC, if the file actually exists.
+function resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+  const impl = fsImpl || fs;
+  const relPath = `artefacts/${featureSlug}/playback/screenshots/${acId}.png`;
+  return impl.existsSync(path.join(repoRoot, relPath)) ? relPath : null;
+}
+
+// AC2, AC5: video path for one AC -- a per-AC-named clip if one exists,
+// else the single combined walkthrough file if the video/ directory
+// contains exactly one .webm (AC2's own "or is covered by the feature's
+// single combined walkthrough" case), else null (no evidence yet).
+function resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+  const impl = fsImpl || fs;
+  const videoDir = path.join(repoRoot, 'artefacts', featureSlug, 'playback', 'video');
+  if (!impl.existsSync(videoDir)) return null;
+  const perAcRel = `artefacts/${featureSlug}/playback/video/${acId}.webm`;
+  if (impl.existsSync(path.join(repoRoot, perAcRel))) return perAcRel;
+  const files = impl.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
+  if (files.length === 1) return `artefacts/${featureSlug}/playback/video/${files[0]}`;
+  return null;
+}
+
+// AC3, AC4: given a resolved video path, derive caption/transcript paths
+// (ADR-026 -- reuses fpd-s2's own naming convention) and confirm they
+// actually exist on disk -- never render a reference to a file that isn't
+// really there.
+function resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl) {
+  const impl = fsImpl || fs;
+  if (!videoPath) return { captionPath: null, transcriptPath: null };
+  const { captionPath, transcriptPath } = captionTranscriptPaths(videoPath);
+  return {
+    captionPath: impl.existsSync(path.join(repoRoot, captionPath)) ? captionPath : null,
+    transcriptPath: impl.existsSync(path.join(repoRoot, transcriptPath)) ? transcriptPath : null,
+  };
+}
+
+function resolveAcMedia(repoRoot, featureSlug, acId, fsImpl) {
+  const screenshotPath = resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl);
+  const videoPath = resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl);
+  const { captionPath, transcriptPath } = resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl);
+  return { screenshotPath, videoPath, captionPath, transcriptPath };
+}
+
+// Task 5: media-serving route. CLAUDE.md path traversal guard (ougl) is
+// mandatory here -- requestedPath comes straight off the URL. Two layers:
+// (1) an allowlist shape, since only files resolveAcMedia itself would ever
+// hand back are servable (screenshots/video/captions/transcripts under a
+// feature's own playback/ dir) -- rejects e.g. discovery.md even though it
+// resolves inside repoRoot; (2) path.resolve + startsWith(repoRoot) against
+// that same traversal class CLAUDE.md names explicitly (../secret.txt).
+const MEDIA_PATH_RE = /^artefacts\/[^/]+\/playback\/(screenshots|video)\/[^/]+\.(png|webm|vtt|txt)$/;
+const MEDIA_CONTENT_TYPES = { '.png': 'image/png', '.webm': 'video/webm', '.vtt': 'text/vtt', '.txt': 'text/plain' };
+
+async function handleGetPlaybackMedia(req, res, requestedPath) {
+  if (!MEDIA_PATH_RE.test(requestedPath)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Invalid media path');
+    return;
+  }
+  const repoRoot = getRepoRoot(req);
+  const resolved = path.resolve(repoRoot, requestedPath);
+  if (!resolved.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Invalid media path');
+    return;
+  }
+  if (!fs.existsSync(resolved)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
+  const contentType = MEDIA_CONTENT_TYPES[path.extname(resolved)] || 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': contentType });
+  fs.createReadStream(resolved).pipe(res);
+}
+
 module.exports = {
   listPlaybackFeatures, extractMarkdownSection, buildFeaturePlaybackStructure,
   renderPlaybackListHtml, renderPlaybackReviewHtml,
   handleGetPlaybackList, handleGetPlaybackReview,
+  resolveAcMedia, handleGetPlaybackMedia,
 };

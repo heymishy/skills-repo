@@ -23,7 +23,7 @@ const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('
 const { checkModelRoutingDrift }                                     = require('./config/model-routing'); // psrc-verify-s3
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
-const { handleGetPlaybackList, handleGetPlaybackReview } = require('./routes/playback'); // fpd-s3
+const { handleGetPlaybackList, handleGetPlaybackReview, handleGetPlaybackMedia } = require('./routes/playback'); // fpd-s3, fpd-s4
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -3238,6 +3238,14 @@ async function router(req, res) {
     const playbackFeatureSlug = pathname.slice('/playback/'.length);
     authGuard(req, res, async () => {
       await handleGetPlaybackReview(req, res, playbackFeatureSlug, _pshPool);
+    });
+
+  } else if (pathname.startsWith('/playback-media/') && req.method === 'GET') {
+    // fpd-s4 -- requestedPath is decoded once here; handleGetPlaybackMedia
+    // owns the path-traversal guard (CLAUDE.md mandatory rule, ougl)
+    const requestedMediaPath = decodeURIComponent(pathname.slice('/playback-media/'.length));
+    authGuard(req, res, async () => {
+      await handleGetPlaybackMedia(req, res, requestedMediaPath);
     });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
