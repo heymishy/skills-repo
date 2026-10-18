@@ -3312,3 +3312,17 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **Fix applied:** extracted the two needed functions into `src/utils/dod-parsing.js` (always deployed); `scripts/playback-capture.js` now re-exports from there unchanged, so every existing caller keeps working with zero change. Verified against the actual failure mode (temporarily renamed `scripts/` out of the way in a real checkout, confirmed `server.js` loads cleanly), not just inferred from reading the Dockerfile.
 **Concrete follow-up this repeat occurrence now justifies (not yet built):** a CI or pre-commit check that greps every file under `src/` for a `require(...)` path resolving into `scripts/` and fails the build. This would have caught both `fpd-s3`'s own crash and (retroactively) would have caught `ic-hotfix1`'s own gap pattern too, had it existed then. Worth raising as a dedicated short-track story rather than leaving it as a second "worth generalising" note that a third occurrence might again fail to connect back to this one.
 **Source:** agent-auto, promoted at the operator's own explicit request ("let's log this as a learning for root cause as this has happened before") — full incident detail in `artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/decisions.md` (2026-10-17 INCIDENT entry).
+
+---
+
+## D44 — Resolve /clarify assumptions by reading code before asking the operator
+
+**Symptom:** A discovery artefact's `[ASSUMPTION]` line gets written as an open question for the operator to answer by judgment, when the real answer is already sitting in the codebase and could be confirmed or refuted directly.
+
+**Observed — 2026-10-19:** `2026-10-19-real-playback-capture-automation`'s own discovery had 2 `[ASSUMPTION]` lines at `/discovery` time: (1) whether the existing `E2E_STAGING_AUTH_STUB_SECRET` mechanism's scope could be safely extended for a new consumer, (2) whether existing E2E spec selectors were stable enough to reuse. Both were initially framed as questions for the operator to judge. At `/clarify`, instead of asking, a direct code investigation resolved both: (1) `tests/e2e/fixtures/auth.js` already calls the exact route (`GET /test/session`) the new CLI would need — no extension required, just a new caller of an unchanged mechanism; (2) sampling 3 real E2E spec files showed every selector already used was a stable CSS class or `id`/`data-*` attribute, confirmed by direct reading, not assumption.
+
+**Root cause:** `/clarify`'s own default mode presents assumptions as questions with multiple-choice-style answer options, which is right when the answer genuinely requires a judgment call (risk tolerance, scope tradeoffs) — but wrong when the artefact's own codebase already contains a factual, checkable answer. Defaulting straight to "ask the operator" skips a cheaper, more reliable step.
+
+**Rule:** Before presenting a `[ASSUMPTION]` line at `/clarify` as a question for the operator, check whether it's actually a factual claim about the existing codebase (a mechanism's current scope, a file's current contents, a pattern's current usage) rather than a genuine judgment call. If it's checkable, check it directly and report the confirmed/refuted result — don't spend the operator's attention on a question the code already answers.
+
+**Source:** agent-auto, during `/clarify` for `rpca` (`2026-10-19-real-playback-capture-automation`).
