@@ -41713,11 +41713,11 @@
             {
               "slug": "rpca-s1",
               "name": "CLI entrypoint authenticates against staging and captures one real screenshot end to end",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T20:07:16.545Z",
+              "updatedAt": "2026-10-18T20:39:38.224Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41736,25 +41736,25 @@
                 {
                   "id": "task-1",
                   "name": "buildScreenshotPath -- path-construction helper (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "authenticateStagingSession -- proven against a local mock server (AC1 logic)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "runCli entrypoint -- missing-secret named error (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Confirm secret never leaks in output (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
                 }
               ]
