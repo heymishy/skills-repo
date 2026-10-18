@@ -40829,7 +40829,8 @@
             "fpd-s1",
             "fpd-s2",
             "fpd-s3",
-            "fpd-s4"
+            "fpd-s4",
+            "fpd-s5"
           ]
         },
         {
@@ -40842,7 +40843,8 @@
           "evidence": "fpd-1 through fpd-4 are all code-complete and merged, but no real playback package has ever been captured against a feature whose DoD can actually drive the media-rendering code (AC-table-shape gap, found live 2026-10-18) -- the acceptance/feedback loop cannot close until that is addressed.",
           "contributingStories": [
             "fpd-s3",
-            "fpd-s4"
+            "fpd-s4",
+            "fpd-s5"
           ]
         },
         {
@@ -41046,7 +41048,7 @@
         {
           "slug": "feature-playback-web-viewer",
           "name": "Sponsors can browse and play a DoD-validated feature's playback package inside the app, organised by this platform's own outer-loop traceability chain",
-          "status": "complete",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "fpd-s3",
@@ -41177,6 +41179,15 @@
               "layoutGapsAtMerge": true,
               "layoutGapsRiskAccepted": true,
               "verifyStatus": "passed"
+            },
+            {
+              "slug": "fpd-s5",
+              "name": "Close the real-capture loop -- fix the two gaps blocking any real feature from using the viewer, and prove it end to end",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-18T03:08:13.271Z"
             }
           ]
         }
