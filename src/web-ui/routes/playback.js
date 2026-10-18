@@ -173,7 +173,9 @@ function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, 
   }).join('');
   const flatSections = flatStories.map(renderStorySection).join('');
 
-  return `<h1>${escHtml(featureSlug)}</h1>${summaryHtml}${epicSections}${flatSections}`;
+  const coverageSummaryHtml = renderCoverageSummaryHtml(computeAcCoverageSummary(structure));
+
+  return `<h1>${escHtml(featureSlug)}</h1>${summaryHtml}${coverageSummaryHtml}${epicSections}${flatSections}`;
 }
 
 async function handleGetPlaybackList(req, res, pool) {
