@@ -87,6 +87,39 @@ function renderPlaybackListHtml(features) {
   return `<div class="sw-card playback-list"><h2 class="sw-section-title">Playback packages</h2><ul class="sw-list">${items}</ul></div>`;
 }
 
+// fpd-s6: counts total ACs across every story in a playback structure, and
+// how many already have captured evidence (screenshot or video). Walks
+// structure.stories directly -- that array already holds every story once
+// (epicSlug is grouping metadata consumed separately by
+// renderPlaybackReviewHtml, not a second data source), so no double-count
+// risk from also walking structure.epics.
+function computeAcCoverageSummary(structure) {
+  let total = 0;
+  let captured = 0;
+  (structure.stories || []).forEach((story) => {
+    (story.acRows || []).forEach((ac) => {
+      total += 1;
+      const media = ac.media;
+      if (media && (media.screenshotPath || media.videoPath)) captured += 1;
+    });
+  });
+  return { total, captured };
+}
+
+// fpd-s6: renders the coverage summary with three text-distinct states.
+// Per MC-A11Y-02 (architecture-guardrails.md), the full-vs-partial
+// distinction is carried by wording ("Full coverage" prefix), not by a
+// CSS class or colour alone.
+function renderCoverageSummaryHtml({ total, captured }) {
+  if (captured === total && total > 0) {
+    return `<p class="playback-coverage-summary playback-coverage-summary--full">Full coverage — ${captured} of ${total} ACs have captured evidence.</p>`;
+  }
+  if (captured === 0) {
+    return `<p class="playback-coverage-summary playback-coverage-summary--none">0 of ${total} ACs have captured evidence yet.</p>`;
+  }
+  return `<p class="playback-coverage-summary playback-coverage-summary--partial">${captured} of ${total} ACs have captured evidence.</p>`;
+}
+
 function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, structure) {
   const summaryHtml =
     `<div class="sw-card playback-summary"><h2 class="sw-section-title">Scope</h2><p>${escHtml(problemStatement || 'No problem statement on file.')}</p>` +
@@ -140,7 +173,9 @@ function renderPlaybackReviewHtml(featureSlug, problemStatement, metricTargets, 
   }).join('');
   const flatSections = flatStories.map(renderStorySection).join('');
 
-  return `<h1>${escHtml(featureSlug)}</h1>${summaryHtml}${epicSections}${flatSections}`;
+  const coverageSummaryHtml = renderCoverageSummaryHtml(computeAcCoverageSummary(structure));
+
+  return `<h1>${escHtml(featureSlug)}</h1>${summaryHtml}${coverageSummaryHtml}${epicSections}${flatSections}`;
 }
 
 async function handleGetPlaybackList(req, res, pool) {
@@ -260,4 +295,5 @@ module.exports = {
   renderPlaybackListHtml, renderPlaybackReviewHtml,
   handleGetPlaybackList, handleGetPlaybackReview,
   resolveAcMedia, handleGetPlaybackMedia,
+  computeAcCoverageSummary, renderCoverageSummaryHtml,
 };
