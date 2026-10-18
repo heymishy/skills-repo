@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-08-17T05:42:32.854Z",
+      "updatedAt": "2026-10-18T07:27:26.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -762,7 +762,7 @@
               "slug": "p3.1",
               "name": "Postgres journey store adapter (injectable, same interface as in-memory store)",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "red",
               "complexity": 3,
               "scopeStability": "unstable",
               "prStatus": "merged",
@@ -778,13 +778,14 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/feature-dod.md",
-              "updatedAt": "2026-09-11T20:34:58.580Z"
+              "updatedAt": "2026-09-11T20:34:58.580Z",
+              "blocker": "Trace 2026-10-18: dodStatus=complete but no DoR/DoD artefact exists -- see trace/2026-10-18-trace.md Finding 1. Real code confirmed shipped (journey-store-pg.js); governance paperwork gap, not a production risk."
             },
             {
               "slug": "p3.2",
               "name": "Redis auth-session and viewer-activity store adapter (injectable, TTL eviction)",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "red",
               "complexity": 3,
               "scopeStability": "unstable",
               "prStatus": "merged",
@@ -800,13 +801,14 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/feature-dod.md",
-              "updatedAt": "2026-09-11T20:34:58.738Z"
+              "updatedAt": "2026-09-11T20:34:58.738Z",
+              "blocker": "Trace 2026-10-18: dodStatus=complete but no DoR/DoD artefact exists -- see trace/2026-10-18-trace.md Finding 1. Real code confirmed shipped (journey-store-pg.js); governance paperwork gap, not a production risk."
             },
             {
               "slug": "p3.3",
               "name": "Concurrency tests (two tenants interleaved, no state bleed) + restart-survival test",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "red",
               "complexity": 2,
               "scopeStability": "stable",
               "prStatus": "merged",
@@ -822,7 +824,8 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/feature-dod.md",
-              "updatedAt": "2026-09-11T20:34:58.894Z"
+              "updatedAt": "2026-09-11T20:34:58.894Z",
+              "blocker": "Trace 2026-10-18: dodStatus=complete but no DoR/DoD artefact exists -- see trace/2026-10-18-trace.md Finding 1. Real code confirmed shipped (journey-store-pg.js); governance paperwork gap, not a production risk."
             }
           ]
         },
@@ -1102,7 +1105,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-06-15-ideate-web-ux-inc3",
