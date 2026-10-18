@@ -180,6 +180,68 @@ function buildScreenshotPath(featureSlug, storySlug, acId) {
   return `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${acId}.png`;
 }
 
+// rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
+// required secret env var synchronously, before any async work, so a missing
+// secret fails immediately and loudly -- not a confusing auth error surfaced
+// later from the staging server itself.
+const CAPTURE_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const STAGING_BASE_URL = 'https://wuce-staging.fly.dev';
+
+function runCli(argv) {
+  const secret = process.env[CAPTURE_SECRET_ENV_VAR];
+  if (!secret) {
+    throw new Error(
+      `Missing required environment variable: ${CAPTURE_SECRET_ENV_VAR}. ` +
+      `Set it to the staging auth-stub secret before running this CLI.`
+    );
+  }
+  const featureSlug = argv[2];
+  if (!featureSlug) {
+    throw new Error('Missing required argument: feature-slug. Usage: node scripts/playback-capture.js <feature-slug>');
+  }
+  return runCaptureForFeature(featureSlug, secret);
+}
+
+// rpca-s1: the real end-to-end capture flow -- authenticates, launches a real
+// Playwright browser with the session cookie, navigates to one hand-picked AC's
+// own URL (hardcoded for this story; rpca-s2 generalises this), and saves a
+// real screenshot. This function's own real-world behaviour is RISK-ACCEPTed
+// for automated execution (decisions.md, 2026-10-19) -- it needs a real secret
+// and real network access this test suite does not have. Proven manually.
+async function runCaptureForFeature(featureSlug, secret) {
+  const { chromium } = require('playwright');
+  const sessionId = await authenticateStagingSession(STAGING_BASE_URL, secret);
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  await context.addCookies([{
+    name: 'session_id', value: sessionId, url: STAGING_BASE_URL,
+  }]);
+  const page = await context.newPage();
+  // Hand-picked proof target for this story -- rpca-s2 generalises AC/selector
+  // derivation from existing E2E specs instead of this hardcoded pair.
+  const targetUrl = `${STAGING_BASE_URL}/playback/${featureSlug}`;
+  const targetSelector = '.playback-summary';
+  const targetAcId = 'AC1';
+  const targetStorySlug = 'rpca-s1-proof';
+  await page.goto(targetUrl);
+  const relPath = buildScreenshotPath(featureSlug, targetStorySlug, targetAcId);
+  await page.screenshot({ path: relPath, selector: targetSelector });
+  await browser.close();
+  return { acId: targetAcId, path: relPath };
+}
+
+if (require.main === module) {
+  try {
+    runCli(process.argv).then(
+      () => { /* success -- real capture completed */ },
+      (err) => { console.error(`[playback-capture] ${err.message}`); process.exitCode = 1; }
+    );
+  } catch (err) {
+    console.error(`[playback-capture] ${err.message}`);
+    process.exitCode = 1;
+  }
+}
+
 module.exports = {
   checkDodGate, parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets,
   generateWalkthroughMarkdown, captureAcScreenshots, embedScreenshotPaths,
@@ -187,5 +249,5 @@ module.exports = {
   captureVideoRecording,
   generateCaptionsForVideo,
   isPackageComplete,
-  buildScreenshotPath, authenticateStagingSession,
+  buildScreenshotPath, authenticateStagingSession, runCli,
 };

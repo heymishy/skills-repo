@@ -42,6 +42,22 @@ await (async function () {
   finally { server.close(); }
 })();
 
+// AC3 (unit): runCli throws a clear, named error when the secret env var is missing
+(function () {
+  const { runCli } = require('../scripts/playback-capture');
+  const saved = process.env.E2E_STAGING_AUTH_STUB_SECRET;
+  delete process.env.E2E_STAGING_AUTH_STUB_SECRET;
+  try {
+    let threw = null;
+    try { runCli(['node', 'playback-capture.js', 'some-feature-slug']); }
+    catch (e) { threw = e; }
+    assert.ok(threw, 'expected runCli to throw synchronously when the secret is missing');
+    assert.ok(threw.message.includes('E2E_STAGING_AUTH_STUB_SECRET'), 'expected the error message to name the missing env var');
+    pass('AC3 (unit): runCli throws a clear, named error when the secret env var is missing');
+  } catch (e) { fail('AC3 (unit): runCli throws a clear, named error when the secret env var is missing', e); }
+  finally { if (saved !== undefined) process.env.E2E_STAGING_AUTH_STUB_SECRET = saved; }
+})();
+
 console.log(`\n[rpca-s1-cli-entrypoint-and-first-real-capture] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
