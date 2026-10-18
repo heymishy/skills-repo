@@ -1,22 +1,19 @@
 # Playback Walkthrough: 2026-06-14-web-ui-pm-flow
 
-**Captured:** 2026-10-18, live against `https://wuce-staging.fly.dev`, logged in as the real operator account.
+**Captured:** 2026-10-18, live against `https://wuce-staging.fly.dev`, logged in as the real operator account — the first real, non-synthetic capture produced after `fpd-s5` fixed the two gaps (AC-table-format mismatch, screenshot filename collision) that blocked this from working before.
 
-**How this package was produced:** this feature's own DoD files do not use the `## AC Coverage` table format that `fpd-s4`'s per-AC media-resolution code depends on (`pmf.3-dod.md` uses a different `## AC Verification` table shape; `pmf.1`/`pmf.2` have no per-story DoD file at all) — found live while attempting a real capture for the `feature-playback-demo` feature itself, logged as a gap in `workspace/capture-log.md` (2026-10-18). Because of that, this package was captured and written by hand rather than via `scripts/playback-capture.js`'s own automated flow, and the `/playback/<slug>` review page will show each story's own "No AC Coverage data available for this story yet" empty branch rather than per-AC screenshots — this file exists purely to exercise `/playback`'s list-entry and review-page-shell rendering with a real, non-synthetic feature.
+## pmf.3 — Context-aware orientation wizard — three-step session start
 
-## Kanban Board
+### AC1 — Step 1 three named options
 
-The feature's own headline deliverable (`pmf.1`/`pmf.2`): a real, styled, interactive Kanban board at `/dashboard?view=board`, replacing the old read-only flat table. Captured live:
+Real screenshot of `/journey/wizard` (Step 1, no `view` query param), captured live:
 
-![Kanban board](screenshots/AC1.png)
+![Step 1: Project selection](pmf.3/screenshots/AC1.png)
 
-Real columns (`discovery`, `benefit-metric`, `definition`, `review`, ...) populated with real feature cards, each showing artefact count, ownership hash, health status, and advance/demote controls — exactly as `pmf.1`'s own AC describes.
+The page title reads "Project selection" and shows the three real option cards `pmf.3`'s own DoD describes: "Start something new" (with a real "Start a new feature" button), "Continue an existing feature", and "Resume active session" — matching `pmf.3-dod.md`'s own AC1 text exactly.
 
-**Note on the screenshot file:** saved as `AC1.png` (the filename convention `resolveScreenshotPathForAc` expects), but the actual bytes are JPEG — no image-conversion tool (ImageMagick/ffmpeg/sharp) was available in this sandbox to re-encode it as a true PNG. Chrome's own image decoder sniffs the real file content rather than trusting the extension, so it renders correctly regardless; flagged here for transparency, not hidden.
+## How this package was produced
 
-## Known gaps this capture surfaced
+Captured via the operator's own authenticated Chrome session (not `scripts/playback-capture.js`'s own Playwright-driven path, which would need its own separate login this session cannot perform against a non-local host — see `fpd-s5`'s own story, Out of Scope item 1, and `fpd-s1` AC3's standing RISK-ACCEPT). The file is saved as `AC1.png` but the underlying bytes are a JPEG — no image-conversion tool was available in this sandbox to re-encode it as a true PNG; Chrome's own image decoder sniffs real content rather than trusting the extension, so it renders correctly regardless. Same transparency note as this feature's own earlier (now superseded) capture attempt.
 
-1. **AC-table format gap** (this file's own existence, above): no feature outside `feature-playback-demo` itself currently has a DoD using the `## AC Coverage` heading/column shape `parseDodAcCoverage` parses.
-2. **Screenshot filename collision** (found separately, logged in `workspace/capture-log.md` 2026-10-18): `artefacts/<featureSlug>/playback/screenshots/<acId>.png` is keyed by feature-slug + AC-id only, with no story-slug component — a real capture against a multi-story feature where AC numbering restarts per story (e.g. `feature-playback-demo` itself) would silently collide.
-
-Neither gap was fixed as part of this capture — both need their own short-track story.
+This package replaces the earlier hand-authored, pre-`fpd-s5` version of this package, which used the old flat (non-story-namespaced) path convention and didn't exercise the real AC-table parsing fpd-s5 fixed.
