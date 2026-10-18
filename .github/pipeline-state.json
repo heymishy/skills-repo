@@ -41183,11 +41183,11 @@
             {
               "slug": "fpd-s5",
               "name": "Close the real-capture loop -- fix the two gaps blocking any real feature from using the viewer, and prove it end to end",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T03:10:53.635Z",
+              "updatedAt": "2026-10-18T03:19:54.641Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -41197,7 +41197,11 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s5-dor.md",
+              "dorContractArtefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/dor/fpd-s5-dor-contract.md",
+              "dorSignedOffAt": "2026-10-18T03:19:54.641Z"
             }
           ]
         }
