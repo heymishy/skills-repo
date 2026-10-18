@@ -138,6 +138,14 @@ async function generateCaptionsForVideo(videoPath, interactionSequenceText, writ
   return { captionPath, transcriptPath, reviewed: false };
 }
 
+// rpca-s1: path-construction helper matching captureAcScreenshots' own existing
+// convention exactly (artefacts/<feature>/playback/<story>/screenshots/<acId>.png).
+// A standalone function, not a refactor of captureAcScreenshots itself -- the new
+// CLI entrypoint needs this same shape at a new call site.
+function buildScreenshotPath(featureSlug, storySlug, acId) {
+  return `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${acId}.png`;
+}
+
 module.exports = {
   checkDodGate, parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets,
   generateWalkthroughMarkdown, captureAcScreenshots, embedScreenshotPaths,
@@ -145,4 +153,5 @@ module.exports = {
   captureVideoRecording,
   generateCaptionsForVideo,
   isPackageComplete,
+  buildScreenshotPath,
 };
