@@ -9328,7 +9328,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T18:28:16.862Z",
+      "updatedAt": "2026-10-18T07:29:33.996Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -9399,7 +9399,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.2-dod.md",
-              "blocker": "Live staging-vs-prod PostHog cross-contamination check (PAT-06) is now structurally unblocked (Epic 2 + bri-s3.4 both DoD-complete) but has never been executed against real infrastructure -- see bri-s1.2-dod.md Follow-up actions."
+              "blocker": "Trace 2026-10-18: real-infrastructure manual verification AC still unexecuted 3+ months after DoR-scoped acknowledgement -- see trace/2026-10-18-trace.md Finding 1. Not a traceability defect, needs real Fly/Neon/Upstash/PostHog access."
             },
             {
               "slug": "bri-s1.3",
@@ -9551,7 +9551,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.5-dod.md",
-              "blocker": "Real comparison of staging vs prod PostHog projects flag-list mirroring (AC4) has never been executed -- DoR-acknowledged External-dependency gap, no automatable substitute. See bri-s1.5-dod.md Follow-up actions."
+              "blocker": "Trace 2026-10-18: real-infrastructure manual verification AC still unexecuted 3+ months after DoR-scoped acknowledgement -- see trace/2026-10-18-trace.md Finding 1. Not a traceability defect, needs real Fly/Neon/Upstash/PostHog access."
             }
           ]
         },
@@ -9588,7 +9588,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.1-dod.md",
-              "blocker": "Real fly deploy + Fly dashboard build/billing confirmation (AC1, AC3) never executed against live infrastructure -- DoR-acknowledged External-dependency gap. See bri-s2.1-dod.md Follow-up actions."
+              "blocker": "Trace 2026-10-18: real-infrastructure manual verification AC still unexecuted 3+ months after DoR-scoped acknowledgement -- see trace/2026-10-18-trace.md Finding 1. Not a traceability defect, needs real Fly/Neon/Upstash/PostHog access."
             },
             {
               "slug": "bri-s2.2",
@@ -9618,7 +9618,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.2-dod.md",
-              "blocker": "T1 currently fails due to a false-positive regex collision with bri-s1.2 unrelated code (RISK-ACCEPTed in decisions.md 2026-07-11); real Neon schema/write-isolation/cold-start manual scenarios never executed. See bri-s2.2-dod.md Follow-up actions."
+              "blocker": "Trace 2026-10-18: real-infrastructure manual verification AC still unexecuted 3+ months after DoR-scoped acknowledgement -- see trace/2026-10-18-trace.md Finding 1. Not a traceability defect, needs real Fly/Neon/Upstash/PostHog access."
             },
             {
               "slug": "bri-s2.3",
@@ -9662,7 +9662,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.3-dod.md",
-              "blocker": "AC3 (Upstash usage-ceiling review) has no automatable substitute and has never been executed -- DoR-flagged highest-risk item. See bri-s2.3-dod.md Follow-up actions."
+              "blocker": "Trace 2026-10-18: real-infrastructure manual verification AC still unexecuted 3+ months after DoR-scoped acknowledgement -- see trace/2026-10-18-trace.md Finding 1. Not a traceability defect, needs real Fly/Neon/Upstash/PostHog access."
             },
             {
               "slug": "bri-s2.4",
@@ -10239,7 +10239,8 @@
           "decision": "ADR-025 stretch citation for within-tenant RBAC accepted as-is",
           "date": "2026-07-10T00:00:00Z"
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-07-11-pipeline-conflict-reduction",
