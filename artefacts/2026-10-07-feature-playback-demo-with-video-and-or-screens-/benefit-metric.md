@@ -60,8 +60,8 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Acceptance loop closure rate | `fpd-s1` (produces the package), `fpd-s2` (completes it — video is required), `fpd-s3`/`fpd-s4` (makes it genuinely shareable/reviewable, not just produced), `fpd-s5` (fixes the two gaps blocking real-feature use and runs the first real capture) | Covered |
-| M2 — Sponsor feedback re-entry rate | `fpd-s3`, `fpd-s4` (a traceable, evidence-visible package is what makes specific feedback likely), `fpd-s5` (same real-capture gap applies — nothing to give feedback on until it's fixed) | Covered |
+| M1 — Acceptance loop closure rate | `fpd-s1` (produces the package), `fpd-s2` (completes it — video is required), `fpd-s3`/`fpd-s4` (makes it genuinely shareable/reviewable, not just produced), `fpd-s5` (fixes the two gaps blocking real-feature use and runs the first real capture), `fpd-s6` (coverage summary lets a sponsor judge package readiness at a glance, reducing review friction) | Covered |
+| M2 — Sponsor feedback re-entry rate | `fpd-s3`, `fpd-s4` (a traceable, evidence-visible package is what makes specific feedback likely), `fpd-s5` (same real-capture gap applies — nothing to give feedback on until it's fixed), `fpd-s6` (same friction-reduction mechanism — easier to review means more likely to yield specific feedback) | Covered |
 | M3 — Demo preparation time | `fpd-s1` (DoD-sourced script + automated screenshots), `fpd-s2` (automated recording + auto-transcription) | Covered |
 
 ---

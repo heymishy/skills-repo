@@ -41301,11 +41301,18 @@
               "prStatus": "merged",
               "dodStatus": "complete",
               "releaseReady": true
+            },
+            {
+              "slug": "fpd-s6",
+              "name": "Add an at-a-glance coverage summary to the top of the playback review page",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-18T09:01:21.859Z"
             }
           ]
         }
       ],
-      "updatedAt": "2026-10-18T06:11:22.835Z",
+      "updatedAt": "2026-10-18T09:01:21.859Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",

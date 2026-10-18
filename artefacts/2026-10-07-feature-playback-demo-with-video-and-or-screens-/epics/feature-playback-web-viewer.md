@@ -24,8 +24,10 @@ When this epic is complete, an authenticated user can open a new route in this a
 
 ## Stories in This Epic
 
-- [ ] Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure — `fpd-s3`
-- [ ] Viewer renders the actual screenshot gallery and plays video per AC — `fpd-s4`
+- [x] Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure — `fpd-s3`
+- [x] Viewer renders the actual screenshot gallery and plays video per AC — `fpd-s4`
+- [x] Fix the two structural gaps blocking any real feature from using the viewer — `fpd-s5`
+- [ ] Add an at-a-glance coverage summary to the top of the review page — `fpd-s6`
 
 ## Human Oversight Level
 
