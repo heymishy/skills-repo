@@ -43,8 +43,8 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Real capture coverage on new DoD-complete features | *(populated at /definition)* | Pending |
-| M2 — Manual capture time per feature | *(populated at /definition)* | Pending |
+| M1 — Real capture coverage on new DoD-complete features | `rpca-s1` (proves the mechanism), `rpca-s2` (generalises it to every AC), `rpca-s3` (adds video) | Covered |
+| M2 — Manual capture time per feature | `rpca-s1`, `rpca-s2`, `rpca-s3` (same mechanism — replacing manual Chrome-driving is what moves this metric) | Covered |
 
 ---
 

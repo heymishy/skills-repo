@@ -30,6 +30,7 @@ The Feature Playback mechanism's own screenshot/video capture (`scripts/playback
 3. Both screenshot **and** video capture are wired for real: `captureAcScreenshots` and `captureVideoRecording` — both currently exercised only against mocked Playwright objects — now drive a real authenticated browser session.
 4. Per-AC `{url, selector}` is derived from existing `tests/e2e/*.spec.js` files where a matching spec exists for that AC, with a manual-authored field as the fallback for ACs with no E2E coverage — E2E specs are the primary source, not a new mandatory authoring step.
 5. **Production capture is explicitly out of this MVP** — see Out of Scope and the risk decision below.
+6. **`skills/feature-playback/SKILL.md`'s own documented steps are updated to describe what the CLI actually does, and the 5 repeated RISK-ACCEPT entries in `decisions.md` are closed as superseded.** Added 2026-10-19, at `/definition` time — this was always implied by the problem statement (the SKILL.md describing something that didn't exist is itself part of the problem) but not originally itemized as its own deliverable.
 
 ## Out of Scope
 
