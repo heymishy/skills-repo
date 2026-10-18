@@ -38,7 +38,7 @@
       "track": "library",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-06-25T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/benefit-metric.md",
       "metrics": [
@@ -382,7 +382,8 @@
           "dodStatus": "complete",
           "releaseReady": true
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-06-22-wuce-multi-tenancy",
@@ -1316,7 +1317,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-06-17",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/discovery.md",
@@ -1399,7 +1400,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-05-19-cli-deterministic-governance",
@@ -1421,7 +1423,7 @@
       "discoveryArtefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
       "ideationPath": "artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md",
       "ideationSignal": "proceed",
-      "updatedAt": "2026-05-23T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "benefitMetricArtefact": "artefacts/2026-05-19-cli-deterministic-governance/benefit-metric.md",
       "metrics": [
         {
@@ -1694,7 +1696,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-04-23-non-technical-channel",
@@ -5308,7 +5311,7 @@
       "dodDate": "2026-06-15",
       "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
       "health": "green",
-      "updatedAt": "2026-06-15",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -5503,7 +5506,8 @@
         }
       ],
       "track": "standard",
-      "stories": []
+      "stories": [],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-05-24-governance-platform-architecture",
@@ -5515,7 +5519,7 @@
         "approvedAt": "2026-05-24"
       },
       "health": "green",
-      "updatedAt": "2026-05-24",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "benefit-metric": {
         "status": "active",
         "artefact": "artefacts/2026-05-24-governance-platform-architecture/benefit-metric.md",
@@ -5824,7 +5828,8 @@
       ],
       "stories": [],
       "name": "Governance Platform Architecture",
-      "track": "standard"
+      "track": "standard",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-05-27-cli-advance-boolean-coercion",
@@ -6202,7 +6207,7 @@
       "health": "green",
       "name": "Web UI Product Management Flow — Kanban Board, Ideas Backlog, and Context-Aware Session Start",
       "slug": "2026-06-14-web-ui-pm-flow",
-      "updatedAt": "2026-06-15T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "epics": [
         {
           "name": "Product Management Flow — Web UI",
@@ -6214,7 +6219,7 @@
               "slug": "pmf.1",
               "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "amber",
               "name": "Kanban board view at /features?view=board",
               "hasLayoutDependentGaps": false,
               "reviewStatus": "passed",
@@ -6231,14 +6236,15 @@
               "dodStatus": "complete",
               "highFindings": 0,
               "acTotal": 5,
-              "acVerified": 5
+              "acVerified": 5,
+              "blocker": "Trace 2026-10-18: dodStatus=complete but no DoD exists -- see trace/2026-10-18-trace.md."
             },
             {
               "updatedAt": "2026-06-15",
               "slug": "pmf.2",
               "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "amber",
               "name": "Ideas backlog — workspace/ideas.json and /api/ideas CRUD",
               "hasLayoutDependentGaps": false,
               "reviewStatus": "passed",
@@ -6255,7 +6261,8 @@
               "dodStatus": "complete",
               "highFindings": 0,
               "acTotal": 7,
-              "acVerified": 7
+              "acVerified": 7,
+              "blocker": "Trace 2026-10-18: dodStatus=complete but no DoD exists -- see trace/2026-10-18-trace.md."
             },
             {
               "updatedAt": "2026-06-15",
@@ -6290,7 +6297,8 @@
       "benefitMetricArtefact": "artefacts/2026-06-14-web-ui-pm-flow/benefit-metric.md",
       "nfrProfileArtefact": "artefacts/2026-06-14-web-ui-pm-flow/nfr-profile.md",
       "dodStatus": "complete",
-      "dodDate": "2026-06-15"
+      "dodDate": "2026-06-15",
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-06-15-web-observability",
@@ -6697,7 +6705,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-06-28T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -6917,7 +6925,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-06-29-beta-entry-experience",
@@ -6929,7 +6938,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-08-25T04:29:36.501Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
       "metrics": [
         {
@@ -7143,7 +7152,8 @@
         }
       ],
       "reviewStatus": "passed",
-      "highFindings": 0
+      "highFindings": 0,
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-07-01-landing-auth-billing",
@@ -7154,7 +7164,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-07-03T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md",
@@ -7553,7 +7563,8 @@
           ],
           "slug": "lab-e3"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-03-skills-session-resume",
@@ -7622,7 +7633,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T04:41:05.765Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
       "discoveryStatus": "approved",
       "discoveryApprovedAt": "2026-07-03",
@@ -7892,7 +7903,8 @@
         }
       ],
       "stage": "test-plan",
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-04-posthog-llm-analytics",
@@ -7902,7 +7914,7 @@
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
-      "updatedAt": "2026-07-04T00:00:00Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-04-posthog-llm-analytics/discovery.md",
@@ -7919,7 +7931,7 @@
           "id": "pla-s1",
           "name": "Extend posthog-server.js with identify, groupIdentify, captureException, and groups support",
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "complexity": 1,
           "scopeStability": "stable",
           "reviewStatus": "passed",
@@ -7939,7 +7951,8 @@
           "prNumber": 436,
           "dodStatus": "complete",
           "releaseReady": true,
-          "updatedAt": "2026-07-04T00:00:00Z"
+          "updatedAt": "2026-07-04T00:00:00Z",
+          "blocker": "Trace 2026-10-18: dodStatus=complete but no DoD exists -- real code confirmed shipped (posthog-server.js) -- see trace/2026-10-18-trace.md."
         },
         {
           "id": "pla-s2",
@@ -8058,7 +8071,8 @@
           "assessedAt": "2026-07-04",
           "evidence": "Test N2 (pla-s2): spy on computeCostUsd confirmed called; value flows through to captured $ai_generation event."
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-07-05-product-stds-hierarchy",
@@ -8067,7 +8081,7 @@
       "stage": "branch-complete",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-07-05T08:38:13.962Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
       "metrics": [
@@ -8839,7 +8853,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-09-team-identity-roles",
@@ -8851,7 +8866,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T00:26:08.511Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -9316,7 +9331,8 @@
           "assessedAt": "2026-07-13T07:22:46.102Z",
           "evidence": "tir-s2 AC1/AC4: linking requires a completed second-provider auth step, not a bare claim."
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-09-beta-readiness-infra",
@@ -11406,7 +11422,7 @@
       "track": "standard",
       "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-07-17T11:23:02.337Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -12062,7 +12078,8 @@
         }
       ],
       "stories": [],
-      "lastImprove": "2026-07-17"
+      "lastImprove": "2026-07-17",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
@@ -12357,7 +12374,7 @@
       "track": "standard",
       "stage": "definition-of-done",
       "health": "amber",
-      "updatedAt": "2026-08-17T05:31:18.819Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -13569,7 +13586,8 @@
           "assessedBy": "/review",
           "assessedAt": "2026-07-20T20:19:28.812Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-22-taxonomy-module-classification",
@@ -13952,7 +13970,7 @@
       "track": "standard",
       "stage": "definition-of-done",
       "health": "amber",
-      "updatedAt": "2026-08-17T05:53:30.946Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -14715,7 +14733,8 @@
         }
       },
       "benefitMetricArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/benefit-metric.md",
-      "slicingStrategy": "user-journey"
+      "slicingStrategy": "user-journey",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-23-session-cookie-samesite-fix",
@@ -15443,12 +15462,13 @@
           ]
         }
       ],
-      "updatedAt": "2026-07-23T23:28:04.933Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": [],
       "stories": [],
-      "lastImprove": "2026-07-24"
+      "lastImprove": "2026-07-24",
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-24-admin-credits-page-styling",
@@ -16240,7 +16260,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-26T09:20:30.284Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -16499,7 +16519,7 @@
               "slug": "alrf-s9-design-as-built-context-injection",
               "name": "Feed as-built Data Model / System Architecture into /design system prompt",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "amber",
               "acTotal": 6,
               "acVerified": 6,
               "artefact": "artefacts/2026-07-25-code-shape-diagrams/stories/alrf-s9-design-as-built-context-injection.md",
@@ -16511,7 +16531,8 @@
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/alrf-s9-dod.md",
               "testPlan": {
                 "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/alrf-s9-design-as-built-context-injection-test-plan.md"
-              }
+              },
+              "blocker": "Trace 2026-10-18: DoD exists but DoR is missing -- see trace/2026-10-18-trace.md."
             }
           ]
         }
@@ -16861,7 +16882,8 @@
       ],
       "reviewStatus": "passed",
       "highFindings": 0,
-      "stories": []
+      "stories": [],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-07-26-trace-validation-archived-path-fix",
@@ -17213,7 +17235,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-28",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-28-durable-session-history/discovery.md"
@@ -17921,7 +17943,8 @@
           "assessedAt": "2026-07-28T21:44:30.463Z"
         }
       ],
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-29-delete-feature-redirect-fix",
@@ -18167,7 +18190,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-07-29T22:58:46.964Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
@@ -18506,7 +18529,8 @@
           "assessedAt": "2026-08-01T00:56:11.330Z",
           "evidence": "conversionIsAudited test"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-07-30-staging-smoke-test-regressions",
@@ -18883,7 +18907,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-17T06:33:43.664Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -19140,7 +19164,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-08-05T08:32:28.882Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-06-multi-tenant-repo-resolution",
@@ -19180,7 +19205,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T00:51:15.599Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -19262,7 +19287,8 @@
           "assessedBy": "/review",
           "assessedAt": "2026-08-05T21:40:12.102Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-06-single-repo-assumption-audit",
@@ -19312,7 +19338,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-07T09:32:44.712Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -19431,7 +19457,8 @@
           "assessedBy": "/review",
           "assessedAt": "2026-08-06T08:34:06.927Z"
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-06-tenant-plan-admin-control",
@@ -20009,7 +20036,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-08T04:05:08.912Z",
+      "updatedAt": "2026-10-18T08:11:49.202Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -20635,7 +20662,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-08-08-learnings-count-crash-fix",
