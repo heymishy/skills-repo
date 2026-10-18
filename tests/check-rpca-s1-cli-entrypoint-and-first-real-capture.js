@@ -58,6 +58,33 @@ await (async function () {
   finally { if (saved !== undefined) process.env.E2E_STAGING_AUTH_STUB_SECRET = saved; }
 })();
 
+// AC4 (unit): the secret value never appears in captured output, on the failure path
+(function () {
+  const { runCli } = require('../scripts/playback-capture');
+  const fixtureSecret = 'fixture-secret-value-should-never-leak';
+  const saved = process.env.E2E_STAGING_AUTH_STUB_SECRET;
+  process.env.E2E_STAGING_AUTH_STUB_SECRET = fixtureSecret;
+  const originalError = console.error;
+  const captured = [];
+  console.error = (...args) => { captured.push(args.join(' ')); };
+  try {
+    // Missing feature-slug argument -- a failure path that still has the
+    // secret set, to confirm the secret doesn't leak even when something
+    // else goes wrong after the secret check passes.
+    let threw = null;
+    try { runCli(['node', 'playback-capture.js']); }
+    catch (e) { threw = e; }
+    assert.ok(threw, 'expected runCli to throw for a missing feature-slug argument');
+    const allOutput = captured.join('\n') + (threw ? threw.message : '');
+    assert.ok(!allOutput.includes(fixtureSecret), 'expected the secret value to never appear in output or error messages');
+    pass("AC4 (unit): the secret value never appears in captured output, on the failure path");
+  } catch (e) { fail("AC4 (unit): the secret value never appears in captured output, on the failure path", e); }
+  finally {
+    console.error = originalError;
+    if (saved !== undefined) process.env.E2E_STAGING_AUTH_STUB_SECRET = saved; else delete process.env.E2E_STAGING_AUTH_STUB_SECRET;
+  }
+})();
+
 console.log(`\n[rpca-s1-cli-entrypoint-and-first-real-capture] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
