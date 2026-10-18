@@ -41701,16 +41701,38 @@
     {
       "slug": "2026-10-19-real-playback-capture-automation",
       "name": "Real Playback Capture Automation",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-10-18T19:00:05.507Z",
+      "updatedAt": "2026-10-18T19:06:36.953Z",
       "epics": [],
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "track": "standard",
-      "discoveryStatus": "approved"
+      "discoveryStatus": "approved",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Real capture coverage on new DoD-complete features",
+          "target": ">=50% of new DoD-complete features reach non-zero real capture coverage via the CLI within 30 days of merge",
+          "baseline": "0% -- mechanism does not exist yet",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Manual capture time per feature",
+          "target": "<=5 minutes of human time per feature (trigger + review) for ACs with E2E coverage",
+          "baseline": "Multi-hour (confirmed this session, journey-cx-redesign)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
