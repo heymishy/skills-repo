@@ -76,10 +76,10 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     { acId: 'AC2', url: '/widget', selector: '#widget-updated' },
   ];
   try {
-    const shots = await captureAcScreenshots({ page: fakePage, featureSlug: 'f1', acList });
+    const shots = await captureAcScreenshots({ page: fakePage, featureSlug: 'f1', storySlug: 's1', acList });
     assert.strictEqual(calls.length, 2, 'expected page.screenshot() called once per AC');
-    assert.strictEqual(shots[0].path, 'artefacts/f1/playback/screenshots/AC1.png');
-    assert.strictEqual(shots[1].path, 'artefacts/f1/playback/screenshots/AC2.png');
+    assert.strictEqual(shots[0].path, 'artefacts/f1/playback/s1/screenshots/AC1.png');
+    assert.strictEqual(shots[1].path, 'artefacts/f1/playback/s1/screenshots/AC2.png');
     const doc = embedScreenshotPaths('## AC1 — x\n\ntext\n\n## AC2 — y\n\ntext\n', shots);
     assert.ok(doc.includes('![AC1](screenshots/AC1.png)'), 'expected screenshot embedded in AC1 section');
     assert.ok(doc.includes('![AC2](screenshots/AC2.png)'), 'expected screenshot embedded in AC2 section');

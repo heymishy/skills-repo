@@ -48,6 +48,7 @@ on:
     paths-ignore:
       - 'workspace/**'
       - 'artefacts/**'
+      - '!artefacts/*/playback/**'
       - '.github/pipeline-state.json'
 
 jobs:

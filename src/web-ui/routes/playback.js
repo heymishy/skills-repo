@@ -65,7 +65,7 @@ function buildFeaturePlaybackStructure(repoRoot, featureSlug, fsImpl) {
       // genuinely-incremental layer on top of this already-canonical
       // structure (ADR-028), not a second traversal.
       acRows = parseDodAcCoverage(content).map((ac) => Object.assign({}, ac, {
-        media: resolveAcMedia(repoRoot, featureSlug, ac.acId, impl),
+        media: resolveAcMedia(repoRoot, featureSlug, story.slug, ac.acId, impl),
       }));
     }
     return Object.assign({}, story, { acRows });
@@ -176,9 +176,12 @@ async function handleGetPlaybackReview(req, res, featureSlug, pool) {
 }
 
 // AC1, AC5: screenshot path for one AC, if the file actually exists.
-function resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+// fpd-s5: namespaced by storySlug -- artefacts/<featureSlug>/playback/<storySlug>/screenshots/<acId>.png
+// -- fixes a real cross-story collision: AC numbering restarts per story, so
+// two different stories' own "AC1" would otherwise share the same file.
+function resolveScreenshotPathForAc(repoRoot, featureSlug, storySlug, acId, fsImpl) {
   const impl = fsImpl || fs;
-  const relPath = `artefacts/${featureSlug}/playback/screenshots/${acId}.png`;
+  const relPath = `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${acId}.png`;
   return impl.existsSync(path.join(repoRoot, relPath)) ? relPath : null;
 }
 
@@ -186,14 +189,15 @@ function resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl) {
 // else the single combined walkthrough file if the video/ directory
 // contains exactly one .webm (AC2's own "or is covered by the feature's
 // single combined walkthrough" case), else null (no evidence yet).
-function resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl) {
+// fpd-s5: namespaced by storySlug, same reasoning as resolveScreenshotPathForAc above.
+function resolveVideoPathForAc(repoRoot, featureSlug, storySlug, acId, fsImpl) {
   const impl = fsImpl || fs;
-  const videoDir = path.join(repoRoot, 'artefacts', featureSlug, 'playback', 'video');
+  const videoDir = path.join(repoRoot, 'artefacts', featureSlug, 'playback', storySlug, 'video');
   if (!impl.existsSync(videoDir)) return null;
-  const perAcRel = `artefacts/${featureSlug}/playback/video/${acId}.webm`;
+  const perAcRel = `artefacts/${featureSlug}/playback/${storySlug}/video/${acId}.webm`;
   if (impl.existsSync(path.join(repoRoot, perAcRel))) return perAcRel;
   const files = impl.readdirSync(videoDir).filter((f) => f.endsWith('.webm'));
-  if (files.length === 1) return `artefacts/${featureSlug}/playback/video/${files[0]}`;
+  if (files.length === 1) return `artefacts/${featureSlug}/playback/${storySlug}/video/${files[0]}`;
   return null;
 }
 
@@ -211,9 +215,9 @@ function resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl) {
   };
 }
 
-function resolveAcMedia(repoRoot, featureSlug, acId, fsImpl) {
-  const screenshotPath = resolveScreenshotPathForAc(repoRoot, featureSlug, acId, fsImpl);
-  const videoPath = resolveVideoPathForAc(repoRoot, featureSlug, acId, fsImpl);
+function resolveAcMedia(repoRoot, featureSlug, storySlug, acId, fsImpl) {
+  const screenshotPath = resolveScreenshotPathForAc(repoRoot, featureSlug, storySlug, acId, fsImpl);
+  const videoPath = resolveVideoPathForAc(repoRoot, featureSlug, storySlug, acId, fsImpl);
   const { captionPath, transcriptPath } = resolveCaptionTranscriptForVideo(repoRoot, videoPath, fsImpl);
   return { screenshotPath, videoPath, captionPath, transcriptPath };
 }
@@ -225,7 +229,7 @@ function resolveAcMedia(repoRoot, featureSlug, acId, fsImpl) {
 // feature's own playback/ dir) -- rejects e.g. discovery.md even though it
 // resolves inside repoRoot; (2) path.resolve + startsWith(repoRoot) against
 // that same traversal class CLAUDE.md names explicitly (../secret.txt).
-const MEDIA_PATH_RE = /^artefacts\/[^/]+\/playback\/(screenshots|video)\/[^/]+\.(png|webm|vtt|txt)$/;
+const MEDIA_PATH_RE = /^artefacts\/[^/]+\/playback\/[^/]+\/(screenshots|video)\/[^/]+\.(png|webm|vtt|txt)$/;
 const MEDIA_CONTENT_TYPES = { '.png': 'image/png', '.webm': 'video/webm', '.vtt': 'text/vtt', '.txt': 'text/plain' };
 
 async function handleGetPlaybackMedia(req, res, requestedPath) {

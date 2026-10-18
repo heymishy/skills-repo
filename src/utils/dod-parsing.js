@@ -31,14 +31,20 @@ function parseMarkdownTable(markdown, headingText) {
 }
 
 function parseDodAcCoverage(dodMarkdown) {
-  return parseMarkdownTable(dodMarkdown, 'AC Coverage').map(row => {
+  let rows = parseMarkdownTable(dodMarkdown, 'AC Coverage');
+  let isVerificationShape = false;
+  if (rows.length === 0) {
+    rows = parseMarkdownTable(dodMarkdown, 'AC Verification');
+    isVerificationShape = rows.length > 0;
+  }
+  return rows.map(row => {
     const acCell = row['AC'] || '';
     const match = acCell.match(/^(AC\d+)\s*—\s*(.*)$/);
     return {
       acId: match ? match[1] : acCell,
       description: match ? match[2] : acCell,
-      satisfied: row['Satisfied?'] || '',
-      evidence: row['Evidence'] || '',
+      satisfied: isVerificationShape ? (row['Result'] || '') : (row['Satisfied?'] || ''),
+      evidence: isVerificationShape ? (row['Verified by'] || '') : (row['Evidence'] || ''),
       verificationMethod: row['Verification method'] || '',
       deviation: row['Deviation'] || '',
     };

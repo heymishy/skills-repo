@@ -52,26 +52,26 @@ function makeRes() {
     readdirSync: (dir) => Array.from(store).filter((p) => path.dirname(p) === dir).map((p) => path.basename(p)),
   };
   // AC1: screenshot exists for AC1
-  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 'screenshots', 'AC1.png'));
+  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'screenshots', 'AC1.png'));
   // AC2 (per-AC-named clip + caption + transcript, all present)
-  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 'video', 'AC2.webm'));
-  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 'video', 'AC2.vtt'));
-  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 'video', 'AC2.transcript.txt'));
+  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'video', 'AC2.webm'));
+  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'video', 'AC2.vtt'));
+  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'video', 'AC2.transcript.txt'));
   // A second, unrelated per-AC clip -- makes "exactly one .webm" false, so
   // AC1/AC3's own lookups correctly do NOT fall back to a single-combined
   // video (that fallback is only for a genuinely single-file package).
-  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 'video', 'AC4.webm'));
+  store.add(path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'video', 'AC4.webm'));
   try {
-    const ac1 = resolveAcMedia('/repo', 'f1', 'AC1', fakeFs);
-    assert.strictEqual(ac1.screenshotPath, 'artefacts/f1/playback/screenshots/AC1.png');
+    const ac1 = resolveAcMedia('/repo', 'f1', 's1', 'AC1', fakeFs);
+    assert.strictEqual(ac1.screenshotPath, 'artefacts/f1/playback/s1/screenshots/AC1.png');
     assert.strictEqual(ac1.videoPath, null, 'expected no video for AC1 -- no per-AC file and not a single-combined-file case (2 files exist)');
 
-    const ac2 = resolveAcMedia('/repo', 'f1', 'AC2', fakeFs);
-    assert.strictEqual(ac2.videoPath, 'artefacts/f1/playback/video/AC2.webm');
-    assert.strictEqual(ac2.captionPath, 'artefacts/f1/playback/video/AC2.vtt');
-    assert.strictEqual(ac2.transcriptPath, 'artefacts/f1/playback/video/AC2.transcript.txt');
+    const ac2 = resolveAcMedia('/repo', 'f1', 's1', 'AC2', fakeFs);
+    assert.strictEqual(ac2.videoPath, 'artefacts/f1/playback/s1/video/AC2.webm');
+    assert.strictEqual(ac2.captionPath, 'artefacts/f1/playback/s1/video/AC2.vtt');
+    assert.strictEqual(ac2.transcriptPath, 'artefacts/f1/playback/s1/video/AC2.transcript.txt');
 
-    const ac3 = resolveAcMedia('/repo', 'f1', 'AC3', fakeFs);
+    const ac3 = resolveAcMedia('/repo', 'f1', 's1', 'AC3', fakeFs);
     assert.strictEqual(ac3.screenshotPath, null);
     assert.strictEqual(ac3.videoPath, null, 'expected no evidence for AC3 -- no file matches and 2 videos exist, not a single-combined-file case');
     pass('Media resolution (unit): screenshot, per-AC video, caption, transcript, and no-evidence cases');
@@ -81,16 +81,16 @@ function makeRes() {
 // Media resolution (unit): single combined walkthrough video shared by every AC
 (function () {
   const { resolveAcMedia } = require('../src/web-ui/routes/playback');
-  const store = new Set([path.join('/repo', 'artefacts', 'f2', 'playback', 'video', 'walkthrough.webm')]);
+  const store = new Set([path.join('/repo', 'artefacts', 'f2', 'playback', 's1', 'video', 'walkthrough.webm')]);
   const fakeFs = {
     existsSync: (p) => store.has(p) || Array.from(store).some((f) => f.startsWith(p + path.sep)),
     readdirSync: (dir) => Array.from(store).filter((p) => path.dirname(p) === dir).map((p) => path.basename(p)),
   };
   try {
-    const ac1 = resolveAcMedia('/repo', 'f2', 'AC1', fakeFs);
-    const ac2 = resolveAcMedia('/repo', 'f2', 'AC2', fakeFs);
-    assert.strictEqual(ac1.videoPath, 'artefacts/f2/playback/video/walkthrough.webm', 'expected the single combined video shared with AC1');
-    assert.strictEqual(ac2.videoPath, 'artefacts/f2/playback/video/walkthrough.webm', 'expected the SAME single combined video shared with AC2 too');
+    const ac1 = resolveAcMedia('/repo', 'f2', 's1', 'AC1', fakeFs);
+    const ac2 = resolveAcMedia('/repo', 'f2', 's1', 'AC2', fakeFs);
+    assert.strictEqual(ac1.videoPath, 'artefacts/f2/playback/s1/video/walkthrough.webm', 'expected the single combined video shared with AC1');
+    assert.strictEqual(ac2.videoPath, 'artefacts/f2/playback/s1/video/walkthrough.webm', 'expected the SAME single combined video shared with AC2 too');
     pass('Media resolution (unit): a single combined walkthrough video is shared by every AC');
   } catch (e) { fail('Media resolution (unit): single combined walkthrough video', e); }
 })();
@@ -107,7 +107,7 @@ function makeRes() {
     '## AC Coverage', '', '| AC | Satisfied? | Evidence | Verification method | Deviation |', '|----|----|----|----|----|',
     '| AC1 — thing works | ✅ | proof | Automated test | None |',
   ].join('\n');
-  const screenshotPath = path.join('/repo', 'artefacts', 'f1', 'playback', 'screenshots', 'AC1.png');
+  const screenshotPath = path.join('/repo', 'artefacts', 'f1', 'playback', 's1', 'screenshots', 'AC1.png');
   const fakeFs = {
     existsSync: (p) => p === '/repo' || Object.prototype.hasOwnProperty.call(store, p) || p === screenshotPath || p === path.join('/repo', 'artefacts', 'f1') || p === path.join('/repo', 'artefacts', 'f1', 'dod'),
     readdirSync: (dir) => {
@@ -120,7 +120,7 @@ function makeRes() {
   try {
     const structure = buildFeaturePlaybackStructure('/repo', 'f1', fakeFs);
     const ac1 = structure.stories[0].acRows[0];
-    assert.strictEqual(ac1.media.screenshotPath, 'artefacts/f1/playback/screenshots/AC1.png');
+    assert.strictEqual(ac1.media.screenshotPath, 'artefacts/f1/playback/s1/screenshots/AC1.png');
     pass('buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media');
   } catch (e) { fail('buildFeaturePlaybackStructure (unit): each AC row carries its own resolved media', e); }
 })();
@@ -171,14 +171,14 @@ await (async function () {
   const fsNode = require('fs');
   const os = require('os');
   const tmpRoot = fsNode.mkdtempSync(path.join(os.tmpdir(), 'fpd-s4-traversal-test-'));
-  fsNode.mkdirSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 'screenshots'), { recursive: true });
-  fsNode.writeFileSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 'screenshots', 'AC1.png'), 'fake-png-bytes');
+  fsNode.mkdirSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 's1', 'screenshots'), { recursive: true });
+  fsNode.writeFileSync(path.join(tmpRoot, 'artefacts', 'f1', 'playback', 's1', 'screenshots', 'AC1.png'), 'fake-png-bytes');
   fsNode.writeFileSync(path.join(tmpRoot, 'secret.txt'), 'should never be servable');
   repoRootModule.setRepoRoot(tmpRoot);
   try {
     // Legitimate path: serves correctly
     const okRes = makeRes();
-    await handleGetPlaybackMedia({ session: { accessToken: 'tok' } }, okRes, 'artefacts/f1/playback/screenshots/AC1.png');
+    await handleGetPlaybackMedia({ session: { accessToken: 'tok' } }, okRes, 'artefacts/f1/playback/s1/screenshots/AC1.png');
     assert.strictEqual(okRes._get().status, 200, 'expected a legitimate media path to serve 200');
 
     // Traversal attempt: rejected
