@@ -41818,6 +41818,33 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
+            },
+            {
+              "slug": "rpca-s1-hotfix1",
+              "name": "Path-traversal guard on buildScreenshotPath (short-track fix, found at rpca-s1 DoD)",
+              "stage": "branch-complete",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1003",
+              "health": "green",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 2,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s1-hotfix1-test-plan.md"
+              },
+              "acTotal": 2,
+              "acVerified": 2,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s1-hotfix1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add path-traversal guard to buildScreenshotPath",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s1-hotfix1-dor.md"
+                }
+              ],
+              "updatedAt": "2026-10-18T23:20:37.145Z"
             }
           ]
         }
