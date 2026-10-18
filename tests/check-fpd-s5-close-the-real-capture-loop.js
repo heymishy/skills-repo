@@ -115,6 +115,20 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (integration): buildFeaturePlaybackStructure non-colliding media', e); }
 })();
 
+// AC3 (unit): staging-deploy.yml's own paths-ignore carves out artefacts/*/playback/**
+(function () {
+  const fsNode = require('fs');
+  try {
+    const yaml = fsNode.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'staging-deploy.yml'), 'utf8');
+    const artefactsIdx = yaml.indexOf("- 'artefacts/**'");
+    const negationIdx = yaml.indexOf("- '!artefacts/*/playback/**'");
+    assert.ok(artefactsIdx !== -1, 'expected artefacts/** still present in paths-ignore');
+    assert.ok(negationIdx !== -1, 'expected the negation pattern to be present');
+    assert.ok(negationIdx > artefactsIdx, 'expected the negation pattern to appear AFTER artefacts/** (GitHub Actions evaluates path filters in order -- a later pattern wins)');
+    pass("AC3 (unit): staging-deploy.yml's own paths-ignore carves out artefacts/*/playback/**");
+  } catch (e) { fail("AC3 (unit): staging-deploy.yml paths-ignore", e); }
+})();
+
 console.log(`\n[fpd-s5-close-the-real-capture-loop] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 

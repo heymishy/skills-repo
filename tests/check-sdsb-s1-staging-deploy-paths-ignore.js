@@ -26,7 +26,13 @@ function fail(id, msg) {
 const workflowPath = path.join(__dirname, '..', '.github', 'workflows', 'staging-deploy.yml');
 const content = fs.readFileSync(workflowPath, 'utf8');
 
-// T1 - AC1: on.push.paths-ignore contains exactly the three bookkeeping paths
+// T1 - AC1: on.push.paths-ignore contains exactly the three bookkeeping paths,
+// plus (fpd-s5, AC3) a 4th entry negating artefacts/*/playback/** -- real
+// content the Feature Playback viewer serves, not bookkeeping, so a push
+// that only touches it must still deploy. Order matters for the 4th entry
+// specifically: GitHub Actions evaluates path filters top-to-bottom, so the
+// negation must appear after 'artefacts/**' to have any effect -- checked
+// explicitly below, not just set membership.
 (function t1() {
   const onPushMatch = content.match(/on:\s*\n\s*push:\s*\n([\s\S]*?)\n\s*jobs:/);
   if (!onPushMatch) {
@@ -47,12 +53,12 @@ const content = fs.readFileSync(workflowPath, 'utf8');
     .filter((line) => line.startsWith('-'))
     .map((line) => line.replace(/^-+\s*/, '').replace(/^['"]|['"]$/g, '').trim());
 
-  const expected = ['workspace/**', 'artefacts/**', '.github/pipeline-state.json'];
+  const expected = ['workspace/**', 'artefacts/**', '!artefacts/*/playback/**', '.github/pipeline-state.json'];
   const sortedEntries = [...entries].sort();
   const sortedExpected = [...expected].sort();
 
-  if (entries.length !== 3) {
-    fail('T1', `expected exactly 3 paths-ignore entries, found ${entries.length}: ${JSON.stringify(entries)}`);
+  if (entries.length !== 4) {
+    fail('T1', `expected exactly 4 paths-ignore entries, found ${entries.length}: ${JSON.stringify(entries)}`);
     return;
   }
 
@@ -62,7 +68,14 @@ const content = fs.readFileSync(workflowPath, 'utf8');
     return;
   }
 
-  pass('T1', `on.push.paths-ignore contains exactly the 3 expected bookkeeping paths: ${JSON.stringify(entries)}`);
+  const artefactsIdx = entries.indexOf('artefacts/**');
+  const negationIdx = entries.indexOf('!artefacts/*/playback/**');
+  if (negationIdx <= artefactsIdx) {
+    fail('T1', `expected '!artefacts/*/playback/**' to appear AFTER 'artefacts/**' (found at indices ${negationIdx}, ${artefactsIdx}) -- order determines whether GitHub Actions actually re-includes the path`);
+    return;
+  }
+
+  pass('T1', `on.push.paths-ignore contains exactly the 4 expected entries, negation correctly ordered after artefacts/**: ${JSON.stringify(entries)}`);
 })();
 
 // T2 - AC1 (regression): on.push.branches is still exactly [master]

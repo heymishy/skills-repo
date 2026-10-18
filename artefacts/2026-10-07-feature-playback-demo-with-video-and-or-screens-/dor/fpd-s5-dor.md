@@ -91,6 +91,7 @@ These are appended below in full, per the mandatory injection step. Most section
 - `tests/check-fpd-s5-close-the-real-capture-loop.js` (new)
 - `tests/check-fpd-s1-walkthrough-document-and-screenshots.js` (modify — amended 2026-10-18, see DoR contract)
 - `tests/check-fpd-s2-video-walkthrough-and-accessibility.js` (modify — amended 2026-10-18, see DoR contract)
+- `tests/check-sdsb-s1-staging-deploy-paths-ignore.js` (modify — amended 2026-10-18 during implementation, see DoR contract)
 - `artefacts/2026-06-14-web-ui-pm-flow/playback/**` (replaced with a real capture — not a code touch point, but a tracked output of this story)
 
 **Implementation order:**
