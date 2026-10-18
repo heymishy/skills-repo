@@ -51,10 +51,10 @@ function generateWalkthroughMarkdown({ featureSlug, storyDods, benefitMetricCont
   return lines.join('\n');
 }
 
-async function captureAcScreenshots({ page, featureSlug, acList }) {
+async function captureAcScreenshots({ page, featureSlug, storySlug, acList }) {
   const shots = [];
   for (const ac of acList) {
-    const relPath = `artefacts/${featureSlug}/playback/screenshots/${ac.acId}.png`;
+    const relPath = `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${ac.acId}.png`;
     await page.screenshot({ path: relPath, selector: ac.selector });
     shots.push({ acId: ac.acId, path: relPath });
   }
@@ -105,8 +105,8 @@ function isPackageComplete(statusObj) {
 // the engineer's own choice of single combined walkthrough vs. several
 // per-AC/per-flow clips (AC2) is just the length of `clips`, no branching
 // logic difference.
-async function captureVideoRecording({ browser, featureSlug, clips }) {
-  const dir = `artefacts/${featureSlug}/playback/video/`;
+async function captureVideoRecording({ browser, featureSlug, storySlug, clips }) {
+  const dir = `artefacts/${featureSlug}/playback/${storySlug}/video/`;
   const results = [];
   for (const clip of clips) {
     const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
@@ -114,8 +114,8 @@ async function captureVideoRecording({ browser, featureSlug, clips }) {
     if (clip.run) await clip.run(page);
     await context.close();
     const video = page.video ? page.video() : null;
-    const path = video ? await video.path() : null;
-    results.push({ name: clip.name, path });
+    const resultPath = video ? await video.path() : null;
+    results.push({ name: clip.name, path: resultPath });
   }
   return results;
 }

@@ -55,11 +55,11 @@ await (async function () {
     },
   };
   try {
-    const results = await captureVideoRecording({ browser: fakeBrowser, featureSlug: 'f1', clips: [{ name: 'walkthrough' }] });
+    const results = await captureVideoRecording({ browser: fakeBrowser, featureSlug: 'f1', storySlug: 's1', clips: [{ name: 'walkthrough' }] });
     assert.strictEqual(calls.length, 1, 'expected newContext called once');
-    assert.strictEqual(calls[0].recordVideo.dir, 'artefacts/f1/playback/video/');
+    assert.strictEqual(calls[0].recordVideo.dir, 'artefacts/f1/playback/s1/video/');
     assert.ok(calls[0].recordVideo.size && calls[0].recordVideo.size.width, 'expected a recordVideo size option');
-    assert.strictEqual(results[0].path, 'artefacts/f1/playback/video/clip-0.webm');
+    assert.strictEqual(results[0].path, 'artefacts/f1/playback/s1/video/clip-0.webm');
     pass("AC1 (unit): recording script's own logic -- correct context options, correct output path");
   } catch (e) { fail("AC1 (unit): recording script's own logic", e); }
 })();
@@ -79,11 +79,11 @@ await (async function () {
   }
   try {
     const single = makeFakeBrowser();
-    const singleResults = await captureVideoRecording({ browser: single, featureSlug: 'f1', clips: [{ name: 'walkthrough' }] });
+    const singleResults = await captureVideoRecording({ browser: single, featureSlug: 'f1', storySlug: 's1', clips: [{ name: 'walkthrough' }] });
     assert.strictEqual(singleResults.length, 1, 'expected exactly 1 output file for the single-file shape');
 
     const multi = makeFakeBrowser();
-    const multiResults = await captureVideoRecording({ browser: multi, featureSlug: 'f1', clips: [{ name: 'ac1' }, { name: 'ac2' }, { name: 'ac3' }] });
+    const multiResults = await captureVideoRecording({ browser: multi, featureSlug: 'f1', storySlug: 's1', clips: [{ name: 'ac1' }, { name: 'ac2' }, { name: 'ac3' }] });
     assert.strictEqual(multiResults.length, 3, 'expected exactly 3 output files for the multi-file shape');
     assert.strictEqual(multi.calls.length, 3, 'expected one context/recording per sequence, no branching logic difference beyond count');
     pass('AC2 (unit): single-file and multi-file shapes both work via the same mechanism');
