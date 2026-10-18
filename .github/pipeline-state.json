@@ -40824,7 +40824,7 @@
           "baseline": "0% -- no feature in this repo has ever produced a playback package",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "fpd-s2 completes the doc+screenshots+video trio, but the package is not genuinely shareable/reviewable until fpd-s3/fpd-s4 (the viewer) ship.",
+          "evidence": "fpd-1 through fpd-4 are all code-complete and merged, but no real playback package has ever been captured against a feature whose DoD can actually drive the media-rendering code (AC-table-shape gap, found live 2026-10-18) -- the acceptance/feedback loop cannot close until that is addressed.",
           "contributingStories": [
             "fpd-s1",
             "fpd-s2",
@@ -40839,7 +40839,7 @@
           "baseline": "Not yet established -- mechanism does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "fpd-s3 makes the package structurally navigable in-app for the first time, but no real sponsor-sharing or feedback event has occurred yet -- no real package exists anywhere to share.",
+          "evidence": "fpd-1 through fpd-4 are all code-complete and merged, but no real playback package has ever been captured against a feature whose DoD can actually drive the media-rendering code (AC-table-shape gap, found live 2026-10-18) -- the acceptance/feedback loop cannot close until that is addressed.",
           "contributingStories": [
             "fpd-s3",
             "fpd-s4"
@@ -41046,7 +41046,7 @@
         {
           "slug": "feature-playback-web-viewer",
           "name": "Sponsors can browse and play a DoD-validated feature's playback package inside the app, organised by this platform's own outer-loop traceability chain",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "fpd-s3",
@@ -41114,19 +41114,19 @@
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "implementation-plan",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-16T19:37:44.015Z",
+              "updatedAt": "2026-10-18T02:57:35.648Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
-                "passing": 0,
+                "totalTests": 6,
+                "passing": 6,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s4-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -41137,40 +41137,46 @@
                 {
                   "id": "task-1",
                   "name": "Move captionTranscriptPaths into src/ (deployment-safety, before anything else needs it)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Resolve screenshot/video/caption/transcript paths per AC (AC1, AC2, AC4, AC5 foundation)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Attach media to each AC row in the canonical structure (ADR-028 -- no second traversal)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Render the media into each AC section (AC1, AC2, AC4, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Media-serving route, with the mandatory path-traversal guard",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "E2E spec -- real caption sync during real playback (AC3, RISK-ACCEPT)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s4-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true,
+              "verifyStatus": "passed"
             }
           ]
         }
