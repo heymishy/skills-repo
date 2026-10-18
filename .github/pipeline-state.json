@@ -41713,11 +41713,11 @@
             {
               "slug": "rpca-s1",
               "name": "CLI entrypoint authenticates against staging and captures one real screenshot end to end",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T21:19:50.095Z",
+              "updatedAt": "2026-10-18T21:28:19.562Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41758,7 +41758,9 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1002"
             },
             {
               "slug": "rpca-s2",
