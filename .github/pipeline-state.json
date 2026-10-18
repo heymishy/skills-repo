@@ -41713,38 +41713,78 @@
             {
               "slug": "rpca-s1",
               "name": "CLI entrypoint authenticates against staging and captures one real screenshot end to end",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:36:19.150Z"
+              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s1-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:36:19.150Z"
+              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s2-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:36:19.150Z"
+              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s3-test-plan.md"
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:36:19.150Z"
+              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s4-test-plan.md"
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
