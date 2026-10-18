@@ -40870,7 +40870,7 @@
     {
       "slug": "2026-10-07-feature-playback-demo-with-video-and-or-screens-",
       "name": "Feature Playback Demo Package",
-      "stage": "definition",
+      "stage": "released",
       "health": "green",
       "discoveryStatus": "approved",
       "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/discovery.md",
@@ -40936,11 +40936,11 @@
             {
               "slug": "fpd-s1",
               "name": "Produce a structured, DoD-sourced walkthrough document with AC-mapped screenshots",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-15T17:41:33.860Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -41024,11 +41024,11 @@
             {
               "slug": "fpd-s2",
               "name": "Add a Playwright-recorded video walkthrough with machine-generated captions and transcript",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-16T06:27:17.703Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -41118,11 +41118,11 @@
             {
               "slug": "fpd-s3",
               "name": "Viewer route lists a DoD-validated feature and navigates its scope/benefit/per-story AC structure",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-16T19:18:44.841Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -41181,11 +41181,11 @@
             {
               "slug": "fpd-s4",
               "name": "Viewer renders the actual screenshot gallery and plays video per AC",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T02:57:35.648Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -41248,11 +41248,11 @@
             {
               "slug": "fpd-s5",
               "name": "Close the real-capture loop -- fix the two gaps blocking any real feature from using the viewer, and prove it end to end",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T05:01:52.396Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -41307,9 +41307,9 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "definition-of-done",
+              "stage": "released",
               "health": "green",
-              "updatedAt": "2026-10-18T18:06:24.255Z",
+              "updatedAt": "2026-10-18T18:16:03.170Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -41356,7 +41356,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-10-18T18:09:54.210Z",
+      "updatedAt": "2026-10-18T18:16:03.170Z",
       "guardrails": [
         {
           "id": "MC-SEC-02",
