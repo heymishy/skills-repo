@@ -67,6 +67,8 @@ None.
 
 ## Unit Tests
 
+**Correction (post-implementation, found at `/verify-completion`):** This plan originally itemized 1 unit test per AC covering both `computeAcCoverageSummary` and its rendered wording together. Implementation split these into 2 separate unit tests per AC (one for the counting function, one for `renderCoverageSummaryHtml`'s own wording) — 6 unit tests total, not 3. Combined with the 2 integration tests and 1 NFR test below, the real total is **9 tests**, not 6. `pipeline-state.json`'s `testPlan.totalTests` corrected to 9 accordingly. No AC coverage gap — every AC still has the same test *intent* described below, just split across two test cases instead of one.
+
 ### AC1 (unit): coverage count reflects partial coverage correctly
 
 - **Verifies:** AC1

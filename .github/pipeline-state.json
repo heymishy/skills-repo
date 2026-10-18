@@ -41305,19 +41305,19 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-18T09:59:34.960Z",
+              "updatedAt": "2026-10-18T17:39:22.239Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0,
+                "totalTests": 9,
+                "passing": 9,
                 "artefact": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/test-plans/fpd-s6-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -41343,7 +41343,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s6-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
