@@ -41305,9 +41305,9 @@
             {
               "slug": "fpd-s6",
               "name": "Add an at-a-glance coverage summary to the top of the playback review page",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-18T17:39:22.239Z",
+              "updatedAt": "2026-10-18T17:50:36.306Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -41344,7 +41344,9 @@
                   "file": "artefacts/2026-10-07-feature-playback-demo-with-video-and-or-screens-/plans/fpd-s6-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1001"
             }
           ]
         }
