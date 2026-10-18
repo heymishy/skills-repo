@@ -41697,6 +41697,19 @@
       ],
       "traceStatus": "passed",
       "stories": []
+    },
+    {
+      "slug": "2026-10-19-real-playback-capture-automation",
+      "name": "Real Playback Capture Automation",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-10-18T18:58:59.595Z",
+      "epics": [],
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
