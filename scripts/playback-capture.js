@@ -138,6 +138,40 @@ async function generateCaptionsForVideo(videoPath, interactionSequenceText, writ
   return { captionPath, transcriptPath, reviewed: false };
 }
 
+// rpca-s1: authenticates against a real deployed wuce-staging instance by calling
+// its own existing GET /test/session route (src/web-ui/server.js,
+// _isTestEndpointAllowed's staging-secret branch) -- confirmed at /clarify that
+// tests/e2e/fixtures/auth.js already calls this exact route for every local E2E
+// test. No new route, no widened blast radius (ADR-026).
+const http = require('http');
+const https = require('https');
+
+function authenticateStagingSession(baseUrl, secret) {
+  return new Promise((resolve, reject) => {
+    const url = new URL('/test/session', baseUrl);
+    const client = url.protocol === 'https:' ? https : http;
+    const req = client.request(url, {
+      method: 'GET',
+      headers: { 'x-e2e-test-endpoint-bypass': secret },
+    }, (res) => {
+      const setCookie = res.headers['set-cookie'];
+      if (!setCookie || setCookie.length === 0) {
+        reject(new Error('Authentication failed: no Set-Cookie header in /test/session response'));
+        return;
+      }
+      const match = setCookie[0].match(/session_id=([^;]+)/);
+      if (!match) {
+        reject(new Error('Authentication failed: session_id not found in Set-Cookie header'));
+        return;
+      }
+      res.resume();
+      resolve(match[1]);
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 // rpca-s1: path-construction helper matching captureAcScreenshots' own existing
 // convention exactly (artefacts/<feature>/playback/<story>/screenshots/<acId>.png).
 // A standalone function, not a refactor of captureAcScreenshots itself -- the new
@@ -153,5 +187,5 @@ module.exports = {
   captureVideoRecording,
   generateCaptionsForVideo,
   isPackageComplete,
-  buildScreenshotPath,
+  buildScreenshotPath, authenticateStagingSession,
 };

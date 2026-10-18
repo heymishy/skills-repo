@@ -20,6 +20,28 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (unit): buildScreenshotPath matches the existing captureAcScreenshots convention exactly', e); }
 })();
 
+// AC1 (integration): authenticateStagingSession parses a real Set-Cookie response from a local mock server
+await (async function () {
+  const http = require('http');
+  const { authenticateStagingSession } = require('../scripts/playback-capture');
+  const fixtureSecret = 'fixture-secret-value-not-real';
+  let receivedHeader = null;
+  const server = http.createServer((req, res) => {
+    receivedHeader = req.headers['x-e2e-test-endpoint-bypass'];
+    res.writeHead(200, { 'Set-Cookie': 'session_id=fixture-session-abc123; HttpOnly; SameSite=Lax; Path=/' });
+    res.end(JSON.stringify({ sessionId: 'fixture-session-abc123' }));
+  });
+  await new Promise((resolve) => server.listen(0, resolve));
+  const port = server.address().port;
+  try {
+    const sessionId = await authenticateStagingSession(`http://localhost:${port}`, fixtureSecret);
+    assert.strictEqual(receivedHeader, fixtureSecret, 'expected the secret to be sent in the x-e2e-test-endpoint-bypass header');
+    assert.strictEqual(sessionId, 'fixture-session-abc123', 'expected the parsed session id from the Set-Cookie header');
+    pass('AC1 (integration): authenticateStagingSession parses a real Set-Cookie response from a local mock server');
+  } catch (e) { fail('AC1 (integration): authenticateStagingSession parses a real Set-Cookie response from a local mock server', e); }
+  finally { server.close(); }
+})();
+
 console.log(`\n[rpca-s1-cli-entrypoint-and-first-real-capture] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
