@@ -43,8 +43,8 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Real capture coverage on new DoD-complete features | `rpca-s1` (proves the mechanism), `rpca-s2` (generalises it to every AC), `rpca-s3` (adds video) | Covered |
-| M2 — Manual capture time per feature | `rpca-s1`, `rpca-s2`, `rpca-s3` (same mechanism — replacing manual Chrome-driving is what moves this metric) | Covered |
+| M1 — Real capture coverage on new DoD-complete features | `rpca-s1` (proves the mechanism), `rpca-s2` (generalises it to every AC), `rpca-s3` (adds video), `rpca-s5` (removes the manual-trigger dependency that would otherwise cap real-world adoption) | Covered |
+| M2 — Manual capture time per feature | `rpca-s1`, `rpca-s2`, `rpca-s3` (same mechanism — replacing manual Chrome-driving is what moves this metric), `rpca-s5` (also removes the CLI-invocation step itself from the operator's own time, not just the Chrome-driving) | Covered |
 
 ---
 

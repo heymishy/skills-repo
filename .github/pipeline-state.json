@@ -41703,7 +41703,7 @@
       "name": "Real Playback Capture Automation",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-18T19:19:46.754Z",
+      "updatedAt": "2026-10-19T00:32:16.304Z",
       "epics": [
         {
           "slug": "real-playback-capture-cli",
@@ -41848,6 +41848,15 @@
               ],
               "updatedAt": "2026-10-19T00:03:19.786Z",
               "dodStatus": "complete"
+            },
+            {
+              "slug": "rpca-s5",
+              "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-19T00:32:16.303Z"
             }
           ]
         }
@@ -41903,7 +41912,10 @@
           "id": "MC-CORRECT-01",
           "category": "mandatory-constraint",
           "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "checkDodGate fix in rpca-s5 reads story dodStatus evidence fields, not a stage/field proxy -- see review/rpca-s5-review-1.md Category E",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-19T00:33:03.176Z"
         },
         {
           "id": "MC-CORRECT-02",
@@ -41963,7 +41975,10 @@
           "id": "ADR-002",
           "category": "adr",
           "label": "Gates must use evidence fields, not stage-proxy",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "rpca-s5 corrects checkDodGate to read story-level dodStatus evidence fields directly, per ADR-002 -- see review/rpca-s5-review-1.md Category E",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-19T00:33:03.176Z"
         },
         {
           "id": "ADR-003",
@@ -42047,7 +42062,10 @@
           "id": "AP-01",
           "category": "anti-pattern",
           "label": "Gate logic checking feature.stage only",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "rpca-s5 fixes the drifted feature.dodStatus check (a field nothing writes) to read story-level evidence fields instead -- see review/rpca-s5-review-1.md Category E",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-19T00:33:03.176Z"
         },
         {
           "id": "AP-02",
