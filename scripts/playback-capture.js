@@ -57,6 +57,13 @@ function generateWalkthroughMarkdown({ featureSlug, storyDods, benefitMetricCont
   for (const story of storyDods) {
     const acRows = parseDodAcCoverage(story.content);
     for (const ac of acRows) {
+      // rpca-embed-hotfix2: an invisible (HTML comment) story marker directly
+      // before each heading -- AC ids restart per story (every story can have
+      // its own "AC1"), so embedScreenshotPaths needs a way to scope a match
+      // to the RIGHT story's own heading, not just the right AC id anywhere
+      // in the document. Invisible when rendered; no visible change to the
+      // document's own human-readable content.
+      lines.push(`<!-- story: ${story.storySlug} -->`);
       lines.push(`## ${ac.acId} — ${ac.description}`, '');
       lines.push(ac.evidence, '');
     }
@@ -94,18 +101,50 @@ async function captureAcScreenshots({ page, featureSlug, storySlug, acList }) {
 // relative order their own sections appear in the document -- true for every
 // existing caller (captureAcScreenshots already returns shots in acList
 // order; the walkthrough is built from the same ordered storyDods array).
+// rpca-embed-hotfix2: the rpca-embed-hotfix1 cursor fix was itself
+// insufficient -- it only prevents re-matching an ALREADY-consumed heading,
+// it cannot stop a shot from matching an EARLIER, unrelated story's own
+// same-labelled heading that the cursor hasn't reached yet (e.g. the first
+// shot's own cursor starts at 0, so it matches whichever story's "AC1" comes
+// first in the whole document, not necessarily its own). Confirmed by
+// tracing the real journey-cx-redesign walkthrough: every heading ended up
+// with exactly one image (looking correct), but several were the WRONG
+// image -- a harder-to-notice failure than the original duplicate-pile-up.
+// The real fix: match on (storySlug, acId) together, using the invisible
+// story marker generateWalkthroughMarkdown now emits before each heading.
+// Falls back to the old cursor-based behaviour only when no story marker is
+// found at all (pre-existing hand-written fixture markdown, e.g. this
+// function's own fpd-s1 regression test).
 function embedScreenshotPaths(markdown, shots) {
   const path = require('path');
   let doc = markdown;
   let cursor = 0;
   for (const shot of shots) {
     const fileName = path.basename(shot.path);
-    const sectionRe = new RegExp(`(## ${shot.acId}[^\\n]*\\n)`);
-    const rest = doc.slice(cursor);
-    const match = rest.match(sectionRe);
-    if (!match) continue;
-    const matchStart = cursor + match.index;
-    const heading = match[1];
+    const pathParts = shot.path.split('/');
+    const storySlug = pathParts.length >= 3 ? pathParts[pathParts.length - 3] : null;
+    const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let matchStart = null;
+    let heading = null;
+
+    if (storySlug) {
+      const scopedRe = new RegExp(`<!-- story: ${escapeRe(storySlug)} -->\\n(## ${escapeRe(shot.acId)}[^\\n]*\\n)`);
+      const scopedMatch = doc.match(scopedRe);
+      if (scopedMatch) {
+        matchStart = scopedMatch.index + scopedMatch[0].indexOf(scopedMatch[1]);
+        heading = scopedMatch[1];
+      }
+    }
+
+    if (matchStart === null) {
+      const sectionRe = new RegExp(`(## ${escapeRe(shot.acId)}[^\\n]*\\n)`);
+      const rest = doc.slice(cursor);
+      const fallbackMatch = rest.match(sectionRe);
+      if (!fallbackMatch) continue;
+      matchStart = cursor + fallbackMatch.index;
+      heading = fallbackMatch[1];
+    }
+
     const insertion = `${heading}\n![${shot.acId}](screenshots/${fileName})\n`;
     doc = doc.slice(0, matchStart) + insertion + doc.slice(matchStart + heading.length);
     cursor = matchStart + insertion.length;
