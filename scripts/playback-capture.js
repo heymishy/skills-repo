@@ -209,6 +209,25 @@ function deriveSelectorFromSpec(specFileContent, acId) {
   return { acId, selector: locatorMatch[1] };
 }
 
+// rpca-s2: reads the manually-authored fallback file for one AC when no E2E
+// spec covers it. A missing file is the normal, expected case for a feature
+// that hasn't needed a manual entry yet -- returns null, never throws.
+// featureSlug/storySlug come from the same untrusted-shaped CLI-argument
+// origin buildScreenshotPath already guards (rpca-s1-hotfix1) -- applies the
+// identical path-traversal guard before any fs access.
+function loadManualFallback(featureSlug, storySlug, acId) {
+  const path = require('path');
+  const relPath = `artefacts/${featureSlug}/playback/${storySlug}/selectors-manual.json`;
+  const repoRoot = path.resolve(__dirname, '..');
+  const resolvedPath = path.resolve(repoRoot, relPath);
+  if (!resolvedPath.startsWith(repoRoot + path.sep)) {
+    throw new Error(`Refusing to read a manual fallback path outside the repo root -- check the feature-slug argument: "${featureSlug}"`);
+  }
+  if (!fs.existsSync(resolvedPath)) return null;
+  const data = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  return data[acId] || null;
+}
+
 // rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
 // required secret env var synchronously, before any async work, so a missing
 // secret fails immediately and loudly -- not a confusing auth error surfaced
@@ -279,5 +298,5 @@ module.exports = {
   generateCaptionsForVideo,
   isPackageComplete,
   buildScreenshotPath, authenticateStagingSession, runCli,
-  deriveSelectorFromSpec,
+  deriveSelectorFromSpec, loadManualFallback,
 };
