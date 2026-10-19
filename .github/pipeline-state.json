@@ -41892,7 +41892,7 @@
               "name": "deriveSelectorFromSpec anchors on the AC-specific inline mention, not any mention (short-track fix, found at rpca-s2 DoD)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-19T03:23:44.675Z",
+              "updatedAt": "2026-10-19T03:39:34.841Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41912,7 +41912,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1005"
             }
           ]
