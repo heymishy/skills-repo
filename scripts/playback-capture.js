@@ -84,13 +84,31 @@ async function captureAcScreenshots({ page, featureSlug, storySlug, acList }) {
   return shots;
 }
 
+// rpca-embed-hotfix1: tracks a cursor so each shot's own heading search starts
+// from where the last insertion ended, not from the start of the document.
+// Fixes a cross-story AC-id collision: two different stories can legitimately
+// both have an "AC1" section (AC numbering restarts per story), and the old
+// non-global, always-from-the-start replace() put every matching screenshot
+// under the FIRST such heading in the whole document, regardless of which
+// story it actually belonged to. Requires shots to be passed in the same
+// relative order their own sections appear in the document -- true for every
+// existing caller (captureAcScreenshots already returns shots in acList
+// order; the walkthrough is built from the same ordered storyDods array).
 function embedScreenshotPaths(markdown, shots) {
   const path = require('path');
   let doc = markdown;
+  let cursor = 0;
   for (const shot of shots) {
     const fileName = path.basename(shot.path);
     const sectionRe = new RegExp(`(## ${shot.acId}[^\\n]*\\n)`);
-    doc = doc.replace(sectionRe, `$1\n![${shot.acId}](screenshots/${fileName})\n`);
+    const rest = doc.slice(cursor);
+    const match = rest.match(sectionRe);
+    if (!match) continue;
+    const matchStart = cursor + match.index;
+    const heading = match[1];
+    const insertion = `${heading}\n![${shot.acId}](screenshots/${fileName})\n`;
+    doc = doc.slice(0, matchStart) + insertion + doc.slice(matchStart + heading.length);
+    cursor = matchStart + insertion.length;
   }
   return doc;
 }
