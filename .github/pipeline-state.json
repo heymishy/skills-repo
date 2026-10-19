@@ -41816,11 +41816,11 @@
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T04:28:00.607Z",
+              "updatedAt": "2026-10-19T04:36:15.351Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41846,7 +41846,9 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s3-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1006"
             },
             {
               "slug": "rpca-s4",
