@@ -138,6 +138,35 @@ async function generateCaptionsForVideo(videoPath, interactionSequenceText, writ
   return { captionPath, transcriptPath, reviewed: false };
 }
 
+// rpca-s3: wires a single clip's own real Playwright recording (reusing
+// captureVideoRecording's own existing directory convention and size) to
+// generateCaptionsForVideo on success. On a mid-capture failure, closes the
+// context to flush whatever Playwright already wrote, deletes that partial
+// file if it exists, and re-throws the original error -- a failed run
+// leaves no partial/corrupt file behind (AC3). Does not modify
+// captureVideoRecording or generateCaptionsForVideo themselves.
+async function captureVideoForClip({ browser, featureSlug, storySlug, clip }) {
+  const dir = `artefacts/${featureSlug}/playback/${storySlug}/video/`;
+  const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
+  const page = await context.newPage();
+  try {
+    if (clip.run) await clip.run(page);
+    await context.close();
+    const video = page.video ? page.video() : null;
+    const videoPath = video ? await video.path() : null;
+    const captionResult = await generateCaptionsForVideo(videoPath, clip.interactionSequenceText || '');
+    return Object.assign({ path: videoPath }, captionResult);
+  } catch (err) {
+    try { await context.close(); } catch (_) { /* already closed or closing failed -- still attempt cleanup below */ }
+    try {
+      const video = page.video ? page.video() : null;
+      const partialPath = video ? await video.path() : null;
+      if (partialPath && fs.existsSync(partialPath)) fs.unlinkSync(partialPath);
+    } catch (_) { /* best-effort cleanup -- never mask the original error */ }
+    throw err;
+  }
+}
+
 // rpca-s1: authenticates against a real deployed wuce-staging instance by calling
 // its own existing GET /test/session route (src/web-ui/server.js,
 // _isTestEndpointAllowed's staging-secret branch) -- confirmed at /clarify that
@@ -337,4 +366,5 @@ module.exports = {
   isPackageComplete,
   buildScreenshotPath, authenticateStagingSession, runCli,
   deriveSelectorFromSpec, loadManualFallback, buildCaptureList,
+  captureVideoForClip,
 };

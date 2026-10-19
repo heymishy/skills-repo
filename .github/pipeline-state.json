@@ -41816,22 +41816,39 @@
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "dor",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T04:03:46.382Z",
+              "updatedAt": "2026-10-19T04:36:15.351Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
-                "passing": 0,
+                "passing": 2,
                 "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s3-test-plan.md"
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 2,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "captureVideoForClip success path wires generateCaptionsForVideo (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Failure-cleanup path leaves no partial file behind (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1006"
             },
             {
               "slug": "rpca-s4",
