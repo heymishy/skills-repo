@@ -59,6 +59,22 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (unit): returns null when selectors-manual.json does not exist (normal case, not an error)', e); }
 })();
 
+// AC3 (unit): skips with a named warning, doesn't crash, when neither source has an entry
+(function () {
+  const { buildCaptureList } = require('../scripts/playback-capture');
+  const originalWarn = console.warn;
+  const warnings = [];
+  console.warn = (...args) => { warnings.push(args.join(' ')); };
+  try {
+    const result = buildCaptureList('no-such-feature-slug-rpca-s2-test', 'no-such-story', ['AC9'], []);
+    assert.deepStrictEqual(result.captured, [], 'expected no entries captured for an AC in neither source');
+    assert.strictEqual(result.skipped, 1, 'expected exactly one AC skipped');
+    assert.ok(warnings.some(w => w.includes('AC9')), 'expected a warning naming the specific skipped AC id');
+    pass("AC3 (unit): skips with a named warning, doesn't crash, when neither source has an entry");
+  } catch (e) { fail("AC3 (unit): skips with a named warning, doesn't crash, when neither source has an entry", e); }
+  finally { console.warn = originalWarn; }
+})();
+
 console.log(`\n[rpca-s2-selector-derivation-from-e2e-specs] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 

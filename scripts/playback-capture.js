@@ -228,6 +228,36 @@ function loadManualFallback(featureSlug, storySlug, acId) {
   return data[acId] || null;
 }
 
+// rpca-s2: builds the real multi-AC capture list -- tries every spec file's
+// own deriveSelectorFromSpec first (E2E specs are the primary source, per
+// discovery's own MVP scope item 4), then loadManualFallback, then skips
+// with a named warning identifying the specific AC. Never throws on a
+// no-match AC -- that's the normal "not every AC has coverage yet" case,
+// not an error; only a real path-traversal attempt (loadManualFallback's
+// own guard) throws.
+function buildCaptureList(featureSlug, storySlug, acIds, specFiles) {
+  const captured = [];
+  let skipped = 0;
+  for (const acId of acIds) {
+    let entry = null;
+    for (const specContent of specFiles) {
+      entry = deriveSelectorFromSpec(specContent, acId);
+      if (entry) break;
+    }
+    if (!entry) {
+      const fallback = loadManualFallback(featureSlug, storySlug, acId);
+      if (fallback) entry = Object.assign({ acId }, fallback);
+    }
+    if (entry) {
+      captured.push(entry);
+    } else {
+      skipped += 1;
+      console.warn(`[playback-capture] No selector found for ${acId} -- skipping (no E2E spec match, no manual fallback entry)`);
+    }
+  }
+  return { captured, skipped, summary: `${captured.length} captured, ${skipped} skipped` };
+}
+
 // rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
 // required secret env var synchronously, before any async work, so a missing
 // secret fails immediately and loudly -- not a confusing auth error surfaced
@@ -298,5 +328,5 @@ module.exports = {
   generateCaptionsForVideo,
   isPackageComplete,
   buildScreenshotPath, authenticateStagingSession, runCli,
-  deriveSelectorFromSpec, loadManualFallback,
+  deriveSelectorFromSpec, loadManualFallback, buildCaptureList,
 };
