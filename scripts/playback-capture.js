@@ -199,8 +199,16 @@ function buildScreenshotPath(featureSlug, storySlug, acId) {
 // not just the first one in the file, since a spec file can cover several ACs.
 // Returns null (never throws) when the AC isn't named at all -- a spec file
 // simply not covering a given AC is a normal, expected case, not an error.
+// rpca-s2-hotfix1: anchors on `<acId>)` specifically, not any bare mention of
+// acId. Both real per-AC inline conventions sampled place the AC id directly
+// before a closing paren ("(fpd-s4 AC3)", "(AC1)") -- only a SHARED header
+// comment naming several ACs together (tests/e2e/jcx-s3-emotion-curve.spec.js:
+// "AC1, AC2, AC3 of story") lacks the trailing ")". The bare \b-only anchor
+// matched that shared header for every AC equally and returned the SAME
+// (wrong) selector for AC2/AC3 -- confirmed directly against that real file
+// at /definition-of-done for rpca-s2.
 function deriveSelectorFromSpec(specFileContent, acId) {
-  const acRe = new RegExp(`\\b${acId}\\b`);
+  const acRe = new RegExp(`\\b${acId}\\)`);
   const acMatch = acRe.exec(specFileContent);
   if (!acMatch) return null;
   const rest = specFileContent.slice(acMatch.index);

@@ -41886,6 +41886,34 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "updatedAt": "2026-10-19T00:32:16.303Z"
+            },
+            {
+              "slug": "rpca-s2-hotfix1",
+              "name": "deriveSelectorFromSpec anchors on the AC-specific inline mention, not any mention (short-track fix, found at rpca-s2 DoD)",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-10-19T03:23:44.675Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 2,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s2-hotfix1-test-plan.md"
+              },
+              "acTotal": 2,
+              "acVerified": 2,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s2-hotfix1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Anchor deriveSelectorFromSpec on <acId>) instead of bare <acId>",
+                  "tddState": "committed",
+                  "file": "scripts/playback-capture.js"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1005"
             }
           ]
         }
