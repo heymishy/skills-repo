@@ -41988,7 +41988,7 @@
               "name": "embedScreenshotPaths scopes matches per story, not globally by AC id (short-track fix, found running /feature-playback for real for the first time)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-19T09:01:54.576Z",
+              "updatedAt": "2026-10-19T17:28:57.006Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -42008,7 +42008,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1009"
             }
           ]
