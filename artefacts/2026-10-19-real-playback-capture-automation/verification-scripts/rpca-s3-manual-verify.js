@@ -14,6 +14,11 @@
 
 const { chromium } = require('playwright');
 const { authenticateStagingSession, captureVideoForClip } = require('../../../scripts/playback-capture');
+// Same one-line wiring src/web-ui/server.js performs at its own bootstrap
+// (D37 adapter, CLAUDE.md's Injectable adapter rule) -- this standalone
+// script never runs that bootstrap, so it must wire it itself.
+const { setGenerateCaptionsAndTranscript, realGenerateCaptionsAndTranscript } = require('../../../src/web-ui/adapters/caption-transcript');
+setGenerateCaptionsAndTranscript(realGenerateCaptionsAndTranscript);
 
 const STAGING_BASE_URL = 'https://wuce-staging.fly.dev';
 const CAPTURE_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
