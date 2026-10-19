@@ -41766,19 +41766,19 @@
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T01:02:23.253Z",
+              "updatedAt": "2026-10-19T01:13:49.921Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s2-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -41786,28 +41786,29 @@
                 {
                   "id": "task-1",
                   "name": "deriveSelectorFromSpec -- derive {acId, selector} from an E2E spec fixture (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "loadManualFallback -- reads selectors-manual.json for an AC with no E2E match (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "buildCaptureList -- skips with a named warning when neither source matches (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s2-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "buildCaptureList full multi-AC integration -- correct capture/skip counts (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "rpca-s3",
