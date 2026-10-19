@@ -246,6 +246,10 @@ Save to `artefacts/[feature]/dod/[story-slug]-dod.md`.
 
 **Feature-completion trace check (mandatory, before the /release prompt below):** After writing this story's own state update, check `.github/pipeline-state.json` — does every story across every epic in this story's own feature now show `dodStatus: "complete"`? If not, skip this check silently and go straight to the /release prompt below.
 
+**Automatic playback capture (rpca-s5):** If every story is now complete, before checking for a trace report below, automatically run `/feature-playback`'s own Steps 1-3 (generate the walkthrough document, capture real screenshots) for this feature — the operator does not need to separately say "make a playback package." Step 4 (editorial review) remains a mandatory human gate, unchanged — do not set the package status to `"complete"` yourself; that is still a human action.
+
+If the automatic capture run fails for any reason (staging unreachable, the secret not configured in this session, a network error, or any other exception): this does NOT affect this story's own DoD verdict, which was already determined above from that story's own ACs/tests/NFRs — report the verdict exactly as already computed; the capture failure never downgrades it. Add a named follow-up action to `workspace/state.json`'s own `pendingActions`, identifying the feature slug and the capture failure reason, so it is visible later rather than silently lost. Do not retry automatically and do not block on this failure.
+
 If every story is now complete, check `artefacts/[feature]/trace/` for a report. If none exists, or the most recent one is dated before this story's own DoD date:
 
 > ⚠️ **Run /trace before /release** — every story in this feature just reached DoD-complete, but the full chain (metric orphans, scope deviations, broken references across the whole feature) has never been checked, or was last checked before this story shipped. /release does not check this.

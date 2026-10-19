@@ -16,14 +16,37 @@ const { generateCaptionsAndTranscript } = require('../src/web-ui/adapters/captio
 // this module keeps working with no change required on their part.
 const { parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets } = require('../src/utils/dod-parsing');
 
+// rpca-s5: evaluates every story's own dodStatus evidence field directly
+// (ADR-002 -- gates must use evidence fields, not a stage/field proxy), instead
+// of the unwritten top-level feature.dodStatus field. Walks both flat
+// feature.stories[] and epic-nested feature.epics[].stories[] shapes. Throws
+// naming the specific incomplete story, not a generic message.
 function checkDodGate(state, featureSlug) {
   const feature = (state.features || []).find(f => f.slug === featureSlug);
   if (!feature) {
     throw new Error(`Feature not found: ${featureSlug}`);
   }
-  if (feature.dodStatus !== 'complete') {
+  const allStories = [];
+  if (Array.isArray(feature.stories)) allStories.push(...feature.stories);
+  if (Array.isArray(feature.epics)) {
+    for (const epic of feature.epics) {
+      if (Array.isArray(epic.stories)) allStories.push(...epic.stories);
+    }
+  }
+  if (allStories.length === 0) {
+    // No story-level evidence exists at all -- fall back to the feature's own
+    // field (legacy/minimal fixture shape; pre-existing callers rely on this).
+    if (feature.dodStatus !== 'complete') {
+      throw new Error(
+        `Feature playback refused: dodStatus for "${featureSlug}" is "${feature.dodStatus}", not "complete". Run /definition-of-done first.`
+      );
+    }
+    return { ok: true, feature };
+  }
+  const incomplete = allStories.find(s => s.dodStatus !== 'complete');
+  if (incomplete) {
     throw new Error(
-      `Feature playback refused: dodStatus for "${featureSlug}" is "${feature.dodStatus}", not "complete". Run /definition-of-done first.`
+      `Feature playback refused: story "${incomplete.slug}" in "${featureSlug}" has dodStatus "${incomplete.dodStatus}", not "complete". Run /definition-of-done first.`
     );
   }
   return { ok: true, feature };

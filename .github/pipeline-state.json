@@ -41708,7 +41708,7 @@
         {
           "slug": "real-playback-capture-cli",
           "name": "Playback evidence captures itself, for real, without an operator driving a browser",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "rpca-s1",
@@ -41920,21 +41920,38 @@
             {
               "slug": "rpca-s5",
               "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
-              "stage": "dor",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T06:26:45.394Z",
+              "updatedAt": "2026-10-19T06:58:38.290Z",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "checkDodGate reads every story's own dodStatus evidence field (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Auto-trigger /feature-playback at feature-completion, non-blocking on failure (AC3, AC4, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s5-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1008"
             },
             {
               "slug": "rpca-s2-hotfix1",
