@@ -193,6 +193,22 @@ function buildScreenshotPath(featureSlug, storySlug, acId) {
   return relPath;
 }
 
+// rpca-s2: scans a spec file's own text for a comment naming acId (matching the
+// existing convention, e.g. tests/e2e/fpd-s4-caption-sync.spec.js's own header
+// "(fpd-s4 AC3)"), then finds the NEAREST FOLLOWING page.locator(...) call --
+// not just the first one in the file, since a spec file can cover several ACs.
+// Returns null (never throws) when the AC isn't named at all -- a spec file
+// simply not covering a given AC is a normal, expected case, not an error.
+function deriveSelectorFromSpec(specFileContent, acId) {
+  const acRe = new RegExp(`\\b${acId}\\b`);
+  const acMatch = acRe.exec(specFileContent);
+  if (!acMatch) return null;
+  const rest = specFileContent.slice(acMatch.index);
+  const locatorMatch = rest.match(/page\.locator\(['"]([^'"]+)['"]\)/);
+  if (!locatorMatch) return null;
+  return { acId, selector: locatorMatch[1] };
+}
+
 // rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
 // required secret env var synchronously, before any async work, so a missing
 // secret fails immediately and loudly -- not a confusing auth error surfaced
@@ -263,4 +279,5 @@ module.exports = {
   generateCaptionsForVideo,
   isPackageComplete,
   buildScreenshotPath, authenticateStagingSession, runCli,
+  deriveSelectorFromSpec,
 };
