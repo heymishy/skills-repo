@@ -41766,11 +41766,11 @@
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T01:13:49.921Z",
+              "updatedAt": "2026-10-19T01:22:43.859Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41808,7 +41808,9 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1004"
             },
             {
               "slug": "rpca-s3",
