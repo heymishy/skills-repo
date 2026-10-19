@@ -99,6 +99,37 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   finally { fs.rmSync(path.join(__dirname, '..', 'artefacts', 'rpca-s2-test-fixture-ac4'), { recursive: true, force: true }); }
 })();
 
+// rpca-s2-hotfix1 AC1 (unit): a shared multi-AC header no longer collapses every AC to the same selector
+(function () {
+  const { deriveSelectorFromSpec } = require('../scripts/playback-capture');
+  try {
+    // Modelled directly on the real tests/e2e/jcx-s3-emotion-curve.spec.js shape --
+    // one shared header naming all 3 ACs together, then separate test blocks each
+    // with its own (ACn)-suffixed title and its own distinct locator.
+    const fixtureSpec = `// fixture-jcx-shape.spec.js -- E2E coverage for AC1, AC2, AC3 of story\nwithAuth('does thing one (AC1)', async ({ page }) => {\n  await page.locator('.fixture-ac1-only').click();\n});\nwithAuth('does thing two (AC2)', async ({ page }) => {\n  await page.locator('.fixture-ac2-only').click();\n});\nwithAuth('does thing three (AC3)', async ({ page }) => {\n  await page.locator('.fixture-ac3-only').click();\n});\n`;
+    const ac1 = deriveSelectorFromSpec(fixtureSpec, 'AC1');
+    const ac2 = deriveSelectorFromSpec(fixtureSpec, 'AC2');
+    const ac3 = deriveSelectorFromSpec(fixtureSpec, 'AC3');
+    assert.deepStrictEqual(ac1, { acId: 'AC1', selector: '.fixture-ac1-only' }, 'expected AC1\'s own distinct selector');
+    assert.deepStrictEqual(ac2, { acId: 'AC2', selector: '.fixture-ac2-only' }, 'expected AC2\'s own distinct selector, not AC1\'s');
+    assert.deepStrictEqual(ac3, { acId: 'AC3', selector: '.fixture-ac3-only' }, 'expected AC3\'s own distinct selector, not AC1\'s');
+    pass('rpca-s2-hotfix1 AC1 (unit): a shared multi-AC header no longer collapses every AC to the same selector');
+  } catch (e) { fail('rpca-s2-hotfix1 AC1 (unit): a shared multi-AC header no longer collapses every AC to the same selector', e); }
+})();
+
+// rpca-s2-hotfix1 AC2 (unit): the existing single-AC-per-file convention still resolves correctly against the real file
+(function () {
+  const { deriveSelectorFromSpec } = require('../scripts/playback-capture');
+  const fs = require('fs');
+  const path = require('path');
+  try {
+    const content = fs.readFileSync(path.join(__dirname, 'e2e', 'fpd-s4-caption-sync.spec.js'), 'utf8');
+    const result = deriveSelectorFromSpec(content, 'AC3');
+    assert.deepStrictEqual(result, { acId: 'AC3', selector: '.playback-ac__video' }, 'expected the real fpd-s4 selector, unchanged from before the fix');
+    pass('rpca-s2-hotfix1 AC2 (unit): the existing single-AC-per-file convention still resolves correctly against the real file');
+  } catch (e) { fail('rpca-s2-hotfix1 AC2 (unit): the existing single-AC-per-file convention still resolves correctly against the real file', e); }
+})();
+
 console.log(`\n[rpca-s2-selector-derivation-from-e2e-specs] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
