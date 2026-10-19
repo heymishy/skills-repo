@@ -41854,11 +41854,11 @@
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "dor",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T05:22:13.932Z",
+              "updatedAt": "2026-10-19T05:38:02.316Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
