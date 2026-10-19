@@ -41920,11 +41920,11 @@
             {
               "slug": "rpca-s5",
               "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
-              "stage": "dor",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T06:26:45.394Z",
+              "updatedAt": "2026-10-19T06:38:15.343Z",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
