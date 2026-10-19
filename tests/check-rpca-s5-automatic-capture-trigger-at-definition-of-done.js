@@ -64,6 +64,39 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (unit): checkDodGate throws naming the specific incomplete story', e); }
 })();
 
+const fs = require('fs');
+const path = require('path');
+const dodSkillMd = fs.readFileSync(path.join(__dirname, '..', 'skills', 'definition-of-done', 'SKILL.md'), 'utf8');
+
+// AC3 (unit): the Feature-completion trace check now auto-triggers /feature-playback
+(function () {
+  try {
+    assert.ok(/feature-playback/i.test(dodSkillMd), 'expected the Feature-completion trace check to reference /feature-playback');
+    assert.ok(/Steps? 1.?3|Step 1.*Step 3|generate.*walkthrough.*capture/i.test(dodSkillMd), 'expected it to describe running Steps 1-3 (generate walkthrough, capture screenshots)');
+    assert.ok(/Step 4.*(mandatory|human|unchanged)|editorial review.*(mandatory|human|unchanged)/i.test(dodSkillMd), "expected it to explicitly preserve Step 4's own mandatory human editorial-review gate");
+    pass('AC3 (unit): the Feature-completion trace check now auto-triggers /feature-playback');
+  } catch (e) { fail('AC3 (unit): the Feature-completion trace check now auto-triggers /feature-playback', e); }
+})();
+
+// AC4 (unit): a capture failure does not downgrade the DoD verdict, and records a follow-up action
+(function () {
+  try {
+    assert.ok(/pendingActions/.test(dodSkillMd), 'expected the capture-failure path to mention pendingActions');
+    assert.ok(/not.*(affect|downgrade|change).*verdict|verdict.*(unaffected|already determined)/i.test(dodSkillMd), 'expected explicit language that a capture failure does not affect the DoD verdict');
+    pass('AC4 (unit): a capture failure does not downgrade the DoD verdict, and records a follow-up action');
+  } catch (e) { fail('AC4 (unit): a capture failure does not downgrade the DoD verdict, and records a follow-up action', e); }
+})();
+
+// AC5 (unit): the existing manual /feature-playback invocation path is unchanged
+(function () {
+  try {
+    const playbackSkillMd = fs.readFileSync(path.join(__dirname, '..', 'skills', 'feature-playback', 'SKILL.md'), 'utf8');
+    assert.ok(playbackSkillMd.includes('"make a playback package"'), 'expected the original manual trigger phrase to still be present');
+    assert.ok(playbackSkillMd.includes('"feature playback"'), 'expected the original trigger list to still include "feature playback"');
+    pass('AC5 (unit): the existing manual /feature-playback invocation path is unchanged');
+  } catch (e) { fail('AC5 (unit): the existing manual /feature-playback invocation path is unchanged', e); }
+})();
+
 console.log(`\n[rpca-s5-automatic-capture-trigger-at-definition-of-done] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
