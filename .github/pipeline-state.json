@@ -41924,7 +41924,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T07:48:27.063Z",
+              "updatedAt": "2026-10-19T07:49:15.684Z",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
@@ -41951,7 +41951,8 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1008"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1008",
+              "dodStatus": "complete"
             },
             {
               "slug": "rpca-s2-hotfix1",
