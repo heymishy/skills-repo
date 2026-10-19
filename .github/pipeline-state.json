@@ -41708,7 +41708,7 @@
         {
           "slug": "real-playback-capture-cli",
           "name": "Playback evidence captures itself, for real, without an operator driving a browser",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "rpca-s1",
@@ -41920,11 +41920,11 @@
             {
               "slug": "rpca-s5",
               "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T06:50:25.315Z",
+              "updatedAt": "2026-10-19T06:58:38.290Z",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
@@ -41949,7 +41949,9 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s5-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1008"
             },
             {
               "slug": "rpca-s2-hotfix1",
