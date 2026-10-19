@@ -3,7 +3,9 @@
 **Story reference:** artefacts/2026-10-19-real-playback-capture-automation/stories/rpca-s3-video-capture-wired-for-real.md
 **Technical test plan:** artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s3-test-plan.md
 **Script version:** 1
-**Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude Sonnet 5 (session), AC1 pending operator manual run | **Date:** 2026-10-19 | **Context:** [x] Pre-code (verified post-implementation, pre-merge)
+
+**Discrepancy note (found at /verify-completion):** Scenarios 2 and 3, as originally written, say "after Scenario 1's own capture completes" — assuming `captureVideoForClip` is wired into the CLI's own end-to-end run. Per the DoR contract's own explicit assumption, that CLI wiring was not built in this story. AC2 and AC3 are instead verified directly via the automated test suite, which exercises `captureVideoForClip` itself (not a CLI run) with a mocked browser/context/page and the real `generateCaptionsForVideo`/D37 adapter seam. AC1 remains the one genuine manual scenario — it needs the real secret and real network access `rpca-s1`'s own AC1/AC2 already established, RISK-ACCEPTed under the same `decisions.md` entry.
 
 ---
 
@@ -48,8 +50,8 @@
 **Expected outcome:**
 > Caption and transcript files exist, and the video's own record shows `reviewed: false` until someone explicitly confirms it.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass (via automated-test cross-reference)
+**Notes:** Not run as a live CLI scenario — see discrepancy note above. Verified instead by `tests/check-rpca-s3-video-capture-wired-for-real.js`'s own AC2 test: `captureVideoForClip` correctly calls `generateCaptionsForVideo` with the real captured video path and the clip's own interaction sequence text, writes real caption/transcript files, and returns `reviewed: false`.
 
 ---
 
@@ -64,8 +66,8 @@
 **Expected outcome:**
 > No partial or corrupt `.webm` file exists for the failed run — either nothing is there, or only successfully-completed prior captures remain.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass (via automated-test cross-reference)
+**Notes:** Not run as a live CLI scenario — see discrepancy note above. Verified instead by `tests/check-rpca-s3-video-capture-wired-for-real.js`'s own AC3 test: a mocked Playwright context whose `clip.run(page)` throws mid-recording; `captureVideoForClip` surfaces the original error unmasked and deletes the partial file Playwright had already written.
 
 ---
 
@@ -73,11 +75,11 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 (AC1 — real video) | | |
-| Scenario 2 (AC2 — captions unreviewed) | | |
-| Scenario 3 (AC3 — clean failure) | | |
+| Scenario 1 (AC1 — real video) | Pending — operator manual run | RISK-ACCEPTed in `decisions.md`, same shared secret dependency as `rpca-s1` AC1/AC2 |
+| Scenario 2 (AC2 — captions unreviewed) | Pass (automated-test cross-reference) | |
+| Scenario 3 (AC3 — clean failure) | Pass (automated-test cross-reference) | |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] AC2/AC3 pass now; AC1 pending operator manual run (RISK-ACCEPTed, not blocking merge, consistent with `rpca-s1`'s own precedent)
 [ ] Failures found — log findings below before proceeding
 
 ---
@@ -86,4 +88,4 @@
 
 | Scenario | Expected | Actual | Severity | Action |
 |----------|----------|--------|----------|--------|
-| | | | HIGH / MED / LOW | Fix AC / Fix implementation / Accept |
+| N/A | Scenarios 2-3 described a live-CLI check assuming `captureVideoForClip` is wired into the CLI's own entrypoint | Not wired in this story, per the DoR's own explicit assumption | LOW | Accept — same batched verification-script template gap already logged for `rpca-s2`, not re-logged separately here |
