@@ -41703,7 +41703,7 @@
       "name": "Real Playback Capture Automation",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-19T00:32:16.304Z",
+      "updatedAt": "2026-10-19T07:55:36.490Z",
       "epics": [
         {
           "slug": "real-playback-capture-cli",
@@ -41713,7 +41713,7 @@
             {
               "slug": "rpca-s1",
               "name": "CLI entrypoint authenticates against staging and captures one real screenshot end to end",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -41766,7 +41766,7 @@
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -41816,7 +41816,7 @@
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -41854,7 +41854,7 @@
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -41892,7 +41892,7 @@
             {
               "slug": "rpca-s1-hotfix1",
               "name": "Path-traversal guard on buildScreenshotPath (short-track fix, found at rpca-s1 DoD)",
-              "stage": "branch-complete",
+              "stage": "trace",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1003",
               "health": "green",
@@ -41920,7 +41920,7 @@
             {
               "slug": "rpca-s5",
               "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -41957,7 +41957,7 @@
             {
               "slug": "rpca-s2-hotfix1",
               "name": "deriveSelectorFromSpec anchors on the AC-specific inline mention, not any mention (short-track fix, found at rpca-s2 DoD)",
-              "stage": "branch-complete",
+              "stage": "trace",
               "health": "green",
               "updatedAt": "2026-10-19T03:59:33.304Z",
               "testPlan": {
@@ -42101,9 +42101,9 @@
           "category": "adr",
           "label": "Gates must use evidence fields, not stage-proxy",
           "status": "met",
-          "evidence": "rpca-s5 corrects checkDodGate to read story-level dodStatus evidence fields directly, per ADR-002 -- see review/rpca-s5-review-1.md Category E",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-19T00:33:03.176Z"
+          "evidence": "/trace 2026-10-19: no violations found across rpca-s1 through rpca-s5 (checkDodGate reads story evidence fields, per rpca-s5)",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-19T07:55:36.490Z"
         },
         {
           "id": "ADR-003",
@@ -42322,17 +42322,30 @@
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "/trace 2026-10-19: no violations found; staging auth-bypass mechanism (E2E_STAGING_AUTH_STUB_SECRET) reused unchanged by rpca-s1",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-19T07:55:36.490Z"
         },
         {
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "not-assessed"
+        },
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "status": "met",
+          "evidence": "/trace 2026-10-19: no violations found; rpca-s1 reuses GET /test/session unchanged, rpca-s4 reuses captureAcScreenshots/captureVideoForClip unchanged",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-10-19T07:55:36.490Z",
+          "label": "Reuse an existing entity/primitive when its shape already covers a new concept, rather than introducing a new one"
         }
       ],
       "slicingStrategy": "walking-skeleton",
-      "stories": []
+      "stories": [],
+      "traceStatus": "passed"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
