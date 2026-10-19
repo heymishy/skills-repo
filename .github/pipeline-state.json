@@ -41890,9 +41890,9 @@
             {
               "slug": "rpca-s2-hotfix1",
               "name": "deriveSelectorFromSpec anchors on the AC-specific inline mention, not any mention (short-track fix, found at rpca-s2 DoD)",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-19T03:22:59.503Z",
+              "updatedAt": "2026-10-19T03:23:44.675Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41911,7 +41911,9 @@
                   "file": "scripts/playback-capture.js"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1005"
             }
           ]
         }
