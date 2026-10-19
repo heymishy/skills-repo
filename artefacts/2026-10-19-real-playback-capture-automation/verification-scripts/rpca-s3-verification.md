@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-10-19-real-playback-capture-automation/stories/rpca-s3-video-capture-wired-for-real.md
 **Technical test plan:** artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s3-test-plan.md
 **Script version:** 1
-**Verified by:** Claude Sonnet 5 (session), AC1 pending operator manual run | **Date:** 2026-10-19 | **Context:** [x] Pre-code (verified post-implementation, pre-merge)
+**Verified by:** Claude Sonnet 5 (session) + Hamish King (AC1 real run) | **Date:** 2026-10-19 | **Context:** [x] Post-merge (AC1's own real run was executed after PR #1006 merged)
 
 **Discrepancy note (found at /verify-completion):** Scenarios 2 and 3, as originally written, say "after Scenario 1's own capture completes" — assuming `captureVideoForClip` is wired into the CLI's own end-to-end run. Per the DoR contract's own explicit assumption, that CLI wiring was not built in this story. AC2 and AC3 are instead verified directly via the automated test suite, which exercises `captureVideoForClip` itself (not a CLI run) with a mocked browser/context/page and the real `generateCaptionsForVideo`/D37 adapter seam. AC1 remains the one genuine manual scenario — it needs the real secret and real network access `rpca-s1`'s own AC1/AC2 already established, RISK-ACCEPTed under the same `decisions.md` entry.
 
@@ -34,8 +34,8 @@
 **Expected outcome:**
 > A real `.webm` file exists, and playing it shows the real recorded interaction — not an empty or corrupt file.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass
+**Notes:** Real run via `rpca-s3-manual-verify.js` against `2026-10-11-journey-cx-redesign`. First attempt failed with the D37 adapter's own correct unwired-stub error (`generateCaptionsAndTranscript` not wired — the standalone script never ran `server.js`'s own bootstrap); fixed by wiring `realGenerateCaptionsAndTranscript` directly in the script. Re-ran successfully: a real 411022-byte `.webm` saved to `artefacts/2026-10-11-journey-cx-redesign/playback/rpca-s3-proof/video/`. See `decisions.md`'s own `[RESOLVED 2026-10-19, rpca-s3 AC1]` entry for full detail.
 
 ---
 
@@ -75,11 +75,11 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 (AC1 — real video) | Pending — operator manual run | RISK-ACCEPTed in `decisions.md`, same shared secret dependency as `rpca-s1` AC1/AC2 |
-| Scenario 2 (AC2 — captions unreviewed) | Pass (automated-test cross-reference) | |
+| Scenario 1 (AC1 — real video) | Pass | Real 411022-byte `.webm` produced against real `wuce-staging`; see `decisions.md` |
+| Scenario 2 (AC2 — captions unreviewed) | Pass (automated-test cross-reference + confirmed again for real via Scenario 1's own run) | Real `.vtt`/`.transcript.txt` files read directly and confirmed correct |
 | Scenario 3 (AC3 — clean failure) | Pass (automated-test cross-reference) | |
 
-**Overall verdict:** [x] AC2/AC3 pass now; AC1 pending operator manual run (RISK-ACCEPTed, not blocking merge, consistent with `rpca-s1`'s own precedent)
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
