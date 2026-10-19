@@ -41816,11 +41816,11 @@
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "test-plan",
+              "stage": "dor",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "updatedAt": "2026-10-19T04:03:46.382Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41830,7 +41830,8 @@
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "rpca-s4",
