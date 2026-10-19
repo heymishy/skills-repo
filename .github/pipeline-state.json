@@ -41986,9 +41986,9 @@
             {
               "slug": "rpca-embed-hotfix1",
               "name": "embedScreenshotPaths scopes matches per story, not globally by AC id (short-track fix, found running /feature-playback for real for the first time)",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-19T09:01:27.211Z",
+              "updatedAt": "2026-10-19T09:01:54.576Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -42007,7 +42007,9 @@
                   "file": "scripts/playback-capture.js"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1009"
             }
           ]
         }
