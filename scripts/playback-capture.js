@@ -193,6 +193,71 @@ function buildScreenshotPath(featureSlug, storySlug, acId) {
   return relPath;
 }
 
+// rpca-s2: scans a spec file's own text for a comment naming acId (matching the
+// existing convention, e.g. tests/e2e/fpd-s4-caption-sync.spec.js's own header
+// "(fpd-s4 AC3)"), then finds the NEAREST FOLLOWING page.locator(...) call --
+// not just the first one in the file, since a spec file can cover several ACs.
+// Returns null (never throws) when the AC isn't named at all -- a spec file
+// simply not covering a given AC is a normal, expected case, not an error.
+function deriveSelectorFromSpec(specFileContent, acId) {
+  const acRe = new RegExp(`\\b${acId}\\b`);
+  const acMatch = acRe.exec(specFileContent);
+  if (!acMatch) return null;
+  const rest = specFileContent.slice(acMatch.index);
+  const locatorMatch = rest.match(/page\.locator\(['"]([^'"]+)['"]\)/);
+  if (!locatorMatch) return null;
+  return { acId, selector: locatorMatch[1] };
+}
+
+// rpca-s2: reads the manually-authored fallback file for one AC when no E2E
+// spec covers it. A missing file is the normal, expected case for a feature
+// that hasn't needed a manual entry yet -- returns null, never throws.
+// featureSlug/storySlug come from the same untrusted-shaped CLI-argument
+// origin buildScreenshotPath already guards (rpca-s1-hotfix1) -- applies the
+// identical path-traversal guard before any fs access.
+function loadManualFallback(featureSlug, storySlug, acId) {
+  const path = require('path');
+  const relPath = `artefacts/${featureSlug}/playback/${storySlug}/selectors-manual.json`;
+  const repoRoot = path.resolve(__dirname, '..');
+  const resolvedPath = path.resolve(repoRoot, relPath);
+  if (!resolvedPath.startsWith(repoRoot + path.sep)) {
+    throw new Error(`Refusing to read a manual fallback path outside the repo root -- check the feature-slug argument: "${featureSlug}"`);
+  }
+  if (!fs.existsSync(resolvedPath)) return null;
+  const data = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  return data[acId] || null;
+}
+
+// rpca-s2: builds the real multi-AC capture list -- tries every spec file's
+// own deriveSelectorFromSpec first (E2E specs are the primary source, per
+// discovery's own MVP scope item 4), then loadManualFallback, then skips
+// with a named warning identifying the specific AC. Never throws on a
+// no-match AC -- that's the normal "not every AC has coverage yet" case,
+// not an error; only a real path-traversal attempt (loadManualFallback's
+// own guard) throws.
+function buildCaptureList(featureSlug, storySlug, acIds, specFiles) {
+  const captured = [];
+  let skipped = 0;
+  for (const acId of acIds) {
+    let entry = null;
+    for (const specContent of specFiles) {
+      entry = deriveSelectorFromSpec(specContent, acId);
+      if (entry) break;
+    }
+    if (!entry) {
+      const fallback = loadManualFallback(featureSlug, storySlug, acId);
+      if (fallback) entry = Object.assign({ acId }, fallback);
+    }
+    if (entry) {
+      captured.push(entry);
+    } else {
+      skipped += 1;
+      console.warn(`[playback-capture] No selector found for ${acId} -- skipping (no E2E spec match, no manual fallback entry)`);
+    }
+  }
+  return { captured, skipped, summary: `${captured.length} captured, ${skipped} skipped` };
+}
+
 // rpca-s1: real CLI entrypoint. argv[2] is the feature slug. Validates the
 // required secret env var synchronously, before any async work, so a missing
 // secret fails immediately and loudly -- not a confusing auth error surfaced
@@ -263,4 +328,5 @@ module.exports = {
   generateCaptionsForVideo,
   isPackageComplete,
   buildScreenshotPath, authenticateStagingSession, runCli,
+  deriveSelectorFromSpec, loadManualFallback, buildCaptureList,
 };
