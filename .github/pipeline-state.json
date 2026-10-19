@@ -41708,7 +41708,7 @@
         {
           "slug": "real-playback-capture-cli",
           "name": "Playback evidence captures itself, for real, without an operator driving a browser",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "rpca-s1",
@@ -41766,11 +41766,11 @@
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "dor",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T00:14:23.116Z",
+              "updatedAt": "2026-10-19T00:57:59.341Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
