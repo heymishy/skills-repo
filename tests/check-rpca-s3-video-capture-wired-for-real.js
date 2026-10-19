@@ -46,6 +46,32 @@ await (async function () {
   }
 })();
 
+// AC3 (unit): a mid-capture failure leaves no partial file on disk
+await (async function () {
+  const { captureVideoForClip } = require('../scripts/playback-capture');
+  const fs = require('fs');
+  const path = require('path');
+  const fixtureDir = path.join(__dirname, '..', 'artefacts', 'rpca-s3-test-fixture-ac3', 'playback', 'rpca-fixture-story', 'video');
+  fs.mkdirSync(fixtureDir, { recursive: true });
+  const partialVideoPath = path.join(fixtureDir, 'partial-fixture.webm');
+  fs.writeFileSync(partialVideoPath, 'fake partial video bytes written by Playwright before the failure');
+  const mockPage = { video: () => ({ path: async () => partialVideoPath }) };
+  const mockContext = { newPage: async () => mockPage, close: async () => {} };
+  const mockBrowser = { newContext: async () => mockContext };
+  const clip = { name: 'fixture', run: async () => { throw new Error('simulated mid-recording failure'); } };
+  try {
+    let threw = null;
+    try {
+      await captureVideoForClip({ browser: mockBrowser, featureSlug: 'rpca-s3-test-fixture-ac3', storySlug: 'rpca-fixture-story', clip });
+    } catch (e) { threw = e; }
+    assert.ok(threw, 'expected the failure to be surfaced, not swallowed');
+    assert.strictEqual(threw.message, 'simulated mid-recording failure', 'expected the original error to propagate unmasked');
+    assert.strictEqual(fs.existsSync(partialVideoPath), false, 'expected the partial file to be deleted, not left behind');
+    pass('AC3 (unit): a mid-capture failure leaves no partial file on disk');
+  } catch (e) { fail('AC3 (unit): a mid-capture failure leaves no partial file on disk', e); }
+  finally { fs.rmSync(path.join(__dirname, '..', 'artefacts', 'rpca-s3-test-fixture-ac3'), { recursive: true, force: true }); }
+})();
+
 console.log(`\n[rpca-s3-video-capture-wired-for-real] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
