@@ -41986,9 +41986,9 @@
             {
               "slug": "rpca-embed-hotfix1",
               "name": "embedScreenshotPaths scopes matches per story, not globally by AC id (short-track fix, found running /feature-playback for real for the first time)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-19T17:28:57.006Z",
+              "updatedAt": "2026-10-19T18:54:04.760Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -42009,14 +42009,16 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1009"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1009",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dod/rpca-embed-hotfix1-dod.md"
             },
             {
               "slug": "rpca-embed-hotfix2",
               "name": "embedScreenshotPaths matches on (storySlug, acId) together, not position -- rpca-embed-hotfix1's cursor fix was itself insufficient (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix1 merged)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-19T18:29:01.504Z",
+              "updatedAt": "2026-10-19T18:54:04.923Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42037,14 +42039,16 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1010"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1010",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dod/rpca-embed-hotfix2-dod.md"
             },
             {
               "slug": "rpca-embed-hotfix3",
               "name": "embedScreenshotPaths writes a story-prefixed relative image path -- bare basename was broken for every multi-story feature (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix2 merged)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-19T18:46:48.436Z",
+              "updatedAt": "2026-10-19T18:54:05.077Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42065,7 +42069,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1011"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1011",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dod/rpca-embed-hotfix3-dod.md"
             }
           ]
         }
