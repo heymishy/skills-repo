@@ -41816,11 +41816,11 @@
             {
               "slug": "rpca-s3",
               "name": "Video capture wired for real, reusing the existing caption/transcript adapter",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T04:16:23.302Z",
+              "updatedAt": "2026-10-19T04:18:25.897Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41831,7 +41831,21 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "captureVideoForClip success path wires generateCaptionsForVideo (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Failure-cleanup path leaves no partial file behind (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "rpca-s4",
