@@ -41854,11 +41854,11 @@
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T05:49:53.192Z",
+              "updatedAt": "2026-10-19T05:58:05.799Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -41884,7 +41884,9 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1007"
             },
             {
               "slug": "rpca-s1-hotfix1",
