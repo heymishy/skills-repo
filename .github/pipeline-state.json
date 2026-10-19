@@ -41717,7 +41717,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T21:59:53.005Z",
+              "updatedAt": "2026-10-19T00:03:16.161Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41760,7 +41760,8 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1002"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1002",
+              "dodStatus": "complete"
             },
             {
               "slug": "rpca-s2",
@@ -41844,7 +41845,8 @@
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-s1-hotfix1-dor.md"
                 }
               ],
-              "updatedAt": "2026-10-18T23:59:05.284Z"
+              "updatedAt": "2026-10-19T00:03:19.786Z",
+              "dodStatus": "complete"
             }
           ]
         }
