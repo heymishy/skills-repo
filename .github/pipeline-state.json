@@ -42010,6 +42010,34 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1009"
+            },
+            {
+              "slug": "rpca-embed-hotfix2",
+              "name": "embedScreenshotPaths matches on (storySlug, acId) together, not position -- rpca-embed-hotfix1's cursor fix was itself insufficient (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix1 merged)",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-10-20T07:10:00.000Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 4,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-embed-hotfix2-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-embed-hotfix2-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Story-scoped (storySlug, acId) match in embedScreenshotPaths via invisible heading markers",
+                  "tddState": "committed",
+                  "file": "scripts/playback-capture.js"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1010"
             }
           ]
         }
