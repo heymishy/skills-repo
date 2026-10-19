@@ -75,6 +75,30 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   finally { console.warn = originalWarn; }
 })();
 
+// AC4 (integration): a full multi-AC run reports correct capture/skip counts
+(function () {
+  const { buildCaptureList } = require('../scripts/playback-capture');
+  const fs = require('fs');
+  const path = require('path');
+  const fixtureDir = path.join(__dirname, '..', 'artefacts', 'rpca-s2-test-fixture-ac4', 'playback', 'rpca-fixture-story');
+  fs.mkdirSync(fixtureDir, { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, 'selectors-manual.json'), JSON.stringify({ AC3: { url: '/fixture', selector: '.fixture-ac3' } }));
+  try {
+    const specFiles = [
+      `// fixture-spec-1.spec.js -- E2E for X (rpca-fixture-story AC1)\nconst el = page.locator('.fixture-ac1');\n`,
+      `// fixture-spec-2.spec.js -- E2E for Y (rpca-fixture-story AC2)\nconst el = page.locator('.fixture-ac2');\n`,
+    ];
+    const result = buildCaptureList('rpca-s2-test-fixture-ac4', 'rpca-fixture-story', ['AC1', 'AC2', 'AC3', 'AC4'], specFiles);
+    assert.strictEqual(result.captured.length, 3, 'expected 3 ACs captured: AC1 + AC2 (E2E-derived), AC3 (manual fallback)');
+    assert.strictEqual(result.skipped, 1, 'expected AC4 skipped (neither source)');
+    assert.strictEqual(result.summary, '3 captured, 1 skipped', 'expected the exact summary string');
+    assert.deepStrictEqual(result.captured.find(c => c.acId === 'AC1'), { acId: 'AC1', selector: '.fixture-ac1' });
+    assert.deepStrictEqual(result.captured.find(c => c.acId === 'AC3'), { acId: 'AC3', url: '/fixture', selector: '.fixture-ac3' });
+    pass('AC4 (integration): a full multi-AC run reports correct capture/skip counts');
+  } catch (e) { fail('AC4 (integration): a full multi-AC run reports correct capture/skip counts', e); }
+  finally { fs.rmSync(path.join(__dirname, '..', 'artefacts', 'rpca-s2-test-fixture-ac4'), { recursive: true, force: true }); }
+})();
+
 console.log(`\n[rpca-s2-selector-derivation-from-e2e-specs] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
