@@ -42016,7 +42016,7 @@
               "name": "embedScreenshotPaths matches on (storySlug, acId) together, not position -- rpca-embed-hotfix1's cursor fix was itself insufficient (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix1 merged)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-20T07:10:00.000Z",
+              "updatedAt": "2026-10-19T18:29:01.504Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42036,7 +42036,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "open",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1010"
             }
           ]
