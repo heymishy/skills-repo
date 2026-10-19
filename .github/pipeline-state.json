@@ -41854,11 +41854,11 @@
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "test-plan",
+              "stage": "dor",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "updatedAt": "2026-10-19T05:22:13.932Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -41868,7 +41868,8 @@
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "rpca-s1-hotfix1",
