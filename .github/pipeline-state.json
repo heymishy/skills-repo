@@ -41920,18 +41920,18 @@
             {
               "slug": "rpca-s5",
               "name": "Playback capture triggers automatically when a feature reaches Definition of Done, not via a manually-issued CLI per feature",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T06:39:45.264Z",
+              "updatedAt": "2026-10-19T06:50:25.315Z",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -41939,16 +41939,17 @@
                 {
                   "id": "task-1",
                   "name": "checkDodGate reads every story's own dodStatus evidence field (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s5-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Auto-trigger /feature-playback at feature-completion, non-blocking on failure (AC3, AC4, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s5-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "rpca-s2-hotfix1",
