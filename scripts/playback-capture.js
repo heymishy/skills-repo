@@ -145,7 +145,16 @@ function embedScreenshotPaths(markdown, shots) {
       heading = fallbackMatch[1];
     }
 
-    const insertion = `${heading}\n![${shot.acId}](screenshots/${fileName})\n`;
+    // rpca-embed-hotfix3: walkthrough.md lives one directory above each
+    // story's own screenshots (artefacts/<feature>/playback/<storySlug>/
+    // screenshots/<acId>.png) -- a bare "screenshots/<file>" link resolves
+    // to a non-existent artefacts/<feature>/playback/screenshots/ directory
+    // for every multi-story feature. Reuse the same storySlug already
+    // derived above for heading-matching to build a path that actually
+    // resolves, falling back to the old bare form only when no storySlug
+    // can be derived.
+    const imgPath = storySlug ? `${storySlug}/screenshots/${fileName}` : `screenshots/${fileName}`;
+    const insertion = `${heading}\n![${shot.acId}](${imgPath})\n`;
     doc = doc.slice(0, matchStart) + insertion + doc.slice(matchStart + heading.length);
     cursor = matchStart + insertion.length;
   }

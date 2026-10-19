@@ -81,8 +81,11 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     assert.strictEqual(shots[0].path, 'artefacts/f1/playback/s1/screenshots/AC1.png');
     assert.strictEqual(shots[1].path, 'artefacts/f1/playback/s1/screenshots/AC2.png');
     const doc = embedScreenshotPaths('## AC1 — x\n\ntext\n\n## AC2 — y\n\ntext\n', shots);
-    assert.ok(doc.includes('![AC1](screenshots/AC1.png)'), 'expected screenshot embedded in AC1 section');
-    assert.ok(doc.includes('![AC2](screenshots/AC2.png)'), 'expected screenshot embedded in AC2 section');
+    // rpca-embed-hotfix3: the embedded path is story-prefixed (s1/screenshots/...),
+    // not a bare basename -- walkthrough.md lives one directory above each
+    // story's own screenshots, so a bare "screenshots/<file>" link would not resolve.
+    assert.ok(doc.includes('![AC1](s1/screenshots/AC1.png)'), 'expected screenshot embedded in AC1 section');
+    assert.ok(doc.includes('![AC2](s1/screenshots/AC2.png)'), 'expected screenshot embedded in AC2 section');
     pass("AC3 (unit): capture script's own logic -- correct selector, correct path, correct AC mapping");
   } catch (e) { fail("AC3 (unit): capture script's own logic -- correct selector, correct path, correct AC mapping", e); }
 })().then(() => {
