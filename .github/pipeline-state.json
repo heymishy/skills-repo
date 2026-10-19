@@ -42044,7 +42044,7 @@
               "name": "embedScreenshotPaths writes a story-prefixed relative image path -- bare basename was broken for every multi-story feature (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix2 merged)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-20T07:40:00.000Z",
+              "updatedAt": "2026-10-19T18:46:48.436Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42064,7 +42064,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "open",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1011"
             }
           ]
