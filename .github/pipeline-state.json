@@ -41982,6 +41982,32 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1005",
               "dodStatus": "complete"
+            },
+            {
+              "slug": "rpca-embed-hotfix1",
+              "name": "embedScreenshotPaths scopes matches per story, not globally by AC id (short-track fix, found running /feature-playback for real for the first time)",
+              "stage": "verify-completion",
+              "health": "green",
+              "updatedAt": "2026-10-19T09:01:27.211Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 2,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-embed-hotfix1-test-plan.md"
+              },
+              "acTotal": 2,
+              "acVerified": 2,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-embed-hotfix1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Cursor-based fix for embedScreenshotPaths cross-story collision",
+                  "tddState": "committed",
+                  "file": "scripts/playback-capture.js"
+                }
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
