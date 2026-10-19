@@ -38,6 +38,24 @@ const skillMd = fs.readFileSync(skillMdPath, 'utf8');
   } catch (e) { fail('AC2 (unit): "What this skill does NOT do" is accurately scoped', e); }
 })();
 
+// AC3 (unit): decisions.md closes the 5 original RISK-ACCEPT entries
+(function () {
+  const decisionsPath = path.join(__dirname, '..', 'artefacts', '2026-10-07-feature-playback-demo-with-video-and-or-screens-', 'decisions.md');
+  const decisions = fs.readFileSync(decisionsPath, 'utf8');
+  try {
+    const slugs = ['fpd-s1', 'fpd-s2', 'fpd-s3', 'fpd-s4', 'fpd-s5'];
+    for (const slug of slugs) {
+      assert.ok(decisions.includes(slug), `expected the new superseding entry to name ${slug}`);
+    }
+    assert.ok(/supersed/i.test(decisions), 'expected the word "supersede" (or a variant) to appear');
+    assert.ok(decisions.includes('rpca-s1') && decisions.includes('rpca-s3'), "expected a reference to rpca-s1-rpca-s3's own real test evidence");
+    // The 5 original RISK-ACCEPT headers must still be present, unedited.
+    assert.ok(decisions.includes('fpd-s1 AC3'), 'expected the original fpd-s1 AC3 RISK-ACCEPT header to still be present');
+    assert.ok(decisions.includes('fpd-s2 AC1'), 'expected the original fpd-s2 AC1 RISK-ACCEPT header to still be present');
+    pass('AC3 (unit): decisions.md closes the 5 original RISK-ACCEPT entries');
+  } catch (e) { fail('AC3 (unit): decisions.md closes the 5 original RISK-ACCEPT entries', e); }
+})();
+
 console.log(`\n[rpca-s4-wire-cli-into-feature-playback-skill] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
