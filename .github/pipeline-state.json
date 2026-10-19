@@ -41766,11 +41766,11 @@
             {
               "slug": "rpca-s2",
               "name": "Selector derivation generalises beyond one AC, with a manual fallback for ACs with no E2E coverage",
-              "stage": "test-plan",
+              "stage": "dor",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-18T19:40:42.110Z",
+              "updatedAt": "2026-10-19T00:14:23.116Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41780,7 +41780,8 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "rpca-s3",
