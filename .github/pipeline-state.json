@@ -42038,6 +42038,34 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1010"
+            },
+            {
+              "slug": "rpca-embed-hotfix3",
+              "name": "embedScreenshotPaths writes a story-prefixed relative image path -- bare basename was broken for every multi-story feature (short-track fix, found regenerating the real journey-cx-redesign walkthrough after hotfix2 merged)",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-10-20T07:40:00.000Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 4,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-embed-hotfix3-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-embed-hotfix3-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Story-prefixed relative image path in embedScreenshotPaths, reusing the storySlug already derived for heading-matching",
+                  "tddState": "committed",
+                  "file": "scripts/playback-capture.js"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1011"
             }
           ]
         }
