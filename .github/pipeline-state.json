@@ -41854,19 +41854,19 @@
             {
               "slug": "rpca-s4",
               "name": "Wire the real CLI into skills/feature-playback/SKILL.md's own documented steps",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T05:39:20.952Z",
+              "updatedAt": "2026-10-19T05:49:53.192Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0,
+                "passing": 3,
                 "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-s4-test-plan.md"
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -41874,16 +41874,17 @@
                 {
                   "id": "task-1",
                   "name": "Rewrite feature-playback SKILL.md Step 2-3 to describe the real orchestration (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Supersede the 5 original fpd-* RISK-ACCEPT entries (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-19-real-playback-capture-automation/plans/rpca-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "rpca-s1-hotfix1",
