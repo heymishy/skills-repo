@@ -41770,7 +41770,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-19T01:46:09.887Z",
+              "updatedAt": "2026-10-19T03:59:33.144Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -41810,7 +41810,8 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1004"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1004",
+              "dodStatus": "complete"
             },
             {
               "slug": "rpca-s3",
@@ -41892,7 +41893,7 @@
               "name": "deriveSelectorFromSpec anchors on the AC-specific inline mention, not any mention (short-track fix, found at rpca-s2 DoD)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-19T03:39:34.841Z",
+              "updatedAt": "2026-10-19T03:59:33.304Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -41913,7 +41914,8 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1005"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1005",
+              "dodStatus": "complete"
             }
           ]
         }
