@@ -42471,13 +42471,23 @@
       "slug": "2026-10-20-production-playback-capture",
       "name": "Production Playback Capture",
       "track": "standard",
-      "stage": "spike",
-      "health": "green",
-      "updatedAt": "2026-10-20T09:15:00.000Z",
+      "stage": "discovery",
+      "health": "amber",
+      "blocker": "Spike REDESIGN -- video-capture-library spike closed REDESIGN; resuming paused /discovery with the finding folded into MVP scope and Out of Scope",
+      "updatedAt": "2026-10-20T10:00:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
+      "spikes": [
+        {
+          "id": "video-capture-library",
+          "storySlug": "2026-10-20-production-playback-capture",
+          "verdict": "REDESIGN",
+          "outputArtefact": "artefacts/2026-10-20-production-playback-capture/spikes/video-capture-library-outcome.md",
+          "verdictAt": "2026-10-20T10:00:00.000Z"
+        }
+      ],
       "epics": [],
       "stories": []
     }
