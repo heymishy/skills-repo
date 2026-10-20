@@ -1,0 +1,1 @@
+Create a journey with three stages (Discover, Buy, Use). Set Discover to negative, Buy to neutral, Use to positive. Open the Customer experience view and show the emotion curve connecting all three points, positive highest and negative lowest.
