@@ -10,3 +10,23 @@
 **Revisit trigger:** When the production-playback-capture MVP's own `/discovery` resumes, fold this finding into MVP scope and Out-of-Scope framing. Separately, when a near-term story adopts the `ffmpeg` presentation fix for staging capture, and when a later story builds and measures the redaction pipeline's real accuracy before any PROCEED call on production video itself. If the broader ~17-item commercial demo-platform feature set is ever prioritised, scope it as its own, separate feature with its own `/discovery` — do not fold it into this feature's own MVP.
 
 ---
+
+**2026-10-21 | CORRECTION | `discovery.md` and `benefit-metric.md` are built on a wrong frame — read this before resuming**
+
+**Finding:** `discovery.md` (Approved 2026-10-21) and `benefit-metric.md` (active) in this folder describe an **internal operator CLI tool** — one dedicated synthetic capture tenant, authenticated via CI with a service credential, run by the platform operator to gather DoD evidence. The actual requirement, surfaced by the operator during `/definition`'s own Step 3 (epic structure confirmation), is a **self-service, in-product, multi-tenant capability**: every real tenant's own users should be able to trigger and view a playback of their own DoD-complete features, within their own tenancy, without the platform operator running anything on their behalf.
+
+**Why this matters for anyone resuming this feature:** The wrong frame is not a detail — it invalidates core MVP design decisions already written into `discovery.md`:
+- "One dedicated synthetic capture tenant" (MVP item 2) does not fit "every tenant captures their own features" — there may be no single capture tenant at all under the corrected frame.
+- "Authenticate via CI with a service-account credential" (MVP items 3-4) does not fit a feature a tenant's own logged-in users trigger themselves from within the product.
+- The risk model changes: real tenant data becomes central to the feature's own purpose by design, not an edge case bounded by a synthetic tenant — which makes the redaction/PII question (already live from the `video-capture-library` spike above) a first-class MVP concern, not a deferred follow-on.
+
+**What survives the correction, mostly unchanged:**
+- The `video-capture-library` spike's own findings (ffmpeg for zoom/annotation, local OCR+pattern-match for redaction, SaaS platforms ruled out) are about the *presentation/redaction* layer, which is likely still relevant regardless of who triggers capture or which tenant it runs for.
+- The underlying `rpca` staging mechanism (`captureAcScreenshots`, `captureVideoForClip`, `buildCaptureList`) is still a real, proven building block — the question is how/when/by whom it gets invoked and on whose data, not whether it works.
+
+**What does not survive:** `discovery.md`'s own Problem Statement, Who It Affects, MVP Scope, and Out of Scope sections need a full rewrite, not a patch. `benefit-metric.md`'s own two metrics (coverage, capture time) were framed around the operator-run model and will likely need reframing around tenant adoption/self-service usage instead.
+
+**Made by:** Hamish King (Platform Owner), via direct chat correction during `/definition`, 2026-10-21.
+**Revisit trigger:** Next session — restart `/discovery` from Section 1 (Problem Statement) with the corrected frame. Do not resume from the current `discovery.md`/`benefit-metric.md` as a starting draft; they encode the wrong mechanism throughout, not just the wrong wording in a few places.
+
+---

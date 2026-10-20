@@ -1,5 +1,7 @@
 # Discovery: Production Playback Capture
 
+> ⚠️ **SUPERSEDED — do not resume from this artefact.** Caught at `/definition` Step 3, 2026-10-21: this entire document is built around the wrong mechanism (an internal operator CLI tool with one synthetic capture tenant) when the actual requirement is a self-service, in-product, multi-tenant capability (every real tenant's own users triggering and viewing a playback of their own DoD-complete features). See `decisions.md`'s own 2026-10-21 CORRECTION entry for the full explanation of what survives and what doesn't. **Next session: restart `/discovery` from Section 1 with the corrected frame — do not patch this file.**
+
 **Status:** Approved
 **Created:** 2026-10-20
 **Approved by:** Hamish King — Platform Owner — 2026-10-21
