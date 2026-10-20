@@ -42471,9 +42471,9 @@
       "slug": "2026-10-20-production-playback-capture",
       "name": "Production Playback Capture",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-10-21T08:00:00.000Z",
+      "updatedAt": "2026-10-21T08:30:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42490,7 +42490,31 @@
       "epics": [],
       "stories": [],
       "discoveryStatus": "approved",
-      "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md"
+      "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md",
+      "benefitMetricStatus": "active",
+      "benefitMetricArtefact": "artefacts/2026-10-20-production-playback-capture/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Production capture coverage",
+          "target": ">=1 real DoD-complete feature has production-sourced screenshot evidence within 4 weeks",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Capture time (once built)",
+          "target": "comparable to staging's ~5-6s unattended run time",
+          "baseline": "N/A",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
