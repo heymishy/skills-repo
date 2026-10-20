@@ -42076,9 +42076,9 @@
             {
               "slug": "rpca-video-hotfix1",
               "name": "captureVideoForClip must not delete a successfully-recorded video on a downstream caption-generation failure (short-track fix, found running the real video-capture mechanism for the first time)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-20T05:24:14.001Z",
+              "updatedAt": "2026-10-20T06:14:46.934Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42099,7 +42099,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1012"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1012",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dod/rpca-video-hotfix1-dod.md"
             }
           ]
         }
