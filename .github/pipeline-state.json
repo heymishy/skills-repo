@@ -42072,6 +42072,34 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1011",
               "dodStatus": "complete",
               "dodArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dod/rpca-embed-hotfix3-dod.md"
+            },
+            {
+              "slug": "rpca-video-hotfix1",
+              "name": "captureVideoForClip must not delete a successfully-recorded video on a downstream caption-generation failure (short-track fix, found running the real video-capture mechanism for the first time)",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-10-20T08:05:00.000Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 4,
+                "artefact": "artefacts/2026-10-19-real-playback-capture-automation/test-plans/rpca-video-hotfix1-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-19-real-playback-capture-automation/dor/rpca-video-hotfix1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Split captureVideoForClip's recording and caption-generation phases into separate error-handling scopes",
+                  "tddState": "committed",
+                  "file": "scripts/playback-capture.js"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1012"
             }
           ]
         }
