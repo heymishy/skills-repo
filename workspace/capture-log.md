@@ -2742,3 +2742,11 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-text: "fpd-s6's own /review run 1 found (finding 1-M1) that it was scoped outside the original discovery MVP with no scope note logged in decisions.md, per /definition's own 'Scope guard -- per story' step. Checked fpd-s5 (same epic, also triggered by live findings rather than original MVP scope) and found the identical gap -- no scope note logged for it either. Both resolved retroactively in one decisions.md SCOPE entry this session, but the underlying pattern (a story scoped from live/production findings mid-epic skips the Scope guard prompt that only fires during a fresh /definition pass) is worth watching for on future reactive stories in this repo, not just this epic."
   source: agent-auto
 
+---
+
+- date: 2026-10-20
+  session-phase: feature-playback Step 4 (editorial review), journey-cx-redesign
+  signal-type: gap
+  signal-text: "Editorial review of jcx-s3's own captured video found real DOM-overlay-based framing (CSS transform:scale(), injected banner elements via page.evaluate) fragile and effort-intensive for demo clarity -- iterating it became a distraction from the actual goal (validating the capture mechanism itself, which four real bug fixes in this session already did). Operator floated relaxing the repo's own dependency-minimalism norm for a specialised video-annotation/post-processing package (e.g. ffmpeg-based overlay/zoom, rather than live in-page DOM injection) as a better long-term approach if video-demo polish is ever prioritised again. Not actioned this session -- current video evidence kept as-is (proves the mechanism works end-to-end; screenshots remain the primary, already-reviewed AC evidence). Worth scoping as its own story if/when video-demo quality becomes a real priority, rather than solving ad hoc via DOM injection next time too."
+  source: agent-auto
+
