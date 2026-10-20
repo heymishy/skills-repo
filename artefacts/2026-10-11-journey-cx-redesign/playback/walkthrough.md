@@ -72,6 +72,8 @@ Two tests: "AC3 (creation): cross-tenant stage id returns 404 and makes zero mut
 
 `tests/e2e/jcx-s3-emotion-curve.spec.js` (written, correctly reaches real server dispatch, blocked by a separate pre-existing gap — see UI-evidence gate below)
 
+Video: [jcx-s3/video/page@29803e1e85466b01083f5e5f380a9be8.webm](jcx-s3/video/page@29803e1e85466b01083f5e5f380a9be8.webm) ([captions](jcx-s3/video/page@29803e1e85466b01083f5e5f380a9be8.vtt), [transcript](jcx-s3/video/page@29803e1e85466b01083f5e5f380a9be8.transcript.txt)) — real capture against wuce-staging, linked manually per `feature-playback/SKILL.md`'s own documented Step 3 gap (no automatic video-embed function yet)
+
 <!-- story: jcx-s3 -->
 ## AC2 — missing-emotion stage shows a distinct marker, connects around it
 
