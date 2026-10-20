@@ -234,17 +234,25 @@ async function generateCaptionsForVideo(videoPath, interactionSequenceText, writ
 // file if it exists, and re-throws the original error -- a failed run
 // leaves no partial/corrupt file behind (AC3). Does not modify
 // captureVideoRecording or generateCaptionsForVideo themselves.
+// rpca-video-hotfix1: recording and caption generation are two sequential
+// phases with DIFFERENT failure semantics -- a failure DURING recording
+// really does leave a partial/corrupt file (delete it, as before); a
+// failure AFTER recording, in the wholly separate caption-generation step,
+// means the video is complete and valid and must never be deleted just
+// because an unrelated downstream step failed. Found running this function
+// for real against real wuce-staging: the recording succeeded, but the
+// caption adapter's own correct "not wired" throw (D37) caused the just-
+// recorded video to be destroyed along with it.
 async function captureVideoForClip({ browser, featureSlug, storySlug, clip }) {
   const dir = `artefacts/${featureSlug}/playback/${storySlug}/video/`;
   const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
   const page = await context.newPage();
+  let videoPath;
   try {
     if (clip.run) await clip.run(page);
     await context.close();
     const video = page.video ? page.video() : null;
-    const videoPath = video ? await video.path() : null;
-    const captionResult = await generateCaptionsForVideo(videoPath, clip.interactionSequenceText || '');
-    return Object.assign({ path: videoPath }, captionResult);
+    videoPath = video ? await video.path() : null;
   } catch (err) {
     try { await context.close(); } catch (_) { /* already closed or closing failed -- still attempt cleanup below */ }
     try {
@@ -253,6 +261,18 @@ async function captureVideoForClip({ browser, featureSlug, storySlug, clip }) {
       if (partialPath && fs.existsSync(partialPath)) fs.unlinkSync(partialPath);
     } catch (_) { /* best-effort cleanup -- never mask the original error */ }
     throw err;
+  }
+  // Recording succeeded -- videoPath is a complete, valid file from here on.
+  // A caption-generation failure must propagate (callers still need to know
+  // captions are missing) but must never delete or otherwise touch the
+  // already-successfully-recorded video. The video's own path is attached
+  // to the thrown error so a caller can still report/recover it.
+  try {
+    const captionResult = await generateCaptionsForVideo(videoPath, clip.interactionSequenceText || '');
+    return Object.assign({ path: videoPath }, captionResult);
+  } catch (captionErr) {
+    captionErr.videoPath = videoPath;
+    throw captionErr;
   }
 }
 
