@@ -42078,7 +42078,7 @@
               "name": "captureVideoForClip must not delete a successfully-recorded video on a downstream caption-generation failure (short-track fix, found running the real video-capture mechanism for the first time)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-20T08:05:00.000Z",
+              "updatedAt": "2026-10-20T05:24:14.001Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -42098,7 +42098,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "open",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1012"
             }
           ]
