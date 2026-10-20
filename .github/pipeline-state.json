@@ -42473,7 +42473,7 @@
       "track": "standard",
       "stage": "discovery",
       "health": "green",
-      "updatedAt": "2026-10-20T17:45:00.000Z",
+      "updatedAt": "2026-10-21T08:00:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42489,7 +42489,7 @@
       ],
       "epics": [],
       "stories": [],
-      "discoveryStatus": "clarified",
+      "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md"
     }
   ],

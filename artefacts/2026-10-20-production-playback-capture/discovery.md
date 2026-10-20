@@ -1,8 +1,8 @@
 # Discovery: Production Playback Capture
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-10-20
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-10-21
 **Author:** Claude Sonnet 5 (session), with Hamish King
 
 ---
@@ -71,7 +71,7 @@ The revisit trigger set in `artefacts/2026-10-19-real-playback-capture-automatio
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-10-21
 
 ---
 
