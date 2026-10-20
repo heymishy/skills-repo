@@ -42472,9 +42472,8 @@
       "name": "Production Playback Capture",
       "track": "standard",
       "stage": "discovery",
-      "health": "amber",
-      "blocker": "Spike REDESIGN -- video-capture-library spike closed REDESIGN; resuming paused /discovery with the finding folded into MVP scope and Out of Scope",
-      "updatedAt": "2026-10-20T10:00:00.000Z",
+      "health": "green",
+      "updatedAt": "2026-10-20T17:45:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42489,7 +42488,9 @@
         }
       ],
       "epics": [],
-      "stories": []
+      "stories": [],
+      "discoveryStatus": "clarified",
+      "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
