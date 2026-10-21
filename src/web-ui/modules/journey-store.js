@@ -258,6 +258,32 @@ function getCaptureTargetState(captureTargets, acId) {
 }
 
 /**
+ * ppc-s1 (AC2) — one-time manual target entry per AC. Stores/replaces
+ * (never duplicates) a {acId, url, selector} entry on the journey's own
+ * captureTargets array.
+ * @param {string} journeyId
+ * @param {string} acId
+ * @param {string} url
+ * @param {string} selector
+ */
+function setCaptureTarget(journeyId, acId, url, selector) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return;
+  if (!Array.isArray(journey.captureTargets)) journey.captureTargets = [];
+  var idx = journey.captureTargets.findIndex(function(t) { return t.acId === acId; });
+  var entry = { acId: acId, url: url, selector: selector };
+  if (idx === -1) {
+    journey.captureTargets.push(entry);
+  } else {
+    journey.captureTargets[idx] = entry;
+  }
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
+  _pgWrite(journey);
+}
+
+/**
  * Record a completed stage on the journey.
  * @param {string} journeyId
  * @param {string} skillName
@@ -598,6 +624,7 @@ module.exports = {
   getJourneyByTenantProductSlug,
   isDodComplete,
   getCaptureTargetState,
+  setCaptureTarget,
   CAPTURE_TARGET_NOT_SET,
   getArtefactsForJourney,
   deleteJourney,

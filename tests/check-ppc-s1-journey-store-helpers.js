@@ -70,6 +70,42 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('setCaptureTarget: stores a new target, and replaces (not duplicates) an existing one for the same acId', function() {
+    var store = require('../src/web-ui/modules/journey-store');
+    store._clearForTesting();
+    var j = store.createJourney('target-test-slug');
+
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x/1', '#sel1');
+    var after1 = store.getJourney(j.journeyId);
+    assert.strictEqual(after1.captureTargets.length, 1);
+    assert.deepStrictEqual(after1.captureTargets[0], { acId: 'AC1', url: 'http://x/1', selector: '#sel1' });
+
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x/2', '#sel2');
+    var after2 = store.getJourney(j.journeyId);
+    assert.strictEqual(after2.captureTargets.length, 1, 'must replace, not duplicate');
+    assert.deepStrictEqual(after2.captureTargets[0], { acId: 'AC1', url: 'http://x/2', selector: '#sel2' });
+  });
+});
+
+queue.push(function() {
+  return test('journey-store-pg _sanitise: captureTargets survives the Postgres allowlist (fdn-s1 regression)', function() {
+    delete require.cache[require.resolve('../src/web-ui/adapters/journey-store-pg')];
+    var pg = require('../src/web-ui/adapters/journey-store-pg');
+    var calls = [];
+    pg._setPoolForTesting({ query: async function(sql, params) { calls.push(params); return { rows: [] }; } });
+    var journey = {
+      journeyId: 'j1', featureSlug: 's1', completedStages: [],
+      captureTargets: [{ acId: 'AC1', url: 'http://x', selector: '#y' }]
+    };
+    return pg.saveJourney(journey).then(function() {
+      var dataJson = calls[0][5];
+      var data = JSON.parse(dataJson);
+      assert.deepStrictEqual(data.captureTargets, [{ acId: 'AC1', url: 'http://x', selector: '#y' }]);
+    });
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-journey-store-helpers.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
