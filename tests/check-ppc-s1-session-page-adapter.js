@@ -1,5 +1,7 @@
 'use strict';
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 var passed = 0; var failed = 0; var failures = [];
 function test(name, fn) {
   try {
@@ -53,6 +55,45 @@ queue.push(function() {
     assert.strictEqual(cookiesSeen[0].value, 'abc123sessionid');
     assert.strictEqual(cookiesSeen[0].domain, 'example.com');
     assert.strictEqual(cookiesSeen[0].secure, true, 'https base URL must set secure:true on the cookie');
+  });
+});
+
+queue.push(function() {
+  return test('AC8 (D37 wiring): server.js wires the real adapter, never under NODE_ENV=test', function() {
+    var serverSrc = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/server.js'), 'utf8');
+    assert.ok(/setSessionPageAdapter\s*\(\s*realGetAuthenticatedPage\s*\)/.test(serverSrc),
+      'server.js must call setSessionPageAdapter(realGetAuthenticatedPage) during bootstrap');
+  });
+});
+
+queue.push(function() {
+  return test('AC8 (D37 behavioural correctness): two different sessions produce two distinct, correctly-isolated pages', async function() {
+    var adapter = require('../src/web-ui/adapters/session-page-adapter');
+
+    function fakeChromium() {
+      return {
+        launch: async function() {
+          var cookiesSeen = [];
+          var fakeContext = {
+            addCookies: async function(cookies) { cookiesSeen.push(cookies[0]); },
+            newPage: async function() { return { _cookies: cookiesSeen }; }
+          };
+          var fakeBrowser = { newContext: async function() { return fakeContext; } };
+          return fakeBrowser;
+        }
+      };
+    }
+
+    var chromium1 = fakeChromium();
+    var result1 = await adapter.realGetAuthenticatedPage('session-A', 'http://localhost:3000', chromium1);
+    var chromium2 = fakeChromium();
+    var result2 = await adapter.realGetAuthenticatedPage('session-B', 'http://localhost:3000', chromium2);
+
+    assert.notStrictEqual(result1.page, result2.page, 'two different sessions must produce two distinct page objects');
+    assert.strictEqual(result1.page._cookies[0].value, 'session-A');
+    assert.strictEqual(result2.page._cookies[0].value, 'session-B');
+    assert.notStrictEqual(result1.page._cookies[0].value, result2.page._cookies[0].value,
+      'the two pages must be seeded with different, correctly-isolated session values -- not the same object reused');
   });
 });
 

@@ -96,6 +96,7 @@ const { setCreateRepoAdapter, realCreateRepo }                       = require('
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
+const { setSessionPageAdapter, realGetAuthenticatedPage }            = require('./adapters/session-page-adapter'); // ppc-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
@@ -354,6 +355,17 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setArtefactCommitAdapter(realCommitArtefact);
   console.log('[artefact-commit-writer] commitArtefact wired');
+}
+
+// ppc-s1 / D37 mandatory separate wiring task -- wire the real
+// session-to-Playwright adapter (a fifth, distinct adapter from the four
+// above -- setSessionPageAdapter/getSessionPageAdapter, so none of the five
+// stories' wiring calls collide). Never wired in NODE_ENV=test (tests call
+// setSessionPageAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setSessionPageAdapter(realGetAuthenticatedPage);
+  console.log('[session-page-adapter] getAuthenticatedPage wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
