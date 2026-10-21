@@ -9,16 +9,13 @@
 
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 
-// Lazy require (not a module-level const) -- deliberate. Tests bust
-// journey-store's require.cache entry per-run (see
-// tests/check-ppc-s1-playback-evidence-route.js's getStore() helper) to get
-// an isolated in-memory store per test. A module-level `const journeyStore =
-// require(...)` binds to whichever instance existed at THIS file's first
-// load and never sees a later cache-bust, since require() only re-executes
-// a module when its own cache entry is missing -- it does not re-resolve an
-// already-captured reference. Calling require() fresh on every handler
-// invocation always reads whatever is in the cache right now.
-function _store() { return require('../modules/journey-store'); }
+// Matches journey.js's/features.js's own setJourneyStoreModule DI
+// convention -- tests inject a fresh/mock store explicitly via
+// setJourneyStoreModule(), rather than busting journey-store's own
+// require.cache entry (journey-store.js already exports _clearForTesting()
+// for in-place reset of the one required instance).
+var _journeyStore = require('../modules/journey-store');
+function setJourneyStoreModule(mod) { _journeyStore = mod; }
 
 function _sendJson(res, status, body) {
   if (res.status) { res.status(status).json(body); }
@@ -38,15 +35,13 @@ async function _resolveJourney(req) {
   var productId = req.params && req.params.productId;
   var featureSlug = req.params && req.params.featureSlug;
   if (!tenantId || !productId || !featureSlug) return null;
-  var journeyStore = _store();
-  var journey = journeyStore.getJourneyByTenantProductSlug(tenantId, productId, featureSlug);
-  if (!journey || !journeyStore.isDodComplete(journey)) return null;
+  var journey = _journeyStore.getJourneyByTenantProductSlug(tenantId, productId, featureSlug);
+  if (!journey || !_journeyStore.isDodComplete(journey)) return null;
   return journey;
 }
 
 async function _getDodAcList(journey) {
-  var journeyStore = _store();
-  var artefacts = await journeyStore.getArtefactsForJourney(journey.journeyId);
+  var artefacts = await _journeyStore.getArtefactsForJourney(journey.journeyId);
   var dodRow = (artefacts || []).find(function(a) { return a.skill_name === 'definition-of-done'; });
   if (!dodRow) return [];
   return parseDodAcCoverage(dodRow.content);
@@ -59,14 +54,13 @@ async function handleGetPlaybackEvidence(req, res) {
   var journey = await _resolveJourney(req);
   if (!journey) { _notFound(res); return; }
 
-  var journeyStore = _store();
   var acRows = await _getDodAcList(journey);
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
 
   var acs = acRows.map(function(ac) {
-    var targetState = journeyStore.getCaptureTargetState(captureTargets, ac.acId);
-    var targetSet = targetState !== journeyStore.CAPTURE_TARGET_NOT_SET;
+    var targetState = _journeyStore.getCaptureTargetState(captureTargets, ac.acId);
+    var targetSet = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
     return {
       acId: ac.acId,
       description: ac.description,
@@ -81,6 +75,7 @@ async function handleGetPlaybackEvidence(req, res) {
 
 module.exports = {
   handleGetPlaybackEvidence,
+  setJourneyStoreModule,
   _resolveJourney,
   _notFound,
   _sendJson

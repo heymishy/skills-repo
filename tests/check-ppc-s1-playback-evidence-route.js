@@ -78,10 +78,16 @@ queue.push(function() {
   });
 });
 
-var JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+// Matches journey.js's/features.js's own DI convention: one stable required
+// store instance, reset between tests via its own _clearForTesting() --
+// never require.cache-busting, since playback-evidence.js now takes the
+// store via setJourneyStoreModule() (journey-store.js code review fix).
+var store = require('../src/web-ui/modules/journey-store');
+var pe = require('../src/web-ui/routes/playback-evidence');
+pe.setJourneyStoreModule(store);
 function getStore() {
-  delete require.cache[require.resolve(JOURNEY_STORE_PATH)];
-  return require(JOURNEY_STORE_PATH);
+  store._clearForTesting();
+  return store;
 }
 function makeRes() {
   var res = { _status: null, _json: null, json: function(body) { res._status = res._status || 200; res._json = body; } };
@@ -121,7 +127,6 @@ function setupDodCompleteJourney(store, opts) {
 
 queue.push(function() {
   return test('AC1: GET surface lists ACs scoped to the requesting tenant+product only', async function() {
-    var pe = require('../src/web-ui/routes/playback-evidence');
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
 
@@ -137,7 +142,6 @@ queue.push(function() {
 
 queue.push(function() {
   return test('AC4: an AC with no stored capture target shows NOT_SET, not a broken/erroring action', async function() {
-    var pe = require('../src/web-ui/routes/playback-evidence');
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
 
@@ -152,7 +156,6 @@ queue.push(function() {
 
 queue.push(function() {
   return test('AC5: a captured screenshot path displays inline, no separate download step', async function() {
-    var pe = require('../src/web-ui/routes/playback-evidence');
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
     store.setJourneyFields(setup.journeyId, { captureScreenshots: { AC1: 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png' } });
@@ -167,7 +170,6 @@ queue.push(function() {
 
 queue.push(function() {
   return test('AC7-precursor: unknown/unmatched tenant+product+slug combination returns 404, not a crash', async function() {
-    var pe = require('../src/web-ui/routes/playback-evidence');
     var store = getStore();
     var req = makeReq('tenant-nobody', 'product-nobody', 'slug-that-does-not-exist');
     var res = makeRes();
