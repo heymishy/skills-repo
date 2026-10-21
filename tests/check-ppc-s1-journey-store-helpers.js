@@ -44,7 +44,7 @@ queue.push(function() {
 });
 
 queue.push(function() {
-  return test('getJourneyForTenantProductSlug: scoped by BOTH tenant_id and product_id, not slug alone', function() {
+  return test('getJourneyByTenantProductSlug: scoped by BOTH tenant_id and product_id, not slug alone', function() {
     var store = require('../src/web-ui/modules/journey-store');
     store._clearForTesting();
     var a = store.createJourney('duplicate-slug');
@@ -52,21 +52,21 @@ queue.push(function() {
     var b = store.createJourney('duplicate-slug');
     store.setJourneyFields(b.journeyId, { tenantId: 'tenant-b', productId: 'product-b' });
 
-    var found = store.getJourneyForTenantProductSlug('tenant-a', 'product-a', 'duplicate-slug');
+    var found = store.getJourneyByTenantProductSlug('tenant-a', 'product-a', 'duplicate-slug');
     assert.strictEqual(found.journeyId, a.journeyId);
 
-    var notFound = store.getJourneyForTenantProductSlug('tenant-a', 'product-b', 'duplicate-slug');
+    var notFound = store.getJourneyByTenantProductSlug('tenant-a', 'product-b', 'duplicate-slug');
     assert.strictEqual(notFound, null);
   });
 });
 
 queue.push(function() {
-  return test('getJourneyForTenantProductSlug: returns null when tenantId or productId is missing (never a false-positive null==null match)', function() {
+  return test('getJourneyByTenantProductSlug: returns null when tenantId or productId is missing (never a false-positive null==null match)', function() {
     var store = require('../src/web-ui/modules/journey-store');
     store._clearForTesting();
     var a = store.createJourney('no-tenant-slug'); // tenantId/productId never set
-    assert.strictEqual(store.getJourneyForTenantProductSlug(null, null, 'no-tenant-slug'), null);
-    assert.strictEqual(store.getJourneyForTenantProductSlug(undefined, undefined, 'no-tenant-slug'), null);
+    assert.strictEqual(store.getJourneyByTenantProductSlug(null, null, 'no-tenant-slug'), null);
+    assert.strictEqual(store.getJourneyByTenantProductSlug(undefined, undefined, 'no-tenant-slug'), null);
   });
 });
 

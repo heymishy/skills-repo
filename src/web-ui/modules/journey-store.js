@@ -208,15 +208,20 @@ function getJourneyByFeatureSlug(featureSlug) {
  * ppc-s1 (AC1, AC6, AC7) — deliberately NOT a reuse of getJourneyByFeatureSlug
  * above, which has no tenant filtering at all (confirmed cross-tenant leak
  * risk, decisions.md 2026-10-21 ARCHITECTURE entry). Requires BOTH tenantId
- * AND productId to be truthy and match -- guards against the case where two
- * journeys both have tenantId/productId unset (null === null would otherwise
- * incorrectly "match").
+ * AND productId to be truthy and match.
  * @param {string} tenantId
  * @param {string} productId
  * @param {string} featureSlug
  * @returns {object|null}
  */
-function getJourneyForTenantProductSlug(tenantId, productId, featureSlug) {
+function getJourneyByTenantProductSlug(tenantId, productId, featureSlug) {
+  // SECURITY: do not remove -- createJourney() never sets tenantId/productId
+  // at creation time (only setJourneyFields() does, later), so any
+  // not-yet-scoped journey has both as undefined. Without this guard, a
+  // caller bug upstream (e.g. an auth-middleware regression passing
+  // undefined tenantId/productId through) would match that unscoped
+  // journey via undefined === undefined -- a real access-control bypass,
+  // not just a cosmetic double-null dedup nicety. Fail closed here.
   if (!tenantId || !productId) return null;
   var match = null;
   for (var journey of _journeys.values()) {
@@ -590,7 +595,7 @@ module.exports = {
   setActiveSession,
   getJourneyBySession,
   getJourneyByFeatureSlug,
-  getJourneyForTenantProductSlug,
+  getJourneyByTenantProductSlug,
   isDodComplete,
   getCaptureTargetState,
   CAPTURE_TARGET_NOT_SET,
