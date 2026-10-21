@@ -42497,11 +42497,11 @@
             {
               "slug": "ppc-s1",
               "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-21T17:46:27.522Z",
+              "updatedAt": "2026-10-21T18:01:56.189Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
