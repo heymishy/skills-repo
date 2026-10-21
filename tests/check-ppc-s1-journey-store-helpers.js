@@ -24,6 +24,25 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('isDodComplete: true when completedStages has a definition-of-done entry', function() {
+    var store = require('../src/web-ui/modules/journey-store');
+    var complete = { completedStages: [{ skillName: 'definition-of-done', artefactPath: 'x', completedAt: 'now' }] };
+    var incomplete = { completedStages: [{ skillName: 'test-plan', artefactPath: 'x', completedAt: 'now' }] };
+    assert.strictEqual(store.isDodComplete(complete), true);
+    assert.strictEqual(store.isDodComplete(incomplete), false);
+  });
+});
+
+queue.push(function() {
+  return test('getCaptureTargetState: returns NOT_SET for an AC with no stored target, the stored target otherwise', function() {
+    var store = require('../src/web-ui/modules/journey-store');
+    var targets = [{ acId: 'AC1', url: 'http://x', selector: '#y' }];
+    assert.strictEqual(store.getCaptureTargetState(targets, 'AC2'), 'NOT_SET');
+    assert.deepStrictEqual(store.getCaptureTargetState(targets, 'AC1'), { acId: 'AC1', url: 'http://x', selector: '#y' });
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-journey-store-helpers.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

@@ -200,6 +200,33 @@ function getJourneyByFeatureSlug(featureSlug) {
 }
 
 /**
+ * ppc-s1 (AC1) — "DoD-complete" is this repo's own existing signal: a
+ * completedStages entry whose skillName is the literal string
+ * 'definition-of-done'. Not a new field.
+ * @param {object} journey
+ * @returns {boolean}
+ */
+function isDodComplete(journey) {
+  if (!journey || !Array.isArray(journey.completedStages)) return false;
+  return journey.completedStages.some(function(cs) { return cs.skillName === 'definition-of-done'; });
+}
+
+var CAPTURE_TARGET_NOT_SET = 'NOT_SET';
+
+/**
+ * ppc-s1 (AC2, AC4) — looks up a stored capture target for one AC id within
+ * a journey's own captureTargets array (never undefined/null/throws).
+ * @param {Array<{acId:string,url:string,selector:string}>} captureTargets
+ * @param {string} acId
+ * @returns {{acId:string,url:string,selector:string}|'NOT_SET'}
+ */
+function getCaptureTargetState(captureTargets, acId) {
+  var targets = captureTargets || [];
+  var match = targets.find(function(t) { return t.acId === acId; });
+  return match || CAPTURE_TARGET_NOT_SET;
+}
+
+/**
  * Record a completed stage on the journey.
  * @param {string} journeyId
  * @param {string} skillName
@@ -537,6 +564,8 @@ module.exports = {
   setActiveSession,
   getJourneyBySession,
   getJourneyByFeatureSlug,
+  isDodComplete,
+  getCaptureTargetState,
   getArtefactsForJourney,
   deleteJourney,
   completeStage,
