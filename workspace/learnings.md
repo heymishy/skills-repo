@@ -3359,3 +3359,51 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **Rule (candidate, not yet built):** Confident, specific scope is not the same signal as *correct* scope. Earlier pipeline gates (discovery's clarification gate, clarify's assumption-resolution) are well-built for catching vagueness and unconfirmed facts, but have no mechanism for catching a wrong-but-confident frame. The cheapest real catch available today is still a human reading a concrete decomposition (epics/stories, not abstract scope prose) and recognising "that's not what I meant" — which argues for keeping `/definition`'s own Step 3 (epic structure confirmation) as a genuine, non-skippable human checkpoint, not something to rush through even when earlier artefacts look thorough and well-reasoned. A possible structural improvement worth scoping later: have `/discovery` or `/benefit-metric` restate the MVP back as a short, concrete "a day in the life" scenario (who does what, when, triggered by what) rather than only scope-list prose — a concrete scenario is more likely to surface "that's not it" than a bulleted scope list is.
 **Cost of the miss:** A full discovery, clarify, benefit-metric, and spike cycle (one real session) had to be set aside and restarted from Section 1, rather than caught at the cheapest possible point (the original discovery conversation itself).
 **Source:** agent-auto, immediately after the operator's own correction; session paused here at the operator's explicit request to restart the corrected discovery in a fresh session with full context budget.
+
+---
+
+## D45 — `journeys` vs `customer_journeys`: two differently-shaped tables with confusingly similar names
+
+**Date:** 2026-10-21
+**Observed at:** `production-playback-capture` feature, restarted `/discovery`/`/definition` session.
+
+**What happened:** While reasoning about how a tenant's own delivered feature maps to its data model, I initially conflated two distinct Postgres tables because of their near-identical names: `journeys` (`src/web-ui/adapters/journey-store-pg.js`) — the skills-pipeline's own outer-loop session/delivery-tracking table (`journey_id`, `tenant_id`, `feature_slug`, `product_id`, `data` JSONB) — and `customer_journeys` (`scripts/migrate-schema-journeys.js`) — a completely unrelated, actual product feature for customer-journey mapping (personas, stages, canvas positioning). The migration script itself already documents this exact collision risk at the DB layer ("a plain `journeys` table already exists... under a completely different, incompatible shape"), but that comment is only visible to someone already reading that specific file — it didn't prevent the same confusion from recurring one layer up, during discovery/definition reasoning about the product's own domain model.
+
+**Root cause:** Near-identical naming (`journeys` / `customer_journeys`) across two tables that serve unrelated purposes (platform delivery-session tracking vs. an actual customer-facing product feature), with the disambiguating context living only in one migration file's code comment rather than anywhere a non-code-reading discovery/definition pass would naturally encounter it.
+
+**Prevention rule (candidate, not yet built):** When a story or discovery touches anything named "journey" in this codebase, explicitly state which table (`journeys` vs `customer_journeys`) and confirm it against the real column list in code (`journey-store-pg.js` vs `migrate-schema-journeys.js`) before building any data-model diagram or Architecture Constraint on it — do not rely on the name alone to disambiguate.
+
+---
+
+## D46 — Re-verify a DoD artefact's own code claim directly before relying on it for a new architectural decision
+
+**Date:** 2026-10-21
+**Observed at:** `production-playback-capture` feature, `/clarify` pass on the restarted discovery (Q4 — entry-point surface choice).
+
+**What happened:** `fpd-s4-dod.md` (an existing, already-merged DoD artefact) asserted that `/playback`'s data source (`pipeline-state.json`'s `features[]`) "has no tenant dimension at all in this data model," citing a code read of `handleGetFeatureArtefacts`. Rather than citing that claim secondhand into a new architectural decision (whether to reuse `/playback` or build a new tenant-scoped surface for `production-playback-capture`), I re-read the actual handler and its data-access function myself (`src/web-ui/routes/features.js:823`, `src/web-ui/modules/journey-store.js:194`) before writing the decision into `decisions.md`. The claim held up — `tenantId` is used only for a cosmetic breadcrumb lookup, never as an access-control filter on the actual artefact content — but the re-verification also surfaced a more precise, load-bearing detail the original DoD prose didn't spell out: `getJourneyByFeatureSlug` performs a global scan with no tenant parameter at all, confirming a genuine cross-tenant leak, not just an abstractly-described gap.
+
+**Rule:** A DoD artefact's own prose claim about code behaviour is evidence that it was true *at that time*, for *that story's* purpose — it is not a substitute for re-reading the code when a *different, new* decision is about to depend on the same claim being still-accurate and precise enough to bear real architectural weight. The cost of re-verifying directly (a few minutes, a couple of `Read`/`Grep` calls) is cheap relative to the cost of a wrong architectural decision built on a secondhand paraphrase.
+
+---
+
+## D47 — "Reuse the proven mechanism" claims need per-sub-mechanism verification, not a single blanket check
+
+**Date:** 2026-10-21
+**Observed at:** `production-playback-capture` feature, `/review` Run 1 (finding 1-H1).
+
+**What happened:** `discovery.md` claimed this feature was "mostly an auth-scoping and UI-surfacing change on top of the already-proven `rpca` mechanism" — and that claim was *partially* true: the session-reuse auth design and the screenshot-capture execution (`captureAcScreenshots`) really do transfer cleanly. But `rpca`'s own mechanism is actually a bundle of at least three separable sub-mechanisms (auth, screenshot execution, and AC-to-screen target/selector resolution), and only two of the three were actually verified against the corrected tenant-facing frame during `/discovery`/`/clarify`. The third (selector derivation, built entirely around this repo's own `tests/e2e/*.spec.js` convention) was carried forward on the strength of the other two checking out, and didn't generalise at all. This wasn't caught until `/review` read `rpca-s2`'s own story artefact directly.
+
+**Root cause:** A "we're reusing an existing, proven mechanism" claim was verified holistically (sampling a couple of pieces, generalising confidence to the whole) rather than per sub-mechanism. Confidence from verifying sub-mechanism A and B correctly transferred does not imply sub-mechanism C also transfers — each one has its own, independent fit to check.
+
+**Prevention rule (candidate, not yet built):** When a discovery or clarify step cites "reusing an existing mechanism" as grounds for a sizing claim, decompose the cited mechanism into its named sub-parts first (reading the actual prior story artefacts, not just the epic/feature summary) and verify each sub-part's fit to the new context independently, rather than treating "the mechanism" as one monolithic unit of trust.
+
+---
+
+## D48 — No automated accessibility tooling exists anywhere in this repo (confirmed, repo-wide)
+
+**Date:** 2026-10-21
+**Observed at:** `production-playback-capture` feature, `/test-plan` for `ppc-s1`/`ppc-s2`/`ppc-s3`.
+
+**What happened:** All three stories' WCAG 2.1 AA NFRs had to be handled as manual-only verification scenarios because a direct check (`grep` for `axe`/`pa11y` in `package.json` and `tests/`) confirmed no automated accessibility tooling is configured anywhere in this repo at all — not a gap specific to this feature. This is consistent with the already-logged `dsa-s3` WCAG AA contrast gap carried in `workspace/state.json`'s own `pendingActions`, confirming this is a recurring, structural gap rather than a one-off miss.
+
+**Rule:** Stop re-discovering this same limitation story-by-story. Any future UI-touching story's `/test-plan` should expect accessibility NFRs to default to manual-only until this is fixed at the platform level (e.g. adding `axe-core` or equivalent to the test suite once, rather than noting its absence repeatedly). Worth scoping as its own short-track story given how many stories this already affects.
