@@ -73,8 +73,29 @@ async function handleGetPlaybackEvidence(req, res) {
   _sendJson(res, 200, { featureSlug: journey.featureSlug, acs: acs });
 }
 
+/**
+ * AC2 — one-time manual target entry per AC.
+ */
+async function handlePostCaptureTarget(req, res) {
+  var journey = await _resolveJourney(req);
+  if (!journey) { _notFound(res); return; }
+
+  var acId = req.params && req.params.acId;
+  var body = req.body || {};
+  var url = body.url;
+  var selector = body.selector;
+  if (!acId || !url || !selector) {
+    _sendJson(res, 400, { error: 'acId, url, and selector are required' });
+    return;
+  }
+
+  _journeyStore.setCaptureTarget(journey.journeyId, acId, url, selector);
+  _sendJson(res, 200, { ok: true });
+}
+
 module.exports = {
   handleGetPlaybackEvidence,
+  handlePostCaptureTarget,
   setJourneyStoreModule,
   _resolveJourney,
   _notFound,

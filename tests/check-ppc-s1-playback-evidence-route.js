@@ -179,6 +179,50 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('AC2: POST stores a capture target, available for every subsequent read without re-entry', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { url: 'http://localhost:3000/dashboard', selector: '#widget-1', _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureTarget(req, res, null, null);
+
+    assert.strictEqual(res._json.ok, true);
+
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.deepStrictEqual(reloaded.captureTargets[0], { acId: 'AC1', url: 'http://localhost:3000/dashboard', selector: '#widget-1' });
+
+    // A subsequent GET reflects the stored target with no re-entry.
+    var getReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var getRes = makeRes();
+    await pe.handleGetPlaybackEvidence(getReq, getRes, null, null);
+    assert.strictEqual(getRes._json.acs[0].targetSet, true);
+    assert.deepStrictEqual(getRes._json.acs[0].target, { acId: 'AC1', url: 'http://localhost:3000/dashboard', selector: '#widget-1' });
+  });
+});
+
+queue.push(function() {
+  return test('AC2: missing url or selector is rejected with 400, nothing stored', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { url: '', selector: '', _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureTarget(req, res, null, null);
+
+    assert.strictEqual(res._status, 400);
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.strictEqual((reloaded.captureTargets || []).length, 0);
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
