@@ -42492,16 +42492,16 @@
         {
           "slug": "ppc-self-service-capture",
           "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "ppc-s1",
               "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-21T17:46:27.522Z",
+              "updatedAt": "2026-10-21T18:24:28.675Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
@@ -42511,7 +42511,87 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Extract captureAcScreenshots so it is actually deployed",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Add isDodComplete and getCaptureTargetState helpers",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add tenant+product-scoped journey lookup",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Add setCaptureTarget and fix Postgres allowlist durability gap",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Add session-to-Playwright adapter stub (AC8, D37)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire session-page adapter in server.js (AC8 complete)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Extend commitArtefact to accept base64 binary content",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Add tenant-scoped playback-evidence surface (AC1, AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "Add capture-target entry endpoint (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-9",
+                  "name": "Add session-reuse capture-trigger endpoint (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-10",
+                  "name": "Mount playback-evidence routes in server.js",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-11",
+                  "name": "Add dedicated AC6/AC7 tenant-isolation coverage",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-12",
+                  "name": "Add NFR coverage for session_id non-leak and ADR-018 compliance",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "ppc-s2",
