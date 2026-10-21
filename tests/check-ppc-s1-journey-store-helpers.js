@@ -38,7 +38,7 @@ queue.push(function() {
   return test('getCaptureTargetState: returns NOT_SET for an AC with no stored target, the stored target otherwise', function() {
     var store = require('../src/web-ui/modules/journey-store');
     var targets = [{ acId: 'AC1', url: 'http://x', selector: '#y' }];
-    assert.strictEqual(store.getCaptureTargetState(targets, 'AC2'), 'NOT_SET');
+    assert.strictEqual(store.getCaptureTargetState(targets, 'AC2'), store.CAPTURE_TARGET_NOT_SET);
     assert.deepStrictEqual(store.getCaptureTargetState(targets, 'AC1'), { acId: 'AC1', url: 'http://x', selector: '#y' });
   });
 });

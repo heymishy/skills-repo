@@ -15,6 +15,11 @@ var STAGE_SEQUENCE = [
   'definition-of-ready'  // step 7
 ];
 
+// ppc-s1: sentinel for getCaptureTargetState below -- exported so callers
+// compare against this constant rather than the hardcoded literal 'NOT_SET',
+// which would otherwise be a silent-typo risk with no compile-time signal.
+var CAPTURE_TARGET_NOT_SET = 'NOT_SET';
+
 // Optional disk adapter — injected by server.js for persistence.
 // When set, createJourney / completeStage / markJourneyComplete persist to disk.
 var _diskAdapter = null;
@@ -210,8 +215,6 @@ function isDodComplete(journey) {
   if (!journey || !Array.isArray(journey.completedStages)) return false;
   return journey.completedStages.some(function(cs) { return cs.skillName === 'definition-of-done'; });
 }
-
-var CAPTURE_TARGET_NOT_SET = 'NOT_SET';
 
 /**
  * ppc-s1 (AC2, AC4) — looks up a stored capture target for one AC id within
@@ -566,6 +569,7 @@ module.exports = {
   getJourneyByFeatureSlug,
   isDodComplete,
   getCaptureTargetState,
+  CAPTURE_TARGET_NOT_SET,
   getArtefactsForJourney,
   deleteJourney,
   completeStage,
