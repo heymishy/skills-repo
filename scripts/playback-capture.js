@@ -81,15 +81,13 @@ function generateWalkthroughMarkdown({ featureSlug, storyDods, benefitMetricCont
   return lines.join('\n');
 }
 
-async function captureAcScreenshots({ page, featureSlug, storySlug, acList }) {
-  const shots = [];
-  for (const ac of acList) {
-    const relPath = `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${ac.acId}.png`;
-    await page.screenshot({ path: relPath, selector: ac.selector });
-    shots.push({ acId: ac.acId, path: relPath });
-  }
-  return shots;
-}
+// Re-exported from src/utils/capture-screenshots.js (ppc-s1 Task 0) -- a
+// production route (playback-evidence.js, added in a later story task) also
+// needs this function, and scripts/ is never copied into the deployed
+// Docker image. Kept re-exported here unchanged so every existing caller of
+// this module keeps working with no change required on their part (same
+// pattern already used for parseDodAcCoverage above).
+const { captureAcScreenshots } = require('../src/utils/capture-screenshots');
 
 // rpca-embed-hotfix1: tracks a cursor so each shot's own heading search starts
 // from where the last insertion ended, not from the start of the document.
