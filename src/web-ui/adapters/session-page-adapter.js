@@ -1,4 +1,5 @@
 'use strict';
+
 // session-page-adapter.js — ppc-s1 (AC8, D37 mandatory). Bridges a tenant
 // user's own req.sessionId to an authenticated headless Playwright page, by
 // seeding the browser context's cookie with that same opaque session_id
@@ -20,10 +21,22 @@ let _sessionPageAdapter = function() {
   throw new Error('Adapter not wired: sessionPageAdapter. Call setSessionPageAdapter() with a real implementation before use.');
 };
 
+/**
+ * Replace the session-page adapter (used in tests and production startup).
+ * @param {(sessionId: string, baseUrl: string) => Promise<{page: object, browser: object}>} fn
+ */
 function setSessionPageAdapter(fn) {
   _sessionPageAdapter = fn;
 }
 
+/**
+ * Retrieve the currently wired session-page adapter function. Callers
+ * invoke getSessionPageAdapter()(...) rather than holding a captured
+ * reference, so rewiring (e.g. setSessionPageAdapter() in a test) always
+ * takes effect for the next call -- mirrors artefact-commit-writer.js's
+ * getArtefactCommitAdapter() convention.
+ * @returns {Function}
+ */
 function getSessionPageAdapter() {
   return _sessionPageAdapter;
 }
