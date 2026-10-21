@@ -42492,16 +42492,16 @@
         {
           "slug": "ppc-self-service-capture",
           "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
-          "status": "in-progress",
+          "status": "not-started",
           "stories": [
             {
               "slug": "ppc-s1",
               "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-21T18:24:28.675Z",
+              "updatedAt": "2026-10-21T18:26:48.093Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
