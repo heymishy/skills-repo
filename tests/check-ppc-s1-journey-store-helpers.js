@@ -43,6 +43,33 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('getJourneyForTenantProductSlug: scoped by BOTH tenant_id and product_id, not slug alone', function() {
+    var store = require('../src/web-ui/modules/journey-store');
+    store._clearForTesting();
+    var a = store.createJourney('duplicate-slug');
+    store.setJourneyFields(a.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var b = store.createJourney('duplicate-slug');
+    store.setJourneyFields(b.journeyId, { tenantId: 'tenant-b', productId: 'product-b' });
+
+    var found = store.getJourneyForTenantProductSlug('tenant-a', 'product-a', 'duplicate-slug');
+    assert.strictEqual(found.journeyId, a.journeyId);
+
+    var notFound = store.getJourneyForTenantProductSlug('tenant-a', 'product-b', 'duplicate-slug');
+    assert.strictEqual(notFound, null);
+  });
+});
+
+queue.push(function() {
+  return test('getJourneyForTenantProductSlug: returns null when tenantId or productId is missing (never a false-positive null==null match)', function() {
+    var store = require('../src/web-ui/modules/journey-store');
+    store._clearForTesting();
+    var a = store.createJourney('no-tenant-slug'); // tenantId/productId never set
+    assert.strictEqual(store.getJourneyForTenantProductSlug(null, null, 'no-tenant-slug'), null);
+    assert.strictEqual(store.getJourneyForTenantProductSlug(undefined, undefined, 'no-tenant-slug'), null);
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-journey-store-helpers.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

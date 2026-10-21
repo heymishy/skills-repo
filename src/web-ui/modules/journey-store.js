@@ -205,6 +205,29 @@ function getJourneyByFeatureSlug(featureSlug) {
 }
 
 /**
+ * ppc-s1 (AC1, AC6, AC7) — deliberately NOT a reuse of getJourneyByFeatureSlug
+ * above, which has no tenant filtering at all (confirmed cross-tenant leak
+ * risk, decisions.md 2026-10-21 ARCHITECTURE entry). Requires BOTH tenantId
+ * AND productId to be truthy and match -- guards against the case where two
+ * journeys both have tenantId/productId unset (null === null would otherwise
+ * incorrectly "match").
+ * @param {string} tenantId
+ * @param {string} productId
+ * @param {string} featureSlug
+ * @returns {object|null}
+ */
+function getJourneyForTenantProductSlug(tenantId, productId, featureSlug) {
+  if (!tenantId || !productId) return null;
+  var match = null;
+  for (var journey of _journeys.values()) {
+    if (journey.featureSlug === featureSlug && journey.tenantId === tenantId && journey.productId === productId) {
+      match = journey;
+    }
+  }
+  return match;
+}
+
+/**
  * ppc-s1 (AC1) — "DoD-complete" is this repo's own existing signal: a
  * completedStages entry whose skillName is the literal string
  * 'definition-of-done'. Not a new field.
@@ -567,6 +590,7 @@ module.exports = {
   setActiveSession,
   getJourneyBySession,
   getJourneyByFeatureSlug,
+  getJourneyForTenantProductSlug,
   isDodComplete,
   getCaptureTargetState,
   CAPTURE_TARGET_NOT_SET,
