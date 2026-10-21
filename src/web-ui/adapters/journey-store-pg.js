@@ -50,29 +50,29 @@ function _getPool() {
 
 function _sanitise(journey) {
   const data = {
-    completedStages:   journey.completedStages   || [],
-    sessions:          journey.sessions           || {},
-    activeSkill:       journey.activeSkill        || null,
-    activeSessionId:   journey.activeSessionId    || null,
-    mode:              journey.mode               || 'feature',
-    complete:          journey.complete           || false,
-    completedAt:       journey.completedAt        || null,
-    stories:           journey.stories            || [],
-    storyList:         journey.storyList          || null,
-    currentStoryIndex: journey.currentStoryIndex  || 0,
-    productProfile:    journey.productProfile     || 'default',
+    completedStages:    journey.completedStages    || [],
+    sessions:           journey.sessions            || {},
+    activeSkill:        journey.activeSkill         || null,
+    activeSessionId:    journey.activeSessionId     || null,
+    mode:               journey.mode                || 'feature',
+    complete:           journey.complete            || false,
+    completedAt:        journey.completedAt         || null,
+    stories:            journey.stories             || [],
+    storyList:          journey.storyList           || null,
+    currentStoryIndex:  journey.currentStoryIndex   || 0,
+    productProfile:     journey.productProfile      || 'default',
     // fdn-s1: this allowlist is the only thing standing between a field
     // working in-memory/on-disk and silently vanishing after a Postgres-
     // backed restart -- must be added explicitly, not inferred.
-    displayName:       journey.displayName        || null,
+    displayName:        journey.displayName         || null,
     // res-s4: same fdn-s1 rule applies -- flaggedStages must be listed here
     // explicitly or it silently vanishes on a Postgres-backed restart.
-    flaggedStages:     journey.flaggedStages       || [],
+    flaggedStages:      journey.flaggedStages        || [],
     // ppc-s1: added to the allowlist per this file's own fdn-s1 rule --
     // must be listed explicitly or it silently vanishes after a
     // Postgres-backed restart.
-    captureTargets:    journey.captureTargets     || [],
-    captureScreenshots: journey.captureScreenshots || {}
+    captureTargets:     journey.captureTargets      || [],
+    captureScreenshots: journey.captureScreenshots  || {}
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;

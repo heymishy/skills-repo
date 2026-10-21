@@ -99,7 +99,12 @@ queue.push(function() {
       captureTargets: [{ acId: 'AC1', url: 'http://x', selector: '#y' }]
     };
     return pg.saveJourney(journey).then(function() {
-      var dataJson = calls[0][5];
+      // Find the JSON data blob by shape, not by a hardcoded positional
+      // index -- this params array has already grown once before (jrf-s2
+      // added product_id), so a bare index would silently misread the
+      // wrong param if it grows again.
+      var dataJson = calls[0].find(function(p) { return typeof p === 'string' && p.trim().startsWith('{'); });
+      assert.ok(dataJson, 'expected to find a JSON-shaped string param in the query call');
       var data = JSON.parse(dataJson);
       assert.deepStrictEqual(data.captureTargets, [{ acId: 'AC1', url: 'http://x', selector: '#y' }]);
     });
