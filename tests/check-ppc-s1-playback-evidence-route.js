@@ -78,6 +78,105 @@ queue.push(function() {
   });
 });
 
+var JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+function getStore() {
+  delete require.cache[require.resolve(JOURNEY_STORE_PATH)];
+  return require(JOURNEY_STORE_PATH);
+}
+function makeRes() {
+  var res = { _status: null, _json: null, json: function(body) { res._status = res._status || 200; res._json = body; } };
+  res.status = function(code) { res._status = code; return res; };
+  return res;
+}
+function makeReq(tenantId, productId, featureSlug, extra) {
+  return Object.assign({
+    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user' },
+    sessionId: 'sid-' + tenantId,
+    params: { productId: productId, featureSlug: featureSlug }
+  }, extra || {});
+}
+
+function setupDodCompleteJourney(store, opts) {
+  opts = opts || {};
+  var slug = opts.featureSlug || ('ppc-s1-feature-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, { tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' });
+  var dodContent = [
+    '## AC Coverage',
+    '',
+    '| AC | Satisfied? | Evidence |',
+    '|----|------------|----------|',
+    '| AC1 — Shows the dashboard | Yes | screenshot |',
+    '| AC2 — Saves a widget | Yes | screenshot |'
+  ].join('\n');
+  store.setPgAdapterForTesting({
+    saveJourney: async function() {},
+    getArtefactsForJourney: async function() {
+      return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }];
+    }
+  });
+  store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+  return { journeyId: j.journeyId, featureSlug: slug, tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' };
+}
+
+queue.push(function() {
+  return test('AC1: GET surface lists ACs scoped to the requesting tenant+product only', async function() {
+    var pe = require('../src/web-ui/routes/playback-evidence');
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+
+    assert.strictEqual(res._status === null || res._status === 200, true);
+    assert.strictEqual(res._json.acs.length, 2);
+    assert.strictEqual(res._json.acs[0].acId, 'AC1');
+  });
+});
+
+queue.push(function() {
+  return test('AC4: an AC with no stored capture target shows NOT_SET, not a broken/erroring action', async function() {
+    var pe = require('../src/web-ui/routes/playback-evidence');
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+
+    assert.strictEqual(res._json.acs[0].targetSet, false);
+    assert.strictEqual(res._json.acs[0].target, null);
+  });
+});
+
+queue.push(function() {
+  return test('AC5: a captured screenshot path displays inline, no separate download step', async function() {
+    var pe = require('../src/web-ui/routes/playback-evidence');
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setJourneyFields(setup.journeyId, { captureScreenshots: { AC1: 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png' } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+
+    assert.strictEqual(res._json.acs[0].screenshotPath, 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png');
+  });
+});
+
+queue.push(function() {
+  return test('AC7-precursor: unknown/unmatched tenant+product+slug combination returns 404, not a crash', async function() {
+    var pe = require('../src/web-ui/routes/playback-evidence');
+    var store = getStore();
+    var req = makeReq('tenant-nobody', 'product-nobody', 'slug-that-does-not-exist');
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    assert.strictEqual(res._status, 404);
+    assert.deepStrictEqual(res._json, { error: 'not found' });
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
