@@ -156,6 +156,12 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
       : '';
+    // ppc-s2 (final-review fix, AC5): a clear, visible failure notice so a
+    // just-failed AC is distinguishable from one never attempted. Placed
+    // adjacent to captureFormHtml's retry button, not buried elsewhere.
+    var failureHtml = ac.lastCaptureFailure
+      ? '<p role="alert">Capture failed: ' + _escapeHtml(ac.lastCaptureFailure.error || 'unknown error') + ' -- use the button above to retry.</p>'
+      : '';
     return '<li style="margin-bottom:24px;border-bottom:1px solid #ddd;padding-bottom:16px">' +
       '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
       statusHtml +
@@ -168,6 +174,7 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
         '<button type="submit">Set capture target</button>' +
       '</form>' +
       captureFormHtml +
+      failureHtml +
       screenshotHtml +
     '</li>';
   }).join('');
@@ -215,6 +222,7 @@ async function handleGetPlaybackEvidence(req, res) {
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
 
+  var captureAllFailed = journey.captureAllFailed || {};
   var acs = acRows.map(function(ac) {
     var targetState = _journeyStore.getCaptureTargetState(captureTargets, ac.acId);
     var targetSet = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
@@ -223,7 +231,10 @@ async function handleGetPlaybackEvidence(req, res) {
       description: ac.description,
       targetSet: targetSet,
       target: targetSet ? targetState : null,
-      screenshotPath: screenshots[ac.acId] || null
+      screenshotPath: screenshots[ac.acId] || null,
+      // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
+      // in the most recent capture-all run from one simply never attempted.
+      lastCaptureFailure: captureAllFailed[ac.acId] || null
     };
   });
 
@@ -487,7 +498,20 @@ async function handlePostCaptureAll(req, res, _next, pool) {
     }
 
     var durationMs = captureAllModule.measureCaptureDuration(startedAt, Date.now());
-    _journeyStore.setJourneyFields(journey.journeyId, { captureAllDuration: durationMs, captureAllCompletedAt: new Date().toISOString() });
+    // ppc-s2 (final-review fix): persist which ACs failed in THIS run, keyed
+    // by acId, so handleGetPlaybackEvidence/_renderPlaybackEvidenceHtml can
+    // render a clear retry notice (AC5) even after the operator navigates
+    // away and back. A successful capture for an acId must clear any STALE
+    // failure entry from a prior run -- otherwise a successfully-retried AC
+    // would still show a stale "failed" badge.
+    var captureAllFailed = Object.assign({}, journey.captureAllFailed || {});
+    captured.forEach(function(c) { delete captureAllFailed[c.acId]; });
+    failed.forEach(function(f) { captureAllFailed[f.acId] = { error: f.error, retry: true }; });
+    _journeyStore.setJourneyFields(journey.journeyId, {
+      captureAllDuration: durationMs,
+      captureAllCompletedAt: new Date().toISOString(),
+      captureAllFailed: captureAllFailed
+    });
 
     var thresholdResult = checkTimingThreshold(durationMs);
     if (thresholdResult.exceedsThreshold) {
@@ -500,6 +524,16 @@ async function handlePostCaptureAll(req, res, _next, pool) {
       }
     }
 
+    // ppc-s2 (final-review fix): a real browser submits this via the plain
+    // <form method="POST"> rendered in _renderPlaybackEvidenceHtml -- matches
+    // handlePostCaptureTarget's/handlePostCaptureTrigger's own existing
+    // success-path redirect convention (CLAUDE.md et al). Error responses
+    // above (400/409/502) stay JSON-only even for a form submission, matching
+    // this file's existing convention -- only the success path redirects.
+    if (_isFormSubmission(req)) {
+      _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+      return;
+    }
     _sendJson(res, 200, {
       captured: captured,
       failed: failed,

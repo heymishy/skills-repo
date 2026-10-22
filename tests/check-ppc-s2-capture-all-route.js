@@ -335,6 +335,39 @@ queue.push(function() {
 });
 
 queue.push(function() {
+  return test('NFR-SEC (ADR-018): capture-all never invokes the NODE_ENV=test auth-bypass path', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    setupFakeCapture('ppc-s2-adr018');
+
+    // Direct call-count spy on the actual bypass fixture, matching
+    // check-ppc-s1-playback-evidence-route.js's own "capture-trigger never
+    // invokes the NODE_ENV=test auth-bypass path" test mechanism -- not a
+    // restatement of some other "adapter receives req.sessionId" assertion,
+    // which only proves the real adapter was called with the right value,
+    // not that the bypass was ALSO never touched.
+    var sessionModule = require('../src/web-ui/middleware/session');
+    var originalSeedTestSession = sessionModule.seedTestSession;
+    var seedTestSessionCallCount = 0;
+    sessionModule.seedTestSession = function() {
+      seedTestSessionCallCount++;
+      return originalSeedTestSession.apply(this, arguments);
+    };
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    try {
+      await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    } finally {
+      sessionModule.seedTestSession = originalSeedTestSession;
+    }
+
+    assert.strictEqual(seedTestSessionCallCount, 0, 'the NODE_ENV=test auth-bypass fixture must never be called during capture-all');
+  });
+});
+
+queue.push(function() {
   return test('server.js source mounts the capture-all route', function() {
     var serverSrc = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/server.js'), 'utf8');
     assert.ok(/handlePostCaptureAll/.test(serverSrc), 'capture-all route must be mounted');

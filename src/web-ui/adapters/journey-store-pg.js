@@ -77,7 +77,8 @@ function _sanitise(journey) {
     // must be listed explicitly or it silently vanishes after a
     // Postgres-backed restart.
     captureAllDuration: journey.captureAllDuration  || null,
-    captureAllCompletedAt: journey.captureAllCompletedAt  || null
+    captureAllCompletedAt: journey.captureAllCompletedAt  || null,
+    captureAllFailed:   journey.captureAllFailed  || {}
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
