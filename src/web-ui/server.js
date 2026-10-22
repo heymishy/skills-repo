@@ -24,7 +24,7 @@ const { checkModelRoutingDrift }                                     = require('
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
 const { handleGetPlaybackList, handleGetPlaybackReview, handleGetPlaybackMedia } = require('./routes/playback'); // fpd-s3, fpd-s4
-const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger, handleGetCaptureScreenshot } = require('./routes/playback-evidence'); // ppc-s1
+const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger, handleGetCaptureScreenshot, handlePostCaptureAll } = require('./routes/playback-evidence'); // ppc-s1, ppc-s2
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -3285,6 +3285,13 @@ async function router(req, res) {
     var _peCaptureTriggerParts = pathname.split('/');
     req.params = { productId: _peCaptureTriggerParts[2], featureSlug: decodeURIComponent(_peCaptureTriggerParts[4]), acId: decodeURIComponent(_peCaptureTriggerParts[6]) };
     authGuard(req, res, async () => { await handlePostCaptureTrigger(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/capture-all$/) && req.method === 'POST') {
+    // ppc-s2 (AC1, AC2) -- handlePostCaptureAll does its own CSRF check
+    // internally; see note on the targets/capture routes above.
+    var _peCaptureAllParts = pathname.split('/');
+    req.params = { productId: _peCaptureAllParts[2], featureSlug: decodeURIComponent(_peCaptureAllParts[4]) };
+    authGuard(req, res, async () => { await handlePostCaptureAll(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/screenshots\/[^/]+$/) && req.method === 'GET') {
     // ppc-s1 (AC5) -- tenant-scoped screenshot serving, deliberately NOT a
