@@ -24,6 +24,17 @@ var _csrf = require('../middleware/csrf');
 var _journeyStore = require('../modules/journey-store');
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 
+// Path traversal guard (OWASP A01 / CLAUDE.md "Path traversal guard for
+// disk writes") -- acId is request-controlled (req.params.acId) and flows
+// into a disk path (src/utils/capture-screenshots.js builds
+// artefacts/<slug>/playback/<story>/screenshots/<acId>.png, written by
+// Playwright and read back below via fs.readFileSync) and into the
+// GitHub-committed artefactPath. parseDodAcCoverage only ever produces
+// AC<n> ids, so anything else is already invalid input -- this allowlist
+// is required IN ADDITION TO the resolved-path containment check below,
+// not instead of it.
+var ACID_RE = /^AC\d+$/;
+
 function _sendJson(res, status, body) {
   if (res.status) { res.status(status).json(body); }
   else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
@@ -98,6 +109,10 @@ async function handlePostCaptureTarget(req, res) {
     _sendJson(res, 400, { error: 'acId, url, and selector are required' });
     return;
   }
+  if (!ACID_RE.test(acId)) {
+    _sendJson(res, 400, { error: 'invalid acId' });
+    return;
+  }
 
   _journeyStore.setCaptureTarget(journey.journeyId, acId, url, selector);
   _sendJson(res, 200, { ok: true });
@@ -138,6 +153,10 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   if (!journey) { _notFound(res); return; }
 
   var acId = req.params && req.params.acId;
+  if (!ACID_RE.test(acId || '')) {
+    _sendJson(res, 400, { error: 'invalid acId' });
+    return;
+  }
   var captureTargets = journey.captureTargets || [];
   var target = _journeyStore.getCaptureTargetState(captureTargets, acId);
   if (target === _journeyStore.CAPTURE_TARGET_NOT_SET) {
@@ -168,7 +187,16 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
 
     var repoRoot = getRepoRoot(req);
     var absShotPath = path.join(repoRoot, shot.path);
-    var content = fs.readFileSync(absShotPath);
+    // Defense in depth, in addition to (not instead of) the ACID_RE
+    // allowlist above -- CLAUDE.md's path traversal guard rule requires
+    // both. Never log the raw resolved path on failure.
+    var resolvedShotPath = path.resolve(absShotPath);
+    var resolvedRepoRoot = path.resolve(repoRoot);
+    if (!resolvedShotPath.startsWith(resolvedRepoRoot + path.sep)) {
+      _sendJson(res, 400, { error: 'invalid capture path' });
+      return;
+    }
+    var content = fs.readFileSync(resolvedShotPath);
 
     await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
 

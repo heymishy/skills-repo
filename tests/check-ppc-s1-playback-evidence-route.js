@@ -612,6 +612,41 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('NFR-SEC (path traversal): a crafted acId is rejected with 400, nothing stored, no adapter calls made', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+
+    var adapterCalled = false;
+    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+
+    var maliciousAcIds = ['../../../etc/passwd', 'AC1/../../../x', '..', 'AC1;rm -rf', ''];
+    for (var i = 0; i < maliciousAcIds.length; i++) {
+      var crafted = maliciousAcIds[i];
+
+      var targetReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+        params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: crafted },
+        body: { url: 'http://localhost:3000/x', selector: '#y', _csrf: 'test-csrf-token' }
+      });
+      var targetRes = makeRes();
+      await pe.handlePostCaptureTarget(targetReq, targetRes, null, null);
+      assert.strictEqual(targetRes._status, 400, 'crafted acId "' + crafted + '" must be rejected by handlePostCaptureTarget');
+
+      var triggerReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+        params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: crafted },
+        body: { _csrf: 'test-csrf-token' }
+      });
+      var triggerRes = makeRes();
+      await pe.handlePostCaptureTrigger(triggerReq, triggerRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+      assert.strictEqual(triggerRes._status, 400, 'crafted acId "' + crafted + '" must be rejected by handlePostCaptureTrigger');
+    }
+
+    assert.strictEqual(adapterCalled, false, 'no crafted acId may ever reach the capture mechanism');
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.strictEqual((reloaded.captureTargets || []).length, 0, 'nothing must be stored for any crafted acId');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
