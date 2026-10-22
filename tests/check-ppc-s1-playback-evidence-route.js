@@ -504,6 +504,10 @@ queue.push(function() {
     var res2 = makeRes();
     await pe.handleGetPlaybackEvidence(req2, res2, null, null);
     assert.strictEqual(res2._status, 404);
+    var bodyString2 = JSON.stringify(res2._json);
+    assert.ok(!bodyString2.includes(setupB.featureSlug), 'mismatched-pair response must not echo back the slug either');
+    assert.ok(!bodyString2.includes('tenant-b-secret'), 'mismatched-pair response must not leak tenant B\'s secret either');
+    assert.deepStrictEqual(res2._json, { error: 'not found' });
   });
 });
 
