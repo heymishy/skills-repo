@@ -24,6 +24,7 @@ const { checkModelRoutingDrift }                                     = require('
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
 const { handleGetPlaybackList, handleGetPlaybackReview, handleGetPlaybackMedia } = require('./routes/playback'); // fpd-s3, fpd-s4
+const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger, handleGetCaptureScreenshot } = require('./routes/playback-evidence'); // ppc-s1
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -96,6 +97,7 @@ const { setCreateRepoAdapter, realCreateRepo }                       = require('
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
+const { setSessionPageAdapter, realGetAuthenticatedPage }            = require('./adapters/session-page-adapter'); // ppc-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
@@ -354,6 +356,17 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setArtefactCommitAdapter(realCommitArtefact);
   console.log('[artefact-commit-writer] commitArtefact wired');
+}
+
+// ppc-s1 / D37 mandatory separate wiring task -- wire the real
+// session-to-Playwright adapter (a fifth, distinct adapter from the four
+// above -- setSessionPageAdapter/getSessionPageAdapter, so none of the five
+// stories' wiring calls collide). Never wired in NODE_ENV=test (tests call
+// setSessionPageAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setSessionPageAdapter(realGetAuthenticatedPage);
+  console.log('[session-page-adapter] getAuthenticatedPage wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
@@ -3247,6 +3260,39 @@ async function router(req, res) {
     authGuard(req, res, async () => {
       await handleGetPlaybackMedia(req, res, requestedMediaPath);
     });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+$/) && req.method === 'GET') {
+    // ppc-s1 (AC1) -- tenant-scoped surface, deliberately NOT /playback or
+    // /features/:slug (see playback-evidence.js header comment: journey-store's
+    // getJourneyByFeatureSlug has no tenant filtering).
+    var _peEvidenceParts = pathname.split('/');
+    req.params = { productId: _peEvidenceParts[2], featureSlug: decodeURIComponent(_peEvidenceParts[4]) };
+    authGuard(req, res, async () => { await handleGetPlaybackEvidence(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/targets\/[^/]+$/) && req.method === 'POST') {
+    // ppc-s1 (AC2) -- handlePostCaptureTarget does its own CSRF check
+    // internally (routes/playback-evidence.js), matching journey.js's
+    // handlePostGateConfirm/journeys.js's handlePostJourneyStage precedent:
+    // when a handler already calls _csrf.csrfGuard itself, server.js does
+    // not redundantly re-check via _gcwCsrf.
+    var _peCaptureTargetParts = pathname.split('/');
+    req.params = { productId: _peCaptureTargetParts[2], featureSlug: decodeURIComponent(_peCaptureTargetParts[4]), acId: decodeURIComponent(_peCaptureTargetParts[6]) };
+    authGuard(req, res, async () => { await handlePostCaptureTarget(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/capture\/[^/]+$/) && req.method === 'POST') {
+    // ppc-s1 (AC3) -- handlePostCaptureTrigger does its own CSRF check
+    // internally; see note on the targets route above.
+    var _peCaptureTriggerParts = pathname.split('/');
+    req.params = { productId: _peCaptureTriggerParts[2], featureSlug: decodeURIComponent(_peCaptureTriggerParts[4]), acId: decodeURIComponent(_peCaptureTriggerParts[6]) };
+    authGuard(req, res, async () => { await handlePostCaptureTrigger(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/screenshots\/[^/]+$/) && req.method === 'GET') {
+    // ppc-s1 (AC5) -- tenant-scoped screenshot serving, deliberately NOT a
+    // reuse of the existing /playback-media/ route above (confirmed to have
+    // no tenant check at all, same class of gap as getJourneyByFeatureSlug).
+    var _peScreenshotParts = pathname.split('/');
+    req.params = { productId: _peScreenshotParts[2], featureSlug: decodeURIComponent(_peScreenshotParts[4]), acId: decodeURIComponent(_peScreenshotParts[6]) };
+    authGuard(req, res, async () => { await handleGetCaptureScreenshot(req, res, null, _pshPool); });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
     // vrne-s4 — viewer-role write-block gate (AC3)

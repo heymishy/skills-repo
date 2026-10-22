@@ -15,6 +15,14 @@ const { generateCaptionsAndTranscript } = require('../src/web-ui/adapters/captio
 // full incident). Re-exported here unchanged so every existing caller of
 // this module keeps working with no change required on their part.
 const { parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets } = require('../src/utils/dod-parsing');
+// ppc-s1 Task 0: same pattern, same reason -- captureAcScreenshots moved to
+// src/utils/capture-screenshots.js because src/web-ui/routes/playback-evidence.js
+// (a production route, added in a later story task) also needs it, and
+// scripts/ is never copied into the deployed Docker image. Re-exported here
+// unchanged so every existing caller of this module keeps working with no
+// change required on their part. Grouped here with the sibling dod-parsing
+// re-export above for discoverability -- both are the same class of fix.
+const { captureAcScreenshots } = require('../src/utils/capture-screenshots');
 
 // rpca-s5: evaluates every story's own dodStatus evidence field directly
 // (ADR-002 -- gates must use evidence fields, not a stage/field proxy), instead
@@ -79,16 +87,6 @@ function generateWalkthroughMarkdown({ featureSlug, storyDods, benefitMetricCont
     }
   }
   return lines.join('\n');
-}
-
-async function captureAcScreenshots({ page, featureSlug, storySlug, acList }) {
-  const shots = [];
-  for (const ac of acList) {
-    const relPath = `artefacts/${featureSlug}/playback/${storySlug}/screenshots/${ac.acId}.png`;
-    await page.screenshot({ path: relPath, selector: ac.selector });
-    shots.push({ acId: ac.acId, path: relPath });
-  }
-  return shots;
 }
 
 // rpca-embed-hotfix1: tracks a cursor so each shot's own heading search starts
