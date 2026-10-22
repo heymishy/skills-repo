@@ -86,6 +86,7 @@ var store = require('../src/web-ui/modules/journey-store');
 var pe = require('../src/web-ui/routes/playback-evidence');
 var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
 var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
+var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 pe.setJourneyStoreModule(store);
 function getStore() {
   store._clearForTesting();
@@ -265,7 +266,9 @@ queue.push(function() {
 
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-capture-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
     var seenCookieSessionId = null;
+    var browserClosed = false;
     var fakePage = {
       goto: async function(url) { fakePage._gotoUrl = url; },
       screenshot: async function(opts) {
@@ -277,7 +280,7 @@ queue.push(function() {
     };
     sessionPageAdapter.setSessionPageAdapter(async function(sessionId, baseUrl) {
       seenCookieSessionId = sessionId;
-      return { page: fakePage, browser: { close: async function() {} } };
+      return { page: fakePage, browser: { close: async function() { browserClosed = true; } } };
     });
 
     var capturedCommit = null;
@@ -290,8 +293,7 @@ queue.push(function() {
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
-      body: { _csrf: 'test-csrf-token' },
-      _repoRootOverride: tmpRoot
+      body: { _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await pe.handlePostCaptureTrigger(req, res, null, mockPool);
@@ -302,6 +304,7 @@ queue.push(function() {
     assert.strictEqual(capturedCommit.encoding, 'base64');
     assert.strictEqual(capturedCommit.token, req.session.accessToken, 'commitArtefact must use the user\'s own accessToken, never a service account');
     assert.strictEqual(res._json.ok, true);
+    assert.strictEqual(browserClosed, true, 'the Playwright browser must be closed after a successful capture');
 
     var reloaded = store.getJourney(setup.journeyId);
     assert.ok(reloaded.captureScreenshots.AC1, 'the screenshot path must be persisted on the journey for AC5 inline display');
@@ -325,6 +328,71 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 400);
     assert.strictEqual(adapterCalled, false, 'must never reach the capture mechanism when no target is stored');
+  });
+});
+
+queue.push(function() {
+  return test('AC3: a product with no connected repo is rejected with 400, no adapter calls made', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+
+    var adapterCalled = false;
+    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    // Empty rows -- the tenant+product-scoped product lookup finds nothing.
+    await pe.handlePostCaptureTrigger(req, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._status, 400);
+    assert.deepStrictEqual(res._json, { error: 'product has no connected repo' });
+    assert.strictEqual(adapterCalled, false, 'must never reach the capture mechanism when the product has no connected repo');
+  });
+});
+
+queue.push(function() {
+  return test('AC3: a commit failure returns a structured 502, not an uncaught exception, and still closes the browser', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-capture-fail-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var browserClosed = false;
+    var fakePage = {
+      goto: async function() {},
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return { page: fakePage, browser: { close: async function() { browserClosed = true; } } };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() {
+      throw new Error('simulated GitHub API failure');
+    });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureTrigger(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(res._status, 502);
+    assert.strictEqual(res._json.error, 'capture-failed');
+    assert.ok(res._json.detail && res._json.detail.includes('simulated GitHub API failure'));
+    assert.strictEqual(browserClosed, true, 'the browser must still be closed when the commit fails');
+
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.ok(!reloaded.captureScreenshots || !reloaded.captureScreenshots.AC1, 'nothing must be marked captured when the commit fails');
   });
 });
 

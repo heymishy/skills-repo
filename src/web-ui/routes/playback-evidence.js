@@ -11,6 +11,7 @@ const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 const { getAuthenticatedPage } = require('../adapters/session-page-adapter');
 const { captureAcScreenshots } = require('../../utils/capture-screenshots');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
+const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
 var _csrf = require('../middleware/csrf');
@@ -103,32 +104,31 @@ async function handlePostCaptureTarget(req, res) {
 }
 
 /**
- * Resolve the GitHub owner/repo for this journey's own product, scoped to
- * BOTH tenantId AND productId (same cross-tenant-leak concern as
- * _resolveJourney above). Deliberately does NOT reuse
- * ownerRepoForFeature(slug, credential) from
- * ../adapters/export-data-source.js -- that helper resolves by
- * feature_slug ALONE (no tenant filter), which has the exact cross-tenant
- * collision risk this story exists to eliminate. See decisions.md
- * 2026-10-21 ARCHITECTURE entry.
+ * ppc-s1: scoped to BOTH tenantId AND productId -- deliberately NOT
+ * ownerRepoForFeature(slug, credential) (export-data-source.js), which
+ * resolves by feature_slug alone (decisions.md 2026-10-21 ARCHITECTURE).
+ * A query failure or missing pool is treated as "no connected repo" (null),
+ * matching this codebase's own optional-Postgres-feature convention
+ * (journey.js's equivalent _dasOwnerRepo resolution).
  */
 async function _resolveOwnerRepo(journey, pool) {
   if (!pool) return null;
-  var result = await pool.query(
-    'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
-    [journey.productId, journey.tenantId]
-  );
-  var row = result.rows[0];
-  if (!row || !row.repo_owner || !row.repo_name) return null;
-  return { owner: row.repo_owner, repo: row.repo_name };
+  try {
+    var result = await pool.query(
+      'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
+      [journey.productId, journey.tenantId]
+    );
+    var row = result.rows[0];
+    if (!row || !row.repo_owner || !row.repo_name) return null;
+    return { owner: row.repo_owner, repo: row.repo_name };
+  } catch (_) {
+    return null;
+  }
 }
 
 /**
- * AC3 — session-reuse capture: seeds the Playwright context cookie with the
- * requesting user's own req.sessionId (never a service credential or the
- * NODE_ENV=test auth-bypass fixture, per ADR-018), navigates to the stored
- * target, captures the screenshot, and commits it via the user's own
- * accessToken (never a service account).
+ * AC3 -- session-reuse capture (ADR-018: real session only, never a service
+ * credential or the NODE_ENV=test bypass).
  */
 async function handlePostCaptureTrigger(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
@@ -151,7 +151,10 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     return;
   }
 
-  var baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  // Matches billing.js's own host-derivation convention -- never a
+  // hardcoded/env-configured base URL, which would silently scope the
+  // seeded auth cookie to the wrong domain outside local dev.
+  var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
     await authed.page.goto(target.url);
@@ -163,7 +166,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     });
     var shot = shots[0];
 
-    var repoRoot = req._repoRootOverride || path.resolve(__dirname, '../../..');
+    var repoRoot = getRepoRoot(req);
     var absShotPath = path.join(repoRoot, shot.path);
     var content = fs.readFileSync(absShotPath);
 
@@ -174,6 +177,17 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
 
     _sendJson(res, 200, { ok: true, screenshotPath: shot.path });
+  } catch (captureErr) {
+    // Matches journey.js's handlePostGateConfirm precedent for this exact
+    // operation (committing an artefact to GitHub, acdg-s1/acdg-s2): an
+    // uncaught failure here is otherwise invisible -- a bare 500 with no
+    // actionable message, surfaced only by server.js's generic top-level
+    // handler. Structured JSON instead, via this file's own _sendJson.
+    _sendJson(res, 502, {
+      error: 'capture-failed',
+      message: 'Could not complete the capture (navigation, screenshot, or commit to the connected repository failed). Nothing was marked captured -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
+      detail: captureErr && captureErr.message
+    });
   } finally {
     if (authed.browser && authed.browser.close) { await authed.browser.close(); }
   }
