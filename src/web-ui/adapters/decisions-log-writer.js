@@ -14,7 +14,7 @@
 // default and no DoR AC requires separate production wiring (ppc-s2-dor
 // H-ADAPTER: N/A).
 
-var { fetchArtefact, ArtefactNotFoundError } = require('./artefact-fetcher');
+var { fetchRepoPath, ArtefactNotFoundError } = require('./artefact-fetcher');
 // realCommitArtefact (not the D37-wrapped commitArtefact/getArtefactCommitAdapter)
 // is called directly here -- this module's own injectable DI boundary is at
 // the appendScopeNote/setDecisionsLogWriter level, one layer up, so a test
@@ -44,7 +44,19 @@ async function realAppendScopeNote(journey, ownerRepo, token, payload) {
   var decisionsPath = 'artefacts/' + journey.featureSlug + '/decisions.md';
   var existingContent;
   try {
-    existingContent = await fetchArtefact(journey.featureSlug, 'decisions', token, ownerRepo);
+    // ppc-s2 code-quality fix: read via fetchRepoPath at this EXACT literal
+    // path, not fetchArtefact's multi-prefix (archived-fallback) resolution.
+    // fetchArtefact can resolve via 'artefacts/archived/<slug>/decisions.md'
+    // while the write below always targets the non-archived path, so a read
+    // that silently followed the archived prefix would commit the appended
+    // content to a different, brand-new file and leave the real archived
+    // decisions.md stale. Using the same literal path for both read and
+    // write eliminates that mismatch by construction. No archived-prefix
+    // fallback is needed here: capture-all is only ever invoked against a
+    // feature currently passing DoD (definition-of-done) review (see
+    // _resolveJourney's isDodComplete check in playback-evidence.js), never
+    // a cold-archived one.
+    existingContent = await fetchRepoPath(ownerRepo.owner, ownerRepo.repo, decisionsPath, token);
   } catch (err) {
     if (!(err instanceof ArtefactNotFoundError)) throw err;
     existingContent = '# Decisions: ' + journey.featureSlug + '\n\n---\n';

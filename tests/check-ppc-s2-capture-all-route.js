@@ -43,6 +43,13 @@ queue.push(function() {
     var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
     var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
     var originalFetch = global.fetch;
+    // realAppendScopeNote now reads via fetchRepoPath (the D37 injectable
+    // exact-path adapter), not fetchArtefact -- wire it to its real
+    // implementation for this test, same as server.js does at startup, so
+    // the GET below actually goes through global.fetch rather than hitting
+    // the default throwing stub.
+    var originalFetchRepoPath = artefactFetcher.getFetchRepoPath();
+    artefactFetcher.setFetchRepoPath(artefactFetcher.realFetchRepoPath);
     var putBody = null;
     global.fetch = async function(url, opts) {
       if (String(url).endsWith('/user')) {
@@ -71,6 +78,7 @@ queue.push(function() {
       assert.strictEqual(putBody.sha, 'abc123', 'must pass the existing file\'s sha so the update does not conflict');
     } finally {
       global.fetch = originalFetch;
+      artefactFetcher.setFetchRepoPath(originalFetchRepoPath);
     }
   });
 });
