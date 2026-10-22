@@ -85,6 +85,16 @@ queue.push(function() {
   });
 });
 
+var pe = require('../src/web-ui/routes/playback-evidence');
+
+queue.push(function() {
+  return test('NFR-Accessibility: progress status markup includes an aria-live="polite" region', function() {
+    var html = pe._renderCaptureAllProgress({ current: 3, total: 8 });
+    assert.ok(html.indexOf('aria-live="polite"') !== -1, 'must expose progress to assistive technology, not purely visual');
+    assert.ok(html.indexOf('3') !== -1 && html.indexOf('8') !== -1, 'must show the actual current/total counts');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s2-capture-all-helpers.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

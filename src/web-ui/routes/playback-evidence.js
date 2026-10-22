@@ -24,6 +24,10 @@ var _csrf = require('../middleware/csrf');
 var _journeyStore = require('../modules/journey-store');
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 
+// ppc-s2: reads concurrency-lock progress state so the HTML page can render
+// an accessible, live-updating indicator for an in-flight capture-all run.
+var captureAllLock = require('../modules/capture-all-lock');
+
 // Path traversal guard (OWASP A01 / CLAUDE.md "Path traversal guard for
 // disk writes") -- acId is request-controlled (req.params.acId) and flows
 // into a disk path (src/utils/capture-screenshots.js builds
@@ -97,6 +101,20 @@ function _playbackEvidenceUrl(productId, featureSlug) {
 }
 
 /**
+ * ppc-s2 (NFR-Accessibility) -- pure function, directly unit-testable
+ * against a progress-state fixture with no store/adapter access. "polite"
+ * (not "assertive") -- a running capture-all loop is a low-urgency status
+ * update, not an interrupting alert.
+ * @param {{current:number, total:number}} progress
+ * @returns {string}
+ */
+function _renderCaptureAllProgress(progress) {
+  var current = (progress && progress.current) || 0;
+  var total = (progress && progress.total) || 0;
+  return '<p role="status" aria-live="polite">Capturing AC ' + current + ' of ' + total + '</p>';
+}
+
+/**
  * Renders the real browser page the story's own ACs and verification
  * script describe. Plain inline-styled HTML, real <form>/<input>/<button>
  * elements (NFR-Accessibility: keyboard-operable without any client JS),
@@ -104,8 +122,15 @@ function _playbackEvidenceUrl(productId, featureSlug) {
  * convention -- not integrated into the full dashboard shell (_htmlShell),
  * which this walking-skeleton story has no need for.
  */
-function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
+function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress) {
   var baseUrl = _playbackEvidenceUrl(journey.productId, journey.featureSlug);
+  var progressHtml = captureAllProgress ? _renderCaptureAllProgress(captureAllProgress) : '';
+  var captureAllFormHtml = captureAllProgress
+    ? ''
+    : '<form method="POST" action="' + baseUrl + '/capture-all">' +
+        _csrf.csrfField(csrfToken) +
+        '<button type="submit">Capture all evidence</button>' +
+      '</form>';
   var rows = acs.map(function(ac) {
     var statusHtml = ac.targetSet
       ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
@@ -136,6 +161,8 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
   }).join('');
   return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
     '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
+    progressHtml +
+    captureAllFormHtml +
     '<ul style="list-style:none;padding:0">' + rows + '</ul>' +
   '</body></html>';
 }
@@ -190,7 +217,8 @@ async function handleGetPlaybackEvidence(req, res) {
 
   if (_wantsHtml(req)) {
     var csrfToken = await _csrf.generateCsrfToken(req);
-    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken);
+    var progress = captureAllLock.getLockState(journey.journeyId);
+    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;
@@ -398,5 +426,6 @@ module.exports = {
   _resolveJourney,
   _notFound,
   _sendJson,
-  _captureOneAc
+  _captureOneAc,
+  _renderCaptureAllProgress
 };
