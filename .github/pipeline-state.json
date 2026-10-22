@@ -42492,16 +42492,16 @@
         {
           "slug": "ppc-self-service-capture",
           "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "ppc-s1",
               "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-22T06:23:55.044Z",
+              "updatedAt": "2026-10-22T06:46:07.650Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 38,
@@ -42598,7 +42598,9 @@
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1013"
             },
             {
               "slug": "ppc-s2",
