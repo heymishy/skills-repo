@@ -76,7 +76,7 @@ function _playbackEvidenceUrl(productId, featureSlug) {
  * Renders the real browser page the story's own ACs and verification
  * script describe. Plain inline-styled HTML, real <form>/<input>/<button>
  * elements (NFR-Accessibility: keyboard-operable without any client JS),
- * matching client-login.js's/products.js's own minimal standalone-page
+ * matching client-login.js's own minimal standalone-page
  * convention -- not integrated into the full dashboard shell (_htmlShell),
  * which this walking-skeleton story has no need for.
  */
