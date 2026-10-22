@@ -511,6 +511,90 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('NFR-SEC: session_id value never appears in any response body produced by these routes', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+
+    var getReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var getRes = makeRes();
+    await pe.handleGetPlaybackEvidence(getReq, getRes, null, null);
+    assert.ok(!JSON.stringify(getRes._json).includes(getReq.sessionId));
+
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/x', '#y');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-sec-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return {
+        page: {
+          goto: async function() {},
+          screenshot: async function(opts) {
+            var abs = path.join(tmpRoot, opts.path);
+            fs.mkdirSync(path.dirname(abs), { recursive: true });
+            fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+          }
+        },
+        browser: { close: async function() {} }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var triggerReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var triggerRes = makeRes();
+    await pe.handlePostCaptureTrigger(triggerReq, triggerRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.ok(!JSON.stringify(triggerRes._json || {}).includes(triggerReq.sessionId));
+  });
+});
+
+queue.push(function() {
+  return test('NFR-SEC (ADR-018): capture-trigger never invokes the NODE_ENV=test auth-bypass path', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/x', '#y');
+
+    var triggerReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-adr018-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var seenSessionId = null;
+    sessionPageAdapter.setSessionPageAdapter(async function(sessionId) {
+      // The real implementation only ever receives req.sessionId -- this
+      // adapter is the ONLY seam capture-trigger has for authentication.
+      // If the handler ever called seedTestSession or hit /test/session
+      // instead, this stub would never be reached with the real sessionId
+      // at all -- the assertion below on seenSessionId is what would catch
+      // that, not a direct spy on seedTestSession (which this handler has
+      // no code path to even reference).
+      seenSessionId = sessionId;
+      return {
+        page: {
+          goto: async function() {},
+          screenshot: async function(opts) {
+            var abs = path.join(tmpRoot, opts.path);
+            fs.mkdirSync(path.dirname(abs), { recursive: true });
+            fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+          }
+        },
+        browser: { close: async function() {} }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var triggerRes = makeRes();
+    await pe.handlePostCaptureTrigger(triggerReq, triggerRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(seenSessionId, triggerReq.sessionId, 'the adapter must be called with the real req.sessionId, proving the real-session path was used, not a bypass');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
