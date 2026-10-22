@@ -56,6 +56,35 @@ queue.push(function() {
   });
 });
 
+var lock = require('../src/web-ui/modules/capture-all-lock');
+
+queue.push(function() {
+  return test('capture-all-lock: a second acquire for the same journeyId is rejected while the first is held', function() {
+    lock._clearForTesting();
+    assert.strictEqual(lock.tryAcquireLock('journey-a'), true);
+    assert.strictEqual(lock.tryAcquireLock('journey-a'), false, 'a second concurrent acquire for the same journey must be rejected');
+    assert.strictEqual(lock.tryAcquireLock('journey-b'), true, 'a different journey must be unaffected');
+    lock.releaseLock('journey-a');
+    assert.strictEqual(lock.tryAcquireLock('journey-a'), true, 'after release, a new acquire must succeed');
+  });
+});
+
+queue.push(function() {
+  return test('capture-all-lock: setTotal/updateProgress/getLockState reflect current progress', function() {
+    lock._clearForTesting();
+    lock.tryAcquireLock('journey-c');
+    lock.setTotal('journey-c', 8);
+    lock.updateProgress('journey-c', 3);
+    assert.deepStrictEqual(
+      Object.assign({}, lock.getLockState('journey-c')),
+      Object.assign({}, lock.getLockState('journey-c'), { current: 3, total: 8 })
+    );
+    assert.strictEqual(lock.getLockState('journey-c').current, 3);
+    assert.strictEqual(lock.getLockState('journey-c').total, 8);
+    assert.strictEqual(lock.getLockState('journey-missing'), null, 'an unlocked journey returns null, never throws');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s2-capture-all-helpers.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
