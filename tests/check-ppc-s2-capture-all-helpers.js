@@ -86,12 +86,81 @@ queue.push(function() {
 });
 
 var pe = require('../src/web-ui/routes/playback-evidence');
+var store = require('../src/web-ui/modules/journey-store');
+pe.setJourneyStoreModule(store);
 
 queue.push(function() {
   return test('NFR-Accessibility: progress status markup includes an aria-live="polite" region', function() {
     var html = pe._renderCaptureAllProgress({ current: 3, total: 8 });
     assert.ok(html.indexOf('aria-live="polite"') !== -1, 'must expose progress to assistive technology, not purely visual');
     assert.ok(html.indexOf('3') !== -1 && html.indexOf('8') !== -1, 'must show the actual current/total counts');
+  });
+});
+
+function makeRes() {
+  var res = {
+    _status: null, _json: null, _body: null, _headers: {},
+    json: function(body) { res._status = res._status || 200; res._json = body; },
+    writeHead: function(status, headers) { res._status = status; Object.assign(res._headers, headers || {}); },
+    end: function(body) { res._body = (res._body || '') + (body || ''); },
+    setHeader: function(k, v) { res._headers[k] = v; }
+  };
+  res.status = function(code) { res._status = code; return res; };
+  return res;
+}
+function makeReq(tenantId, productId, featureSlug, extra) {
+  return Object.assign({
+    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
+    sessionId: 'sid-' + tenantId,
+    params: { productId: productId, featureSlug: featureSlug },
+    headers: { accept: 'text/html' }
+  }, extra || {});
+}
+function setupDodCompleteJourneyForProgressTest(opts) {
+  opts = opts || {};
+  var slug = opts.featureSlug || ('ppc-s2-progress-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+  var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — First | Yes | screenshot |'].join('\n');
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, { tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' });
+  store.setPgAdapterForTesting({
+    saveJourney: async function() {},
+    getArtefactsForJourney: async function() {
+      return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }];
+    }
+  });
+  store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+  return { journeyId: j.journeyId, featureSlug: slug, tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' };
+}
+
+queue.push(function() {
+  return test('capture-all progress wiring: no lock held -> button renders, no progress markup', async function() {
+    store._clearForTesting();
+    lock._clearForTesting();
+    var setup = setupDodCompleteJourneyForProgressTest({});
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    var html = res._body;
+    assert.ok(html.indexOf('Capture all evidence') !== -1, 'button must render when no run is in progress');
+    assert.ok(html.indexOf('aria-live="polite"') === -1, 'progress markup must NOT render when no run is in progress');
+  });
+});
+
+queue.push(function() {
+  return test('capture-all progress wiring: lock held -> progress markup renders, button absent', async function() {
+    store._clearForTesting();
+    lock._clearForTesting();
+    var setup = setupDodCompleteJourneyForProgressTest({});
+    lock.tryAcquireLock(setup.journeyId);
+    lock.setTotal(setup.journeyId, 5);
+    lock.updateProgress(setup.journeyId, 2);
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    var html = res._body;
+    assert.ok(html.indexOf('aria-live="polite"') !== -1, 'progress markup must render when a run is in progress');
+    assert.ok(html.indexOf('Capturing AC 2 of 5') !== -1, 'must show the real current/total counts from the lock state');
+    assert.ok(html.indexOf('Capture all evidence') === -1, 'the trigger button must NOT render while a run is already in progress');
   });
 });
 
