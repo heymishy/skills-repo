@@ -310,6 +310,7 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
   var repoRoot = getRepoRoot(req);
   // Defense in depth, in addition to (not instead of) the ACID_RE allowlist
   // at each call site -- CLAUDE.md's path traversal guard rule requires both.
+  // Never log the raw resolved path on failure.
   var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
   if (!resolvedShotPath) {
     var invalidPathErr = new Error('invalid capture path');
@@ -356,6 +357,9 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     return;
   }
 
+  // Matches billing.js's own host-derivation convention -- never a
+  // hardcoded/env-configured base URL, which would silently scope the
+  // seeded auth cookie to the wrong domain outside local dev.
   var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
@@ -370,6 +374,11 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
       _sendJson(res, 400, { error: 'invalid capture path' });
       return;
     }
+    // Matches journey.js's handlePostGateConfirm precedent for this exact
+    // operation (committing an artefact to GitHub, acdg-s1/acdg-s2): an
+    // uncaught failure here is otherwise invisible -- a bare 500 with no
+    // actionable message, surfaced only by server.js's generic top-level
+    // handler. Structured JSON instead, via this file's own _sendJson.
     _sendJson(res, 502, {
       error: 'capture-failed',
       message: 'Could not complete the capture (navigation, screenshot, or commit to the connected repository failed). Nothing was marked captured -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
