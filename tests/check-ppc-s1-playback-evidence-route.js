@@ -521,6 +521,14 @@ queue.push(function() {
     await pe.handleGetPlaybackEvidence(getReq, getRes, null, null);
     assert.ok(!JSON.stringify(getRes._json).includes(getReq.sessionId));
 
+    var targetReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { url: 'http://localhost:3000/x', selector: '#y', _csrf: 'test-csrf-token' }
+    });
+    var targetRes = makeRes();
+    await pe.handlePostCaptureTarget(targetReq, targetRes, null, null);
+    assert.ok(!JSON.stringify(targetRes._json).includes(targetReq.sessionId), 'handlePostCaptureTarget\'s response must not leak session_id either -- this test\'s own name claims coverage of all 3 routes, not just 2');
+
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/x', '#y');
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-sec-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
@@ -564,16 +572,7 @@ queue.push(function() {
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-adr018-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
     repoRootAdapter.setRepoRoot(tmpRoot);
-    var seenSessionId = null;
-    sessionPageAdapter.setSessionPageAdapter(async function(sessionId) {
-      // The real implementation only ever receives req.sessionId -- this
-      // adapter is the ONLY seam capture-trigger has for authentication.
-      // If the handler ever called seedTestSession or hit /test/session
-      // instead, this stub would never be reached with the real sessionId
-      // at all -- the assertion below on seenSessionId is what would catch
-      // that, not a direct spy on seedTestSession (which this handler has
-      // no code path to even reference).
-      seenSessionId = sessionId;
+    sessionPageAdapter.setSessionPageAdapter(async function() {
       return {
         page: {
           goto: async function() {},
@@ -588,10 +587,28 @@ queue.push(function() {
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
-    var triggerRes = makeRes();
-    await pe.handlePostCaptureTrigger(triggerReq, triggerRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    // Direct call-count spy on the actual bypass fixture (matching the test
+    // plan's own measurement method), not a restatement of the AC3 test's
+    // "adapter receives req.sessionId" assertion (which only proves the
+    // real adapter was called with the right value, not that the bypass
+    // was ALSO never touched -- a defensive/dead call to seedTestSession
+    // alongside the real adapter would still pass that check).
+    var sessionModule = require('../src/web-ui/middleware/session');
+    var originalSeedTestSession = sessionModule.seedTestSession;
+    var seedTestSessionCallCount = 0;
+    sessionModule.seedTestSession = function() {
+      seedTestSessionCallCount++;
+      return originalSeedTestSession.apply(this, arguments);
+    };
 
-    assert.strictEqual(seenSessionId, triggerReq.sessionId, 'the adapter must be called with the real req.sessionId, proving the real-session path was used, not a bypass');
+    var triggerRes = makeRes();
+    try {
+      await pe.handlePostCaptureTrigger(triggerReq, triggerRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    } finally {
+      sessionModule.seedTestSession = originalSeedTestSession;
+    }
+
+    assert.strictEqual(seedTestSessionCallCount, 0, 'the NODE_ENV=test auth-bypass fixture must never be called during capture-trigger');
   });
 });
 
