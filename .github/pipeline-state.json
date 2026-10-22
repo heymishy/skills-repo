@@ -42609,11 +42609,11 @@
             {
               "slug": "ppc-s2",
               "name": "Extend to full-feature capture loop with timing validation",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-21T17:46:47.267Z",
+              "updatedAt": "2026-10-22T07:51:00.158Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
