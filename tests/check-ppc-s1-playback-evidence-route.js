@@ -405,6 +405,53 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('integration: real server.js router dispatches GET /products/:id/playback-evidence/:slug to the real handler', async function() {
+    // Matches check-vrne-s1-server-wiring.js's/check-jsvr-s1-wire-stage-view-route.js's
+    // established real-dispatch pattern: this is the only way to prove the
+    // route REGEX+PARAMS+DISPATCH actually work, not just that the handler
+    // names appear as text in server.js (the source-text test above cannot
+    // tell a real mount apart from a dead, unreferenced require()).
+    process.env.NODE_ENV             = process.env.NODE_ENV || 'test';
+    process.env.SESSION_SECRET       = process.env.SESSION_SECRET || 'test-session-secret-minimum32chars!!';
+    process.env.GITHUB_CLIENT_ID     = process.env.GITHUB_CLIENT_ID || 'test-client-id';
+    process.env.GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'test-secret';
+    process.env.GITHUB_CALLBACK_URL  = process.env.GITHUB_CALLBACK_URL || 'http://localhost:3000/auth/github/callback';
+    var router = require('../src/web-ui/server').router;
+    var seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
+
+    // session.js's own cookie parser only matches lowercase hex session ids
+    // (_parseSessionId: /session_id=([a-f0-9]+)/) -- a human-readable id
+    // would silently fail to parse and fall through to an unauthenticated
+    // 302, not a 404, masking what this test is actually trying to prove.
+    var sid = require('crypto').randomBytes(16).toString('hex');
+    seedTestSession(sid, { accessToken: 'test-token', tenantId: 'tenant-dispatch-test', login: 'dispatch-tester' });
+
+    var req = {
+      method: 'GET',
+      url: '/products/product-dispatch-test/playback-evidence/slug-that-does-not-exist',
+      headers: { cookie: 'session_id=' + sid }
+    };
+    var resStatus = null, resBody = null;
+    var res = {
+      writeHead: function(status) { resStatus = status; },
+      end: function(body) { resBody = body; },
+      setHeader: function() {}
+    };
+
+    await router(req, res);
+
+    // No journey exists for this product+slug -- the real handler must
+    // reach its own 404 branch (via the real getJourneyByTenantProductSlug,
+    // not a mock), proving the regex matched, req.params.productId and
+    // req.params.featureSlug were extracted correctly, authGuard passed the
+    // seeded session through, and dispatch truly reached
+    // handleGetPlaybackEvidence -- not just that its name exists in the file.
+    assert.strictEqual(resStatus, 404);
+    assert.deepStrictEqual(JSON.parse(resBody), { error: 'not found' });
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

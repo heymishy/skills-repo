@@ -3265,8 +3265,8 @@ async function router(req, res) {
     // ppc-s1 (AC1) -- tenant-scoped surface, deliberately NOT /playback or
     // /features/:slug (see playback-evidence.js header comment: journey-store's
     // getJourneyByFeatureSlug has no tenant filtering).
-    var _peParts1 = pathname.split('/');
-    req.params = { productId: _peParts1[2], featureSlug: decodeURIComponent(_peParts1[4]) };
+    var _peEvidenceParts = pathname.split('/');
+    req.params = { productId: _peEvidenceParts[2], featureSlug: decodeURIComponent(_peEvidenceParts[4]) };
     authGuard(req, res, async () => { await handleGetPlaybackEvidence(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/targets\/[^/]+$/) && req.method === 'POST') {
@@ -3275,15 +3275,15 @@ async function router(req, res) {
     // handlePostGateConfirm/journeys.js's handlePostJourneyStage precedent:
     // when a handler already calls _csrf.csrfGuard itself, server.js does
     // not redundantly re-check via _gcwCsrf.
-    var _peParts2 = pathname.split('/');
-    req.params = { productId: _peParts2[2], featureSlug: decodeURIComponent(_peParts2[4]), acId: decodeURIComponent(_peParts2[6]) };
+    var _peCaptureTargetParts = pathname.split('/');
+    req.params = { productId: _peCaptureTargetParts[2], featureSlug: decodeURIComponent(_peCaptureTargetParts[4]), acId: decodeURIComponent(_peCaptureTargetParts[6]) };
     authGuard(req, res, async () => { await handlePostCaptureTarget(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/capture\/[^/]+$/) && req.method === 'POST') {
     // ppc-s1 (AC3) -- handlePostCaptureTrigger does its own CSRF check
     // internally; see note on the targets route above.
-    var _peParts3 = pathname.split('/');
-    req.params = { productId: _peParts3[2], featureSlug: decodeURIComponent(_peParts3[4]), acId: decodeURIComponent(_peParts3[6]) };
+    var _peCaptureTriggerParts = pathname.split('/');
+    req.params = { productId: _peCaptureTriggerParts[2], featureSlug: decodeURIComponent(_peCaptureTriggerParts[4]), acId: decodeURIComponent(_peCaptureTriggerParts[6]) };
     authGuard(req, res, async () => { await handlePostCaptureTrigger(req, res, null, _pshPool); });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
