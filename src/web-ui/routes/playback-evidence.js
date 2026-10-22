@@ -283,6 +283,51 @@ async function _resolveOwnerRepo(journey, pool) {
 }
 
 /**
+ * ppc-s2: single-AC capture mechanics, extracted from handlePostCaptureTrigger
+ * so handlePostCaptureAll (ppc-s2) can reuse the identical mechanism per AC
+ * in a loop, instead of a second, parallel capture path (DoR constraint).
+ * Takes an already-authenticated `page` (acquired once by the caller) rather
+ * than acquiring its own -- handlePostCaptureAll acquires one authenticated
+ * page for an entire capture-all run, not once per AC.
+ * @param {object} journey
+ * @param {string} acId
+ * @param {{url:string, selector:string}} target
+ * @param {{owner:string, repo:string}} ownerRepo
+ * @param {object} req
+ * @param {object} page
+ * @returns {Promise<string>} the committed screenshot's repo-relative path
+ */
+async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
+  await page.goto(target.url);
+  var shots = await captureAcScreenshots({
+    page: page,
+    featureSlug: journey.featureSlug,
+    storySlug: 'ppc-s1',
+    acList: [{ acId: acId, selector: target.selector }]
+  });
+  var shot = shots[0];
+
+  var repoRoot = getRepoRoot(req);
+  // Defense in depth, in addition to (not instead of) the ACID_RE allowlist
+  // at each call site -- CLAUDE.md's path traversal guard rule requires both.
+  var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
+  if (!resolvedShotPath) {
+    var invalidPathErr = new Error('invalid capture path');
+    invalidPathErr.invalidPath = true;
+    throw invalidPathErr;
+  }
+  var content = fs.readFileSync(resolvedShotPath);
+
+  await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+
+  var screenshots = journey.captureScreenshots || {};
+  screenshots[acId] = shot.path;
+  _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
+
+  return shot.path;
+}
+
+/**
  * AC3 -- session-reuse capture (ADR-018: real session only, never a service
  * credential or the NODE_ENV=test bypass).
  */
@@ -311,49 +356,20 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     return;
   }
 
-  // Matches billing.js's own host-derivation convention -- never a
-  // hardcoded/env-configured base URL, which would silently scope the
-  // seeded auth cookie to the wrong domain outside local dev.
   var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
-    await authed.page.goto(target.url);
-    var shots = await captureAcScreenshots({
-      page: authed.page,
-      featureSlug: journey.featureSlug,
-      storySlug: 'ppc-s1',
-      acList: [{ acId: acId, selector: target.selector }]
-    });
-    var shot = shots[0];
-
-    var repoRoot = getRepoRoot(req);
-    // Defense in depth, in addition to (not instead of) the ACID_RE
-    // allowlist above -- CLAUDE.md's path traversal guard rule requires
-    // both. Never log the raw resolved path on failure.
-    var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
-    if (!resolvedShotPath) {
-      _sendJson(res, 400, { error: 'invalid capture path' });
-      return;
-    }
-    var content = fs.readFileSync(resolvedShotPath);
-
-    await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-
-    var screenshots = journey.captureScreenshots || {};
-    screenshots[acId] = shot.path;
-    _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
-
+    var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
     }
-    _sendJson(res, 200, { ok: true, screenshotPath: shot.path });
+    _sendJson(res, 200, { ok: true, screenshotPath: shotPath });
   } catch (captureErr) {
-    // Matches journey.js's handlePostGateConfirm precedent for this exact
-    // operation (committing an artefact to GitHub, acdg-s1/acdg-s2): an
-    // uncaught failure here is otherwise invisible -- a bare 500 with no
-    // actionable message, surfaced only by server.js's generic top-level
-    // handler. Structured JSON instead, via this file's own _sendJson.
+    if (captureErr && captureErr.invalidPath) {
+      _sendJson(res, 400, { error: 'invalid capture path' });
+      return;
+    }
     _sendJson(res, 502, {
       error: 'capture-failed',
       message: 'Could not complete the capture (navigation, screenshot, or commit to the connected repository failed). Nothing was marked captured -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
@@ -372,5 +388,6 @@ module.exports = {
   setJourneyStoreModule,
   _resolveJourney,
   _notFound,
-  _sendJson
+  _sendJson,
+  _captureOneAc
 };
