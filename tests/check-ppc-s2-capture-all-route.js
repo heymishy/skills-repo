@@ -100,11 +100,18 @@ function getStore() {
   return store;
 }
 function makeRes() {
+  // _headers/writeHead(status, headers) extended to match
+  // check-ppc-s1-ui-layer.js's own makeRes shape (Finding 2, code-quality
+  // review of 689ac9f5) -- this file's makeRes previously dropped the
+  // headers argument entirely, so a 302 redirect's Location header was
+  // unobservable from a test. Existing tests only ever use res.json()/
+  // res.status()/res._json, never _headers, so this is additive.
   var res = {
-    _status: null, _json: null, _body: null,
+    _status: null, _json: null, _body: null, _headers: {},
     json: function(body) { res._status = res._status || 200; res._json = body; },
-    writeHead: function(status) { res._status = status; },
-    end: function(body) { res._body = body; }
+    writeHead: function(status, headers) { res._status = status; Object.assign(res._headers, headers || {}); },
+    end: function(body) { res._body = body; },
+    setHeader: function(k, v) { res._headers[k] = v; }
   };
   res.status = function(code) { res._status = code; return res; };
   return res;
@@ -382,6 +389,140 @@ queue.push(function() {
     });
     assert.strictEqual(sanitised.captureAllDuration, 12345, 'must not silently vanish after a Postgres-backed restart');
     assert.strictEqual(sanitised.captureAllCompletedAt, '2026-10-22T00:00:00.000Z');
+  });
+});
+
+queue.push(function() {
+  return test('Finding 2 (code-quality review of 689ac9f5): a form-encoded POST to capture-all redirects (302) back to the GET page, matching check-ppc-s1-ui-layer.js\'s own redirect-on-form-submission precedent', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    setupFakeCapture('ppc-s2-redirect');
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(res._status, 302, 'a form submission must redirect back to the page, not return raw JSON');
+    assert.ok(res._headers.Location && res._headers.Location.indexOf(setup.featureSlug) !== -1, 'must redirect back to this feature\'s own playback-evidence page');
+  });
+});
+
+queue.push(function() {
+  return test('Finding 1 (code-quality review of 689ac9f5): a form-encoded POST with zero targeted ACs also redirects (302), not raw JSON -- the reachable "Capture all evidence" button bug the fix addresses', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    // Deliberately no setCaptureTarget calls -- all 3 fixture ACs are untargeted,
+    // so buildCaptureAllList's toCapture list is empty and the early-return
+    // branch is the one under test.
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureAll(req, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._status, 302, 'the empty-list branch must also redirect for a form submission, not dump raw JSON into the browser');
+    assert.ok(res._headers.Location && res._headers.Location.indexOf(setup.featureSlug) !== -1);
+  });
+});
+
+queue.push(function() {
+  return test('captureAllFailed: a failed AC persists a failure record that handleGetPlaybackEvidence renders as an escaped role="alert" notice, successful ACs unaffected', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    store2.setCaptureTarget(setup.journeyId, 'AC2', 'http://localhost:3000/b', '#b');
+
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s2-failed-render-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var htmlErrorMessage = '<script>alert(1)</script>';
+    var fakePage = {
+      goto: async function(url) {
+        if (url === 'http://localhost:3000/b') throw new Error(htmlErrorMessage);
+      },
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return { page: fakePage, browser: { close: async function() {} } };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var captureReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var captureRes = makeRes();
+    await pe.handlePostCaptureAll(captureReq, captureRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.strictEqual(captureRes._json.failed.length, 1, 'AC2 must fail in this run');
+    assert.strictEqual(captureRes._json.captured.length, 1, 'AC1 must still succeed in the same run');
+
+    var htmlReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var htmlRes = makeRes();
+    await pe.handleGetPlaybackEvidence(htmlReq, htmlRes, null, null);
+    var html = htmlRes._body;
+
+    assert.ok(html.indexOf('role="alert"') !== -1, 'the failed AC must render a role="alert" notice');
+    assert.ok(html.indexOf('Capture failed') !== -1, 'the failure notice must contain the exact "Capture failed" text');
+    assert.ok(html.indexOf('&lt;script&gt;') !== -1, 'the error message must be HTML-escaped');
+    assert.ok(html.indexOf('<script>alert(1)</script>') === -1, 'the raw, unescaped error message must never appear in the rendered HTML');
+    // Only AC2 failed -- exactly one notice must render, proving AC1's
+    // (successful) row does not also carry a failure notice.
+    var alertCount = (html.match(/role="alert"/g) || []).length;
+    assert.strictEqual(alertCount, 1, 'only the one failed AC (AC2) must show a failure notice -- the successful AC (AC1) must show none');
+  });
+});
+
+queue.push(function() {
+  return test('captureAllFailed: a successful retry clears the stale failure entry, so the notice disappears on the next render', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    store2.setCaptureTarget(setup.journeyId, 'AC2', 'http://localhost:3000/b', '#b');
+
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s2-clear-retry-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var shouldThrow = true;
+    var fakePage = {
+      goto: async function(url) {
+        if (shouldThrow && url === 'http://localhost:3000/b') throw new Error('simulated navigation timeout');
+      },
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return { page: fakePage, browser: { close: async function() {} } };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var req1 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    await pe.handlePostCaptureAll(req1, makeRes(), null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    var htmlReqBefore = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var htmlResBefore = makeRes();
+    await pe.handleGetPlaybackEvidence(htmlReqBefore, htmlResBefore, null, null);
+    assert.ok(htmlResBefore._body.indexOf('role="alert"') !== -1, 'AC2 must show a failure notice after the first (failing) run');
+
+    shouldThrow = false;
+    var req2 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res2 = makeRes();
+    await pe.handlePostCaptureAll(req2, res2, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.strictEqual(res2._json.failed.length, 0, 'the retry must succeed for every AC');
+
+    var htmlReqAfter = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var htmlResAfter = makeRes();
+    await pe.handleGetPlaybackEvidence(htmlReqAfter, htmlResAfter, null, null);
+    assert.ok(htmlResAfter._body.indexOf('role="alert"') === -1, 'the stale failure notice must be cleared once the retry succeeds');
   });
 });
 

@@ -466,6 +466,18 @@ async function handlePostCaptureAll(req, res, _next, pool) {
     captureAllLock.setTotal(journey.journeyId, listResult.toCapture.length);
 
     if (listResult.toCapture.length === 0) {
+      // final-review fix (Finding 1): the "Capture all evidence" button
+      // renders unconditionally whenever no run is in progress -- it has no
+      // check for whether any AC currently has a capture target set. A
+      // first-time user, before setting any target, hits exactly this
+      // empty-list branch; without this redirect check, that form
+      // submission would get raw JSON dumped into the browser instead of
+      // the normal page -- the same user-facing bug this commit exists to
+      // fix. Matches the success-path redirect convention below.
+      if (_isFormSubmission(req)) {
+        _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+        return;
+      }
       _sendJson(res, 200, { captured: [], failed: [], skipped: listResult.skipped, durationMs: 0, exceedsTimingThreshold: false });
       return;
     }
