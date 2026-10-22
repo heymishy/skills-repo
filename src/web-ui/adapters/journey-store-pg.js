@@ -76,8 +76,8 @@ function _sanitise(journey) {
     // ppc-s2: added to the allowlist per this file's own fdn-s1 rule --
     // must be listed explicitly or it silently vanishes after a
     // Postgres-backed restart.
-    captureAllDuration:     journey.captureAllDuration     || null,
-    captureAllCompletedAt:  journey.captureAllCompletedAt  || null
+    captureAllDuration: journey.captureAllDuration  || null,
+    captureAllCompletedAt: journey.captureAllCompletedAt  || null
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
