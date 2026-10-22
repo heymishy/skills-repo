@@ -24,6 +24,7 @@ const { checkModelRoutingDrift }                                     = require('
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
 const { handleGetPlaybackList, handleGetPlaybackReview, handleGetPlaybackMedia } = require('./routes/playback'); // fpd-s3, fpd-s4
+const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger } = require('./routes/playback-evidence'); // ppc-s1
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -3259,6 +3260,31 @@ async function router(req, res) {
     authGuard(req, res, async () => {
       await handleGetPlaybackMedia(req, res, requestedMediaPath);
     });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+$/) && req.method === 'GET') {
+    // ppc-s1 (AC1) -- tenant-scoped surface, deliberately NOT /playback or
+    // /features/:slug (see playback-evidence.js header comment: journey-store's
+    // getJourneyByFeatureSlug has no tenant filtering).
+    var _peParts1 = pathname.split('/');
+    req.params = { productId: _peParts1[2], featureSlug: decodeURIComponent(_peParts1[4]) };
+    authGuard(req, res, async () => { await handleGetPlaybackEvidence(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/targets\/[^/]+$/) && req.method === 'POST') {
+    // ppc-s1 (AC2) -- handlePostCaptureTarget does its own CSRF check
+    // internally (routes/playback-evidence.js), matching journey.js's
+    // handlePostGateConfirm/journeys.js's handlePostJourneyStage precedent:
+    // when a handler already calls _csrf.csrfGuard itself, server.js does
+    // not redundantly re-check via _gcwCsrf.
+    var _peParts2 = pathname.split('/');
+    req.params = { productId: _peParts2[2], featureSlug: decodeURIComponent(_peParts2[4]), acId: decodeURIComponent(_peParts2[6]) };
+    authGuard(req, res, async () => { await handlePostCaptureTarget(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/capture\/[^/]+$/) && req.method === 'POST') {
+    // ppc-s1 (AC3) -- handlePostCaptureTrigger does its own CSRF check
+    // internally; see note on the targets route above.
+    var _peParts3 = pathname.split('/');
+    req.params = { productId: _peParts3[2], featureSlug: decodeURIComponent(_peParts3[4]), acId: decodeURIComponent(_peParts3[6]) };
+    authGuard(req, res, async () => { await handlePostCaptureTrigger(req, res, null, _pshPool); });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
     // vrne-s4 — viewer-role write-block gate (AC3)

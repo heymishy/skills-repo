@@ -396,6 +396,15 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('server.js source mounts all 3 playback-evidence routes', function() {
+    var serverSrc = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/server.js'), 'utf8');
+    assert.ok(/handleGetPlaybackEvidence/.test(serverSrc), 'GET route must be mounted');
+    assert.ok(/handlePostCaptureTarget/.test(serverSrc), 'POST capture-target route must be mounted');
+    assert.ok(/handlePostCaptureTrigger/.test(serverSrc), 'POST capture-trigger route must be mounted');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
