@@ -452,6 +452,61 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('AC6: two tenants sharing a colliding feature_slug each see only their own content', async function() {
+    var store = getStore();
+    var collidingSlug = 'duplicate-slug-' + Date.now();
+    var setupA = setupDodCompleteJourney(store, { tenantId: 'tenant-A', productId: 'product-A', featureSlug: collidingSlug });
+    var setupB = setupDodCompleteJourney(store, { tenantId: 'tenant-B', productId: 'product-B', featureSlug: collidingSlug });
+    store.setCaptureTarget(setupB.journeyId, 'AC1', 'http://evil.example.com/tenant-b-secret', '#tenant-b-selector');
+    store.setJourneyFields(setupB.journeyId, { captureScreenshots: { AC1: 'artefacts/' + collidingSlug + '/playback/ppc-s1/screenshots/tenant-B-secret.png' } });
+
+    var reqA = makeReq('tenant-A', 'product-A', collidingSlug);
+    var resA = makeRes();
+    await pe.handleGetPlaybackEvidence(reqA, resA, null, null);
+    var bodyString = JSON.stringify(resA._json);
+
+    assert.strictEqual(resA._json.featureSlug, collidingSlug);
+    assert.strictEqual(resA._json.acs[0].targetSet, false, 'tenant A must see its OWN unset target, not tenant B\'s stored one');
+    assert.ok(!bodyString.includes('tenant-b-secret'), 'tenant B\'s capture target URL must never appear in tenant A\'s response');
+    assert.ok(!bodyString.includes('tenant-B-secret.png'), 'tenant B\'s screenshot path must never appear in tenant A\'s response');
+
+    var reqB = makeReq('tenant-B', 'product-B', collidingSlug);
+    var resB = makeRes();
+    await pe.handleGetPlaybackEvidence(reqB, resB, null, null);
+    assert.strictEqual(resB._json.acs[0].targetSet, true, 'tenant B must still see its own stored target');
+    assert.strictEqual(resB._json.acs[0].target.url, 'http://evil.example.com/tenant-b-secret');
+  });
+});
+
+queue.push(function() {
+  return test('AC7: a guessed URL to another REAL tenant\'s feature returns 404 with no metadata leak', async function() {
+    var store = getStore();
+    var setupB = setupDodCompleteJourney(store, { tenantId: 'tenant-B', productId: 'product-B' });
+    store.setCaptureTarget(setupB.journeyId, 'AC1', 'http://evil.example.com/tenant-b-secret', '#tenant-b-selector');
+
+    // Tenant A (a different tenant entirely, owns a different product)
+    // guesses tenant B's real feature slug via tenant A's own productId.
+    var req = makeReq('tenant-A', 'product-A', setupB.featureSlug);
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, null);
+
+    assert.strictEqual(res._status, 404);
+    var bodyString = JSON.stringify(res._json);
+    assert.ok(!bodyString.includes(setupB.featureSlug), 'response must not echo back the guessed slug or any other metadata about tenant B\'s feature');
+    assert.ok(!bodyString.includes('tenant-b-secret'), 'tenant B\'s capture target must never leak even in a 404');
+    assert.deepStrictEqual(res._json, { error: 'not found' });
+
+    // Also try tenant A guessing with tenant B's OWN productId but tenant
+    // A's own session tenantId -- the mismatched (tenantId, productId) pair
+    // must still 404, not partially succeed.
+    var req2 = makeReq('tenant-A', setupB.productId, setupB.featureSlug);
+    var res2 = makeRes();
+    await pe.handleGetPlaybackEvidence(req2, res2, null, null);
+    assert.strictEqual(res2._status, 404);
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s1-playback-evidence-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
