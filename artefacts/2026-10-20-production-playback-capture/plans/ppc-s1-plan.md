@@ -9,6 +9,32 @@
 
 ---
 
+## Execution status: ALL 13 TASKS COMPLETE
+
+Every task (0-12) went through implementer → spec-compliance reviewer → code-quality reviewer, with fixes applied and re-reviewed wherever issues were found. See each Task's own `**Status: COMPLETE.**` note below for per-task detail.
+
+**Final whole-arc review** (diff from before Task 0 to the final commit, against all 8 ACs in `stories/ppc-s1.md`) found one real, cross-cutting issue missed by every individual task's own review: `req.params.acId` flowed unvalidated into a disk path (Playwright screenshot write → `fs.readFileSync` read-back → GitHub commit), violating this story's own DoR contract ("acId derived only from validated values") and CLAUDE.md's mandatory path-traversal-guard rule. No single task's diff made this visible — it only became apparent reviewing the full acId data flow across `server.js` → `playback-evidence.js` → `capture-screenshots.js` together. Fixed in `d2482cd5` (an `ACID_RE` allowlist in both POST handlers, plus a resolved-path containment check at the disk read-back, satisfying CLAUDE.md's "both, not either" requirement) and independently re-verified as closing the gap, with adversarial reasoning confirming `^AC\d+$` admits zero path-traversal payloads.
+
+**Final test counts:** 32 tests across 3 files (`check-ppc-s1-journey-store-helpers.js`: 7, `check-ppc-s1-session-page-adapter.js`: 4, `check-ppc-s1-playback-evidence-route.js`: 21), all passing. Full suite: 774 files, 0 failures (two unrelated, confirmed-benign timing-sensitive flakes observed and independently re-verified during the course of this execution: `check-pcr-s1-test-runner.js`, `check-cat-s1-core-trace-builder.js` — neither touches this story's files).
+
+**Final review verdict: PASSED.**
+
+---
+
+## /verify-completion outcome
+
+Step 2 (AC verification walk-through) caught a real, story-blocking gap: AC1/AC3/AC4/AC5 and the AC verification script describe a real browser page, but all 13 tasks had only built a JSON API. Built the missing UI layer (commits `1e27864d`, `031adea4`, `8ff46dfc`) — dual-mode HTML rendering, a new tenant-scoped screenshot route, redirect-after-form-POST — independently spec- and quality-reviewed, with 2 further fixes applied (a real DRY/security-risk duplication extracted; a comment inaccuracy corrected).
+
+**Live browser render check:** performed (not RISK-ACCEPTed) — generated the real HTML via `handleGetPlaybackEvidence` itself (not a mock), served it with the exact same `Content-Type: text/html; charset=utf-8` header production uses, and visually confirmed in a real Chrome tab: headings/em-dashes render correctly, "Capture target not set" is plain visible text (AC4), real labeled `<input>`/`<button>` elements render and are reachable via Tab-key navigation alone with a visible focus ring (NFR-Accessibility), and a stored target pre-fills its form with a "Capture evidence" button present (AC2/AC3 reachable). The AC3 screenshot `<img>` showed a broken-icon placeholder in this static preview (expected — no live backend route behind the static file server); the route itself (`handleGetCaptureScreenshot`) is separately covered by a passing automated test against a real file on disk.
+
+**Final test count:** 38 tests across 4 files (`check-ppc-s1-journey-store-helpers.js`: 7, `check-ppc-s1-session-page-adapter.js`: 4, `check-ppc-s1-playback-evidence-route.js`: 21, `check-ppc-s1-ui-layer.js`: 6). Full suite: 775 files, 0 failures.
+
+**Scope check (Step 3):** all 30 commits on this branch trace to an AC, a task, or a documented review/verify-completion finding — clean.
+
+**Verdict: PASSED. Ready for `/branch-complete`.**
+
+---
+
 ## Plan-time finding (not in the original file map confirmed with the operator)
 
 `scripts/playback-capture.js`'s `captureAcScreenshots` is excluded from the deployed Docker image — confirmed via `src/utils/dod-parsing.js`'s own header comment, which documents the identical incident already happening once for `parseDodAcCoverage` ("ic-hotfix1" — a production route requiring `../../../scripts/playback-capture` crashed staging on boot with `MODULE_NOT_FOUND`, because `scripts/` is operator/CI tooling only and never copied into the image). This story's `handlePostCaptureTrigger` is a production route that needs this function, so it has the same landmine. Task 0 below extracts it to `src/utils/capture-screenshots.js` (deployed) with a backward-compatible re-export from `scripts/playback-capture.js`, mirroring the exact precedent already set for `dod-parsing.js`.
@@ -38,12 +64,14 @@ Modify:
 
 ## Task 0: Extract `captureAcScreenshots` so it is actually deployed
 
+**Status: COMPLETE.** Spec review ✅, quality review found 2 Important documentation issues (mislabeled precedent incident tag, re-export not grouped with its sibling) — fixed in `ee4e3c0e`, re-review ✅. Ending SHA: `ee4e3c0e`.
+
 **Files:**
 - Create: `src/utils/capture-screenshots.js`
 - Modify: `scripts/playback-capture.js`
 - Test: `tests/check-ppc-s1-journey-store-helpers.js` (regression assertion added at the top of this file; the function itself has pre-existing coverage via `rpca`'s own tests, which must still pass unchanged)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to the top of `tests/check-ppc-s1-journey-store-helpers.js` (new file — this is its first test):
 
@@ -75,7 +103,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -83,7 +111,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `FAIL — Cannot find module '../src/utils/capture-screenshots'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `src/utils/capture-screenshots.js`:
 
@@ -124,7 +152,7 @@ const { captureAcScreenshots } = require('../src/utils/capture-screenshots');
 
 Remove the old inline function body; keep the `module.exports` line at the bottom of `scripts/playback-capture.js` listing `captureAcScreenshots` exactly as it already does.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -132,7 +160,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `PASS` for the new test (other tests in this file don't exist yet — later tasks add them to this same file).
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -140,7 +168,7 @@ npm test
 
 Expected output: all tests passing, including every existing `rpca`/`fpd` test that exercises `captureAcScreenshots` via `scripts/playback-capture.js` (unchanged behaviour, re-export only).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-screenshots.js scripts/playback-capture.js tests/check-ppc-s1-journey-store-helpers.js
@@ -151,11 +179,13 @@ git commit -m "refactor: extract captureAcScreenshots to src/utils so it is depl
 
 ## Task 1: `isDodComplete` and `getCaptureTargetState` helpers
 
+**Status: COMPLETE.** Spec review ✅, quality review found 2 Minor issues (constant placement, constant not exported) — fixed proactively in `4fef9293` (Minor findings don't gate per the skill, but cheap to fix before later tasks build on the `'NOT_SET'` literal). Ending SHA: `4fef9293`. Note for later tasks: compare against the exported `journeyStore.CAPTURE_TARGET_NOT_SET`, not the hardcoded string `'NOT_SET'`.
+
 **Files:**
 - Modify: `src/web-ui/modules/journey-store.js`
 - Test: `tests/check-ppc-s1-journey-store-helpers.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-journey-store-helpers.js`:
 
@@ -180,7 +210,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -188,7 +218,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `FAIL — store.isDodComplete is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/modules/journey-store.js`, add near the top (after `getJourneyByFeatureSlug`, before `completeStage`):
 
@@ -221,7 +251,7 @@ function getCaptureTargetState(captureTargets, acId) {
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -229,7 +259,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `PASS` for both new tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -237,7 +267,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/journey-store.js tests/check-ppc-s1-journey-store-helpers.js
@@ -246,13 +276,15 @@ git commit -m "feat: add isDodComplete and getCaptureTargetState helpers to jour
 
 ---
 
-## Task 2: `getJourneyForTenantProductSlug` — the tenant+product-scoped replacement for `getJourneyByFeatureSlug`
+## Task 2: `getJourneyByTenantProductSlug` — the tenant+product-scoped replacement for `getJourneyByFeatureSlug`
+
+**Status: COMPLETE.** Spec review ✅ (security-critical guard verified line-by-line). Quality review found 1 Important (security guard needed an explicit inline comment) + 1 Minor (renamed `getJourneyForTenantProductSlug` → `getJourneyByTenantProductSlug` to match this file's `getJourneyBy<Criteria>` convention) — fixed in `81aeba8f`. Ending SHA: `81aeba8f`. **Name correction for later tasks: use `getJourneyByTenantProductSlug`, not the `For` variant shown in this file's own code blocks below.**
 
 **Files:**
 - Modify: `src/web-ui/modules/journey-store.js`
 - Test: `tests/check-ppc-s1-journey-store-helpers.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -283,7 +315,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -291,7 +323,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `FAIL — store.getJourneyForTenantProductSlug is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/modules/journey-store.js`, add directly after `getJourneyByFeatureSlug`:
 
@@ -320,7 +352,7 @@ function getJourneyForTenantProductSlug(tenantId, productId, featureSlug) {
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -328,7 +360,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `PASS` for both new tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -336,7 +368,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/journey-store.js tests/check-ppc-s1-journey-store-helpers.js
@@ -347,11 +379,13 @@ git commit -m "feat: add tenant+product-scoped journey lookup for self-service s
 
 ## Task 3: `setCaptureTarget` + Postgres durability fix
 
+**Status: COMPLETE.** Spec review ✅. Quality review found 1 Important (test hardcoded a positional SQL-param index that had already grown once before — now finds the JSON blob by shape) + 2 Minor (allowlist alignment; `captureScreenshots` has no producer/test yet, noted, not blocking) — fixed in `a7615565`. Ending SHA: `a7615565`.
+
 **Files:**
 - Modify: `src/web-ui/modules/journey-store.js`, `src/web-ui/adapters/journey-store-pg.js`
 - Test: `tests/check-ppc-s1-journey-store-helpers.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -391,7 +425,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -399,7 +433,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `FAIL — store.setCaptureTarget is not a function`, and (once Step 3's journey-store.js half lands) the second test fails with `data.captureTargets` being `undefined` until the `_sanitise()` allowlist fix also lands.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/modules/journey-store.js`, add directly after `setCaptureTarget`'s sibling helpers (after the `getCaptureTargetState` block from Task 1):
 
@@ -463,7 +497,7 @@ function _sanitise(journey) {
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-journey-store-helpers.js
@@ -471,7 +505,7 @@ node tests/check-ppc-s1-journey-store-helpers.js
 
 Expected output: `PASS` for both new tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -479,7 +513,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/journey-store.js src/web-ui/adapters/journey-store-pg.js tests/check-ppc-s1-journey-store-helpers.js
@@ -490,11 +524,13 @@ git commit -m "feat: add setCaptureTarget and fix Postgres allowlist durability 
 
 ## Task 4: Session-to-Playwright adapter (AC8, D37 — stub + real implementation)
 
+**Status: COMPLETE.** Spec review ✅ (confirmed lazy chromium default, ADR-018 compliance). Quality review found only Minor issues (missing JSDoc on setter/getter, missing blank line) — fixed in `ef1caead`. Ending SHA: `ef1caead`.
+
 **Files:**
 - Create: `src/web-ui/adapters/session-page-adapter.js`
 - Test: `tests/check-ppc-s1-session-page-adapter.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 'use strict';
@@ -539,7 +575,7 @@ queue.push(function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-session-page-adapter.js
@@ -547,7 +583,7 @@ node tests/check-ppc-s1-session-page-adapter.js
 
 Expected output: `FAIL — Cannot find module '../src/web-ui/adapters/session-page-adapter'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `src/web-ui/adapters/session-page-adapter.js`:
 
@@ -622,7 +658,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-session-page-adapter.js
@@ -630,7 +666,7 @@ node tests/check-ppc-s1-session-page-adapter.js
 
 Expected output: `PASS`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -638,7 +674,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/adapters/session-page-adapter.js tests/check-ppc-s1-session-page-adapter.js
@@ -649,11 +685,13 @@ git commit -m "feat: add session-to-Playwright adapter stub (AC8, D37)"
 
 ## Task 5: Wire the session-page adapter in `server.js` (D37 rule 3 — separate task from Task 4)
 
+**Status: COMPLETE.** Spec review ✅ — confirmed AC8 is now genuinely satisfied end-to-end (stub throws, wired in server.js, behavioural-correctness test proves two sessions produce two distinct, correctly-isolated pages). One unrelated pre-existing flaky test (`check-pcr-s1-test-runner.js`) failed once in the full-suite run and passed standalone — confirmed unrelated to this diff. Quality review found only a non-blocking Minor (optional shared fake-chromium test helper) — not applied. Ending SHA: `90817c69`.
+
 **Files:**
 - Modify: `src/web-ui/server.js`
 - Test: `tests/check-ppc-s1-session-page-adapter.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-session-page-adapter.js` (before the `(async function() {...})()` runner block — move that block to the end of the file after adding these):
 
@@ -714,7 +752,7 @@ Then at the bottom of the file, keep exactly one runner block (remove the earlie
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-session-page-adapter.js
@@ -722,7 +760,7 @@ node tests/check-ppc-s1-session-page-adapter.js
 
 Expected output: `FAIL — server.js must call setSessionPageAdapter(realGetAuthenticatedPage) during bootstrap`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/server.js`, near the top alongside the other adapter requires (next to the `artefact-commit-writer` require around line 98):
 
@@ -745,7 +783,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-session-page-adapter.js
@@ -753,7 +791,7 @@ node tests/check-ppc-s1-session-page-adapter.js
 
 Expected output: `PASS` for all 3 tests in this file.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -761,7 +799,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/server.js tests/check-ppc-s1-session-page-adapter.js
@@ -772,11 +810,13 @@ git commit -m "feat: wire session-page adapter in server.js (AC8 complete)"
 
 ## Task 6: `commitArtefact` binary-content extension
 
+**Status: COMPLETE.** Spec review ✅ (confirmed zero behavioural drift for every existing caller, repo-wide grep performed). Quality review: ✅ Approved, zero issues. Ending SHA: `bcf1a68c`.
+
 **Files:**
 - Modify: `src/web-ui/adapters/artefact-commit-writer.js`
 - Test: `tests/check-ppc-s1-playback-evidence-route.js` (new file — this is its first test, a focused unit test of the extension before the route-level tests that consume it)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-ppc-s1-playback-evidence-route.js`:
 
@@ -835,7 +875,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -843,7 +883,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `FAIL — expected undefined to equal undefined` is NOT the failure (that one already passes); the first test fails because `commitArtefact` is currently a 5-arg passthrough and never forwards a 6th `encoding` argument at all (TypeError-free but `received.encoding` stays `undefined` for both calls at this point — confirms the test itself is correctly red before Step 3, since `received.encoding` for the base64 case is also `undefined` pre-fix instead of `'base64'`).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/adapters/artefact-commit-writer.js`, update the signature and JSDoc of `commitArtefact` and `realCommitArtefact`:
 
@@ -925,7 +965,7 @@ async function realCommitArtefact(artefactPath, content, token, owner, repo, enc
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -933,7 +973,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` for both tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -941,7 +981,7 @@ npm test
 
 Expected output: all tests passing (every existing `commitArtefact` caller omits the 6th arg, so `encoding === 'base64'` is false and behaviour is byte-for-byte unchanged).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/adapters/artefact-commit-writer.js tests/check-ppc-s1-playback-evidence-route.js
@@ -952,11 +992,13 @@ git commit -m "feat: extend commitArtefact to accept base64 binary content"
 
 ## Task 7: `handleGetPlaybackEvidence` — the tenant-scoped surface (AC1, AC4, AC5)
 
+**Status: COMPLETE.** Spec review ✅ (confirmed `getJourneyByFeatureSlug` never called; tenant+product scoping correct). Quality review found 1 Important: adopted `setJourneyStoreModule(mod)` DI convention (matching `journey.js`/`features.js`) instead of a lazy require workaround — fixed in `32f5fd53`. **For Tasks 8/9: `playback-evidence.js` now has a module-level `_journeyStore` var + `setJourneyStoreModule(mod)` setter — use `_journeyStore.xxx` directly in new handlers, do NOT reintroduce a lazy `_store()` call.** Ending SHA: `32f5fd53`.
+
 **Files:**
 - Create: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s1-playback-evidence-route.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-playback-evidence-route.js`:
 
@@ -1055,7 +1097,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1063,7 +1105,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `FAIL — Cannot find module '../src/web-ui/routes/playback-evidence'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `src/web-ui/routes/playback-evidence.js`:
 
@@ -1147,7 +1189,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1155,7 +1197,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` for AC1, AC4, AC5 tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1163,7 +1205,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s1-playback-evidence-route.js
@@ -1174,11 +1216,13 @@ git commit -m "feat: add tenant-scoped playback-evidence surface (AC1, AC4, AC5)
 
 ## Task 8: `handlePostCaptureTarget` (AC2)
 
+**Status: COMPLETE.** Spec review ✅ (round-trip through the read path confirmed). Quality review found 1 Important (missing CSRF guard — every other mutating route in this repo checks it; added, with a dedicated 403-rejection test) + 1 Minor (`store2` naming) — fixed in `7bc95d45`, re-reviewed ✅. Also fixed a pipeline-state bookkeeping bug caught by `npm test` itself (`testPlan.passing` had exceeded `testPlan.totalTests` since Task 1 — the original test-plan.md under-counted; corrected to `totalTests: 27`, projected final). Ending SHA: `7bc95d45`.
+
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s1-playback-evidence-route.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -1228,7 +1272,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1236,7 +1280,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `FAIL — pe.handlePostCaptureTarget is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/playback-evidence.js`, add directly after `handleGetPlaybackEvidence`:
 
@@ -1264,7 +1308,7 @@ async function handlePostCaptureTarget(req, res) {
 
 Update `module.exports` to include `handlePostCaptureTarget`.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1272,7 +1316,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` for both new tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1280,7 +1324,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s1-playback-evidence-route.js
@@ -1291,11 +1335,13 @@ git commit -m "feat: add capture-target entry endpoint (AC2)"
 
 ## Task 9: `handlePostCaptureTrigger` (AC3 — session-reuse capture)
 
+**Status: COMPLETE.** Spec review ✅ (credential handling, tenant-scoped SQL, Docker-deployable import path, goto-before-capture ordering all confirmed correct). Quality review found 2 Critical (uncaught capture/commit failures reaching a bare 500 — regression from `journey.js`'s `handlePostGateConfirm` precedent; unconfigured `APP_BASE_URL` env var would silently scope the auth cookie to the wrong domain outside local dev) + 2 Important (ad hoc `req._repoRootOverride` instead of the existing `repo-root.js` adapter; unguarded `pool.query`) — all fixed in `c5505af8`, re-reviewed ✅. Ending SHA: `c5505af8`.
+
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s1-playback-evidence-route.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
@@ -1379,7 +1425,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1387,7 +1433,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `FAIL — pe.handlePostCaptureTrigger is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/playback-evidence.js`, add directly after `handlePostCaptureTarget`:
 
@@ -1459,7 +1505,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
 
 Update `module.exports` to include `handlePostCaptureTrigger`.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1467,7 +1513,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` for both new tests.
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1475,7 +1521,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s1-playback-evidence-route.js
@@ -1486,10 +1532,12 @@ git commit -m "feat: add session-reuse capture-trigger endpoint (AC3)"
 
 ## Task 10: Mount the 3 routes in `server.js`
 
+**Status: COMPLETE.** Spec review ✅ (regex anchoring, params extraction, and CSRF-no-double-check convention independently verified). Quality review found 1 Important (the only wiring test checked handler names appear as text, which would pass even with the routes deleted — added a genuine real-dispatch integration test using `server.js`'s real `router` + `seedTestSession`, which also caught a real bug: the test's first session id wasn't valid lowercase hex, so `_parseSessionId` silently failed to parse it) + 1 Minor (`_peParts1/2/3` renamed to self-identifying names, matching the `gcw-s1` precedent) — fixed in `4ec37be6`, re-reviewed ✅. Ending SHA: `4ec37be6`.
+
 **Files:**
 - Modify: `src/web-ui/server.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-playback-evidence-route.js`:
 
@@ -1506,7 +1554,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1514,7 +1562,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `FAIL — GET route must be mounted`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/server.js`, add the require near the top alongside the other route requires (next to `routes/features`):
 
@@ -1552,7 +1600,7 @@ In the route dispatch chain, directly after the existing `/playback-media/` bloc
     });
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1560,7 +1608,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1568,7 +1616,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/server.js tests/check-ppc-s1-playback-evidence-route.js
@@ -1579,10 +1627,12 @@ git commit -m "feat: mount playback-evidence routes in server.js"
 
 ## Task 11: Tenant isolation (AC6, AC7)
 
-**Files:**
-- Test only (production code from Tasks 7-9 already enforces this via `getJourneyForTenantProductSlug` — this task is the dedicated, directly-tested verification the test plan requires, not inferred from the access-control code alone)
+**Status: COMPLETE.** Test-only, as expected — no production bug found (Tasks 7-9's tenant-scoped lookup is sound for both the collision and guessed-URL cases). Spec review found 1 gap (the mismatched tenant+product case was under-asserted, status-code only) — fixed in `c63b1b25`. Quality review: Minor only (cosmetic sentinel-naming nits), approved as-is. Ending SHA: `c63b1b25`.
 
-- [ ] **Step 1: Write the failing test**
+**Files:**
+- Test only (production code from Tasks 7-9 already enforces this via `getJourneyByTenantProductSlug` — this task is the dedicated, directly-tested verification the test plan requires, not inferred from the access-control code alone)
+
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-playback-evidence-route.js`:
 
@@ -1623,7 +1673,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 Expected to already PASS if Tasks 7-9 are implemented correctly (this task is verification, not new production code) — run it to confirm:
 
@@ -1633,11 +1683,11 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` for both — if either fails, the bug is in `getJourneyForTenantProductSlug` (Task 2) or `_resolveJourney` (Task 7), not in this test file. Fix there, not here.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 None — this task's purpose is the dedicated AC6/AC7 test coverage the test plan explicitly requires beyond inferring it from the access-control code. No production code change.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1645,7 +1695,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1653,7 +1703,7 @@ npm test
 
 Expected output: all tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/check-ppc-s1-playback-evidence-route.js
@@ -1664,10 +1714,12 @@ git commit -m "test: add dedicated AC6/AC7 tenant-isolation coverage"
 
 ## Task 12: NFR tests — `session_id` never leaks, auth-bypass never invoked
 
+**Status: COMPLETE.** Final task in the plan. Test-only, no production bug found. Spec review ✅ (confirmed the adapter is genuinely the sole auth seam). Quality review found 2 Important (the ADR-018 test only restated an existing assertion rather than directly spying on the bypass fixture; the leak-check test's name claimed coverage of all 3 routes but only exercised 2) — both fixed in `b82806a3`, re-reviewed ✅. Ending SHA: `b82806a3`.
+
 **Files:**
 - Test only
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s1-playback-evidence-route.js`:
 
@@ -1729,7 +1781,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 Expected to already PASS (structural guarantee from Task 9's implementation, which has no code path to any bypass fixture at all) — run to confirm:
 
@@ -1737,11 +1789,11 @@ Expected to already PASS (structural guarantee from Task 9's implementation, whi
 node tests/check-ppc-s1-playback-evidence-route.js
 ```
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 None required if Task 9 is correct. If either test fails, the fix belongs in Task 9's `handlePostCaptureTrigger`, not here.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -1749,7 +1801,7 @@ node tests/check-ppc-s1-playback-evidence-route.js
 
 Expected output: `PASS` — all tests in this file now passing (17 total across the two new test files plus the helpers file).
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -1757,7 +1809,7 @@ npm test
 
 Expected output: all tests passing, 0 regressions.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/check-ppc-s1-playback-evidence-route.js
