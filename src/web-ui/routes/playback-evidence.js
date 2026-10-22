@@ -15,6 +15,18 @@ const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
 var _csrf = require('../middleware/csrf');
+// ppc-s2 Task 5: kept as a module reference (not destructured) -- Task 5's
+// own AC4 test monkey-patches captureAllModule.measureCaptureDuration
+// directly on this exact cached module object (`require(...)` in the test
+// file resolves to the SAME object Node already cached here). A destructured
+// `var { measureCaptureDuration } = require(...)` would copy the function
+// reference at require-time, and a later property reassignment on the
+// module object would NOT be visible through that local binding -- call
+// sites below must go through `captureAllModule.measureCaptureDuration(...)`
+// so the monkey-patch is observed at call time, not require-time.
+var captureAllModule = require('../../utils/capture-all');
+var { buildCaptureAllList, checkTimingThreshold } = captureAllModule;
+var decisionsLogWriter = require('../adapters/decisions-log-writer');
 
 // Matches journey.js's/features.js's own setJourneyStoreModule DI
 // convention -- tests inject a fresh/mock store explicitly via
@@ -417,11 +429,95 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   }
 }
 
+/**
+ * AC1, AC2, AC3, AC4, AC5, AC6 -- sequential capture across every AC that
+ * already has a stored target, reusing _captureOneAc per AC (the same
+ * session-reuse mechanism ppc-s1 established, not a second parallel
+ * capture path). One authenticated page is acquired for the whole run --
+ * re-authenticating per AC would multiply Playwright startup cost for no
+ * benefit, since the same session is reused for every AC in one run.
+ */
+async function handlePostCaptureAll(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journey = await _resolveJourney(req);
+  if (!journey) { _notFound(res); return; }
+
+  if (!captureAllLock.tryAcquireLock(journey.journeyId)) {
+    _sendJson(res, 409, { error: 'capture-all already in progress for this feature' });
+    return;
+  }
+
+  try {
+    var acRows = await _getDodAcList(journey);
+    var listResult = buildCaptureAllList({ acs: acRows, captureTargets: journey.captureTargets || [] });
+    captureAllLock.setTotal(journey.journeyId, listResult.toCapture.length);
+
+    if (listResult.toCapture.length === 0) {
+      _sendJson(res, 200, { captured: [], failed: [], skipped: listResult.skipped, durationMs: 0, exceedsTimingThreshold: false });
+      return;
+    }
+
+    var ownerRepo = await _resolveOwnerRepo(journey, pool);
+    if (!ownerRepo) {
+      _sendJson(res, 400, { error: 'product has no connected repo' });
+      return;
+    }
+
+    var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
+    var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
+
+    var captured = [];
+    var failed = [];
+    var startedAt = Date.now();
+    try {
+      for (var i = 0; i < listResult.toCapture.length; i++) {
+        var item = listResult.toCapture[i];
+        captureAllLock.updateProgress(journey.journeyId, i + 1);
+        try {
+          var shotPath = await _captureOneAc(journey, item.acId, item.target, ownerRepo, req, authed.page);
+          captured.push({ acId: item.acId, screenshotPath: shotPath });
+        } catch (acErr) {
+          failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
+        }
+      }
+    } finally {
+      if (authed.browser && authed.browser.close) { await authed.browser.close(); }
+    }
+
+    var durationMs = captureAllModule.measureCaptureDuration(startedAt, Date.now());
+    _journeyStore.setJourneyFields(journey.journeyId, { captureAllDuration: durationMs, captureAllCompletedAt: new Date().toISOString() });
+
+    var thresholdResult = checkTimingThreshold(durationMs);
+    if (thresholdResult.exceedsThreshold) {
+      try {
+        await decisionsLogWriter.appendScopeNote(journey, ownerRepo, req.session.accessToken, { featureSlug: journey.featureSlug, durationMs: durationMs });
+      } catch (logErr) {
+        // Best-effort -- a failure to log the SCOPE note must never fail
+        // the capture-all run itself; the real evidence below is already computed.
+        console.error('[playback-evidence] decisions-log-writer failed:', logErr && logErr.message);
+      }
+    }
+
+    _sendJson(res, 200, {
+      captured: captured,
+      failed: failed,
+      skipped: listResult.skipped,
+      durationMs: durationMs,
+      exceedsTimingThreshold: thresholdResult.exceedsThreshold
+    });
+  } finally {
+    captureAllLock.releaseLock(journey.journeyId);
+  }
+}
+
 module.exports = {
   handleGetPlaybackEvidence,
   handlePostCaptureTarget,
   handlePostCaptureTrigger,
   handleGetCaptureScreenshot,
+  handlePostCaptureAll,
   setJourneyStoreModule,
   _resolveJourney,
   _notFound,
