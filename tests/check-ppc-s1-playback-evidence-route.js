@@ -90,13 +90,23 @@ function getStore() {
   return store;
 }
 function makeRes() {
-  var res = { _status: null, _json: null, json: function(body) { res._status = res._status || 200; res._json = body; } };
+  var res = {
+    _status: null, _json: null, _body: null,
+    json: function(body) { res._status = res._status || 200; res._json = body; },
+    // csrfGuard (src/web-ui/middleware/csrf.js) writes a raw 403 via
+    // writeHead/end on failure, not res.status().json() -- support both so
+    // a CSRF rejection is observable the same way a handler-level 4xx is.
+    writeHead: function(status) { res._status = status; },
+    end: function(body) { res._body = body; }
+  };
   res.status = function(code) { res._status = code; return res; };
   return res;
 }
 function makeReq(tenantId, productId, featureSlug, extra) {
   return Object.assign({
-    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user' },
+    // csrfToken matches the '_csrf: test-csrf-token' value every mutating
+    // POST test below sends in its body -- csrfGuard compares the two.
+    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
     sessionId: 'sid-' + tenantId,
     params: { productId: productId, featureSlug: featureSlug }
   }, extra || {});
@@ -181,8 +191,8 @@ queue.push(function() {
 
 queue.push(function() {
   return test('AC2: POST stores a capture target, available for every subsequent read without re-entry', async function() {
-    var store2 = getStore();
-    var setup = setupDodCompleteJourney(store2, {});
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
@@ -193,7 +203,7 @@ queue.push(function() {
 
     assert.strictEqual(res._json.ok, true);
 
-    var reloaded = store2.getJourney(setup.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.deepStrictEqual(reloaded.captureTargets[0], { acId: 'AC1', url: 'http://localhost:3000/dashboard', selector: '#widget-1' });
 
     // A subsequent GET reflects the stored target with no re-entry.
@@ -207,8 +217,8 @@ queue.push(function() {
 
 queue.push(function() {
   return test('AC2: missing url or selector is rejected with 400, nothing stored', async function() {
-    var store2 = getStore();
-    var setup = setupDodCompleteJourney(store2, {});
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
@@ -218,8 +228,26 @@ queue.push(function() {
     await pe.handlePostCaptureTarget(req, res, null, null);
 
     assert.strictEqual(res._status, 400);
-    var reloaded = store2.getJourney(setup.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.strictEqual((reloaded.captureTargets || []).length, 0);
+  });
+});
+
+queue.push(function() {
+  return test('AC2: a missing/mismatched CSRF token is rejected with 403, nothing stored', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { url: 'http://localhost:3000/dashboard', selector: '#widget-1', _csrf: 'wrong-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureTarget(req, res, null, null);
+
+    assert.strictEqual(res._status, 403);
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.strictEqual((reloaded.captureTargets || []).length, 0, 'nothing must be stored when the CSRF check fails');
   });
 });
 

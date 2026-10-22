@@ -8,6 +8,7 @@
 // tenant_id and product_id (AC1, AC6, AC7).
 
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
+var _csrf = require('../middleware/csrf');
 
 // Matches journey.js's/features.js's own setJourneyStoreModule DI
 // convention -- tests inject a fresh/mock store explicitly via
@@ -77,6 +78,9 @@ async function handleGetPlaybackEvidence(req, res) {
  * AC2 — one-time manual target entry per AC.
  */
 async function handlePostCaptureTarget(req, res) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
   var journey = await _resolveJourney(req);
   if (!journey) { _notFound(res); return; }
 
