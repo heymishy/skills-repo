@@ -38,7 +38,7 @@ let _artefactCommitAdapter = function() {
 
 /**
  * Replace the artefact-commit adapter (used in tests and production startup).
- * @param {(artefactPath: string, content: string, token: string, owner: string, repo: string) => Promise<object>} fn
+ * @param {(artefactPath: string, content: string, token: string, owner: string, repo: string, encoding?: string) => Promise<object>} fn
  */
 function setArtefactCommitAdapter(fn) {
   _artefactCommitAdapter = fn;
@@ -61,14 +61,15 @@ function getArtefactCommitAdapter() {
  * repo. Route/handler code calls this -- NOT realCommitArtefact directly --
  * so the implementation can be swapped in tests without touching call sites.
  * @param {string} artefactPath - repo-relative path, e.g. artefacts/<slug>/<stage>.md
- * @param {string} content - artefact markdown content
+ * @param {string} content - markdown text (utf8, default) or base64-encoded binary (pass encoding='base64')
  * @param {string} token - user's OAuth access token from req.session.accessToken
  * @param {string} owner - GitHub repository owner (product's repo_owner)
  * @param {string} repo - GitHub repository name (product's repo_name)
+ * @param {string} [encoding] - 'utf8' (default, unchanged behaviour) or 'base64' for already-encoded binary content (ppc-s1)
  * @returns {Promise<object>}
  */
-async function commitArtefact(artefactPath, content, token, owner, repo) {
-  return getArtefactCommitAdapter()(artefactPath, content, token, owner, repo);
+async function commitArtefact(artefactPath, content, token, owner, repo, encoding) {
+  return getArtefactCommitAdapter()(artefactPath, content, token, owner, repo, encoding);
 }
 
 /**
@@ -82,15 +83,16 @@ async function commitArtefact(artefactPath, content, token, owner, repo) {
  * (req.session.accessToken). No server-level write token is used here.
  *
  * @param {string} artefactPath - repo-relative path, e.g. artefacts/<slug>/<stage>.md
- * @param {string} content - artefact markdown content to commit
+ * @param {string} content - markdown text (utf8, default) or base64-encoded binary (pass encoding='base64')
  * @param {string} token - user's OAuth access token from session
  * @param {string} owner - GitHub repository owner (product's repo_owner)
  * @param {string} repo - GitHub repository name (product's repo_name)
+ * @param {string} [encoding] - 'utf8' (default, unchanged behaviour) or 'base64' for already-encoded binary content (ppc-s1)
  * @returns {Promise<object>} GitHub Contents API PUT response
  * @throws {ArtefactCommitConflictError} if the Contents API returns 409
  * @throws {Error} if owner or repo is not provided (fail-closed on missing config)
  */
-async function realCommitArtefact(artefactPath, content, token, owner, repo) {
+async function realCommitArtefact(artefactPath, content, token, owner, repo, encoding) {
   // Fail-closed -- no repo configured means reject before any API call
   // (mirrors sign-off-writer.js's commitSignOff AC3 guard exactly).
   if (!owner || !repo) {
@@ -127,7 +129,11 @@ async function realCommitArtefact(artefactPath, content, token, owner, repo) {
     throw new Error('Failed to check existing artefact: ' + getRes.status);
   }
 
-  const fileContent = Buffer.from(content, 'utf8').toString('base64');
+  // ppc-s1: encoding === 'base64' means content is ALREADY base64-encoded
+  // binary (a screenshot) -- pass it straight through. The existing
+  // behaviour (utf8 markdown text, re-encoded here) is completely unchanged
+  // for every caller that doesn't pass a 6th argument.
+  const fileContent = encoding === 'base64' ? content : Buffer.from(content, 'utf8').toString('base64');
   const bodyPayload = {
     message:   'artefact: commit ' + artefactPath,
     content:   fileContent,

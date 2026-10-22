@@ -2750,3 +2750,19 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-text: "Editorial review of jcx-s3's own captured video found real DOM-overlay-based framing (CSS transform:scale(), injected banner elements via page.evaluate) fragile and effort-intensive for demo clarity -- iterating it became a distraction from the actual goal (validating the capture mechanism itself, which four real bug fixes in this session already did). Operator floated relaxing the repo's own dependency-minimalism norm for a specialised video-annotation/post-processing package (e.g. ffmpeg-based overlay/zoom, rather than live in-page DOM injection) as a better long-term approach if video-demo polish is ever prioritised again. Not actioned this session -- current video evidence kept as-is (proves the mechanism works end-to-end; screenshots remain the primary, already-reviewed AC evidence). Worth scoping as its own story if/when video-demo quality becomes a real priority, rather than solving ad hoc via DOM injection next time too."
   source: agent-auto
 
+---
+
+- date: 2026-10-21
+  session-phase: review (ppc-s1/ppc-s2, run 1), production-playback-capture
+  signal-type: gap
+  signal-text: "HIGH finding 1-H1 across ppc-s1 and ppc-s2: discovery.md's MVP sizing claim ('mostly an auth-scoping and UI-surfacing change on top of the already-proven rpca mechanism') does not hold for AC-to-screen target resolution. rpca-s2's selector-derivation mechanism parses tests/e2e/*.spec.js files in THIS repo for AC-naming comments plus page.locator() calls, with a manual-fallback JSON sidecar also located in this repo's own artefact layout -- neither generalises to an arbitrary external tenant's own feature living in their own connected repo, which may have no E2E specs at all, let alone ones following this exact convention. This gap went undetected through a full /discovery, /clarify (which resolved two other real assumptions via direct code checks), and /benefit-metric pass -- all of which took the rpca-mechanism-reuse claim at face value rather than checking whether EVERY sub-mechanism (not just auth and screenshot-taking) actually transferred. Caught only at /review by independently reading rpca-s2's own story artefact rather than trusting discovery.md's summary of it."
+  source: agent-auto
+
+---
+
+- date: 2026-10-21
+  session-phase: test-plan (ppc-s1, ppc-s2, ppc-s3), production-playback-capture
+  signal-type: gap
+  signal-text: "All three stories' WCAG 2.1 AA NFRs are handled as manual-only verification scenarios because this repo has no automated accessibility tooling configured at all (confirmed absent -- no axe/pa11y in package.json or tests/). This is a pre-existing, repo-wide tooling gap, not specific to this feature -- consistent with the already-logged dsa-s3 WCAG AA contrast gap in workspace/state.json's own pendingActions. Worth considering as a platform-level investment (adding axe-core or equivalent to the test suite) rather than re-discovering the same manual-only limitation on every future UI-touching story."
+  source: agent-auto
+

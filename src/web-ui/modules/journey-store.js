@@ -15,6 +15,11 @@ var STAGE_SEQUENCE = [
   'definition-of-ready'  // step 7
 ];
 
+// ppc-s1: sentinel for getCaptureTargetState below -- exported so callers
+// compare against this constant rather than the hardcoded literal 'NOT_SET',
+// which would otherwise be a silent-typo risk with no compile-time signal.
+var CAPTURE_TARGET_NOT_SET = 'NOT_SET';
+
 // Optional disk adapter — injected by server.js for persistence.
 // When set, createJourney / completeStage / markJourneyComplete persist to disk.
 var _diskAdapter = null;
@@ -197,6 +202,85 @@ function getJourneyByFeatureSlug(featureSlug) {
     if (journey.featureSlug === featureSlug) match = journey;
   }
   return match;
+}
+
+/**
+ * ppc-s1 (AC1, AC6, AC7) — deliberately NOT a reuse of getJourneyByFeatureSlug
+ * above, which has no tenant filtering at all (confirmed cross-tenant leak
+ * risk, decisions.md 2026-10-21 ARCHITECTURE entry). Requires BOTH tenantId
+ * AND productId to be truthy and match.
+ * @param {string} tenantId
+ * @param {string} productId
+ * @param {string} featureSlug
+ * @returns {object|null}
+ */
+function getJourneyByTenantProductSlug(tenantId, productId, featureSlug) {
+  // SECURITY: do not remove -- createJourney() never sets tenantId/productId
+  // at creation time (only setJourneyFields() does, later), so any
+  // not-yet-scoped journey has both as undefined. Without this guard, a
+  // caller bug upstream (e.g. an auth-middleware regression passing
+  // undefined tenantId/productId through) would match that unscoped
+  // journey via undefined === undefined -- a real access-control bypass,
+  // not just a cosmetic double-null dedup nicety. Fail closed here.
+  if (!tenantId || !productId) return null;
+  var match = null;
+  for (var journey of _journeys.values()) {
+    if (journey.featureSlug === featureSlug && journey.tenantId === tenantId && journey.productId === productId) {
+      match = journey;
+    }
+  }
+  return match;
+}
+
+/**
+ * ppc-s1 (AC1) — "DoD-complete" is this repo's own existing signal: a
+ * completedStages entry whose skillName is the literal string
+ * 'definition-of-done'. Not a new field.
+ * @param {object} journey
+ * @returns {boolean}
+ */
+function isDodComplete(journey) {
+  if (!journey || !Array.isArray(journey.completedStages)) return false;
+  return journey.completedStages.some(function(cs) { return cs.skillName === 'definition-of-done'; });
+}
+
+/**
+ * ppc-s1 (AC2, AC4) — looks up a stored capture target for one AC id within
+ * a journey's own captureTargets array (never undefined/null/throws).
+ * @param {Array<{acId:string,url:string,selector:string}>} captureTargets
+ * @param {string} acId
+ * @returns {{acId:string,url:string,selector:string}|'NOT_SET'}
+ */
+function getCaptureTargetState(captureTargets, acId) {
+  var targets = captureTargets || [];
+  var match = targets.find(function(t) { return t.acId === acId; });
+  return match || CAPTURE_TARGET_NOT_SET;
+}
+
+/**
+ * ppc-s1 (AC2) — one-time manual target entry per AC. Stores/replaces
+ * (never duplicates) a {acId, url, selector} entry on the journey's own
+ * captureTargets array.
+ * @param {string} journeyId
+ * @param {string} acId
+ * @param {string} url
+ * @param {string} selector
+ */
+function setCaptureTarget(journeyId, acId, url, selector) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return;
+  if (!Array.isArray(journey.captureTargets)) journey.captureTargets = [];
+  var idx = journey.captureTargets.findIndex(function(t) { return t.acId === acId; });
+  var entry = { acId: acId, url: url, selector: selector };
+  if (idx === -1) {
+    journey.captureTargets.push(entry);
+  } else {
+    journey.captureTargets[idx] = entry;
+  }
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
+  _pgWrite(journey);
 }
 
 /**
@@ -537,6 +621,11 @@ module.exports = {
   setActiveSession,
   getJourneyBySession,
   getJourneyByFeatureSlug,
+  getJourneyByTenantProductSlug,
+  isDodComplete,
+  getCaptureTargetState,
+  setCaptureTarget,
+  CAPTURE_TARGET_NOT_SET,
   getArtefactsForJourney,
   deleteJourney,
   completeStage,
