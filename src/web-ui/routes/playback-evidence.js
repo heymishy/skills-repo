@@ -40,6 +40,82 @@ function _sendJson(res, status, body) {
   else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
 }
 
+// Matches products.js's own _escapeHtml convention -- this codebase has no
+// single shared/exported helper for this, every route file defines its own.
+function _escapeHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// AC1/AC3/AC4/AC5 and the AC verification script describe a real browser
+// page ("open the new playback-review page", "click 'Set capture
+// target'") -- standard content negotiation on the GET route, so existing
+// JSON-API callers (every test from Tasks 7-9) are completely unaffected
+// (they never set an Accept header).
+function _wantsHtml(req) {
+  return !!(req.headers && req.headers.accept && req.headers.accept.indexOf('text/html') !== -1);
+}
+
+// A real <form method="POST"> always sends this content-type; JSON API
+// callers (every existing Task 8/9 test) never set it, so this is a
+// zero-regression-risk way to tell the two apart.
+function _isFormSubmission(req) {
+  var ct = (req.headers && req.headers['content-type']) || '';
+  return ct.indexOf('application/x-www-form-urlencoded') !== -1;
+}
+
+function _sendRedirect(res, location) {
+  res.writeHead(302, { Location: location });
+  res.end();
+}
+
+function _playbackEvidenceUrl(productId, featureSlug) {
+  return '/products/' + encodeURIComponent(productId) + '/playback-evidence/' + encodeURIComponent(featureSlug);
+}
+
+/**
+ * Renders the real browser page the story's own ACs and verification
+ * script describe. Plain inline-styled HTML, real <form>/<input>/<button>
+ * elements (NFR-Accessibility: keyboard-operable without any client JS),
+ * matching client-login.js's/products.js's own minimal standalone-page
+ * convention -- not integrated into the full dashboard shell (_htmlShell),
+ * which this walking-skeleton story has no need for.
+ */
+function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
+  var baseUrl = _playbackEvidenceUrl(journey.productId, journey.featureSlug);
+  var rows = acs.map(function(ac) {
+    var statusHtml = ac.targetSet
+      ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
+      : '<p role="status">Capture target not set</p>';
+    var captureFormHtml = ac.targetSet
+      ? '<form method="POST" action="' + baseUrl + '/capture/' + encodeURIComponent(ac.acId) + '">' +
+          _csrf.csrfField(csrfToken) +
+          '<button type="submit">Capture evidence</button>' +
+        '</form>'
+      : '';
+    var screenshotHtml = ac.screenshotPath
+      ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
+      : '';
+    return '<li style="margin-bottom:24px;border-bottom:1px solid #ddd;padding-bottom:16px">' +
+      '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
+      statusHtml +
+      '<form method="POST" action="' + baseUrl + '/targets/' + encodeURIComponent(ac.acId) + '">' +
+        _csrf.csrfField(csrfToken) +
+        '<label for="url-' + _escapeHtml(ac.acId) + '">Page URL</label><br>' +
+        '<input id="url-' + _escapeHtml(ac.acId) + '" name="url" type="url" required value="' + (ac.target ? _escapeHtml(ac.target.url) : '') + '"><br>' +
+        '<label for="selector-' + _escapeHtml(ac.acId) + '">CSS selector</label><br>' +
+        '<input id="selector-' + _escapeHtml(ac.acId) + '" name="selector" type="text" required value="' + (ac.target ? _escapeHtml(ac.target.selector) : '') + '"><br>' +
+        '<button type="submit">Set capture target</button>' +
+      '</form>' +
+      captureFormHtml +
+      screenshotHtml +
+    '</li>';
+  }).join('');
+  return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
+    '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
+    '<ul style="list-style:none;padding:0">' + rows + '</ul>' +
+  '</body></html>';
+}
+
 function _notFound(res) {
   // AC7: 403/not-found with no partial content and no metadata revealing
   // the other tenant's feature exists -- 404 + a constant body, never the
@@ -88,7 +164,44 @@ async function handleGetPlaybackEvidence(req, res) {
     };
   });
 
+  if (_wantsHtml(req)) {
+    var csrfToken = await _csrf.generateCsrfToken(req);
+    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
   _sendJson(res, 200, { featureSlug: journey.featureSlug, acs: acs });
+}
+
+/**
+ * AC5 -- tenant-scoped screenshot serving. Deliberately NOT a reuse of the
+ * existing /playback-media/ route (confirmed to have no tenant check at
+ * all, same class of gap as getJourneyByFeatureSlug). Reads from local
+ * disk, same as handlePostCaptureTrigger's own read-back immediately after
+ * capture -- this story's own already-established pattern, not a new one.
+ */
+async function handleGetCaptureScreenshot(req, res) {
+  var journey = await _resolveJourney(req);
+  if (!journey) { _notFound(res); return; }
+
+  var acId = req.params && req.params.acId;
+  if (!ACID_RE.test(acId || '')) { _notFound(res); return; }
+
+  var screenshots = journey.captureScreenshots || {};
+  var shotPath = screenshots[acId];
+  if (!shotPath) { _notFound(res); return; }
+
+  var repoRoot = getRepoRoot(req);
+  var resolvedShotPath = path.resolve(repoRoot, shotPath);
+  var resolvedRepoRoot = path.resolve(repoRoot);
+  if (!resolvedShotPath.startsWith(resolvedRepoRoot + path.sep)) { _notFound(res); return; }
+  if (!fs.existsSync(resolvedShotPath)) { _notFound(res); return; }
+
+  var imageBuffer = fs.readFileSync(resolvedShotPath);
+  res.writeHead(200, { 'Content-Type': 'image/png' });
+  res.end(imageBuffer);
 }
 
 /**
@@ -115,6 +228,11 @@ async function handlePostCaptureTarget(req, res) {
   }
 
   _journeyStore.setCaptureTarget(journey.journeyId, acId, url, selector);
+
+  if (_isFormSubmission(req)) {
+    _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+    return;
+  }
   _sendJson(res, 200, { ok: true });
 }
 
@@ -204,6 +322,10 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     screenshots[acId] = shot.path;
     _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
 
+    if (_isFormSubmission(req)) {
+      _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+      return;
+    }
     _sendJson(res, 200, { ok: true, screenshotPath: shot.path });
   } catch (captureErr) {
     // Matches journey.js's handlePostGateConfirm precedent for this exact
@@ -225,6 +347,7 @@ module.exports = {
   handleGetPlaybackEvidence,
   handlePostCaptureTarget,
   handlePostCaptureTrigger,
+  handleGetCaptureScreenshot,
   setJourneyStoreModule,
   _resolveJourney,
   _notFound,
