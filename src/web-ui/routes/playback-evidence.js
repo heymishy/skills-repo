@@ -57,10 +57,34 @@ function _wantsHtml(req) {
 
 // A real <form method="POST"> always sends this content-type; JSON API
 // callers (every existing Task 8/9 test) never set it, so this is a
-// zero-regression-risk way to tell the two apart.
+// zero-regression-risk way to tell the two apart. Assumption: every form
+// _renderPlaybackEvidenceHtml renders uses the default
+// application/x-www-form-urlencoded encoding (no enctype override). If a
+// future AC adds a multipart form (e.g. file upload) to this page, that
+// submission would silently fall through to the JSON-response branch below
+// -- the exact raw-JSON-in-browser bug this check exists to prevent -- with
+// no test to catch it. Revisit this check (or add multipart to it) before
+// ever adding such a form.
 function _isFormSubmission(req) {
   var ct = (req.headers && req.headers['content-type']) || '';
   return ct.indexOf('application/x-www-form-urlencoded') !== -1;
+}
+
+/**
+ * Shared path-traversal containment check (CLAUDE.md's path-traversal-guard
+ * rule, "in addition to, not instead of" the ACID_RE allowlist) -- used by
+ * both handleGetCaptureScreenshot's serve-back and handlePostCaptureTrigger's
+ * read-back-after-capture, so a future change to this logic can't silently
+ * diverge between the two call sites.
+ * @param {string} repoRoot
+ * @param {string} relPath
+ * @returns {string|null} the resolved absolute path, or null if it escapes repoRoot
+ */
+function _resolveSafeShotPath(repoRoot, relPath) {
+  var resolvedShotPath = path.resolve(repoRoot, relPath);
+  var resolvedRepoRoot = path.resolve(repoRoot);
+  if (!resolvedShotPath.startsWith(resolvedRepoRoot + path.sep)) return null;
+  return resolvedShotPath;
 }
 
 function _sendRedirect(res, location) {
@@ -194,9 +218,8 @@ async function handleGetCaptureScreenshot(req, res) {
   if (!shotPath) { _notFound(res); return; }
 
   var repoRoot = getRepoRoot(req);
-  var resolvedShotPath = path.resolve(repoRoot, shotPath);
-  var resolvedRepoRoot = path.resolve(repoRoot);
-  if (!resolvedShotPath.startsWith(resolvedRepoRoot + path.sep)) { _notFound(res); return; }
+  var resolvedShotPath = _resolveSafeShotPath(repoRoot, shotPath);
+  if (!resolvedShotPath) { _notFound(res); return; }
   if (!fs.existsSync(resolvedShotPath)) { _notFound(res); return; }
 
   var imageBuffer = fs.readFileSync(resolvedShotPath);
@@ -304,13 +327,11 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     var shot = shots[0];
 
     var repoRoot = getRepoRoot(req);
-    var absShotPath = path.join(repoRoot, shot.path);
     // Defense in depth, in addition to (not instead of) the ACID_RE
     // allowlist above -- CLAUDE.md's path traversal guard rule requires
     // both. Never log the raw resolved path on failure.
-    var resolvedShotPath = path.resolve(absShotPath);
-    var resolvedRepoRoot = path.resolve(repoRoot);
-    if (!resolvedShotPath.startsWith(resolvedRepoRoot + path.sep)) {
+    var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
+    if (!resolvedShotPath) {
       _sendJson(res, 400, { error: 'invalid capture path' });
       return;
     }
