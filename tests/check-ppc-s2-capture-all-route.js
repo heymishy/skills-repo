@@ -341,6 +341,17 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('fdn-s1: captureAllDuration/captureAllCompletedAt survive journey-store-pg\'s _sanitise allowlist', function() {
+    var pgAdapter = require('../src/web-ui/adapters/journey-store-pg');
+    var sanitised = pgAdapter._sanitiseForTesting({
+      featureSlug: 'x', captureAllDuration: 12345, captureAllCompletedAt: '2026-10-22T00:00:00.000Z'
+    });
+    assert.strictEqual(sanitised.captureAllDuration, 12345, 'must not silently vanish after a Postgres-backed restart');
+    assert.strictEqual(sanitised.captureAllCompletedAt, '2026-10-22T00:00:00.000Z');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s2-capture-all-route.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
