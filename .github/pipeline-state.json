@@ -42609,21 +42609,74 @@
             {
               "slug": "ppc-s2",
               "name": "Extend to full-feature capture loop with timing validation",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-22T07:51:00.158Z",
+              "updatedAt": "2026-10-22T22:32:58.589Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 26,
+                "passing": 26
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Extract _captureOneAc shared single-AC capture mechanics",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "buildCaptureAllList, measureCaptureDuration, checkTimingThreshold",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Concurrency lock -- capture-all-lock.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "_renderCaptureAllProgress -- aria-live progress markup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "decisions-log-writer.js -- SCOPE-note writer",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "handlePostCaptureAll route handler",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Durability -- journey-store-pg.js _sanitise allowlist",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Mount the route in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1014"
             },
             {
               "slug": "ppc-s3",

@@ -72,7 +72,13 @@ function _sanitise(journey) {
     // must be listed explicitly or it silently vanishes after a
     // Postgres-backed restart.
     captureTargets:     journey.captureTargets      || [],
-    captureScreenshots: journey.captureScreenshots  || {}
+    captureScreenshots: journey.captureScreenshots  || {},
+    // ppc-s2: added to the allowlist per this file's own fdn-s1 rule --
+    // must be listed explicitly or it silently vanishes after a
+    // Postgres-backed restart.
+    captureAllDuration: journey.captureAllDuration  || null,
+    captureAllCompletedAt: journey.captureAllCompletedAt  || null,
+    captureAllFailed: journey.captureAllFailed  || {}
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
@@ -228,4 +234,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, getSessionOriginForJourneys, deleteJourney, _setPoolForTesting };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, getSessionOriginForJourneys, deleteJourney, _setPoolForTesting, _sanitiseForTesting: _sanitise };

@@ -15,6 +15,18 @@ const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
 var _csrf = require('../middleware/csrf');
+// ppc-s2 Task 5: kept as a module reference (not destructured) -- Task 5's
+// own AC4 test monkey-patches captureAllModule.measureCaptureDuration
+// directly on this exact cached module object (`require(...)` in the test
+// file resolves to the SAME object Node already cached here). A destructured
+// `var { measureCaptureDuration } = require(...)` would copy the function
+// reference at require-time, and a later property reassignment on the
+// module object would NOT be visible through that local binding -- call
+// sites below must go through `captureAllModule.measureCaptureDuration(...)`
+// so the monkey-patch is observed at call time, not require-time.
+var captureAllModule = require('../../utils/capture-all');
+var { buildCaptureAllList, checkTimingThreshold } = captureAllModule;
+var decisionsLogWriter = require('../adapters/decisions-log-writer');
 
 // Matches journey.js's/features.js's own setJourneyStoreModule DI
 // convention -- tests inject a fresh/mock store explicitly via
@@ -23,6 +35,10 @@ var _csrf = require('../middleware/csrf');
 // for in-place reset of the one required instance).
 var _journeyStore = require('../modules/journey-store');
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
+
+// ppc-s2: reads concurrency-lock progress state so the HTML page can render
+// an accessible, live-updating indicator for an in-flight capture-all run.
+var captureAllLock = require('../modules/capture-all-lock');
 
 // Path traversal guard (OWASP A01 / CLAUDE.md "Path traversal guard for
 // disk writes") -- acId is request-controlled (req.params.acId) and flows
@@ -97,6 +113,20 @@ function _playbackEvidenceUrl(productId, featureSlug) {
 }
 
 /**
+ * ppc-s2 (NFR-Accessibility) -- pure function, directly unit-testable
+ * against a progress-state fixture with no store/adapter access. "polite"
+ * (not "assertive") -- a running capture-all loop is a low-urgency status
+ * update, not an interrupting alert.
+ * @param {{current:number, total:number}} progress
+ * @returns {string}
+ */
+function _renderCaptureAllProgress(progress) {
+  var current = (progress && progress.current) || 0;
+  var total = (progress && progress.total) || 0;
+  return '<p role="status" aria-live="polite">Capturing AC ' + current + ' of ' + total + '</p>';
+}
+
+/**
  * Renders the real browser page the story's own ACs and verification
  * script describe. Plain inline-styled HTML, real <form>/<input>/<button>
  * elements (NFR-Accessibility: keyboard-operable without any client JS),
@@ -104,8 +134,15 @@ function _playbackEvidenceUrl(productId, featureSlug) {
  * convention -- not integrated into the full dashboard shell (_htmlShell),
  * which this walking-skeleton story has no need for.
  */
-function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
+function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress) {
   var baseUrl = _playbackEvidenceUrl(journey.productId, journey.featureSlug);
+  var progressHtml = captureAllProgress ? _renderCaptureAllProgress(captureAllProgress) : '';
+  var captureAllFormHtml = captureAllProgress
+    ? ''
+    : '<form method="POST" action="' + baseUrl + '/capture-all">' +
+        _csrf.csrfField(csrfToken) +
+        '<button type="submit">Capture all evidence</button>' +
+      '</form>';
   var rows = acs.map(function(ac) {
     var statusHtml = ac.targetSet
       ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
@@ -119,6 +156,12 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
       : '';
+    // ppc-s2 (final-review fix, AC5): a clear, visible failure notice so a
+    // just-failed AC is distinguishable from one never attempted. Placed
+    // adjacent to captureFormHtml's retry button, not buried elsewhere.
+    var failureHtml = ac.lastCaptureFailure
+      ? '<p role="alert">Capture failed: ' + _escapeHtml(ac.lastCaptureFailure.error || 'unknown error') + ' -- use the button above to retry.</p>'
+      : '';
     return '<li style="margin-bottom:24px;border-bottom:1px solid #ddd;padding-bottom:16px">' +
       '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
       statusHtml +
@@ -131,11 +174,14 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken) {
         '<button type="submit">Set capture target</button>' +
       '</form>' +
       captureFormHtml +
+      failureHtml +
       screenshotHtml +
     '</li>';
   }).join('');
   return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
     '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
+    progressHtml +
+    captureAllFormHtml +
     '<ul style="list-style:none;padding:0">' + rows + '</ul>' +
   '</body></html>';
 }
@@ -176,6 +222,7 @@ async function handleGetPlaybackEvidence(req, res) {
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
 
+  var captureAllFailed = journey.captureAllFailed || {};
   var acs = acRows.map(function(ac) {
     var targetState = _journeyStore.getCaptureTargetState(captureTargets, ac.acId);
     var targetSet = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
@@ -184,13 +231,17 @@ async function handleGetPlaybackEvidence(req, res) {
       description: ac.description,
       targetSet: targetSet,
       target: targetSet ? targetState : null,
-      screenshotPath: screenshots[ac.acId] || null
+      screenshotPath: screenshots[ac.acId] || null,
+      // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
+      // in the most recent capture-all run from one simply never attempted.
+      lastCaptureFailure: captureAllFailed[ac.acId] || null
     };
   });
 
   if (_wantsHtml(req)) {
     var csrfToken = await _csrf.generateCsrfToken(req);
-    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken);
+    var progress = captureAllLock.getLockState(journey.journeyId);
+    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;
@@ -283,6 +334,52 @@ async function _resolveOwnerRepo(journey, pool) {
 }
 
 /**
+ * ppc-s2: single-AC capture mechanics, extracted from handlePostCaptureTrigger
+ * so handlePostCaptureAll (ppc-s2) can reuse the identical mechanism per AC
+ * in a loop, instead of a second, parallel capture path (DoR constraint).
+ * Takes an already-authenticated `page` (acquired once by the caller) rather
+ * than acquiring its own -- handlePostCaptureAll acquires one authenticated
+ * page for an entire capture-all run, not once per AC.
+ * @param {object} journey
+ * @param {string} acId
+ * @param {{url:string, selector:string}} target
+ * @param {{owner:string, repo:string}} ownerRepo
+ * @param {object} req
+ * @param {object} page
+ * @returns {Promise<string>} the committed screenshot's repo-relative path
+ */
+async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
+  await page.goto(target.url);
+  var shots = await captureAcScreenshots({
+    page: page,
+    featureSlug: journey.featureSlug,
+    storySlug: 'ppc-s1',
+    acList: [{ acId: acId, selector: target.selector }]
+  });
+  var shot = shots[0];
+
+  var repoRoot = getRepoRoot(req);
+  // Defense in depth, in addition to (not instead of) the ACID_RE allowlist
+  // at each call site -- CLAUDE.md's path traversal guard rule requires both.
+  // Never log the raw resolved path on failure.
+  var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
+  if (!resolvedShotPath) {
+    var invalidPathErr = new Error('invalid capture path');
+    invalidPathErr.invalidPath = true;
+    throw invalidPathErr;
+  }
+  var content = fs.readFileSync(resolvedShotPath);
+
+  await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+
+  var screenshots = journey.captureScreenshots || {};
+  screenshots[acId] = shot.path;
+  _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
+
+  return shot.path;
+}
+
+/**
  * AC3 -- session-reuse capture (ADR-018: real session only, never a service
  * credential or the NODE_ENV=test bypass).
  */
@@ -317,38 +414,17 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
-    await authed.page.goto(target.url);
-    var shots = await captureAcScreenshots({
-      page: authed.page,
-      featureSlug: journey.featureSlug,
-      storySlug: 'ppc-s1',
-      acList: [{ acId: acId, selector: target.selector }]
-    });
-    var shot = shots[0];
-
-    var repoRoot = getRepoRoot(req);
-    // Defense in depth, in addition to (not instead of) the ACID_RE
-    // allowlist above -- CLAUDE.md's path traversal guard rule requires
-    // both. Never log the raw resolved path on failure.
-    var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
-    if (!resolvedShotPath) {
-      _sendJson(res, 400, { error: 'invalid capture path' });
-      return;
-    }
-    var content = fs.readFileSync(resolvedShotPath);
-
-    await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-
-    var screenshots = journey.captureScreenshots || {};
-    screenshots[acId] = shot.path;
-    _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
-
+    var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
     }
-    _sendJson(res, 200, { ok: true, screenshotPath: shot.path });
+    _sendJson(res, 200, { ok: true, screenshotPath: shotPath });
   } catch (captureErr) {
+    if (captureErr && captureErr.invalidPath) {
+      _sendJson(res, 400, { error: 'invalid capture path' });
+      return;
+    }
     // Matches journey.js's handlePostGateConfirm precedent for this exact
     // operation (committing an artefact to GitHub, acdg-s1/acdg-s2): an
     // uncaught failure here is otherwise invisible -- a bare 500 with no
@@ -364,13 +440,134 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   }
 }
 
+/**
+ * AC1, AC2, AC3, AC4, AC5, AC6 -- sequential capture across every AC that
+ * already has a stored target, reusing _captureOneAc per AC (the same
+ * session-reuse mechanism ppc-s1 established, not a second parallel
+ * capture path). One authenticated page is acquired for the whole run --
+ * re-authenticating per AC would multiply Playwright startup cost for no
+ * benefit, since the same session is reused for every AC in one run.
+ */
+async function handlePostCaptureAll(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journey = await _resolveJourney(req);
+  if (!journey) { _notFound(res); return; }
+
+  if (!captureAllLock.tryAcquireLock(journey.journeyId)) {
+    _sendJson(res, 409, { error: 'capture-all already in progress for this feature' });
+    return;
+  }
+
+  try {
+    var acRows = await _getDodAcList(journey);
+    var listResult = buildCaptureAllList({ acs: acRows, captureTargets: journey.captureTargets || [] });
+    captureAllLock.setTotal(journey.journeyId, listResult.toCapture.length);
+
+    if (listResult.toCapture.length === 0) {
+      // final-review fix (Finding 1): the "Capture all evidence" button
+      // renders unconditionally whenever no run is in progress -- it has no
+      // check for whether any AC currently has a capture target set. A
+      // first-time user, before setting any target, hits exactly this
+      // empty-list branch; without this redirect check, that form
+      // submission would get raw JSON dumped into the browser instead of
+      // the normal page -- the same user-facing bug this commit exists to
+      // fix. Matches the success-path redirect convention below.
+      if (_isFormSubmission(req)) {
+        _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+        return;
+      }
+      _sendJson(res, 200, { captured: [], failed: [], skipped: listResult.skipped, durationMs: 0, exceedsTimingThreshold: false });
+      return;
+    }
+
+    var ownerRepo = await _resolveOwnerRepo(journey, pool);
+    if (!ownerRepo) {
+      _sendJson(res, 400, { error: 'product has no connected repo' });
+      return;
+    }
+
+    var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
+    var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
+
+    var captured = [];
+    var failed = [];
+    var startedAt = Date.now();
+    try {
+      for (var i = 0; i < listResult.toCapture.length; i++) {
+        var item = listResult.toCapture[i];
+        captureAllLock.updateProgress(journey.journeyId, i + 1);
+        try {
+          var shotPath = await _captureOneAc(journey, item.acId, item.target, ownerRepo, req, authed.page);
+          captured.push({ acId: item.acId, screenshotPath: shotPath });
+        } catch (acErr) {
+          failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
+        }
+      }
+    } finally {
+      if (authed.browser && authed.browser.close) { await authed.browser.close(); }
+    }
+
+    var durationMs = captureAllModule.measureCaptureDuration(startedAt, Date.now());
+    // ppc-s2 (final-review fix): persist which ACs failed in THIS run, keyed
+    // by acId, so handleGetPlaybackEvidence/_renderPlaybackEvidenceHtml can
+    // render a clear retry notice (AC5) even after the operator navigates
+    // away and back. A successful capture for an acId must clear any STALE
+    // failure entry from a prior run -- otherwise a successfully-retried AC
+    // would still show a stale "failed" badge.
+    var captureAllFailed = Object.assign({}, journey.captureAllFailed || {});
+    captured.forEach(function(c) { delete captureAllFailed[c.acId]; });
+    failed.forEach(function(f) { captureAllFailed[f.acId] = { error: f.error, retry: true }; });
+    _journeyStore.setJourneyFields(journey.journeyId, {
+      captureAllDuration: durationMs,
+      captureAllCompletedAt: new Date().toISOString(),
+      captureAllFailed: captureAllFailed
+    });
+
+    var thresholdResult = checkTimingThreshold(durationMs);
+    if (thresholdResult.exceedsThreshold) {
+      try {
+        await decisionsLogWriter.appendScopeNote(journey, ownerRepo, req.session.accessToken, { featureSlug: journey.featureSlug, durationMs: durationMs });
+      } catch (logErr) {
+        // Best-effort -- a failure to log the SCOPE note must never fail
+        // the capture-all run itself; the real evidence below is already computed.
+        console.error('[playback-evidence] decisions-log-writer failed:', logErr && logErr.message);
+      }
+    }
+
+    // ppc-s2 (final-review fix): a real browser submits this via the plain
+    // <form method="POST"> rendered in _renderPlaybackEvidenceHtml -- matches
+    // handlePostCaptureTarget's/handlePostCaptureTrigger's own existing
+    // success-path redirect convention (CLAUDE.md et al). Error responses
+    // above (400/409/502) stay JSON-only even for a form submission, matching
+    // this file's existing convention -- only the success path redirects.
+    if (_isFormSubmission(req)) {
+      _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+      return;
+    }
+    _sendJson(res, 200, {
+      captured: captured,
+      failed: failed,
+      skipped: listResult.skipped,
+      durationMs: durationMs,
+      exceedsTimingThreshold: thresholdResult.exceedsThreshold
+    });
+  } finally {
+    captureAllLock.releaseLock(journey.journeyId);
+  }
+}
+
 module.exports = {
   handleGetPlaybackEvidence,
   handlePostCaptureTarget,
   handlePostCaptureTrigger,
   handleGetCaptureScreenshot,
+  handlePostCaptureAll,
   setJourneyStoreModule,
   _resolveJourney,
   _notFound,
-  _sendJson
+  _sendJson,
+  _captureOneAc,
+  _renderCaptureAllProgress
 };
