@@ -33,9 +33,9 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 
 ## Stories in This Epic
 
-- [ ] Walking skeleton: tenant-scoped surface + single-AC capture via session-reuse auth — `stories/ppc-s1.md`
-- [ ] Extend to full-feature capture loop with timing validation — `stories/ppc-s2.md`
-- [ ] Rate-limit the capture-trigger endpoint per tenant/user — `stories/ppc-s3.md`
+- [x] Walking skeleton: tenant-scoped surface + single-AC capture via session-reuse auth — `stories/ppc-s1.md`
+- [x] Extend to full-feature capture loop with timing validation — `stories/ppc-s2.md`
+- [x] Rate-limit the capture-trigger endpoint per tenant/user — `stories/ppc-s3.md`
 
 ## Human Oversight Level
 

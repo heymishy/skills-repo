@@ -64,6 +64,18 @@ Classified Confidential because captured screenshots show a tenant's real, live 
 
 ---
 
+## Accessibility
+
+| NFR | Requirement | Verification method | Applies to story |
+|-----|-------------|---------------------|-----------------|
+| Feature list / AC list / "Capture evidence" action keyboard access | Meets WCAG 2.1 AA; fully keyboard-accessible | Manual check (no automated a11y tooling in this repo — see `workspace/learnings.md` D48) | `ppc-s1` |
+| Capture progress indicator | Exposed to assistive technology via an `aria-live` region, not purely visual | Manual check | `ppc-s2` |
+| Rate-limit rejection message | Exposed via `role="alert"` HTML (form path) or a parsed JSON error body (API path), not a visual-only toast | Unit test + live Chrome accessibility-tree check during `/verify-completion` | `ppc-s3` |
+
+**Source:** Each story's own NFRs section — added retroactively by `/trace` (2026-10-23, Finding 2) after all 3 stories' DoD artefacts had already independently addressed and evidenced an accessibility requirement with no feature-level section to record it in.
+
+---
+
 ## Compliance
 
 | Framework / regulation | Relevant clause(s) | Obligation | Applies to story |

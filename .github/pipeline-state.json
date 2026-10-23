@@ -42474,7 +42474,7 @@
       "stage": "definition",
       "health": "green",
       "blocker": "",
-      "updatedAt": "2026-10-23T08:51:53.717Z",
+      "updatedAt": "2026-10-23T09:34:34.108Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42685,10 +42685,10 @@
               "slug": "ppc-s3",
               "name": "Rate-limit the capture-trigger endpoint per tenant user",
               "stage": "trace",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-23T08:51:46.502Z",
+              "updatedAt": "2026-10-23T09:34:05.610Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -42724,8 +42724,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1015",
               "dodStatus": "complete",
               "releaseReady": true,
-              "layoutGapsAtMerge": false,
-              "blocker": "Trace finding #1 (MEDIUM): pipeline-state.json metrics[0].contributingStories is missing ppc-s3, though the story's own Benefit Linkage and benefit-metric.md both name it as a Metric 1 contributor. See artefacts/2026-10-20-production-playback-capture/trace/2026-10-23-trace.md."
+              "layoutGapsAtMerge": false
             }
           ]
         }
@@ -42746,7 +42745,8 @@
           "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against.",
           "contributingStories": [
             "ppc-s1",
-            "ppc-s2"
+            "ppc-s2",
+            "ppc-s3"
           ]
         },
         {
@@ -43090,7 +43090,7 @@
           "assessedAt": "2026-10-23T08:51:53.717Z"
         }
       ],
-      "traceStatus": "has-findings"
+      "traceStatus": "passed"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
