@@ -19690,21 +19690,21 @@
         {
           "slug": "css-e1-cross-surface-state-sync",
           "name": "Pipeline-state.json and web-UI journeys stay in automatic agreement",
-          "status": "in-progress",
+          "status": "not-started",
           "stories": [
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-10-23T19:04:25.629Z",
+              "updatedAt": "2026-10-23T23:02:56.150Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 13,
-                "passing": 8,
+                "totalTests": 17,
+                "passing": 17,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s1-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s1-verification.md",
@@ -19731,31 +19731,31 @@
                 {
                   "id": "task-3",
                   "name": "internal-sync.js -- handleJourneySyncResolve (AC2, AC3 data, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "internal-sync.js -- handleJourneySyncUpdate (AC1, AC5, idempotency)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Mount the two new routes in server.js",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "Real HTTP transport + D37 wiring + behavioural-correctness test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 },
                 {
                   "id": "task-7",
                   "name": "Integrate sync into gateAdvance(), make async, fix existing callers (AC1, AC2, NFR-Performance)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 }
               ]
