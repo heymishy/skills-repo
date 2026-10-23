@@ -15,6 +15,50 @@ const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
 var _csrf = require('../middleware/csrf');
+var { createRateLimiter } = require('../middleware/rate-limiter');
+
+// ppc-s3 (AC2): per-user, not per-tenant. The shared default buildRateLimitKey
+// (rate-limiter.js) keys on req.session.tenantId, which would let one Product
+// Owner's usage block every other PO in the same tenant -- see this plan's own
+// "Planning note" above. req.session.userId is the real per-person identity
+// field already used elsewhere (require-admin.js, artefact.js, auth.js).
+// Falls back to IP, mirroring buildRateLimitKey's own fallback precedent --
+// never an unconditional 'unknown' that would 401 a real logged-in user whose
+// session happens to lack userId for some other reason.
+function _buildCaptureRateLimitKey(req) {
+  var userId = req.session && req.session.userId;
+  if (userId != null && userId !== '') return String(userId);
+  return req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+}
+
+// ppc-s3 (NFR-Accessibility): role="alert" markup, not a visual-only toast --
+// matches this file's own _escapeHtml-free minimal-page convention (no user
+// content is interpolated here, so no escaping is needed).
+function _renderCaptureRateLimitedHtml() {
+  return '<!DOCTYPE html><html><body><p role="alert">Too many capture requests -- please wait a minute before trying again.</p></body></html>';
+}
+
+// ppc-s3 (AC1): one capture action per user per 60s window, shared across
+// BOTH handlePostCaptureTrigger and handlePostCaptureAll below (AC1's own
+// "another capture action (same or different feature)" wording) -- a single
+// module-level instance, not one per handler, so the same user's clicks
+// across either endpoint draw from the same bucket. A strict 1-per-window
+// cap (not sign-off.js's 10/min shape): capture is an expensive synchronous
+// Playwright run, and this story's purpose is specifically to block
+// double-clicks/buggy retries, not general throttling.
+var _captureRateLimiter = createRateLimiter({
+  maxRequests: 1,
+  windowMs: 60 * 1000,
+  keyFn: _buildCaptureRateLimitKey,
+  onLimited: function(req, res) {
+    if (_isFormSubmission(req)) {
+      res.writeHead(429, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(_renderCaptureRateLimitedHtml());
+      return;
+    }
+    _sendJson(res, 429, { error: 'rate limit exceeded -- wait a minute before triggering another capture' });
+  }
+});
 // ppc-s2 Task 5: kept as a module reference (not destructured) -- Task 5's
 // own AC4 test monkey-patches captureAllModule.measureCaptureDuration
 // directly on this exact cached module object (`require(...)` in the test
@@ -386,6 +430,17 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
 async function handlePostCaptureTrigger(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
+
+  // ppc-s3 (AC1): checked before journey resolution/Playwright acquisition --
+  // a rate-limited request must do zero further work, matching the CSRF
+  // guard's own "reject cheap, invalid requests first" placement immediately
+  // above. Order matters here specifically because CSRF runs first: a
+  // forged cross-site request (no valid token, but the victim's real
+  // cookies) must not be able to burn the victim's own rate-limit quota --
+  // it is rejected by the CSRF guard above before ever reaching this check.
+  var rateLimitOk = false;
+  _captureRateLimiter(req, res, function() { rateLimitOk = true; });
+  if (!rateLimitOk) return;
 
   var journey = await _resolveJourney(req);
   if (!journey) { _notFound(res); return; }
