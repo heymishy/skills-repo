@@ -90,9 +90,36 @@ async function syncGateAdvanceToJourney(journey, gate) {
   _logger.info('journey-sync-success', { featureSlug: journey.featureSlug, journeyId: journey.journeyId });
 }
 
+/**
+ * css-s1 (D37 real implementation) -- the actual network call to the
+ * internal web-UI endpoint. Wired via setJourneySyncClient(), from
+ * cli-gate-advance.js (D37 rule 3: wiring is a separate task from this
+ * function and from the business logic above -- this module never
+ * self-wires).
+ * @param {'resolve'|'update'} op
+ * @param {object} payload
+ * @returns {Promise<object>}
+ */
+async function realJourneySyncTransport(op, payload) {
+  var baseUrl = (process.env.INTERNAL_SYNC_URL || '').replace(/\/$/, '');
+  var response = await fetch(baseUrl + '/internal/journey-sync/' + op, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-sync-secret': process.env.INTERNAL_SYNC_SECRET
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    throw new Error('journey-sync ' + op + ' request failed: HTTP ' + response.status);
+  }
+  return response.json();
+}
+
 module.exports = {
   resolveJourneyForFeatureSlug: resolveJourneyForFeatureSlug,
   syncGateAdvanceToJourney: syncGateAdvanceToJourney,
+  realJourneySyncTransport: realJourneySyncTransport,
   setJourneySyncClient: setJourneySyncClient,
   getJourneySyncClient: getJourneySyncClient,
   setLogger: setLogger,

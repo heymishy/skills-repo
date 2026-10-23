@@ -5,6 +5,15 @@
 
 var { validate } = require('./cli-outer-loop');
 var { advance }  = require('./cli-advance');
+var journeySyncClient = require('../sync/journey-sync-client');
+
+// css-s1 (D37 rule 3): wiring the real HTTP transport is kept separate from
+// the sync business logic in journey-sync-client.js and from gateAdvance()'s
+// own control flow (a later task) -- this line is the entire "wiring" task.
+// The CLI has no long-running server.js-style startup point; this module's
+// own load time is the equivalent "once, at startup" moment for a one-shot
+// CLI process.
+journeySyncClient.setJourneySyncClient(journeySyncClient.realJourneySyncTransport);
 
 var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]';
 
