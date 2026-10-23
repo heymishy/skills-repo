@@ -42471,10 +42471,10 @@
       "slug": "2026-10-20-production-playback-capture",
       "name": "Production Playback Capture",
       "track": "standard",
-      "stage": "branch-setup",
+      "stage": "definition",
       "health": "green",
       "blocker": "",
-      "updatedAt": "2026-10-23T01:31:58.819Z",
+      "updatedAt": "2026-10-21T17:47:34.073Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42684,11 +42684,11 @@
             {
               "slug": "ppc-s3",
               "name": "Rate-limit the capture-trigger endpoint per tenant user",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-23T01:31:58.820Z",
+              "updatedAt": "2026-10-23T03:14:12.097Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -42698,7 +42698,27 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extend createRateLimiter with keyFn/onLimited",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire per-user capture rate limiter into handlePostCaptureTrigger",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Share the rate limiter with handlePostCaptureAll",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                }
+              ]
             }
           ]
         }
