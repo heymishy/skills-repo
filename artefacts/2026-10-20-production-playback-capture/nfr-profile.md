@@ -2,8 +2,8 @@
 
 **Feature:** 2026-10-20-production-playback-capture
 **Created:** 2026-10-21
-**Last updated:** 2026-10-21
-**Status:** Active
+**Last updated:** 2026-10-23
+**Status:** Verified at 2026-10-23 (`ppc-s1`, `ppc-s2`, `ppc-s3` all reached `/definition-of-done` with every NFR row addressed and evidenced)
 
 ---
 
