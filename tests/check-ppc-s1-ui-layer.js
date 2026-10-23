@@ -52,9 +52,11 @@ function makeRes() {
   return res;
 }
 
+var _makeReqCallCount = 0;
 function makeReq(tenantId, productId, featureSlug, extra) {
+  _makeReqCallCount++;
   return Object.assign({
-    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
+    session: { tenantId: tenantId, userId: 'ppc-s1-ui-test-user-' + _makeReqCallCount, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
     sessionId: 'sid-' + tenantId,
     params: { productId: productId, featureSlug: featureSlug },
     headers: {}
