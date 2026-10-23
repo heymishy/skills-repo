@@ -116,9 +116,17 @@ function makeRes() {
   res.status = function(code) { res._status = code; return res; };
   return res;
 }
+var _makeReqCallCount = 0;
 function makeReq(tenantId, productId, featureSlug, extra) {
+  _makeReqCallCount++;
+  // userId is unique per call (ppc-s3): this file's own capture-all tests
+  // never intend to exercise rate-limiting themselves -- that is
+  // ppc-s3's own test file's job -- so every call must get its own
+  // independent rate-limit bucket, not share one via a fixed/derived value
+  // (mirrors check-ppc-s1-playback-evidence-route.js's own makeReq fix for
+  // the same root cause).
   return Object.assign({
-    session: { tenantId: tenantId, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
+    session: { tenantId: tenantId, userId: 'ppc-s2-test-user-' + _makeReqCallCount, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
     sessionId: 'sid-' + tenantId,
     params: { productId: productId, featureSlug: featureSlug },
     headers: {}
