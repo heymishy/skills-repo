@@ -276,6 +276,8 @@ console.log('\n[gav-s1] IT1 — path traversal guard preserved across all 6 new 
   });
 }
 
+(async function() {
+
 // ── IT2 — gateAdvance end-to-end for test-plan-complete ──────────────────────
 console.log('\n[gav-s1] IT2 — gateAdvance end-to-end for test-plan-complete');
 {
@@ -295,7 +297,7 @@ console.log('\n[gav-s1] IT2 — gateAdvance end-to-end for test-plan-complete');
       '## AC Coverage', 'AC1 — T1',
     ].join('\n'));
 
-    const result = gateAdvance('f1', 's1', 'test-plan-complete', 'artefacts/f1/tp.md', ['testPlanWritten=true'], gaDir);
+    const result = await gateAdvance('f1', 's1', 'test-plan-complete', 'artefacts/f1/tp.md', ['testPlanWritten=true'], gaDir);
     assert(result.exitCode === 0, 'IT2: gateAdvance exitCode === 0 for a valid test-plan-complete pair');
     const after = JSON.parse(fs.readFileSync(path.join(gaDir, '.github', 'pipeline-state.json'), 'utf8'));
     // advance() only coerces booleans for fields in its own BOOLEAN_FIELDS
@@ -319,7 +321,7 @@ console.log('\n[gav-s1] IT3 — gateAdvance end-to-end for branch-complete');
     fs.mkdirSync(path.join(gaDir, 'artefacts', 'f1'), { recursive: true });
     fs.writeFileSync(path.join(gaDir, 'artefacts', 'f1', 'state.json'), JSON.stringify({ prUrl: 'https://github.com/x/y/pull/1', verifyStatus: 'not-started' }));
 
-    const result = gateAdvance('f1', 's1', 'branch-complete', 'artefacts/f1/state.json', ['prStatus=merged'], gaDir);
+    const result = await gateAdvance('f1', 's1', 'branch-complete', 'artefacts/f1/state.json', ['prStatus=merged'], gaDir);
     assert(result.exitCode !== 0, 'IT3: gateAdvance fails validation when verifyStatus is not "passed"');
     const after = JSON.parse(fs.readFileSync(path.join(gaDir, '.github', 'pipeline-state.json'), 'utf8'));
     assert(after.features[0].stories[0].prStatus === undefined, 'IT3: state left untouched — prStatus NOT written');
@@ -345,7 +347,7 @@ console.log('\n[gav-s1] IT4 — gateAdvance end-to-end for definition-of-done');
       '| AC1 | ❌ | Test T1 | automated test |  |',
     ].join('\n'));
 
-    const result = gateAdvance('f1', 's1', 'definition-of-done', 'artefacts/f1/dod.md', ['dodStatus=complete'], gaDir);
+    const result = await gateAdvance('f1', 's1', 'definition-of-done', 'artefacts/f1/dod.md', ['dodStatus=complete'], gaDir);
     assert(result.exitCode !== 0, 'IT4: gateAdvance fails validation on a blank-deviation ❌ row');
     const after = JSON.parse(fs.readFileSync(path.join(gaDir, '.github', 'pipeline-state.json'), 'utf8'));
     assert(after.features[0].stories[0].dodStatus === undefined, 'IT4: state left untouched — dodStatus NOT written');
@@ -360,3 +362,5 @@ try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log(`\n=== check-gav-s1-gate-advance-validation results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);
+
+})();

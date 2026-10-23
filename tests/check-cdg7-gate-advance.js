@@ -131,6 +131,8 @@ const { gateAdvance } = require('../src/enforcement/cli-gate-advance');
 const gateMap = require('../src/enforcement/gate-map');
 const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-state-writer');
 
+(async function() {
+
 // ── T1 — AC1: validate non-zero blocks gate-advance; state not modified ────────
 
 {
@@ -140,7 +142,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
     const state = makeMinimalPipelineState('test-feat', 's1', false);
     writePipelineState(tmpDir, state);
     // Non-existent artefact → validate exit 1 (H1 fail: file not found)
-    const result = gateAdvance('test-feat', 's1', 'definition-of-ready',
+    const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       'artefacts/nonexistent.md', ['stage=dor-signed-off'], tmpDir);
     assert(T + '-exitCode', result.exitCode === 1, `Expected exitCode 1 (H1 fail), got ${result.exitCode}`);
     // State must not have been modified
@@ -160,7 +162,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
     const artefactPath = makeH4FailFixture(tmpDir);
     const state = makeMinimalPipelineState('test-feat', 's1', false);
     writePipelineState(tmpDir, state);
-    const result = gateAdvance('test-feat', 's1', 'definition-of-ready',
+    const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       artefactPath, ['stage=dor-signed-off'], tmpDir);
     assert(T, result.exitCode === 4,
       `Expected exitCode 4 (H4 fail — no out-of-scope section), got ${result.exitCode}: ${result.stderr}`);
@@ -177,7 +179,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
     writeFile(tmpDir, 'artefacts/feat/dor/gate-ok.md', 'Gate confirmed.');
     const state = makeMinimalPipelineState('test-feat', 's1', false);
     writePipelineState(tmpDir, state);
-    const result = gateAdvance('test-feat', 's1', 'definition-of-ready',
+    const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       'artefacts/feat/dor/gate-ok.md', ['stage=dor-signed-off'], tmpDir);
     assert(T + '-exitCode', result.exitCode === 0,
       `Expected exitCode 0, got ${result.exitCode}: ${result.stderr}`);
@@ -197,7 +199,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
     writeFile(tmpDir, 'artefacts/feat/dor/gate-ok.md', 'Gate confirmed.');
     const state = makeMinimalPipelineState('test-feat', 's1', false);
     writePipelineState(tmpDir, state);
-    const result = gateAdvance('test-feat', 's1', 'definition-of-ready',
+    const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       'artefacts/feat/dor/gate-ok.md',
       ['stage=dor-signed-off', 'prStatus=draft', 'dorStatus=signed-off'], tmpDir);
     assert(T + '-exitCode', result.exitCode === 0,
@@ -217,7 +219,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
 
 {
   const T = 'T5-missing-artefact-path-exit8';
-  const result = gateAdvance('test-feat', 's1', 'definition-of-ready', undefined, [], '/fake/root');
+  const result = await gateAdvance('test-feat', 's1', 'definition-of-ready', undefined, [], '/fake/root');
   assert(T + '-exitCode', result.exitCode === 8, `Expected exitCode 8, got ${result.exitCode}`);
   const s = result.stderr || '';
   assert(T + '-stderr-feature-slug', s.includes('feature-slug'), `stderr should mention 'feature-slug'`);
@@ -230,7 +232,7 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
 
 {
   const T = 'T6-missing-gatename-exit8';
-  const result = gateAdvance('test-feat', 's1', undefined, undefined, [], '/fake/root');
+  const result = await gateAdvance('test-feat', 's1', undefined, undefined, [], '/fake/root');
   assert(T, result.exitCode === 8, `Expected exitCode 8, got ${result.exitCode}`);
 }
 
@@ -403,3 +405,5 @@ if (totalFailed > 0) {
 } else {
   console.log(`[cdg7-gate-advance] ${totalPassed} check(s) OK ✓`);
 }
+
+})();

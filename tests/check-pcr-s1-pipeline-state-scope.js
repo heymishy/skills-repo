@@ -89,6 +89,8 @@ const { gateAdvance } = require('../src/enforcement/cli-gate-advance');
   } finally { rmDir(tmpDir); }
 }
 
+(async function() {
+
 // ── U4 — gate-advance() on a story field does not modify the parent feature's updatedAt ─
 
 {
@@ -97,7 +99,7 @@ const { gateAdvance } = require('../src/enforcement/cli-gate-advance');
   try {
     writePipelineState(tmpDir, makeFixtureState());
     writeFile(tmpDir, 'artefacts/feat/dor/story-dor.md', 'Gate confirmed.');
-    const result = gateAdvance('test-feat', 's1', 'definition-of-ready', 'artefacts/feat/dor/story-dor.md', ['dorStatus=signed-off'], tmpDir);
+    const result = await gateAdvance('test-feat', 's1', 'definition-of-ready', 'artefacts/feat/dor/story-dor.md', ['dorStatus=signed-off'], tmpDir);
     assert(T + '-exit0', result.exitCode === 0, `Expected exitCode 0, got ${result.exitCode}: ${result.stderr}`);
     const after = readPipelineState(tmpDir);
     const feature = after.features[0];
@@ -234,3 +236,5 @@ if (totalFailed > 0) {
 } else {
   console.log(`[pcr-s1-pipeline-state-scope] ${totalPassed} check(s) OK ✓`);
 }
+
+})();

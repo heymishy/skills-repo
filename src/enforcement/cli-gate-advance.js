@@ -35,7 +35,7 @@ var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <a
  * @param {string}   repoRoot     — absolute path to the repository root
  * @returns {{ exitCode: number, stdout: string, stderr: string }}
  */
-function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot) {
+async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot) {
   // AC3: all four positional args are required
   if (!featureSlug || !storyId || !gateName || !artefactPath) {
     return {
@@ -53,7 +53,25 @@ function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, re
   }
 
   // AC2: validation passed — advance pipeline-state fields
-  return advance(featureSlug, storyId, rawFields || [], repoRoot);
+  var advanceResult = advance(featureSlug, storyId, rawFields || [], repoRoot);
+
+  // css-s1 AC1/AC2/AC3/AC4/AC6: synchronous CLI -> web-UI journey sync,
+  // scoped to the discovery-approved gate only. A sync failure (network
+  // error, no journey connected, env not configured) never changes
+  // gateAdvance's own exit code -- the pipeline-state advance above already
+  // succeeded or failed on its own terms.
+  if (advanceResult.exitCode === 0 && gateName === journeySyncClient.SYNC_GATE) {
+    try {
+      var journey = await journeySyncClient.resolveJourneyForFeatureSlug(featureSlug);
+      if (journey) {
+        await journeySyncClient.syncGateAdvanceToJourney(journey, gateName);
+      }
+    } catch (err) {
+      process.stderr.write('[journey-sync] warning: ' + err.message + '\n');
+    }
+  }
+
+  return advanceResult;
 }
 
 module.exports = { gateAdvance };
