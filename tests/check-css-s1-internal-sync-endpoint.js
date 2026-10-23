@@ -98,6 +98,34 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('handleJourneySyncUpdate_addsDiscoveryStage_andIsIdempotent', function() {
+    return withSyncSecret('right-secret', async function() {
+      journeyStore._clearForTesting();
+      var journey = journeyStore.createJourney('css-s1-update-fixture');
+
+      var req1 = makeReq({ journeyId: journey.journeyId, featureSlug: 'css-s1-update-fixture', stage: 'discovery' });
+      req1.headers['x-internal-sync-secret'] = 'right-secret';
+      var res1 = makeRes();
+      await internalSync.handleJourneySyncUpdate(req1, res1);
+      assert.strictEqual(res1._status, 200);
+      assert.deepStrictEqual(JSON.parse(res1._body), { updated: true });
+
+      var afterFirst = journeyStore.getJourney(journey.journeyId);
+      assert.strictEqual(afterFirst.completedStages.filter(function(cs) { return cs.skillName === 'discovery'; }).length, 1);
+
+      // A second call for the same stage must not duplicate the entry.
+      var req2 = makeReq({ journeyId: journey.journeyId, featureSlug: 'css-s1-update-fixture', stage: 'discovery' });
+      req2.headers['x-internal-sync-secret'] = 'right-secret';
+      var res2 = makeRes();
+      await internalSync.handleJourneySyncUpdate(req2, res2);
+      var afterSecond = journeyStore.getJourney(journey.journeyId);
+      assert.strictEqual(afterSecond.completedStages.filter(function(cs) { return cs.skillName === 'discovery'; }).length, 1,
+        'a repeated update for the same stage must be idempotent, not duplicate the completedStages entry');
+    });
+  });
+});
+
 (async function() {
   console.log('\ncheck-css-s1-internal-sync-endpoint.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

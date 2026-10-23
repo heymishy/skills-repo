@@ -98,6 +98,42 @@ async function handleJourneySyncResolve(req, res) {
   }));
 }
 
+/**
+ * POST /internal/journey-sync/update — css-s1 AC1/AC5.
+ * Body: { journeyId, featureSlug, stage }
+ * Response: { updated: true } | { updated: false, reason: string }
+ */
+async function handleJourneySyncUpdate(req, res) {
+  var supplied = req.headers && req.headers['x-internal-sync-secret'];
+  if (!_secretMatches(supplied)) { _rejectUnauthorised(res); return; }
+
+  var body = await _readBody(req);
+  var journeyId = body && body.journeyId;
+  var featureSlug = body && body.featureSlug;
+  var stage = body && body.stage;
+  if (!journeyId || !featureSlug || !stage) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'journeyId, featureSlug and stage are required' }));
+    return;
+  }
+
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey || journey.featureSlug !== featureSlug) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ updated: false, reason: 'not-found' }));
+    return;
+  }
+
+  var alreadyComplete = (journey.completedStages || []).some(function(cs) { return cs.skillName === stage; });
+  if (!alreadyComplete) {
+    _journeyStore.completeStage(journey.journeyId, stage, null);
+  }
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ updated: true }));
+}
+
 module.exports = {
-  handleJourneySyncResolve: handleJourneySyncResolve
+  handleJourneySyncResolve: handleJourneySyncResolve,
+  handleJourneySyncUpdate: handleJourneySyncUpdate
 };
