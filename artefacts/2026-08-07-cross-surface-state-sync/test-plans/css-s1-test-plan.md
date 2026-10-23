@@ -13,7 +13,7 @@
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | `gate-advance` for `discovery-approved` synchronously updates the connected journey's `completedStages` via the new internal endpoint | 2 tests | 1 test | — | — | — | 🟢 |
 | AC2 | No connected journey → command completes normally, no sync attempted | 1 test | 1 test | — | — | — | 🟢 |
-| AC3 | Journey resolves to a repo with no matching feature slug → no modification, mismatch logged | 1 test | — | — | — | — | 🟢 |
+| AC3 | Journey's own connected repo does not match this CLI's own repo identity (`GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`) → no modification, mismatch logged (implementation reinterprets the DoR's literal "no matching feature slug" wording — see `css-s1-plan.md`'s own flagged design note) | 1 test | — | — | — | — | 🟢 |
 | AC4 | Any gate type other than `discovery-approved` → no sync attempted (this story's explicit boundary) | 1 test | — | — | — | — | 🟢 |
 | AC5 | New internal endpoint requires a shared service-level credential; rejects requests without it | 2 tests | — | — | — | — | 🟢 |
 | AC6 | No `INTERNAL_SYNC_URL`/`SECRET` configured at all → silent no-op, same as AC2 | 1 test | — | — | — | — | 🟢 |
@@ -39,7 +39,7 @@ None — all 6 ACs are fully covered by unit/integration tests using a mocked HT
 |----|-------------|--------|-------------------|-------|
 | AC1 | A `pipeline-state.json` fixture with one feature at `discovery-approved`; a mocked HTTP client whose response simulates the internal endpoint returning a matched journey | Synthetic fixture + mocked HTTP client | None | The endpoint handler itself is tested separately against a mocked Postgres client (server-side), matching `das-s1`'s own existing mocking convention |
 | AC2 | Same fixture; mocked HTTP client simulates the endpoint returning "no journey found" | Synthetic fixture + mocked HTTP client | None | |
-| AC3 | Mocked endpoint response simulating a journey whose `feature_slug` does not exist in the fixture's `pipeline-state.json` | Synthetic fixture + mocked HTTP client | None | |
+| AC3 | A journey object carrying a `repoOwner`/`repoName` that differs from the test's own `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` env vars | Synthetic fixture + mocked HTTP client | None | |
 | AC4 | Same fixture, gate advanced to `test-plan-complete` instead of `discovery-approved` | Synthetic fixture | None | |
 | AC5 | A mocked service-level credential (test value only, never a real secret) | Synthetic fixture | Mocked credential value only, never real | Never a real secret in any committed fixture |
 

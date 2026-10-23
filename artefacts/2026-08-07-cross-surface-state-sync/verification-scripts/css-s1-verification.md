@@ -54,14 +54,16 @@
 
 ---
 
-### Scenario 3: A journey pointing at a repo whose pipeline-state.json doesn't have the feature is flagged, not silently ignored
+### Scenario 3: A journey belonging to a different repo than this CLI's own is flagged, not silently ignored
 
 **Covers:** AC3
 
+**Note:** this scenario was revised from the original DoR wording ("journey resolves to a repo with no matching feature slug") to match what was actually implemented at build time — see `css-s1-plan.md`'s own flagged design note. The mechanism is a repo-identity comparison (this CLI's own `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` vs. the journey's connected repo), not a live check of the journey's repo's `pipeline-state.json` content.
+
 **Steps:**
-1. Set up a web-UI journey whose feature slug does not exist anywhere in its connected repo's `pipeline-state.json`.
-2. Trigger a gate advance from the CLI side that would normally try to sync to that journey.
-3. Check the sync/mismatch log (location confirmed at implementation time).
+1. Set up a web-UI journey whose connected repo's owner/name does not match this CLI's own `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` environment variables.
+2. Trigger a gate advance from the CLI side for the same feature slug that would normally try to sync to that journey.
+3. Check the sync/mismatch log (a `journey-sync-mismatch` warning naming the feature slug and journey ID).
 
 **Expected outcome:**
 > The journey's own record is untouched, and a log entry exists naming the mismatched feature slug — it is visible, not silently dropped.

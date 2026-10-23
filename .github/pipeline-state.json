@@ -19695,9 +19695,9 @@
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-23T23:02:56.150Z",
+              "updatedAt": "2026-10-23T23:54:12.505Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md",
@@ -19709,7 +19709,7 @@
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s1-verification.md",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -19758,7 +19758,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "css-s2",
