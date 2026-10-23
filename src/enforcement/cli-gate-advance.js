@@ -13,7 +13,13 @@ var journeySyncClient = require('../sync/journey-sync-client');
 // The CLI has no long-running server.js-style startup point; this module's
 // own load time is the equivalent "once, at startup" moment for a one-shot
 // CLI process.
-journeySyncClient.setJourneySyncClient(journeySyncClient.realJourneySyncTransport);
+// Never wired in NODE_ENV=test (tests call setJourneySyncClient() themselves
+// with a mock); the throwing stub stays active there, matching the pattern
+// already used by server.js's adapter wiring blocks.
+if (process.env.NODE_ENV !== 'test') {
+  journeySyncClient.setJourneySyncClient(journeySyncClient.realJourneySyncTransport);
+  console.log('[css-s1] journey-sync client wired');
+}
 
 var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]';
 
