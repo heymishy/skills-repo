@@ -38,14 +38,16 @@ function _renderCaptureRateLimitedHtml() {
   return '<!DOCTYPE html><html><body><p role="alert">Too many capture requests -- please wait a minute before trying again.</p></body></html>';
 }
 
-// ppc-s3 (AC1): one capture action per user per 60s window, shared across
-// BOTH handlePostCaptureTrigger and handlePostCaptureAll below (AC1's own
-// "another capture action (same or different feature)" wording) -- a single
-// module-level instance, not one per handler, so the same user's clicks
-// across either endpoint draw from the same bucket. A strict 1-per-window
-// cap (not sign-off.js's 10/min shape): capture is an expensive synchronous
-// Playwright run, and this story's purpose is specifically to block
-// double-clicks/buggy retries, not general throttling.
+// ppc-s3 (AC1): one capture action per user per 60s window (AC1's own
+// "another capture action (same or different feature)" wording). This is a
+// single module-level instance, not one per handler, by design: it is meant
+// to be shared by every capture-triggering handler in this file so a user's
+// attempts across different entry points draw from the same bucket. Wired
+// into handlePostCaptureTrigger below as of this commit; a later task in
+// this story wires the same instance into handlePostCaptureAll. A strict
+// 1-per-window cap (not sign-off.js's 10/min shape): capture is an expensive
+// synchronous Playwright run, and this story's purpose is specifically to
+// block double-clicks/buggy retries, not general throttling.
 var _captureRateLimiter = createRateLimiter({
   maxRequests: 1,
   windowMs: 60 * 1000,
