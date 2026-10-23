@@ -509,6 +509,16 @@ async function handlePostCaptureAll(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
 
+  // ppc-s3 (AC1): the SAME _captureRateLimiter instance used by
+  // handlePostCaptureTrigger above -- a single-AC trigger and a capture-all
+  // trigger for the same user share one bucket, matching AC1's own "another
+  // capture action (same or different feature)" wording. Checked before the
+  // lock is acquired: a rate-limited request must never touch
+  // captureAllLock at all.
+  var rateLimitOk = false;
+  _captureRateLimiter(req, res, function() { rateLimitOk = true; });
+  if (!rateLimitOk) return;
+
   var journey = await _resolveJourney(req);
   if (!journey) { _notFound(res); return; }
 

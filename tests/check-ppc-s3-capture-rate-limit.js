@@ -182,6 +182,50 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('AC1: the rate-limit bucket is shared across single-AC capture and capture-all -- triggering one blocks the other for the same user', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    setupFakeCapture('ppc-s3-rl-cross');
+    var user = uniqueUser('cross-user');
+
+    var req1 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, user, { params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' }, body: { _csrf: 'test-csrf-token' } });
+    await pe.handlePostCaptureTrigger(req1, makeRes(), null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    var req2 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, user, { params: { productId: setup.productId, featureSlug: setup.featureSlug }, body: { _csrf: 'test-csrf-token' } });
+    var res2 = makeRes();
+    await pe.handlePostCaptureAll(req2, res2, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(res2._status, 429, 'a single-AC trigger moments earlier must count against the SAME user\'s capture-all attempt');
+  });
+});
+
+queue.push(function() {
+  return test('AC2: two different Product Owners in the same tenant are rate-limited independently -- user B is never blocked by user A\'s usage', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
+    setupFakeCapture('ppc-s3-rl-ac2');
+    var userA = uniqueUser('ac2-user-a');
+    var userB = uniqueUser('ac2-user-b');
+
+    // User A exhausts their own limit via capture-all.
+    var reqA1 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, userA, { body: { _csrf: 'test-csrf-token' } });
+    await pe.handlePostCaptureAll(reqA1, makeRes(), null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    var reqA2 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, userA, { body: { _csrf: 'test-csrf-token' } });
+    var resA2 = makeRes();
+    await pe.handlePostCaptureAll(reqA2, resA2, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.strictEqual(resA2._status, 429, 'sanity check: user A really is rate-limited by their own second attempt');
+
+    // User B, same tenant, must be unaffected by user A's exhausted limit.
+    var reqB1 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, userB, { body: { _csrf: 'test-csrf-token' } });
+    var resB1 = makeRes();
+    await pe.handlePostCaptureAll(reqB1, resB1, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.notStrictEqual(resB1._status, 429, 'user B\'s first attempt must not be blocked by user A\'s usage, even in the same tenant');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s3-capture-rate-limit.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
