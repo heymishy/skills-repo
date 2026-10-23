@@ -42609,11 +42609,11 @@
             {
               "slug": "ppc-s2",
               "name": "Extend to full-feature capture loop with timing validation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-23T00:57:51.911Z",
+              "updatedAt": "2026-10-23T01:11:29.286Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 26,
@@ -42676,7 +42676,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1014"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1014",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC3/AC4: no live run against a real multi-AC tenant feature has occurred yet -- see ppc-s2-dod.md Follow-up Action 1"
             },
             {
               "slug": "ppc-s3",
@@ -42713,20 +42716,23 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "ppc-s1 (the walking-skeleton story) ships the mechanism this metric measures, but wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against.",
+          "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against.",
           "contributingStories": [
-            "ppc-s1"
+            "ppc-s1",
+            "ppc-s2"
           ]
         },
         {
           "id": "m2",
           "name": "Time to DoD sign-off",
           "target": "median under 10 minutes, single sitting",
-          "baseline": "not yet established",
+          "baseline": "not yet established -- no self-service mechanism existed before this feature",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "ppc-s2 delivers the full-feature, single-sitting capture loop this metric measures, but wuce has no live paying tenants yet (pre-launch beta) -- no real sign-off cycle has run to measure against.",
+          "contributingStories": [
+            "ppc-s2"
+          ]
         },
         {
           "id": "m3",
@@ -42735,9 +42741,10 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "ppc-s1 structurally removes the need for an engineer to manually demo a single AC once a tenant adopts self-service capture, but with no live tenants yet there is no real usage to measure the qualitative signal against.",
+          "evidence": "ppc-s1 and ppc-s2 together structurally remove the need for an engineer to manually demo a feature once a tenant adopts self-service capture, but with no live tenants yet there is no real usage to measure the qualitative signal against.",
           "contributingStories": [
-            "ppc-s1"
+            "ppc-s1",
+            "ppc-s2"
           ]
         }
       ],
@@ -43042,9 +43049,9 @@
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
           "status": "met",
-          "evidence": "/definition-of-done (ppc-s1, merged PR #1013): confirmed in merged code -- handlePostCaptureTrigger seeds the Playwright cookie from req.sessionId only (src/web-ui/routes/playback-evidence.js); a dedicated NFR test directly spies on seedTestSession and asserts zero calls during capture-trigger (tests/check-ppc-s1-playback-evidence-route.js).",
+          "evidence": "/definition-of-done (ppc-s1, merged PR #1013): confirmed in merged code -- handlePostCaptureTrigger seeds the Playwright cookie from req.sessionId only (src/web-ui/routes/playback-evidence.js); a dedicated NFR test directly spies on seedTestSession and asserts zero calls during capture-trigger (tests/check-ppc-s1-playback-evidence-route.js). Re-confirmed at /definition-of-done (ppc-s2, merged PR #1014): a dedicated NFR-SEC regression test asserts capture-all never invokes the NODE_ENV=test auth-bypass path either (tests/check-ppc-s2-capture-all-route.js), covering the looped multi-AC call path, not just the single-AC path.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-22T07:07:45.076Z"
+          "assessedAt": "2026-10-23T01:12:07.337Z"
         },
         {
           "id": "ADR-025",
