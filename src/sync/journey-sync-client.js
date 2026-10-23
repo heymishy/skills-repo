@@ -51,8 +51,48 @@ async function resolveJourneyForFeatureSlug(featureSlug) {
   return response.journey;
 }
 
+/**
+ * css-s1 AC1/AC3/AC4 -- sync a CLI-side gate-advance onto the resolved
+ * journey's completedStages. Only the discovery-approved gate is in scope
+ * (AC4); every other gate is a no-op boundary, not a gap. AC3: if the
+ * resolved journey's own connected repo does not match this CLI's own repo
+ * identity (process.env.GITHUB_REPO_OWNER/GITHUB_REPO_NAME -- the same
+ * single-repo-identity convention sign-off.js's handleArtefactRead already
+ * uses), the slug match is a cross-repo coincidence, not the same feature --
+ * log the mismatch for visibility (NFR-Audit) and make no write call at all.
+ * @param {{journeyId:string, featureSlug:string, repoOwner:string|null, repoName:string|null}} journey
+ * @param {string} gate
+ * @returns {Promise<void>}
+ */
+async function syncGateAdvanceToJourney(journey, gate) {
+  if (gate !== SYNC_GATE) return;
+
+  var ownRepoOwner = process.env.GITHUB_REPO_OWNER || null;
+  var ownRepoName = process.env.GITHUB_REPO_NAME || null;
+  var repoMismatch = !!(journey.repoOwner && journey.repoName && ownRepoOwner && ownRepoName &&
+    (journey.repoOwner !== ownRepoOwner || journey.repoName !== ownRepoName));
+
+  if (repoMismatch) {
+    _logger.warn('journey-sync-mismatch', {
+      featureSlug: journey.featureSlug,
+      journeyId: journey.journeyId,
+      reason: 'journey repo does not match this CLI\'s own repo identity'
+    });
+    return;
+  }
+
+  var transport = getJourneySyncClient();
+  await transport('update', {
+    journeyId: journey.journeyId,
+    featureSlug: journey.featureSlug,
+    stage: SYNC_STAGE
+  });
+  _logger.info('journey-sync-success', { featureSlug: journey.featureSlug, journeyId: journey.journeyId });
+}
+
 module.exports = {
   resolveJourneyForFeatureSlug: resolveJourneyForFeatureSlug,
+  syncGateAdvanceToJourney: syncGateAdvanceToJourney,
   setJourneySyncClient: setJourneySyncClient,
   getJourneySyncClient: getJourneySyncClient,
   setLogger: setLogger,
