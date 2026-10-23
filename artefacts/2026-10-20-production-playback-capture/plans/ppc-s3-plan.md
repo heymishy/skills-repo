@@ -44,7 +44,7 @@ Create:
 - Modify: `src/web-ui/middleware/rate-limiter.js`
 - Test: `tests/check-ppc-s3-rate-limiter-keyfn.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 'use strict';
@@ -115,7 +115,7 @@ if (failures.length > 0) {
 }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s3-rate-limiter-keyfn.js
@@ -123,7 +123,7 @@ node tests/check-ppc-s3-rate-limiter-keyfn.js
 
 Expected output: `FAIL: keyFn: a custom key function is used instead of buildRateLimitKey when provided` and `FAIL: onLimited: a custom callback is invoked instead of the default raw-JSON 429 write` (both `TypeError`/assertion failures — `keyFn`/`onLimited` are not yet recognised options). The regression test passes already (current behaviour).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```js
 'use strict';
@@ -191,7 +191,7 @@ function createRateLimiter({ maxRequests = 10, windowMs = 60 * 1000, keyFn = bui
 module.exports = { createRateLimiter, buildRateLimitKey };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s3-rate-limiter-keyfn.js
@@ -199,7 +199,7 @@ node tests/check-ppc-s3-rate-limiter-keyfn.js
 
 Expected output: `3 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node tests/check-sec1-sse-rate-limit.js
@@ -207,12 +207,14 @@ node tests/check-sec1-sse-rate-limit.js
 
 Expected output: all existing tests in this file still pass (they call `createRateLimiter` with no `keyFn`/`onLimited`, so behaviour is byte-for-byte unchanged). Also confirm `node tests/check-sign-off*.js` (or the full suite) still passes for `sign-off.js`'s own usage.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/middleware/rate-limiter.js tests/check-ppc-s3-rate-limiter-keyfn.js
 git commit -m "feat(ppc-s3): add optional keyFn/onLimited params to createRateLimiter"
 ```
+
+**Task 1 complete.** Final SHA: `9ae90a07`. Spec compliance ✅, code quality ✅ (2 Minor non-blocking notes: `keyFn` JSDoc's story-id tag could be reworded ticket-agnostically; file-header comment could mention pluggable keying — neither blocks merge).
 
 ---
 
@@ -224,7 +226,7 @@ git commit -m "feat(ppc-s3): add optional keyFn/onLimited params to createRateLi
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s3-capture-rate-limit.js` (new file, first 4 tests)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 'use strict';
@@ -423,7 +425,7 @@ queue.push(function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s3-capture-rate-limit.js
@@ -431,7 +433,7 @@ node tests/check-ppc-s3-capture-rate-limit.js
 
 Expected output: all 4 tests `FAIL` (`res2._status` is `undefined`/`200`-ish, not `429` — no rate limiter is wired into `handlePostCaptureTrigger` yet).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add near the top of `src/web-ui/routes/playback-evidence.js`, after the existing `var _csrf = require('../middleware/csrf');` line:
 
@@ -515,7 +517,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
 
 No change to `module.exports` is needed — every new test in this plan drives the rate limiter indirectly through the existing exported handlers (`handlePostCaptureTrigger`/`handlePostCaptureAll`), matching this file's own established testing convention; nothing calls `_buildCaptureRateLimitKey` or `_captureRateLimiter` directly.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s3-capture-rate-limit.js
@@ -523,7 +525,7 @@ node tests/check-ppc-s3-capture-rate-limit.js
 
 Expected output: `4 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node tests/check-ppc-s1-playback-evidence-route.js
@@ -532,12 +534,14 @@ node tests/check-ppc-s2-capture-all-route.js
 
 Expected output: all pre-existing tests in both files still pass — `handlePostCaptureTrigger`'s own existing AC1-AC7 tests from `ppc-s1` each make exactly one call per test (no test makes two calls from the same fixed user within the same test run), so the new 1-per-60s cap does not collide with any of them. (If a collision is found, note it in the task's own completion report rather than silently loosening the cap.)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s3-capture-rate-limit.js
 git commit -m "feat(ppc-s3): rate-limit handlePostCaptureTrigger per user (AC1, AC3, NFR-Accessibility)"
 ```
+
+**Task 2 complete.** Final SHA: `4ac30c09`. Three commits in total: `0c2be89f` (feature), `c463fdd3` (fix: stale `ppc-s1` test fixture never set `session.userId`, discovered as a real regression during Step 5's regression run — fixed by giving each call in that file's own `makeReq` a unique `userId` rather than deriving one from the shared `tenantId`, which would have caused cross-test rate-limit collisions instead), `4ac30c09` (fix: a code-quality review Critical finding — a comment claimed `handlePostCaptureAll` was already wired to the shared limiter in present tense; it wasn't yet, since that's Task 3's job — reworded to describe current state accurately). Spec compliance ✅ (re-verified after each fix). Code quality ✅ after the comment fix; 2 Minor non-blocking notes remain (forward-reference ordering of `_isFormSubmission`/`_sendJson`; `_renderCaptureRateLimitedHtml` could be a constant).
 
 ---
 
@@ -549,7 +553,7 @@ git commit -m "feat(ppc-s3): rate-limit handlePostCaptureTrigger per user (AC1, 
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s3-capture-rate-limit.js` (append 2 more tests)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-ppc-s3-capture-rate-limit.js`, immediately before the closing `(async function() { ... })();` block:
 
@@ -599,7 +603,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s3-capture-rate-limit.js
@@ -607,7 +611,7 @@ node tests/check-ppc-s3-capture-rate-limit.js
 
 Expected output: the 2 new tests `FAIL` — `handlePostCaptureAll` does not yet consult `_captureRateLimiter`, so neither the cross-endpoint block nor (trivially) the independence check fails for the right reason yet (`res2._status`/`resA2._status` is not `429`).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `handlePostCaptureAll`, change:
 
@@ -639,7 +643,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
   var journey = await _resolveJourney(req);
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s3-capture-rate-limit.js
@@ -647,7 +651,7 @@ node tests/check-ppc-s3-capture-rate-limit.js
 
 Expected output: `6 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -655,12 +659,16 @@ npm test
 
 Expected output: `777+ file(s) run, 0 failed` (accounting for the 2 new test files added by this story). Pay particular attention to `check-ppc-s1-playback-evidence-route.js` and `check-ppc-s2-capture-all-route.js`, since both call `handlePostCaptureTrigger`/`handlePostCaptureAll` repeatedly across many tests in the same process — if any pre-existing test happens to reuse the exact same `userId` across two calls within 60 real seconds of test-suite wall-clock time, it could now collide with the new 1-per-60s cap. (Both files' existing `makeReq` helpers set `userId` only via the `login`/session defaults, which differ from the `tenantId`-based keys those tests were written against, and — if this task's own keyFn ever needs a session field those fixtures don't set — `_buildCaptureRateLimitKey`'s own IP fallback still applies uniformly across all of them, so no single fixture should collide by accident. Confirm this empirically here rather than assuming it.)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s3-capture-rate-limit.js
 git commit -m "feat(ppc-s3): share the per-user capture rate limiter across handlePostCaptureAll (AC1 cross-endpoint, AC2)"
 ```
+
+**Task 3 complete.** Final SHA: `620fe5fe`. Three commits: `80b7aa24` (feature), `1ba4f7a1` (fix: stale `check-ppc-s2-capture-all-route.js` fixture), `620fe5fe` (fix: stale `check-ppc-s1-ui-layer.js` fixture — a third pre-existing file found with the identical bug during this task's own full-suite regression run). Spec compliance ✅. Code quality ✅ with 1 Minor note (comment at the `handlePostCaptureAll` call site mildly re-explains what the module-level comment already covers; the lock-ordering rationale it adds is genuinely new and worth keeping). Full `npm test` run: 779 files, 3 failures, all confirmed pre-existing/unrelated (2 pass in isolation — ordering/concurrency noise; 1 is a flaky perf-timing threshold off by 1.2ms) — none touch `rate-limiter.js` or `playback-evidence.js`.
+
+**All 3 tasks complete.** This story's rate-limiter work also surfaced and fixed a recurring stale-fixture bug (`session.userId` missing) in 3 pre-existing test files across 2 earlier stories (`ppc-s1`, `ppc-s2`) — each was a real regression caused by this story's new per-user rate-limiting wiring, not a defect in this story's own design. Worth a `/capture` signal noting the pattern (3 independent occurrences of the same fixture gap in one story) as a candidate for a shared test-helper module, per the code-quality reviewer's Minor/observational note.
 
 ---
 

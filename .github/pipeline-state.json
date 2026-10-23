@@ -42688,11 +42688,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-23T03:52:57.228Z",
+              "updatedAt": "2026-10-23T06:42:34.445Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -42703,19 +42703,19 @@
                 {
                   "id": "task-1",
                   "name": "Extend createRateLimiter with keyFn/onLimited",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Wire per-user capture rate limiter into handlePostCaptureTrigger",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Share the rate limiter with handlePostCaptureAll",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
                 }
               ]
