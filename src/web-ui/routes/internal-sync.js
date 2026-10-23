@@ -9,10 +9,19 @@
 // secret-header check.
 
 var crypto = require('crypto');
-var journeyStore = require('../modules/journey-store');
+var _journeyStore = require('../modules/journey-store');
 var exportDataSource = require('../adapters/export-data-source');
 
-/** Mirrors auth-stub.js's _secretMatches -- constant-time, fails closed on any length mismatch or unconfigured secret. */
+/**
+ * Constant-time compare, same shape as auth-stub.js's own _secretMatches --
+ * but NOT an exact mirror: this file has no separate "stub enabled" gate
+ * (auth-stub.js checks _stubEnabled() before ever reaching this function),
+ * so the `!expected` guard below is load-bearing here, not cosmetic. Without
+ * it, an unset INTERNAL_SYNC_SECRET and a missing request header both
+ * produce empty buffers, the length check would pass, and
+ * timingSafeEqual('', '') returns true -- silently authorizing every
+ * request to a misconfigured endpoint.
+ */
 function _secretMatches(candidate) {
   var expected = process.env.INTERNAL_SYNC_SECRET || '';
   var candidateBuf = Buffer.from(String(candidate || ''));
@@ -56,7 +65,7 @@ async function handleJourneySyncResolve(req, res) {
     return;
   }
 
-  var journey = journeyStore.getJourneyByFeatureSlug(featureSlug);
+  var journey = _journeyStore.getJourneyByFeatureSlug(featureSlug);
   if (!journey) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ found: false }));
