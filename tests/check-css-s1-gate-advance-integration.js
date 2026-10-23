@@ -144,6 +144,34 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('gateAdvanceCommand_exitCodeUnaffected_whenJourneySyncThrows', function() {
+    return withEnv({ INTERNAL_SYNC_URL: 'http://fake.test', INTERNAL_SYNC_SECRET: 'secret', GITHUB_REPO_OWNER: 'acme', GITHUB_REPO_NAME: 'widgets' }, async function() {
+      var dir = makeTempDir();
+      try {
+        var slug = 'css-s1-it-sync-throws';
+        var artefactPath = writeValidDiscoveryArtefact(dir, slug);
+        writeState(dir, slug);
+
+        journeySyncClient.setJourneySyncClient(async function(op) {
+          if (op === 'resolve') throw new Error('simulated journey-sync transport failure');
+          return { updated: true };
+        });
+
+        var result = await gateAdvance(slug, 's1', 'discovery-approved', artefactPath, ['stage=discovery-approved'], dir);
+
+        assert.strictEqual(result.exitCode, 0, 'Expected exitCode 0 even though journey-sync threw: ' + result.stderr);
+
+        var writtenState = JSON.parse(fs.readFileSync(path.join(dir, '.github', 'pipeline-state.json'), 'utf8'));
+        var writtenStory = writtenState.features[0].stories[0];
+        assert.strictEqual(writtenStory.stage, 'discovery-approved', 'the pipeline-state advance must still have been written to disk');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  });
+});
+
 (async function() {
   console.log('\ncheck-css-s1-gate-advance-integration.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

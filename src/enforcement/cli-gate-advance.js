@@ -33,7 +33,7 @@ var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <a
  * @param {string}   artefactPath — path to the artefact to validate
  * @param {string[]} rawFields    — array of "field=value" pairs for advance()
  * @param {string}   repoRoot     — absolute path to the repository root
- * @returns {{ exitCode: number, stdout: string, stderr: string }}
+ * @returns {Promise<{ exitCode: number, stdout: string, stderr: string }>}
  */
 async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot) {
   // AC3: all four positional args are required
@@ -67,7 +67,7 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
         await journeySyncClient.syncGateAdvanceToJourney(journey, gateName);
       }
     } catch (err) {
-      process.stderr.write('[journey-sync] warning: ' + err.message + '\n');
+      process.stderr.write('[journey-sync] warning: ' + ((err && err.message) || String(err)) + '\n');
     }
   }
 

@@ -54,6 +54,9 @@ if (subcommand === 'validate') {
     if (result.stdout) process.stdout.write(result.stdout + '\n');
     if (result.stderr) process.stderr.write(result.stderr + '\n');
     process.exit(result.exitCode);
+  }).catch((err) => {
+    process.stderr.write('Unexpected error in gate-advance: ' + ((err && err.message) || err) + '\n');
+    process.exit(8);
   });
 } else if (subcommand === 'init') {
   const slug = args[0];
