@@ -17,18 +17,24 @@ function buildRateLimitKey(req) {
 }
 
 /**
- * Create a per-tenant rate limiter middleware.
+ * Create a rate limiter middleware.
  *
- * @param {{ maxRequests?: number, windowMs?: number }} options
+ * @param {{ maxRequests?: number, windowMs?: number, keyFn?: Function, onLimited?: Function }} options
  *   maxRequests: maximum requests allowed per window (default: 10)
  *   windowMs: sliding window size in milliseconds (default: 60000 = 1 minute)
+ *   keyFn: (req) => string — how to derive the counter key (default: buildRateLimitKey,
+ *     i.e. per-tenant). ppc-s3: pass a custom keyFn to scope per-user instead.
+ *   onLimited: (req, res) => void — called instead of the default raw-JSON 429 write
+ *     when the limit is exceeded, so a caller can render a different response shape
+ *     (e.g. an accessible HTML page for a real browser form submission). Default
+ *     behaviour (no onLimited) is unchanged from before this option existed.
  * @returns {Function} middleware(req, res, next)
  */
-function createRateLimiter({ maxRequests = 10, windowMs = 60 * 1000 } = {}) {
+function createRateLimiter({ maxRequests = 10, windowMs = 60 * 1000, keyFn = buildRateLimitKey, onLimited } = {}) {
   const _counts = new Map();
 
   return function rateLimiterMiddleware(req, res, next) {
-    const key = buildRateLimitKey(req);
+    const key = keyFn(req);
 
     if (!key || key === 'unknown') {
       res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -44,6 +50,7 @@ function createRateLimiter({ maxRequests = 10, windowMs = 60 * 1000 } = {}) {
     _counts.set(key, timestamps);
 
     if (timestamps.length > maxRequests) {
+      if (typeof onLimited === 'function') { onLimited(req, res); return; }
       res.writeHead(429, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Too Many Requests — rate limit exceeded' }));
       return;
