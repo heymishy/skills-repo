@@ -7,14 +7,18 @@
 
 ---
 
+## REVISED 2026-10-24 — see `decisions.md` ARCH entry "css-s2, pre-code discovery"
+
+Most of this story's mechanism shipped between this test plan's original authoring (2026-08-07) and now, under `wsd-s1`/`wsd-s2`/`wsd-s4`/`owle.6`/`dcuf-s1`/`acdg-s1`/`acdg-s2`. AC1 is already fully covered by `tests/check-wsd-s2-github-pipeline-state-writer.js` and `tests/check-wsd-s4-pipeline-state-owner-repo-resolution.js` — no new test needed. AC4 is superseded by already-shipped, already-relied-upon auto-create behaviour and will not be implemented as originally written — no new test for it either. Only AC2 (latency NFR) and AC3's `sync_log` gap-logging half are genuinely new; the original AC3 tests below are revised to target the real new module (`sync-log.js`) and the real call site (`journey.js`'s existing `pipeline_state_write_failed` catch block), not a nonexistent `pipeline-state-commit-writer.js`.
+
 ## AC Coverage
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | Stage completion writes to `pipeline-state.json` via Contents API using the authenticated user's own token; commit author matches | 2 tests | 1 test | — | 1 scenario | External-dependency | 🟡 |
-| AC2 | Additional latency is no more than 2x `das-s1`'s own artefact-commit latency | 1 test | — | — | — | — | 🟢 |
-| AC3 | Retries exhausted → stage completion still succeeds, gap logged, no credential persisted | 2 tests | 1 test | — | — | — | 🟢 |
-| AC4 | No corresponding `pipeline-state.json` entry → no write attempted, not an error | 1 test | — | — | — | — | 🟢 |
+| AC1 | Stage completion writes to `pipeline-state.json` via Contents API using the authenticated user's own token; commit author matches | Already covered (`check-wsd-s2-github-pipeline-state-writer.js`, `check-wsd-s4-...js`) | Already covered | — | 1 scenario | External-dependency | 🟡 |
+| AC2 | Additional latency is no more than 2x `das-s1`'s own artefact-commit latency | 1 test (new) | — | — | — | — | 🟢 |
+| AC3 | Retries exhausted → stage completion still succeeds, gap logged to `sync_log`, no credential persisted | 1 test (new) | 1 test (new) | — | — | — | 🟢 |
+| AC4 | No corresponding `pipeline-state.json` entry → no write attempted, not an error | Superseded — see `decisions.md` | — | — | — | — | — |
 
 ---
 
@@ -54,64 +58,41 @@ None beyond the AC1 manual-verification gap already noted above.
 
 ## Unit Tests
 
-### pipelineStateCommitWriter_usesAuthenticatedUserToken_notServiceAccount
+### AC1 — already covered, no new test
 
-- **Verifies:** AC1 (ADR-020 compliance)
-- **Precondition:** A mocked `req.session.accessToken` set to a test token value; mocked Contents API client
-- **Action:** Call the new write-adapter with the session token and a `pipeline-state.json` update payload
-- **Expected result:** The mocked HTTP client's captured `Authorization` header contains the session token — not any hardcoded service-account or `GITHUB_TOKEN` value
-- **Edge case:** No
+Covered by `tests/check-wsd-s2-github-pipeline-state-writer.js` (T1-T10: authenticated-user token used as `Authorization` header, commit author/committer resolved from `/user`, sha-based optimistic concurrency, retry-on-conflict) and `tests/check-wsd-s4-pipeline-state-owner-repo-resolution.js`. See `decisions.md` ARCH entry for the full audit.
 
-### pipelineStateCommitWriter_stubThrows_whenNotWired
-
-- **Verifies:** D37 (injectable adapter rule)
-- **Precondition:** The adapter's default (unwired) stub is called directly, without `setPipelineStateCommitWriter()` having been called
-- **Action:** Invoke the stub
-- **Expected result:** Throws an `Error` naming the adapter and instructing the caller to wire a real implementation — does not silently return a success-shaped value
-- **Edge case:** Yes — misconfiguration path
-
-### pipelineStateCommitWriter_logsReconciliationGap_afterRetriesExhausted
+### syncLog_logsReconciliationGap_withFeatureSlugAndGateName
 
 - **Verifies:** AC3
-- **Precondition:** Mocked Contents API client configured to fail on every call within the retry budget
-- **Action:** Call the write-adapter and let all retries exhaust
-- **Expected result:** A reconciliation-gap log entry is recorded in `sync_log` with `entry_type = 'gap'`, the feature slug, and the gate name; no exception propagates to the caller (the artefact-commit flow must continue)
-- **Edge case:** Yes — retry-exhaustion path
-
-### pipelineStateCommitWriter_neverPersistsTokenAfterRequestCompletes
-
-- **Verifies:** AC3 (no credential storage)
-- **Precondition:** Same as above — retries exhausted
-- **Action:** After the write-adapter call completes (success or exhaustion), inspect all objects written to any persistent store (`sync_log`, in-memory state surviving the request)
-- **Expected result:** No field anywhere in the written records contains the session token or any credential-shaped value
+- **Precondition:** A fake pool object installed via `sync-log.js`'s own `_setPoolForTesting({ query: async function(sql, params) {...} })`, matching `journey-store-pg.js`'s own established test convention (`tests/check-ppc-s1-journey-store-helpers.js`) — no real Postgres connection in any automated test
+- **Action:** Call the new `sync-log.js` module's gap-logging function directly with a feature slug, tenant ID, and gate/stage name
+- **Expected result:** The fake pool's captured `query` call's SQL text references `sync_log` and `INSERT`; captured params include `entry_type = 'gap'`, the given `feature_slug`, and a `created_at`-equivalent timestamp
 - **Edge case:** No
 
-### pipelineStateCommitWriter_skipsWrite_whenNoMatchingFeatureSlugEntry
+### syncLog_neverWritesTokenOrCredentialShapedValue
 
-- **Verifies:** AC4
-- **Precondition:** A synthetic `pipeline-state.json` fixture with no entry for the journey's feature slug
-- **Action:** Call the write-adapter for that journey's stage completion
-- **Expected result:** No Contents API call is made; the function returns successfully with no error
+- **Verifies:** AC3 (no credential storage)
+- **Precondition:** Same as above
+- **Action:** Inspect the written `sync_log` row's full column set
+- **Expected result:** No column or JSONB field anywhere in the row contains a session token or any credential-shaped value — the function's own signature never accepts a token parameter in the first place (confirmed by reading its signature, not just its output)
+- **Edge case:** No
 
 ---
 
 ## Integration Tests
 
-### stageCompletionRequest_writesPipelineStateJson_withinSameRequestLifetime
+### AC1 — already covered, no new test
 
-- **Verifies:** AC1
-- **Components involved:** `src/web-ui/routes/journey.js` (`handlePostGateConfirm`), `das-s1`'s existing artefact-commit-writer.js, the new pipeline-state-commit-writer adapter, mocked Contents API
-- **Precondition:** A repo-connected journey completing a stage; mocked Contents API returns success
-- **Action:** Send the stage-completion request end-to-end through the route handler
-- **Expected result:** By the time the HTTP response is sent back to the client, the mocked Contents API has already recorded exactly one write call for `pipeline-state.json` with the authenticated user's token — not scheduled for later
+Covered by `tests/check-wsd-s2-github-pipeline-state-writer.js`'s factory-selection tests (T3/T4) plus `journey.js`'s own existing call-site wiring (unchanged by this story). See `decisions.md` ARCH entry.
 
-### stageCompletionRequest_succeedsForOperator_evenWhenPipelineStateWriteFails
+### stageCompletionRequest_succeedsForOperator_andLogsGap_whenPipelineStateWriteFails
 
 - **Verifies:** AC3
-- **Components involved:** Same as above, with the mocked Contents API configured to fail all `pipeline-state.json` write attempts (but the artefact-commit write itself still succeeds)
-- **Precondition:** Retry budget exhausted for the `pipeline-state.json` write specifically
-- **Action:** Send the stage-completion request
-- **Expected result:** The HTTP response still reports success to the operator (stage completion is not blocked by this write's failure); the artefact-commit itself is unaffected; a reconciliation-gap log entry exists
+- **Components involved:** `src/web-ui/routes/journey.js` (`handlePostGateConfirm`'s existing `pipeline_state_write_failed` catch block, lines ~2799-2818), the already-wired `_pipelineStateWriter` adapter (mocked to throw), the new `sync-log.js` module (real, unmocked logic — exercised against a fake pool, not mocked out entirely, so the actual SQL/params this story writes are the thing being proven)
+- **Precondition:** A repo-connected journey completing a stage; `_pipelineStateWriter` mocked to throw (simulating retries already exhausted inside the writer itself — that retry behaviour is `wsd-s2`'s own, already tested); `sync-log.js`'s fake pool installed via `_setPoolForTesting`
+- **Action:** Send the stage-completion request end-to-end through the route handler
+- **Expected result:** The HTTP response still reports success to the operator (stage completion is not blocked by this write's failure — `das-s1`'s artefact commit, which runs earlier in the same handler, is unaffected); a `sync_log` row exists afterward with `entry_type = 'gap'` and the correct `feature_slug`
 
 ---
 
@@ -124,18 +105,15 @@ None beyond the AC1 manual-verification gap already noted above.
 - **Pass threshold:** Total added latency for this story's write is ≤ 2x the simulated `das-s1` latency (i.e. ≤ 400ms in the 200ms baseline case) — a relative bound, not an invented absolute number, per this story's own AC2
 - **Tool:** `scripts/run-all-tests.js` timing assertion
 
-### commitAuthor_isAuthenticatedUser_notServiceAccount
+### commitAuthor_isAuthenticatedUser_notServiceAccount — already covered, no new test
 
-- **NFR addressed:** Security (ADR-020)
-- **Measurement method:** Assert the captured `Authorization` header in the mocked Contents API call matches the test session token, not any service-account credential constant present elsewhere in the codebase
-- **Pass threshold:** Exact match to the session token; zero occurrences of a service-account token pattern
-- **Tool:** `scripts/run-all-tests.js` assertion
+Covered by `tests/check-wsd-s2-github-pipeline-state-writer.js` T1 (asserts the captured `Authorization` header matches the session token).
 
 ### reconciliationGapLog_isQueryable
 
 - **NFR addressed:** Audit
-- **Measurement method:** After a retry-exhaustion test case, query the mocked `sync_log` store for entries with `entry_type = 'gap'` matching the test's feature slug
-- **Pass threshold:** Exactly one matching entry exists with `feature_slug`, `entry_type`, and `created_at` populated
+- **Measurement method:** Reuses `syncLog_logsReconciliationGap_withFeatureSlugAndGateName`'s own fake-pool assertion above — the captured `INSERT` statement and params ARE the queryability evidence (a real `sync_log` row with these columns is trivially queryable by any SQL client)
+- **Pass threshold:** Exactly one `INSERT` call captured, with `feature_slug`, `entry_type`, and a timestamp field all present in its params
 - **Tool:** `scripts/run-all-tests.js` assertion
 
 ---
