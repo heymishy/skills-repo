@@ -365,6 +365,27 @@ function getNextStage(currentStage) {
 }
 
 /**
+ * css-s3 (Task 7, Critical review finding): true only when `stage` is one
+ * of the 8 outer-loop stage names this journey model actually represents
+ * (STAGE_SEQUENCE). pipeline-state.json's own `stage` schema enum is far
+ * broader (~21 values spanning inner-loop gate names like `branch-complete`,
+ * `infra-plan`, `schema-migration-review`, and other-track stages) -- a
+ * cross-surface conflict resolved to one of THOSE values cannot be
+ * meaningfully reassigned onto a journey's own session.skillName, since
+ * getNextStage() would silently return null (treated as "journey complete")
+ * and infra-plan/schema-migration-review's own trace-emission guards would
+ * fire using fields (session.infraPlanPath/session.migrationReviewPath)
+ * this session never actually populated. Distinguishes "not in the
+ * sequence at all" from getNextStage()'s own, different null meaning
+ * ("last stage in the sequence, nothing comes after").
+ * @param {string} stage
+ * @returns {boolean}
+ */
+function isKnownStage(stage) {
+  return STAGE_SEQUENCE.indexOf(stage) !== -1;
+}
+
+/**
  * res-s4: every stage after currentStage in STAGE_SEQUENCE — the single
  * ordering source, reused rather than a second hardcoded list (named
  * anti-pattern, previously caught in dtra-s1/dspw-s1).
@@ -631,6 +652,7 @@ module.exports = {
   completeStage,
   updateCompletedStageSessionId,
   getNextStage,
+  isKnownStage,
   getDownstreamStages,
   isStrictlyLaterStage,
   regressToStage,

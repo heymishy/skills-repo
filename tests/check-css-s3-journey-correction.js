@@ -180,6 +180,49 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('gateConfirm_skipsCorrection_whenResolvedValueOutsideJourneyVocabulary', async function() {
+    var journey = freshRequireJourney();
+    var store = getStore();
+
+    // Critical finding at this task's own independent review: pipeline-
+    // state.json's own `stage` schema enum (~21 values) is far broader
+    // than the web journey's own STAGE_SEQUENCE (8 outer-loop values only).
+    // A conflict resolved to 'infra-plan' (a real inner-loop gate, NOT in
+    // STAGE_SEQUENCE) must NOT be reassigned onto session.skillName --
+    // doing so would fire infra-plan's own trace-emission guard
+    // (journey.js ~line 2874) using session.infraPlanPath, a field THIS
+    // session (really 'benefit-metric') never populated, fabricating an
+    // audit trace record (an 'infra-plan-sign-off' event with exitCode: 0)
+    // for a sign-off that never actually happened in this request.
+    var setup = setupStageSession(journey, store, { skillName: 'benefit-metric' });
+
+    journey.setPipelineStateWriter(async function() {
+      return { conflict: { pipelineStateValue: 'infra-plan', journeyValue: 'benefit-metric', resolved: 'infra-plan' } };
+    });
+
+    var traceWriteCalls = [];
+    journey.setWriteTrace(function(entry) { traceWriteCalls.push(entry); });
+
+    var res = makeRes();
+    await journey.handlePostGateConfirm(authReq({ params: { journeyId: setup.journeyId } }), res);
+
+    assert.strictEqual(traceWriteCalls.length, 0,
+      'expected NO trace record to be written -- this session was never really an infra-plan completion, writing one would fabricate an audit record for a sign-off that never happened. Got: ' + JSON.stringify(traceWriteCalls));
+
+    // Correction was correctly skipped -- session.skillName stayed
+    // 'benefit-metric' (unchanged), so the redirect reflects the SAME
+    // outcome as the ordinary no-conflict case: getNextStage('benefit-metric')
+    // -> 'design'.
+    assert.ok(res._headers.Location && res._headers.Location.indexOf('/skills/design/sessions/') === 0,
+      'expected the redirect to reflect the UNCHANGED session.skillName (correction skipped), got Location: ' + res._headers.Location);
+
+    var updatedJourney = store.getJourney(setup.journeyId);
+    assert.strictEqual(updatedJourney.complete, false,
+      'expected the journey to NOT be marked complete -- a false completion would occur if session.skillName had been reassigned to an unmodeled value, making getNextStage() return null');
+  });
+});
+
 (async function runAll() {
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();

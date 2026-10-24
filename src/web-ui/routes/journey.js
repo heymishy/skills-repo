@@ -2825,15 +2825,46 @@ async function handlePostGateConfirm(req, res) {
     // (completeStage() already persisted the TRUE historical skillName at
     // line ~2737, well before this point, so that record is never
     // affected by this reassignment).
+    //
+    // Critical fix (found at this task's own independent review): the
+    // resolved value is NOT guaranteed to be one of the 8 outer-loop stage
+    // names the web journey's own STAGE_SEQUENCE models -- pipeline-state.
+    // json's own `stage` schema enum is far broader (~21 values, spanning
+    // inner-loop gates like `branch-complete`/`infra-plan`/
+    // `schema-migration-review` and other tracks). Reassigning
+    // session.skillName to an unmodeled value would make getNextStage()
+    // silently return null (treated as "journey complete" -- a false
+    // completion) or, for infra-plan/schema-migration-review specifically,
+    // fire THOSE trace-emission guards using session fields
+    // (infraPlanPath/migrationReviewPath) this session never populated,
+    // fabricating an audit trace record for a sign-off that never
+    // happened in this request. Only reassign when the resolved value is
+    // actually representable in this journey model; otherwise, log the
+    // gap and fall back to the original (pre-Task-7) behaviour -- the
+    // pipeline-state.json side (AC2's primary, canonical-value guarantee)
+    // is unaffected either way; only the journey-side "catch-up" is
+    // skipped for a stage this model has no concept of.
     if (_pipelineStateWriteResult && _pipelineStateWriteResult.conflict) {
-      console.info(JSON.stringify({
-        event: 'cross_surface_conflict_corrected',
-        featureSlug: journey.featureSlug,
-        storyId: storyId,
-        journeyStaleValue: session.skillName,
-        resolvedValue: _pipelineStateWriteResult.conflict.resolved
-      }));
-      session.skillName = _pipelineStateWriteResult.conflict.resolved;
+      var _resolvedStage = _pipelineStateWriteResult.conflict.resolved;
+      if (_journeyStore.isKnownStage(_resolvedStage)) {
+        console.info(JSON.stringify({
+          event: 'cross_surface_conflict_corrected',
+          featureSlug: journey.featureSlug,
+          storyId: storyId,
+          journeyStaleValue: session.skillName,
+          resolvedValue: _resolvedStage
+        }));
+        session.skillName = _resolvedStage;
+      } else {
+        console.info(JSON.stringify({
+          event: 'cross_surface_conflict_correction_skipped',
+          featureSlug: journey.featureSlug,
+          storyId: storyId,
+          journeyStaleValue: session.skillName,
+          resolvedValue: _resolvedStage,
+          reason: 'resolved value is outside the web journey\'s own stage vocabulary (STAGE_SEQUENCE) -- correction skipped to avoid a false journey-completion or a fabricated trace record'
+        }));
+      }
     }
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
