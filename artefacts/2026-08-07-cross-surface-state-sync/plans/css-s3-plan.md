@@ -359,16 +359,20 @@ async function run() {
     assert('T4-logs-timestamp-via-now', String(pool.calls[0].sql).indexOf('NOW()') !== -1, 'expected the INSERT to populate created_at via NOW()');
   })();
 
-  // T5 (AC4): the conflict log has no entry for an ordinary single-sided sync -- i.e. resolveConflict is simply never called when detectConflict returns null
-  await (async function T5() {
-    const pool = makeFakePool();
-    syncLog._setPoolForTesting(pool);
-    const conflict = conflictResolver.detectConflict('test-plan', 'definition-of-ready', 'test-plan');
-    if (conflict) {
-      await conflictResolver.resolveConflict('should-not-run', null, conflict.pipelineStateValue, conflict.journeyValue);
-    }
-    assert('T5-no-log-entry-for-single-sided-sync', pool.calls.length === 0, `expected zero sync_log writes for an ordinary single-sided advance, got ${pool.calls.length}`);
-  })();
+  // AC4's "no conflict log entry for an ordinary single-sided sync" claim is
+  // ALREADY proven at the unit level by T2/T2b/T2c above (detectConflict
+  // returns null for those inputs). A test reproducing the real call site's
+  // own "if (conflict) resolveConflict(...)" pattern INSIDE this test file
+  // would be tautological -- the decision of whether to call resolveConflict
+  // is made by code outside this module (journey-sync-client.js /
+  // pipeline-state-github-writer.js), not by conflict-resolver.js itself.
+  // The genuine, non-vacuous proof that NO log entry is written for an
+  // ordinary single-sided sync lives in Task 4's own integration test
+  // (tests/check-css-s3-pipeline-state-conflict-wiring.js, T2), which
+  // exercises the real wired call site end-to-end. A prior, tautological T5
+  // here was removed during Task 3's own code-quality review (it reused
+  // T2's identical inputs and its own "zero writes" assertion was
+  // guaranteed by the test's own conditional, not by any code under test).
 
   console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed\n`);
   if (issues.length > 0) {
@@ -456,7 +460,7 @@ module.exports = { detectConflict: detectConflict, resolveConflict: resolveConfl
 node tests/check-css-s3-conflict-resolver.js
 ```
 
-Expected output: `[css-s3] 19 passed, 0 failed` (7 from T0 + 3 from T1 + 1 T2 + 1 T2b + 1 T2c + 1 T3 + 4 T4 + 1 T5 = 19 — count your own assertions carefully as you write this file; if your actual count differs from this plan's arithmetic, trust your own run's real output over this plan, same lesson as css-s2's own Task 2 mis-count).
+Expected output: `[css-s3] 18 passed, 0 failed` (7 from T0 + 3 from T1 + 1 T2 + 1 T2b + 1 T2c + 1 T3 + 4 T4 = 18 — no T5, removed during Task 3's own code-quality review as tautological; count your own assertions carefully as you write this file, and if your actual count differs from this plan's arithmetic, trust your own run's real output over this plan, same lesson as css-s2's own Task 2 mis-count).
 
 - [ ] **Step 5: Run full suite — no regressions**
 

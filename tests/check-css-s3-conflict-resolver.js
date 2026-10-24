@@ -112,16 +112,20 @@ async function run() {
     assert('T4-logs-timestamp-via-now', String(pool.calls[0].sql).indexOf('NOW()') !== -1, 'expected the INSERT to populate created_at via NOW()');
   })();
 
-  // T5 (AC4): the conflict log has no entry for an ordinary single-sided sync -- i.e. resolveConflict is simply never called when detectConflict returns null
-  await (async function T5() {
-    const pool = makeFakePool();
-    syncLog._setPoolForTesting(pool);
-    const conflict = conflictResolver.detectConflict('test-plan', 'definition-of-ready', 'test-plan');
-    if (conflict) {
-      await conflictResolver.resolveConflict('should-not-run', null, conflict.pipelineStateValue, conflict.journeyValue);
-    }
-    assert('T5-no-log-entry-for-single-sided-sync', pool.calls.length === 0, `expected zero sync_log writes for an ordinary single-sided advance, got ${pool.calls.length}`);
-  })();
+  // AC4's "no conflict log entry for an ordinary single-sided sync" claim is
+  // ALREADY proven at the unit level by T2/T2b/T2c above (detectConflict
+  // returns null for those inputs). A test reproducing the real call site's
+  // own "if (conflict) resolveConflict(...)" pattern INSIDE this test file
+  // would be tautological -- the decision of whether to call resolveConflict
+  // is made by code outside this module (journey-sync-client.js /
+  // pipeline-state-github-writer.js), not by conflict-resolver.js itself.
+  // The genuine, non-vacuous proof that NO log entry is written for an
+  // ordinary single-sided sync lives in Task 4's own integration test
+  // (tests/check-css-s3-pipeline-state-conflict-wiring.js, T2), which
+  // exercises the real wired call site end-to-end. Removed a prior,
+  // tautological T5 here during Task 3's own code-quality review (it
+  // reused T2's identical inputs and its own "zero writes" assertion was
+  // guaranteed by the test's own conditional, not by any code under test).
 
   console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed\n`);
   if (issues.length > 0) {
