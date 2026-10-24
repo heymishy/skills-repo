@@ -65,6 +65,19 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
       var journey = await journeySyncClient.resolveJourneyForFeatureSlug(featureSlug);
       if (journey) {
         await journeySyncClient.syncGateAdvanceToJourney(journey, gateName);
+        // css-s3: keep the shared "last synced" marker current from the CLI
+        // side too, after a successful sync. Bookkeeping only -- no real
+        // conflict-branch call here; this direction's real call site cannot
+        // produce a genuine two-different-values conflict today (see
+        // decisions.md's wiring-scope-refinement ARCH entry). A failure
+        // here is logged the same as a sync failure above -- it must never
+        // change gateAdvance's own exit code, which already reflects the
+        // pipeline-state advance's own success.
+        try {
+          advance(featureSlug, storyId, ['lastSyncedStage=' + journeySyncClient.SYNC_STAGE], repoRoot);
+        } catch (markerErr) {
+          process.stderr.write('[journey-sync] warning: lastSyncedStage update failed: ' + ((markerErr && markerErr.message) || String(markerErr)) + '\n');
+        }
       }
     } catch (err) {
       process.stderr.write('[journey-sync] warning: ' + ((err && err.message) || String(err)) + '\n');
