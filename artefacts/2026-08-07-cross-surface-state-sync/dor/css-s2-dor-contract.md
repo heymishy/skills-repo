@@ -1,13 +1,18 @@
 # Contract Proposal — Automatically reflect a web-UI journey stage completion in pipeline-state.json (css-s2)
 
+**REVISED 2026-10-24** — see `decisions.md` ARCH entry "css-s2, pre-code discovery". The write-adapter, retry wrapper, Contents API mechanics, and `journey.js` wiring described in this contract's original authoring (2026-08-07) already shipped under `wsd-s1`/`wsd-s2`/`wsd-s4`/`owle.6`/`dcuf-s1`/`acdg-s1`/`acdg-s2`, confirmed by direct code reading before any new code was written. Building a second, parallel `pipeline-state-commit-writer.js` as originally specified would duplicate already-shipped, load-bearing production infrastructure and create a correctness hazard (two independently-retrying writers for the same file). This story's real remaining scope is the `sync_log` table and gap-logging only.
+
 **What will be built:**
-- `src/web-ui/adapters/pipeline-state-commit-writer.js` (new) — exports a D37 injectable function (`setPipelineStateCommitWriter()`/`getPipelineStateCommitWriter()`) that, given a journey's stage-completion context and `req.session.accessToken`, writes the corresponding advance to the connected repo's `pipeline-state.json` via the GitHub Contents API, mirroring `das-s1`'s `artefact-commit-writer.js` shape and reusing `mtrr-s1`'s `ownerRepoForFeature` to resolve the target repo.
-- A bounded in-request retry wrapper around that write (fixed small retry count, no backoff beyond the request's own lifetime).
-- A `sync_log` write (new Postgres table, shared with css-s3) recording `entry_type: 'gap'` when retries are exhausted.
-- Wiring into `src/web-ui/routes/journey.js`'s `handlePostGateConfirm` — sequenced after `das-s1`'s existing artefact-commit call, not blocking the operator's response if it fails.
+- A `sync_log` table (new Postgres table, shared with css-s3), migrated in `server.js` following the existing `CREATE TABLE IF NOT EXISTS` on-startup pattern (e.g. the `product_rollups` precedent).
+- `src/web-ui/adapters/sync-log.js` (new) — a plain module following `journey-store-pg.js`'s own convention (own `Pool`, a `_setPoolForTesting` escape hatch for tests; not a D37 injectable adapter, since no new adapter seam is being introduced — the existing `setPipelineStateWriter()`/`getPipelineStateWriter()` seam already satisfies D37 for this mechanism) — exports a function that writes a `sync_log` row with `entry_type: 'gap'`, the feature slug, tenant ID, and gate/stage name. Never accepts or stores a token/credential parameter.
+- One new call in `src/web-ui/routes/journey.js`'s existing `pipeline_state_write_failed` catch block (`handlePostGateConfirm`, ~line 2817) — the already-existing, already-correct point where the already-existing `_pipelineStateWriter` adapter's own internal retries have already been exhausted, for either the local-fs or GitHub-API writer. Guarded by `if (process.env.DATABASE_URL)`, matching every other optional-Postgres write in this file.
+- One new NFR test asserting the AC2 latency ceiling (the sequencing itself already exists; only the explicit test is new).
 
 **What will NOT be built:**
-- Background/queued retry beyond the request's lifetime — explicitly excluded per the Step 1.5 architecture decision.
+- A new `pipeline-state-commit-writer.js` adapter — already exists as `pipeline-state-github-writer.js` (`wsd-s2`), already wired, already tested.
+- A new D37 wiring task — the existing `setPipelineStateWriter()`/`getPipelineStateWriter()` seam is unchanged by this story.
+- AC4's literal "skip write when no matching feature slug" behaviour — superseded by already-shipped, already-relied-upon auto-create behaviour; see `decisions.md`.
+- Background/queued retry beyond the request's lifetime — explicitly excluded per the Step 1.5 architecture decision (and already not implemented in the existing writer).
 - Conflict detection — css-s3.
 - Any gate type beyond what the test plan exercises generically — css-s4 extends to the full vocabulary, reusing this story's mechanism unchanged.
 

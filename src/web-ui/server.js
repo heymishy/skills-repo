@@ -1221,6 +1221,28 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s7] taxonomy migration failed:', err.message);
     });
 
+    // css-s2/css-s3: sync_log table -- shared reconciliation-gap/conflict log for
+    // cross-surface-state-sync (pipeline-state.json <-> web-UI journeys). css-s2
+    // writes 'gap' entries when a pipeline-state.json write fails after its own
+    // internal retries are exhausted; css-s3 will reuse this same table for
+    // 'conflict' entries (entry_type discriminator), per the ADR-026 reuse-check
+    // already logged in decisions.md at /definition -- one shared table, not two
+    // near-identical ones.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS sync_log (
+      id SERIAL PRIMARY KEY,
+      feature_slug VARCHAR NOT NULL,
+      tenant_id VARCHAR,
+      entry_type VARCHAR NOT NULL,
+      pipeline_state_value JSONB,
+      journey_value JSONB,
+      resolved_value JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[css-s2] sync_log table ready');
+    }).catch(function(err) {
+      console.error('[css-s2] sync_log migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');
