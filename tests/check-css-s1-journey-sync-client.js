@@ -92,13 +92,21 @@ queue.push(function() {
 });
 
 queue.push(function() {
-  return test('syncGateAdvanceToJourney_doesNotAttemptSync_forNonDiscoveryApprovedGate', function() {
+  // css-s4: AC4's original gate boundary (only discovery-approved syncs) is
+  // superseded by css-s4's own generalisation -- 'test-plan-complete' is
+  // now one of the 5 journey-representable gates and correctly DOES sync
+  // (covered by tests/check-css-s4-gate-vocabulary.js's T3/T6). This test's
+  // real intent -- "no sync attempt for a gate with no journey-side
+  // representation" -- still holds; it now needs a gate that is still
+  // unrepresentable under css-s4's wider vocabulary ('branch-complete', an
+  // inner-loop-only milestone that stays mapped to null).
+  return test('syncGateAdvanceToJourney_doesNotAttemptSync_forJourneyUnrepresentableGate', function() {
     return withEnv({ GITHUB_REPO_OWNER: 'acme', GITHUB_REPO_NAME: 'widgets' }, async function() {
       var calls = 0;
       client.setJourneySyncClient(async function() { calls++; return { updated: true }; });
       var journey = { journeyId: 'j1', featureSlug: 'test-feature', repoOwner: 'acme', repoName: 'widgets' };
-      await client.syncGateAdvanceToJourney(journey, 'test-plan-complete');
-      assert.strictEqual(calls, 0, 'no sync attempt should be made for a gate other than discovery-approved');
+      await client.syncGateAdvanceToJourney(journey, 'branch-complete');
+      assert.strictEqual(calls, 0, 'no sync attempt should be made for a gate with no journey-side representation');
     });
   });
 });
@@ -158,9 +166,12 @@ queue.push(function() {
       await client.syncGateAdvanceToJourney(mismatchJourney, 'discovery-approved');
       assert.strictEqual(warnCount, 1, 'exactly one mismatch log entry expected');
 
+      // css-s4: 'test-plan-complete' is now journey-representable (see note
+      // above) -- 'branch-complete' is the gate that still has no
+      // journey-side representation and is the correct boundary case here.
       var boundaryJourney = { journeyId: 'j7', featureSlug: 'test-feature', repoOwner: 'acme', repoName: 'widgets' };
-      await client.syncGateAdvanceToJourney(boundaryJourney, 'test-plan-complete');
-      assert.strictEqual(infoCount, 1, 'the AC4 boundary case (wrong gate) must log nothing -- there was no attempt to log');
+      await client.syncGateAdvanceToJourney(boundaryJourney, 'branch-complete');
+      assert.strictEqual(infoCount, 1, 'the journey-unrepresentable-gate boundary case must log nothing -- there was no attempt to log');
       assert.strictEqual(warnCount, 1);
     });
   });
