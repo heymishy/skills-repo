@@ -2811,8 +2811,30 @@ async function handlePostGateConfirm(req, res) {
     }
     var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
     var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
-    await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, _pipelineStateContext);
+    var _pipelineStateWriteResult = await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, _pipelineStateContext);
     stateWriteSucceeded = true;
+    // css-s3 (AC2, Task 7): a genuine cross-surface conflict was detected
+    // and resolved to pipeline-state.json's own value -- correct THIS
+    // SIDE too by treating the resolved stage as if it were what just
+    // completed, for every downstream decision below (trace emission,
+    // nextStage computation, PER_STORY_SEQ handling, setActiveSession
+    // calls) that already keys off session.skillName. A standalone
+    // Postgres write at this point would be overwritten again by those
+    // same downstream calls later in this same request -- see
+    // decisions.md's Task 7 ARCH entry for the full safety analysis
+    // (completeStage() already persisted the TRUE historical skillName at
+    // line ~2737, well before this point, so that record is never
+    // affected by this reassignment).
+    if (_pipelineStateWriteResult && _pipelineStateWriteResult.conflict) {
+      console.info(JSON.stringify({
+        event: 'cross_surface_conflict_corrected',
+        featureSlug: journey.featureSlug,
+        storyId: storyId,
+        journeyStaleValue: session.skillName,
+        resolvedValue: _pipelineStateWriteResult.conflict.resolved
+      }));
+      session.skillName = _pipelineStateWriteResult.conflict.resolved;
+    }
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
     // css-s2 (AC3): log a queryable reconciliation-gap entry once this

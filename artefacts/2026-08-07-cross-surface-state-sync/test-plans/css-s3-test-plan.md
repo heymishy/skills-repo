@@ -12,7 +12,7 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Both sides changed independently since last sync → detected as a genuine conflict | 2 tests | — | — | — | — | 🟢 |
-| AC2 | Conflict resolves to pipeline-state.json's value, journey corrected | 1 test | 1 test | — | — | — | 🟢 |
+| AC2 | Conflict resolves to pipeline-state.json's value, journey corrected | 1 test | 2 tests | — | — | — | 🟢 |
 | AC3 | Conflict log entry records slug, both values, winner, timestamp | 1 test | — | — | — | — | 🟢 |
 | AC4 | No conflict (single-sided advance) → no log entry created | 1 test | — | — | — | — | 🟢 |
 
@@ -98,10 +98,18 @@ None.
 ### fullSyncFlow_detectsAndResolvesConflict_endToEnd
 
 - **Verifies:** AC1, AC2
-- **Components involved:** css-s1's sync adapter, css-s2's write adapter, the new conflict detector and resolver, mocked Postgres and mocked Contents API
-- **Precondition:** A feature where both sides have advanced independently since the last sync
-- **Action:** Trigger the sync flow from either side's advance
-- **Expected result:** The conflict is detected, resolved to pipeline-state.json's value, and the journey record reflects the corrected value at the end of the flow
+- **Components involved:** `pipeline-state-github-writer.js`'s real, unmocked `applyStateUpdate` (css-s2's direction — the real path a genuine conflict can occur on, per `decisions.md`'s wiring-scope-refinement entry), the new conflict detector and resolver, mocked Contents API
+- **Precondition:** A fetched pipeline-state.json fixture whose story has `stage: 'X'` and `lastSyncedStage: 'last'`; an incoming `stateUpdate.stage: 'Y'` (both `X` and `Y` differ from `'last'`, and from each other)
+- **Action:** Call `applyStateUpdate` with this fixture and stateUpdate
+- **Expected result:** The conflict is detected; the story's `stage` in the returned mutated state remains `X` (pipeline-state.json's own value wins, the incoming `Y` is NOT applied); a `sync_log` entry is written with `entry_type='conflict'`, `pipeline_state_value='X'`, `journey_value='Y'`, `resolved_value='X'`; `lastSyncedStage` is updated to `X`
+
+### gateConfirm_correctsJourneySide_whenWriterReportsResolvedConflict
+
+- **Verifies:** AC2 (the journey-correction half, added at Task 7 after the final cross-cutting review found it missing)
+- **Components involved:** `journey.js`'s real, unmocked `handlePostGateConfirm`, with `_pipelineStateWriter` mocked to report a resolved conflict (`{ conflict: { pipelineStateValue, journeyValue, resolved } }`)
+- **Precondition:** A session whose `skillName` ('benefit-metric') differs from the mocked writer's own reported `resolved` value ('definition')
+- **Action:** Call `handlePostGateConfirm`
+- **Expected result:** The resulting redirect reflects `nextStage` computed from the RESOLVED value ('definition' → 'review' → stories-confirm redirect), not the original stale `session.skillName` ('benefit-metric' → 'design'). Two negative controls (`gateConfirm_leavesSessionSkillNameUnchanged_whenNoConflictReported`, `...WhenWriterReturnsUndefined`) confirm ordinary behaviour is unaffected whether the writer reports `{conflict: null}` or returns nothing at all (the local-fs writer's own convention).
 
 ---
 

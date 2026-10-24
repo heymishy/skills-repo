@@ -1109,8 +1109,23 @@ git commit -m "test(css-s3): add NFR tests (performance, security, audit)"
 
 Not a code task.
 
-- [ ] Confirm `decisions.md`'s two css-s3 ARCH entries (already written, 2026-10-24) are present and unchanged.
-- [ ] Confirm `test-plans/css-s3-test-plan.md` and `dor/css-s3-dor-contract.md` (already revised, 2026-10-24) match what was actually built.
+## Task 7: Correct the journey's own side on conflict (AC2's missing half, found at final cross-cutting review)
+
+**Added post-hoc, 2026-10-25.** Tasks 1-6 above only prevented pipeline-state.json from being overwritten by a losing conflicting value -- AC2 also requires the web-UI journey's own Postgres record to be corrected to match. See `decisions.md`'s Task 7 ARCH entry for the full design and safety analysis (why a standalone Postgres write at the conflict-detection point is ineffective, and why reassigning `session.skillName` at the `journey.js` call site is the real fix).
+
+**Files:**
+- Modify: `src/web-ui/adapters/pipeline-state-github-writer.js` — `applyStateUpdate` and `pipelineStateGithubWriter` now return `{ conflict }` (the resolved conflict object, or `null`) instead of nothing/the bare mutated state.
+- Modify: `src/web-ui/routes/journey.js` — `handlePostGateConfirm` captures the writer's return value and, when a conflict was resolved, reassigns its own local `session.skillName` to the resolved value immediately after the write succeeds, before any downstream trace-emission guard or next-stage computation runs.
+- Create: `tests/check-css-s3-journey-correction.js` — 3 tests: a genuine conflict correctly redirects based on the RESOLVED stage (not the original stale one), and two negative controls confirming ordinary (no-conflict) behavior is unaffected whether the writer returns `{conflict: null}` or `undefined` (the local-fs writer's own convention).
+
+Final state: all tests pass (`node tests/check-css-s3-journey-correction.js` → `3 passed, 0 failed`; `node tests/check-css-s3-pipeline-state-conflict-wiring.js` and `tests/check-wsd-s2-github-pipeline-state-writer.js` both still pass unchanged, confirming the new return shape is backward compatible). Full suite: `792 file(s) run, 0 failed`.
+
+---
+
+## Final task: Confirm full suite, update revised artefacts, proceed to /verify-completion
+
+- [ ] Confirm `decisions.md`'s FOUR css-s3 ARCH entries (two original + the Task 7 design + Task 7's own file-touch note, all written 2026-10-24/25) are present and unchanged.
+- [ ] Confirm `test-plans/css-s3-test-plan.md` and `dor/css-s3-dor-contract.md` (revised 2026-10-24) match what was actually built — note Task 7 means `src/web-ui/routes/journey.js` IS now touched, unlike this plan's own earlier assumption.
 - [ ] Run `node scripts/run-all-tests.js` one final time — 0 failures required before `/verify-completion`.
-- [ ] Note: `src/web-ui/routes/journey.js` is NOT touched by this story (unlike css-s2) — confirm the route/handler E2E coverage check at `/verify-completion` is therefore N/A for this story, not required.
+- [ ] `src/web-ui/routes/journey.js` IS touched by Task 7 — the route/handler E2E coverage check at `/verify-completion` is therefore REQUIRED for this story (correcting the earlier note above, written before Task 7 existed).
 - [ ] Proceed to `/verify-completion`.

@@ -114,6 +114,7 @@ async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, confli
     if (stateUpdate[key] !== undefined) feature[key] = stateUpdate[key];
   });
 
+  var detectedConflict = null;
   if (storyId) {
     // css-s3: conflict detection -- compare the CURRENT (freshly-fetched)
     // pipeline-state.json stage value against stateUpdate's own incoming
@@ -148,6 +149,15 @@ async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, confli
           }
           delete stateUpdate.stage; // pipeline-state.json's own value wins -- do not apply the incoming stage
           stateUpdate.lastSyncedStage = resolved;
+          // css-s3 (AC2, Task 7): surface the resolution to the caller
+          // (journey.js) so it can correct ITS OWN side too -- see
+          // decisions.md's Task 7 ARCH entry for why a standalone Postgres
+          // write at this point would be ineffective (journey.js's own
+          // later, session.skillName-driven logic would silently overwrite
+          // it again within the same request) and why reassigning
+          // session.skillName to `resolved` at the call site is the real
+          // fix instead.
+          detectedConflict = { pipelineStateValue: conflict.pipelineStateValue, journeyValue: conflict.journeyValue, resolved: resolved };
         } else {
           stateUpdate.lastSyncedStage = stateUpdate.stage;
         }
@@ -163,10 +173,10 @@ async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, confli
       if (result.exitCode !== 0) {
         throw new Error('pipeline-state advance failed: ' + result.stderr);
       }
-      return result.state;
+      return { state: result.state, conflict: detectedConflict };
     }
   }
-  return state;
+  return { state: state, conflict: detectedConflict };
 }
 
 function githubApiBase() {
@@ -304,8 +314,8 @@ module.exports = function pipelineStateGithubWriterFactory() {
     while (attempt < 3) {
       try {
         var fetched = await fetchState(apiBase, owner, repo, authHeaders);
-        var mutatedState = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate, conflictLogState);
-        var newContent = JSON.stringify(mutatedState, null, 2) + '\n';
+        var applyResult = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate, conflictLogState);
+        var newContent = JSON.stringify(applyResult.state, null, 2) + '\n';
         await putState(
           apiBase, owner, repo, authHeaders, newContent, fetched.sha,
           authorName, authorEmail,
@@ -319,7 +329,10 @@ module.exports = function pipelineStateGithubWriterFactory() {
           via:          'github-api',
           attempt:      attempt + 1,
         }));
-        return;
+        // css-s3 (AC2, Task 7): surface the resolved conflict (or null) to
+        // the caller so it can correct its own side -- see
+        // decisions.md's Task 7 ARCH entry.
+        return { conflict: applyResult.conflict };
       } catch (err) {
         lastErr = err;
         if (err && err.isConflict && attempt < 2) {
