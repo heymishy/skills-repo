@@ -75,4 +75,28 @@ async function logReconciliationGap(featureSlug, tenantId, gateName) {
   );
 }
 
-module.exports = { logReconciliationGap, _setPoolForTesting };
+/**
+ * Logs a conflict entry: a genuine cross-surface disagreement where both
+ * pipeline-state.json and the connected web-UI journey independently
+ * changed since the last-synced marker, to DIFFERENT values. The resolved
+ * value is always pipelineStateValue (css-s1's own ARCH decision:
+ * pipeline-state.json is canonical). Can throw/reject on a real DB failure
+ * -- same contract as logReconciliationGap; callers decide their own
+ * error-handling strategy.
+ * @param {string} featureSlug
+ * @param {string|null} tenantId
+ * @param {string} pipelineStateValue
+ * @param {string} journeyValue
+ * @param {string} resolvedValue
+ * @returns {Promise<void>}
+ */
+async function logConflict(featureSlug, tenantId, pipelineStateValue, journeyValue, resolvedValue) {
+  const pool = _getPool();
+  if (!pool) return;
+  await pool.query(
+    'INSERT INTO sync_log (feature_slug, tenant_id, entry_type, pipeline_state_value, journey_value, resolved_value, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+    [featureSlug, tenantId || null, 'conflict', JSON.stringify(pipelineStateValue), JSON.stringify(journeyValue), JSON.stringify(resolvedValue)]
+  );
+}
+
+module.exports = { logReconciliationGap, logConflict, _setPoolForTesting };
