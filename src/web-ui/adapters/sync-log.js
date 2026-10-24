@@ -53,10 +53,10 @@ function _getPool() {
  * Logs a reconciliation-gap entry: a pipeline-state.json write that failed
  * after its own writer's internal retries were exhausted (wsd-s2's
  * pipeline-state-github-writer.js already retries before this is ever
- * called). Never throws -- callers (journey.js's existing
- * pipeline_state_write_failed catch block) must not have their own
- * already-non-blocking failure path turned into a hard failure by this
- * logging call itself.
+ * called). Can throw/reject on a real DB failure -- callers (journey.js's
+ * `pipeline_state_write_failed` catch block) MUST wrap this call in their
+ * own try/catch so a failed gap-log write doesn't turn their already-non-
+ * blocking failure path into a hard failure.
  * @param {string} featureSlug
  * @param {string|null} tenantId
  * @param {string} gateName - the gate/stage name that failed to sync (session.skillName)
@@ -65,6 +65,10 @@ function _getPool() {
 async function logReconciliationGap(featureSlug, tenantId, gateName) {
   const pool = _getPool();
   if (!pool) return;
+  // journey_value carries this gap entry's own context payload (gateName) --
+  // pipeline_state_value/resolved_value stay null for 'gap' entries, reserved
+  // for css-s3's future 'conflict' entries which will populate all three
+  // columns for an actual pipeline-state-vs-journey diff.
   await pool.query(
     'INSERT INTO sync_log (feature_slug, tenant_id, entry_type, journey_value, created_at) VALUES ($1, $2, $3, $4, NOW())',
     [featureSlug, tenantId || null, 'gap', JSON.stringify({ gateName: gateName })]
