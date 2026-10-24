@@ -2815,6 +2815,22 @@ async function handlePostGateConfirm(req, res) {
     stateWriteSucceeded = true;
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
+    // css-s2 (AC3): log a queryable reconciliation-gap entry once this
+    // write's own retries (wsd-s2's internal retry loop, for the GitHub-API
+    // writer; or the local-fs writer's own single-attempt failure) are
+    // already exhausted by the time this catch block runs. DATABASE_URL-
+    // guarded like every other optional-Postgres write in this file (e.g.
+    // the saveArtefact call above). Never let this logging call itself
+    // throw and mask the already-non-blocking failure path above.
+    if (process.env.DATABASE_URL) {
+      try {
+        await require('../adapters/sync-log').logReconciliationGap(
+          journey.featureSlug, journey.tenantId || req.session.tenantId || null, session.skillName
+        );
+      } catch (_syncLogErr) {
+        console.error('[sync-log] gap logging failed:', _syncLogErr.message);
+      }
+    }
   }
 
   // cdg.5: chain-hash trace emission -- only after successful state write (ADR-023)
