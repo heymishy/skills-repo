@@ -10,6 +10,7 @@
 'use strict';
 
 const syncLog = require('../src/web-ui/adapters/sync-log');
+const conflictResolver = require('../src/sync/conflict-resolver');
 
 let totalPassed = 0;
 let totalFailed = 0;
@@ -33,7 +34,7 @@ function makeFakePool() {
 async function run() {
   console.log('\n[css-s3] conflict-resolver + sync-log.logConflict tests\n');
 
-  // T0 (Task 2 red/green step): sync-log.js's new logConflict() writes an INSERT with all 3 value columns
+  // T0: sync-log.js's logConflict() writes an INSERT with all 3 value columns
   await (async function T0() {
     const pool = makeFakePool();
     syncLog._setPoolForTesting(pool);
@@ -62,7 +63,67 @@ async function run() {
     assert('T0-has-resolved-value', call.params.indexOf('"resolved-result"') !== -1, 'expected resolved_value (JSON-encoded "resolved-result") present in params, distinct from pipeline_state_value -- catches a transposition bug the original duplicate-value fixture could not');
   })();
 
-  console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed (partial — Task 2 only; Task 3 appends more below)\n`);
+  // T1 (AC1): detectConflict flags a genuine conflict when both sides moved to DIFFERENT values
+  (function T1() {
+    const result = conflictResolver.detectConflict('test-plan', 'definition-of-ready', 'review');
+    assert('T1-flags-conflict', !!result, 'expected a truthy conflict object when both sides moved to different values since the last-synced marker');
+    assert('T1-pipeline-state-value', result && result.pipelineStateValue === 'definition-of-ready', 'expected conflict.pipelineStateValue to be the pipeline-state.json side');
+    assert('T1-journey-value', result && result.journeyValue === 'review', 'expected conflict.journeyValue to be the journey side');
+  })();
+
+  // T2 (AC4 negative control): only ONE side moved since last sync -> no conflict
+  (function T2() {
+    const result = conflictResolver.detectConflict('test-plan', 'definition-of-ready', 'test-plan');
+    assert('T2-no-conflict-single-sided', result === null, 'expected null when only the pipeline-state.json side moved and the journey side still matches the last-synced marker');
+  })();
+
+  // T2b: both sides moved but to the SAME value -> no conflict (genuine agreement, not a disagreement)
+  (function T2b() {
+    const result = conflictResolver.detectConflict('test-plan', 'review', 'review');
+    assert('T2b-no-conflict-same-value', result === null, 'expected null when both sides independently moved to the SAME value -- agreement, not a conflict');
+  })();
+
+  // T2c: neither side moved since last sync -> no conflict
+  (function T2c() {
+    const result = conflictResolver.detectConflict('test-plan', 'test-plan', 'test-plan');
+    assert('T2c-no-conflict-unchanged', result === null, 'expected null when neither side has moved since the last-synced marker');
+  })();
+
+  // T3 (AC2): resolveConflict always returns pipeline-state.json's value as the winner
+  await (async function T3() {
+    const pool = makeFakePool();
+    syncLog._setPoolForTesting(pool);
+    const resolved = await conflictResolver.resolveConflict('test-feature-slug', null, 'definition-of-ready', 'review');
+    assert('T3-resolves-to-pipeline-state-value', resolved === 'definition-of-ready', `expected the resolved value to be pipeline-state.json's own value "definition-of-ready", got "${resolved}"`);
+  })();
+
+  // T4 (AC3): resolveConflict logs both values and the winner
+  await (async function T4() {
+    const pool = makeFakePool();
+    syncLog._setPoolForTesting(pool);
+    await conflictResolver.resolveConflict('test-feature-slug-2', 'tenant-xyz', 'branch-complete', 'test-plan');
+
+    assert('T4-one-log-call', pool.calls.length === 1, `expected exactly 1 sync_log write, got ${pool.calls.length}`);
+    assert('T4-logs-feature-slug', pool.calls[0].params.indexOf('test-feature-slug-2') !== -1, 'expected feature_slug in logged params');
+    // logConflict JSON.stringify's each value (JSONB columns) -- check the
+    // params array directly for the JSON-encoded element, not a
+    // JSON.stringify(params) re-serialization (same fix as T0 above).
+    assert('T4-logs-both-values', pool.calls[0].params.indexOf('"branch-complete"') !== -1 && pool.calls[0].params.indexOf('"test-plan"') !== -1, 'expected both divergent values logged');
+    assert('T4-logs-timestamp-via-now', String(pool.calls[0].sql).indexOf('NOW()') !== -1, 'expected the INSERT to populate created_at via NOW()');
+  })();
+
+  // T5 (AC4): the conflict log has no entry for an ordinary single-sided sync -- i.e. resolveConflict is simply never called when detectConflict returns null
+  await (async function T5() {
+    const pool = makeFakePool();
+    syncLog._setPoolForTesting(pool);
+    const conflict = conflictResolver.detectConflict('test-plan', 'definition-of-ready', 'test-plan');
+    if (conflict) {
+      await conflictResolver.resolveConflict('should-not-run', null, conflict.pipelineStateValue, conflict.journeyValue);
+    }
+    assert('T5-no-log-entry-for-single-sided-sync', pool.calls.length === 0, `expected zero sync_log writes for an ordinary single-sided advance, got ${pool.calls.length}`);
+  })();
+
+  console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed\n`);
   if (issues.length > 0) {
     console.log(issues.join('\n'));
     console.log('');
