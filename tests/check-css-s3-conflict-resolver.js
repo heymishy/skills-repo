@@ -37,7 +37,13 @@ async function run() {
   await (async function T0() {
     const pool = makeFakePool();
     syncLog._setPoolForTesting(pool);
-    await syncLog.logConflict('test-feature-slug', 'tenant-abc', 'definition', 'review', 'definition');
+    // Three DISTINCT values (not pipelineStateValue === resolvedValue) so
+    // each param position is independently checked -- a transposition bug
+    // (e.g. writing pipelineStateValue into both the $4 and $6 slots
+    // instead of resolvedValue) would otherwise pass undetected, exactly
+    // the "proves presence, not correct wiring" weak-test shape CLAUDE.md's
+    // D37 rule warns about (tir-s1/tir-s5).
+    await syncLog.logConflict('test-feature-slug', 'tenant-abc', 'definition', 'review', 'resolved-result');
 
     assert('T0-one-call', pool.calls.length === 1, `expected exactly 1 query call, got ${pool.calls.length}`);
     const call = pool.calls[0];
@@ -51,8 +57,9 @@ async function run() {
     // '"definition"'). Check the params array directly for that exact
     // element -- do NOT JSON.stringify(call.params) first, which would
     // double-encode and escape the inner quotes, hiding the literal match.
-    assert('T0-has-pipeline-state-value', call.params.indexOf('"definition"') !== -1, 'expected pipeline_state_value/resolved_value (both JSON-encoded "definition") present in params');
+    assert('T0-has-pipeline-state-value', call.params.indexOf('"definition"') !== -1, 'expected pipeline_state_value (JSON-encoded "definition") present in params');
     assert('T0-has-journey-value', call.params.indexOf('"review"') !== -1, 'expected journey_value (JSON-encoded "review") present in params');
+    assert('T0-has-resolved-value', call.params.indexOf('"resolved-result"') !== -1, 'expected resolved_value (JSON-encoded "resolved-result") present in params, distinct from pipeline_state_value -- catches a transposition bug the original duplicate-value fixture could not');
   })();
 
   console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed (partial — Task 2 only; Task 3 appends more below)\n`);
