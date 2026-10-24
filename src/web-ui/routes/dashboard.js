@@ -273,6 +273,10 @@ async function handleDashboard(req, res) {
   }
   const journeyData = _deriveDashboardJourneyData(journeys, 5);
 
+  // dssc-s1 -- the "Run a skill" cards' forms need a real CSRF token or
+  // every submission is unconditionally rejected by csrfGuard (routes/skills.js).
+  const csrfToken = await csrf.generateCsrfToken(req);
+
   const bodyContent = renderDashboard({
     greetingName: login || 'there',
     dateLabel: dateLabel,
@@ -280,7 +284,8 @@ async function handleDashboard(req, res) {
     inProgressCount: journeyData.inProgressCount,
     skills: _DASHBOARD_SKILLS_CATALOG,
     actions: mapped.actions,
-    recent: journeyData.recent
+    recent: journeyData.recent,
+    csrfToken: csrfToken
   });
   const html = renderShell({
     title:       'Dashboard',
