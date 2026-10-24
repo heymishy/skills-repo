@@ -35,6 +35,7 @@ var { applyAdvance } = require('../../enforcement/cli-advance');
 // posthogServer.captureException on the shared require-cache singleton and
 // have this module's calls observe the replacement.
 var posthogServer = require('../modules/posthog-server');
+var conflictResolver = require('../../sync/conflict-resolver');
 
 var STATE_PATH = '.github/pipeline-state.json';
 var RETRY_DELAYS_MS = [150, 400]; // 3 total attempts: initial + 2 retries, per wsd-s2 decisions.md
@@ -45,7 +46,7 @@ var VALID_DOR_STATUS = ['not-started', 'in-progress', 'signed-off'];
 var VALID_HEALTH     = ['green', 'amber', 'red'];
 
 var FEATURE_LEVEL_KEYS = ['discoveryStatus', 'artefact', 'stage', 'health'];
-var STORY_LEVEL_KEYS   = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt'];
+var STORY_LEVEL_KEYS   = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt', 'lastSyncedStage'];
 
 function sleep(ms) {
   return new Promise(function(resolve) { setTimeout(resolve, ms); });
@@ -78,6 +79,21 @@ function guardPrototypePollution(stateUpdate) {
   }
 }
 
+/** Read-only story lookup -- flat feature.stories[] first, then epic-nested. Never creates. */
+function _findStoryReadOnly(feature, storyId) {
+  if (Array.isArray(feature.stories)) {
+    var flat = feature.stories.find(function(s) { return s.id === storyId || s.slug === storyId; });
+    if (flat) return flat;
+  }
+  var epics = feature.epics || [];
+  for (var ei = 0; ei < epics.length; ei++) {
+    var epicStories = epics[ei].stories || [];
+    var found = epicStories.find(function(s) { return s.id === storyId || s.slug === storyId; });
+    if (found) return found;
+  }
+  return null;
+}
+
 /**
  * Apply stateUpdate to an in-memory pipeline-state object: feature-level
  * fields mirror pipeline-state-writer.js's own featureLevelKeys.forEach()
@@ -85,7 +101,7 @@ function guardPrototypePollution(stateUpdate) {
  * which owns enum validation, epic-nested story lookup, and the
  * storyWasCreated visibility fix.
  */
-function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
+async function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
   if (!Array.isArray(state.features)) state.features = [];
   var feature = state.features.find(function(f) {
     return f.slug === featureSlug || f.id === featureSlug;
@@ -99,6 +115,26 @@ function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
   });
 
   if (storyId) {
+    // css-s3: conflict detection -- compare the CURRENT (freshly-fetched)
+    // pipeline-state.json stage value against stateUpdate's own incoming
+    // stage value, using lastSyncedStage as the "last agreed" marker. Only
+    // meaningful when stateUpdate actually carries a new stage value --
+    // other story-level fields (dorStatus, prStatus, prUrl) are untouched.
+    if (stateUpdate.stage !== undefined) {
+      var existingStory = _findStoryReadOnly(feature, storyId);
+      if (existingStory) {
+        var conflict = conflictResolver.detectConflict(existingStory.lastSyncedStage, existingStory.stage, stateUpdate.stage);
+        stateUpdate = Object.assign({}, stateUpdate);
+        if (conflict) {
+          var resolved = await conflictResolver.resolveConflict(featureSlug, null, conflict.pipelineStateValue, conflict.journeyValue);
+          delete stateUpdate.stage; // pipeline-state.json's own value wins -- do not apply the incoming stage
+          stateUpdate.lastSyncedStage = resolved;
+        } else {
+          stateUpdate.lastSyncedStage = stateUpdate.stage;
+        }
+      }
+    }
+
     var rawFields = [];
     STORY_LEVEL_KEYS.forEach(function(key) {
       if (stateUpdate[key] !== undefined) rawFields.push(key + '=' + stateUpdate[key]);
@@ -244,7 +280,7 @@ module.exports = function pipelineStateGithubWriterFactory() {
     while (attempt < 3) {
       try {
         var fetched = await fetchState(apiBase, owner, repo, authHeaders);
-        var mutatedState = applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate);
+        var mutatedState = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate);
         var newContent = JSON.stringify(mutatedState, null, 2) + '\n';
         await putState(
           apiBase, owner, repo, authHeaders, newContent, fetched.sha,
