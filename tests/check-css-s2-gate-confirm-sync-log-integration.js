@@ -133,7 +133,7 @@ queue.push(function() {
       var res = makeRes();
       await journey.handlePostGateConfirm(authReq({ params: { journeyId: setup.journeyId } }), res);
 
-      assert.notStrictEqual(res._status, 502, 'expected stage completion NOT to be blocked (no 502) by a pipeline-state write failure');
+      assert.ok(res._status === null || res._status < 400, 'stage completion must succeed even when the pipeline-state write fails, got status ' + res._status);
 
       var gapCall = fakePool.calls.find(function(c) {
         var sqlUpper = String(c.sql).replace(/\s+/g, ' ').trim().toUpperCase();
