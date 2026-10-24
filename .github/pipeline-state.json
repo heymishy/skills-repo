@@ -19695,9 +19695,9 @@
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-23T23:54:12.505Z",
+              "updatedAt": "2026-10-24T00:24:13.576Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md",
@@ -19759,7 +19759,9 @@
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1016"
             },
             {
               "slug": "css-s2",
