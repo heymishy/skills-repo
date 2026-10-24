@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-10-24-dashboard-skill-start-csrf/stories/dssc-s1-fix-missing-csrf-on-dashboard-skill-start-forms.md
 **Technical test plan:** artefacts/2026-10-24-dashboard-skill-start-csrf/test-plans/dssc-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude (session), with Hamish King | **Date:** 2026-10-24 | **Context:** [ ] Pre-code  [x] Post-merge  [ ] Demo
 
 ---
 
@@ -22,8 +22,8 @@
 **Expected outcome:**
 > The browser lands on a real skill session page — not a `403 Forbidden` plain-text response.
 
-**Result:** [ ] Pass [ ] Fail
-**Notes:** Pre-fix baseline (2026-10-24): 3/3 attempts produced `403 Forbidden`, confirmed via `fly logs` showing `csrf_guard_check` with `submittedPrefix: "(empty)"` against a correctly-generated `expectedPrefix` — this is the bug this story fixes. Not yet re-verified live against a real deploy (automated test coverage above confirms the mechanism directly: AC3's `skillStartForm_withCorrectCsrfToken_passesGuard` proves a correctly-rendered form passes the real, unmocked `csrfGuard`). Re-run this scenario live on `wuce-staging.fly.dev` once this story's PR is merged and deployed, before closing out `/definition-of-done`.
+**Result:** [x] Pass [ ] Fail
+**Notes:** Pre-fix baseline (2026-10-24): 3/3 attempts produced `403 Forbidden`, confirmed via `fly logs` showing `csrf_guard_check` with `submittedPrefix: "(empty)"` against a correctly-generated `expectedPrefix`. Post-fix live re-verification (2026-10-24, same day, after PR #1017 merged and deployed): signed in to `wuce-staging.fly.dev` via existing GitHub session, clicked "Start →" on the Discovery skill card on `/dashboard`. Browser navigated to a real skill session page (`/skills/discovery/sessions/a5b52fef-2052-42be-87d2-4d083b78a2a9/chat`) with context loaded (8 files) and an artefact draft rendering — no `403 Forbidden`. Fix confirmed working live.
 
 ---
 
@@ -38,8 +38,8 @@
 **Expected outcome:**
 > Every pre-existing test in these files still passes — the fix only adds a field, nothing existing broke.
 
-**Result:** [x] Pass
-**Notes:** All 7 files exit 0, 0 failures each (dashboard-wiring: all `ok`; product-dashboard-wiring: all `ok`; pending-actions-mapping: all `ok`; skills-nav-wiring: 20/20; html-shell: 42/42; skill-launcher-landing: 35/35; banner-exit-permission: 24/24).
+**Result:** [x] Pass [ ] Fail
+**Notes:** Confirmed via PR #1017 CI (`Lint, typecheck, test, build` check, SUCCESS) prior to merge — all pre-existing dashboard test files passed unchanged.
 
 ---
 
@@ -53,8 +53,8 @@
 **Expected outcome:**
 > 0 failures.
 
-**Result:** [x] Pass
-**Notes:** `784 file(s) run, 0 failed` (783 baseline + 1 new test file for this story).
+**Result:** [x] Pass [ ] Fail
+**Notes:** Confirmed via PR #1017 CI (`Lint, typecheck, test, build` check, SUCCESS) prior to merge. Post-merge staging deploy's `Staging smoke test (@mocked)` job initially failed with a `502` on an unrelated route (`/admin/credits`, `bri-s3.3`'s own pre-existing, previously-documented flake — confirmed unrelated: that route is untouched by this fix). Re-ran just that job (`gh run rerun 40063540546 --job 120782142364`) and it passed clean (run 40063540546, job 120783583033, SUCCESS), confirming the original failure was the known flake, not a regression.
 
 ---
 
@@ -62,11 +62,11 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 | | |
-| Scenario 2 | | |
-| Scenario 3 | | |
+| Scenario 1 | Pass | Live-verified on staging post-deploy: "Start →" reaches a real skill session, no 403 |
+| Scenario 2 | Pass | PR #1017 CI, pre-existing dashboard tests unchanged |
+| Scenario 3 | Pass | PR #1017 CI full suite; post-merge smoke-test flake re-run confirmed unrelated |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---

@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-08-07-cross-surface-state-sync/stories/css-s1-cli-advance-reflects-on-web-ui-journey.md
 **Technical test plan:** artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude (session), with Hamish King | **Date:** 2026-10-24 | **Context:** [ ] Pre-code  [x] Post-merge  [ ] Demo
 
 ---
 
@@ -33,12 +33,8 @@
 **Expected outcome:**
 > The web-UI journey already shows the Discovery stage as complete — you did not need to click any "Sync" button on the dashboard to see it.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
-
----
-
-### Scenario 2: A feature with no connected journey advances normally
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Live-verified post-merge on `wuce-staging` (2026-10-24): generated a throwaway `INTERNAL_SYNC_SECRET`, had the operator set it via `flyctl secrets set` directly (never entered by the agent). Called `gateAdvance()` directly (not via `bin/skills`, which hardcodes its own repo root and rejects an external `repoRoot` via its path-traversal guard) against a real throwaway feature/journey pair. Confirmed a real HTTP round-trip to the deployed internal endpoint — timing (337ms resolve + 50ms update) matched real network latency, explicitly distinguishing this from a stale/cached false-positive. Also visually confirmed in Chrome. This directly exercises the AC1 synchronous-update mechanism end-to-end against real staging infrastructure (all 17 automated tests use a mocked HTTP client/Postgres — this was the first real-network proof).
 
 **Covers:** AC2
 
@@ -124,15 +120,17 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 | | |
-| Scenario 2 | | |
-| Scenario 3 | | |
-| Scenario 4 | | |
-| Scenario 5 | | |
-| Edge case | | |
+| Scenario 1 | Pass | Live-verified post-merge on staging, real HTTP round-trip, 2026-10-24 |
+| Scenario 2 | Not manually run | Covered by 2 automated tests (unit + integration, mocked HTTP client) |
+| Scenario 3 | Not manually run | Covered by 1 automated test (unit, mocked) |
+| Scenario 4 | Not manually run | Covered by 2 automated tests (unit, mocked); not separately exercised live against the deployed endpoint with a wrong credential |
+| Scenario 5 | Not manually run | Covered by 1 automated test (unit, mocked) |
+| Edge case | Not manually run | Covered by 1 automated test (unit, mocked) |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
+
+**Note:** "All pass" reflects Scenario 1's live verification plus all 17 automated tests (covering AC1-AC6, including Scenarios 2-5 and the edge case) passing in CI pre-merge. Scenarios 2-5 and the edge case were not independently re-run manually post-merge — their only evidence is `unit`/`integration-real-code` (mocked HTTP/Postgres), not `live-verified`. This is recorded explicitly in the DoD artefact's AC Coverage table rather than overclaimed here.
 
 ---
 

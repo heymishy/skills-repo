@@ -19664,8 +19664,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "css-s1 (walking-skeleton proof for this gate type/direction) merged and DoD-complete 2026-10-24; m1 remains not-yet-measured since meaningful agreement-rate measurement requires css-s2/css-s3/css-s4 to also be built and real multi-surface usage to occur over time.",
+          "contributingStories": [
+            "css-s1"
+          ]
         },
         {
           "id": "m2",
@@ -19674,7 +19676,7 @@
           "baseline": "N/A - no conflict-resolution mechanism exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "No conflict-resolution mechanism exists yet -- that is css-s3 scope, not yet dispatched. css-s1 does not contribute to m2.",
           "contributingStories": []
         }
       ],
@@ -19695,9 +19697,9 @@
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-10-24T00:24:13.576Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-10-24T06:45:15.235Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md",
@@ -19760,8 +19762,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1016"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1016",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC3 scope reinterpretation (repo-identity comparison vs DoR literal wording) -- pre-accepted in decisions.md, not a gap"
             },
             {
               "slug": "css-s2",
@@ -43142,12 +43147,12 @@
     {
       "slug": "2026-10-24-dashboard-skill-start-csrf",
       "name": "Fix missing CSRF token on dashboard 'Run a skill' start forms (403 Forbidden on every click)",
-      "stage": "discovery",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "dssc-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-24-dashboard-skill-start-csrf/dor/dssc-s1-dor.md",
           "testPlan": {
@@ -43155,14 +43160,16 @@
             "totalTests": 5,
             "passing": 5
           },
-          "updatedAt": "2026-10-24T04:11:42.060Z",
+          "updatedAt": "2026-10-24T06:44:57.884Z",
           "health": "green",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1017"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1017",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-10-24T03:48:57.779Z",
+      "updatedAt": "2026-10-24T06:44:57.883Z",
       "track": "short"
     }
   ],
