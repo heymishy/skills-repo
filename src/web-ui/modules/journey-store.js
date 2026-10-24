@@ -367,17 +367,22 @@ function getNextStage(currentStage) {
 /**
  * css-s3 (Task 7, Critical review finding): true only when `stage` is one
  * of the 8 outer-loop stage names this journey model actually represents
- * (STAGE_SEQUENCE). pipeline-state.json's own `stage` schema enum is far
- * broader (~21 values spanning inner-loop gate names like `branch-complete`,
- * `infra-plan`, `schema-migration-review`, and other-track stages) -- a
- * cross-surface conflict resolved to one of THOSE values cannot be
- * meaningfully reassigned onto a journey's own session.skillName, since
- * getNextStage() would silently return null (treated as "journey complete")
- * and infra-plan/schema-migration-review's own trace-emission guards would
- * fire using fields (session.infraPlanPath/session.migrationReviewPath)
- * this session never actually populated. Distinguishes "not in the
- * sequence at all" from getNextStage()'s own, different null meaning
- * ("last stage in the sequence, nothing comes after").
+ * (STAGE_SEQUENCE). pipeline-state.json's own feature-level `stage` schema
+ * enum is far broader (23 values spanning inner-loop gate names like
+ * `branch-complete` and other-track stages); the story-level `stage` field
+ * this conflict path actually writes has no enum constraint at all, so the
+ * real value space is wider still -- `infra-plan`/`schema-migration-review`
+ * are free-form session.skillName literals used elsewhere in journey.js's
+ * own trace-emission guards, not schema-enum members (correction, 2026-10-25
+ * review). A cross-surface conflict resolved to a value outside
+ * STAGE_SEQUENCE cannot be meaningfully reassigned onto a journey's own
+ * session.skillName, since getNextStage() would silently return null
+ * (treated as "journey complete") and infra-plan/schema-migration-review's
+ * own trace-emission guards would fire using fields
+ * (session.infraPlanPath/session.migrationReviewPath) this session never
+ * actually populated. Distinguishes "not in the sequence at all" from
+ * getNextStage()'s own, different null meaning ("last stage in the
+ * sequence, nothing comes after").
  * @param {string} stage
  * @returns {boolean}
  */

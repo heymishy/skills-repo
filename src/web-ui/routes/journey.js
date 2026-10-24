@@ -2828,14 +2828,21 @@ async function handlePostGateConfirm(req, res) {
     //
     // Critical fix (found at this task's own independent review): the
     // resolved value is NOT guaranteed to be one of the 8 outer-loop stage
-    // names the web journey's own STAGE_SEQUENCE models -- pipeline-state.
-    // json's own `stage` schema enum is far broader (~21 values, spanning
-    // inner-loop gates like `branch-complete`/`infra-plan`/
-    // `schema-migration-review` and other tracks). Reassigning
-    // session.skillName to an unmodeled value would make getNextStage()
-    // silently return null (treated as "journey complete" -- a false
-    // completion) or, for infra-plan/schema-migration-review specifically,
-    // fire THOSE trace-emission guards using session fields
+    // names the web journey's own STAGE_SEQUENCE models. pipeline-state.
+    // json's feature-level `stage` schema enum is far broader (23 values,
+    // confirmed via .github/pipeline-state.schema.json), and the STORY-
+    // level `stage` field (the one this actual conflict path writes) has
+    // no enum constraint at all -- "infra-plan"/"schema-migration-review"
+    // below are free-form session.skillName literals used elsewhere in
+    // this same file's own trace-emission guards, not schema-enum members
+    // (correction, 2026-10-25 review: an earlier version of this comment
+    // mischaracterised them as such) -- making the real value space even
+    // LESS constrained than a fixed enum would be, if anything reinforcing
+    // why this guard is needed. Reassigning session.skillName to an
+    // unmodeled value would make getNextStage() silently return null
+    // (treated as "journey complete" -- a false completion) or, for
+    // infra-plan/schema-migration-review specifically, fire THOSE
+    // trace-emission guards using session fields
     // (infraPlanPath/migrationReviewPath) this session never populated,
     // fabricating an audit trace record for a sign-off that never
     // happened in this request. Only reassign when the resolved value is
