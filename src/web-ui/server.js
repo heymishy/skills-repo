@@ -1243,6 +1243,17 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[css-s2] sync_log migration failed:', err.message);
     });
 
+    // css-s4: sync_log.resolved_at -- tracks whether a logged reconciliation
+    // gap (entry_type='gap') has since been resolved by the reconciliation
+    // safety net (src/sync/reconciliation.js). NULL = still open. Conflict
+    // entries (entry_type='conflict') never use this column -- they are
+    // already-final audit records, not open items awaiting resolution.
+    _creditsPool.query(`ALTER TABLE sync_log ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`).then(function() {
+      console.log('[css-s4] sync_log.resolved_at column ready');
+    }).catch(function(err) {
+      console.error('[css-s4] sync_log.resolved_at migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');
