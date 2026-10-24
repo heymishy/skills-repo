@@ -43138,6 +43138,29 @@
         }
       ],
       "traceStatus": "passed"
+    },
+    {
+      "slug": "2026-10-24-dashboard-skill-start-csrf",
+      "name": "Fix missing CSRF token on dashboard 'Run a skill' start forms (403 Forbidden on every click)",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "dssc-s1",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-24-dashboard-skill-start-csrf/dor/dssc-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "updatedAt": "2026-10-24T03:48:47.831Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-10-24T03:48:57.779Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
