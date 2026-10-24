@@ -792,6 +792,8 @@ to:
         var mutatedState = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate);
 ```
 
+**Post-implementation fix (Critical, found at Task 4's own code-quality review):** the code above, exactly as specified, re-logs the SAME conflict once per attempt of the writer's own pre-existing 409-retry loop (an unrelated Contents-API optimistic-concurrency mechanism) -- a failed PUT persists nothing, so a retry re-observes identical state and re-detects the identical logical conflict, writing duplicate `sync_log` rows. Fixed by threading a `conflictLogState = { logged: false }` object (declared once, before the `while (attempt < 3)` loop, in the outer `pipelineStateGithubWriter` function) as a 5th parameter into `applyStateUpdate`, and gating the `resolveConflict` (logging) call on `!conflictLogState.logged` -- resolution itself (always `pipelineStateValue`) still runs on every attempt, only the logging is deduped. See the actual committed code in `src/web-ui/adapters/pipeline-state-github-writer.js` for the final, corrected version -- the block above reflects what was originally specified, not what shipped. A new test (`T3` in `tests/check-css-s3-pipeline-state-conflict-wiring.js`) proves exactly 1 `sync_log` conflict entry is written across a 2-attempt 409-retry sequence.
+
 - [ ] **Step 4: Run test — must pass**
 
 ```bash

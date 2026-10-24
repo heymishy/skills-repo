@@ -183,6 +183,77 @@ async function run() {
     }
   })();
 
+  // T3 (Critical finding, code-quality review): a genuine conflict detected
+  // during a 409-retry sequence logs exactly ONE sync_log conflict entry,
+  // not one per retry attempt. The writer's own, pre-existing 409-retry
+  // loop (an unrelated Contents-API optimistic-concurrency mechanism) is
+  // independent of css-s3's cross-surface conflict concept -- a failed PUT
+  // persists nothing, so a retry re-observes the SAME on-disk state and
+  // would re-detect the SAME logical conflict without the dedup fix.
+  await (async function T3() {
+    const fakePool = { calls: [], query: async function(sql, params) { this.calls.push({ sql, params }); return { rows: [] }; } };
+    syncLog._setPoolForTesting(fakePool);
+
+    const state = {
+      schemaVersion: '1',
+      features: [
+        { slug: 'test-feat-3', id: 'test-feat-3', updatedAt: 'T0', stories: [
+          { id: 's1', slug: 's1', stage: 'definition-of-ready', lastSyncedStage: 'test-plan', updatedAt: 'T0' },
+        ] },
+      ],
+    };
+
+    let getCount = 0;
+    let putCount = 0;
+    const putBodies = [];
+    const mock = installFetchMock([
+      userHandler(),
+      (url, opts) => {
+        if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
+          getCount++;
+          return jsonResponse(200, { sha: 'sha-same-' + getCount });
+        }
+        return null;
+      },
+      (url) => {
+        if (/\/git\/blobs\//.test(url)) {
+          // Same conflicting state returned on every GET -- a failed PUT
+          // (409) never persisted anything, so the retry genuinely
+          // re-observes identical data, matching the real bug scenario.
+          return jsonResponse(200, { content: b64(state), encoding: 'base64' });
+        }
+        return null;
+      },
+      (url, opts) => {
+        if (/\/contents\//.test(url) && opts && opts.method === 'PUT') {
+          putCount++;
+          putBodies.push(JSON.parse(opts.body));
+          if (putCount === 1) return jsonResponse(409, {}); // unrelated concurrency conflict -- triggers the existing retry loop
+          return jsonResponse(200, {});
+        }
+        return null;
+      },
+    ]);
+
+    try {
+      const writer = pipelineStateGithubWriterFactory();
+      await writer('test-feat-3', 's1', { stage: 'review' }, { token: 'tok', owner: 'acme', repo: 'proj' });
+
+      assert('T3-two-puts', putCount === 2, `expected 2 PUT attempts (1 failed with 409, 1 retried), got ${putCount}`);
+
+      const conflictCalls = fakePool.calls.filter(function(c) {
+        return String(c.sql).toUpperCase().indexOf('SYNC_LOG') !== -1 && c.params.indexOf('conflict') !== -1;
+      });
+      assert('T3-exactly-one-conflict-logged', conflictCalls.length === 1, `expected exactly 1 sync_log conflict entry despite 2 retry attempts re-detecting the same logical conflict, got ${conflictCalls.length}`);
+
+      const decoded = JSON.parse(Buffer.from(putBodies[1].content, 'base64').toString('utf8'));
+      const story = decoded.features[0].stories[0];
+      assert('T3-pipeline-state-value-still-wins', story.stage === 'definition-of-ready', `expected pipeline-state.json's own stage to still win on the retried attempt, got "${story.stage}"`);
+    } finally {
+      mock.restore();
+    }
+  })();
+
   console.log(`[css-s3] ${totalPassed} passed, ${totalFailed} failed\n`);
   if (issues.length > 0) {
     console.log(issues.join('\n'));

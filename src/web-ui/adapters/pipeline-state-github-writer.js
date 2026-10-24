@@ -101,7 +101,7 @@ function _findStoryReadOnly(feature, storyId) {
  * which owns enum validation, epic-nested story lookup, and the
  * storyWasCreated visibility fix.
  */
-async function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
+async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, conflictLogState) {
   if (!Array.isArray(state.features)) state.features = [];
   var feature = state.features.find(function(f) {
     return f.slug === featureSlug || f.id === featureSlug;
@@ -126,7 +126,26 @@ async function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
         var conflict = conflictResolver.detectConflict(existingStory.lastSyncedStage, existingStory.stage, stateUpdate.stage);
         stateUpdate = Object.assign({}, stateUpdate);
         if (conflict) {
-          var resolved = await conflictResolver.resolveConflict(featureSlug, null, conflict.pipelineStateValue, conflict.journeyValue);
+          // css-s3 (Critical, found at code-quality review): this function
+          // is re-run on every attempt of the writer's own, PRE-EXISTING
+          // 409-retry loop (an unrelated Contents-API optimistic-concurrency
+          // mechanism -- someone else wrote to pipeline-state.json between
+          // our GET and PUT). A failed PUT persists nothing, so a retry
+          // re-observes the SAME on-disk state and would re-detect the
+          // SAME logical cross-surface conflict. Resolving again (always
+          // pipelineStateValue) is safe/idempotent, but logConflict's own
+          // sync_log INSERT is NOT idempotent -- without this guard, one
+          // logical conflict produces up to 3 duplicate sync_log rows
+          // under 409 pressure, corrupting the audit trail this feature's
+          // own benefit-metric depends on. conflictLogState is a plain
+          // object shared across all retry attempts of ONE writer call
+          // (declared once before that call's while loop) -- log exactly
+          // once per logical conflict per call, resolve on every attempt.
+          var resolved = conflict.pipelineStateValue;
+          if (!conflictLogState || !conflictLogState.logged) {
+            resolved = await conflictResolver.resolveConflict(featureSlug, null, conflict.pipelineStateValue, conflict.journeyValue);
+            if (conflictLogState) conflictLogState.logged = true;
+          }
           delete stateUpdate.stage; // pipeline-state.json's own value wins -- do not apply the incoming stage
           stateUpdate.lastSyncedStage = resolved;
         } else {
@@ -277,10 +296,15 @@ module.exports = function pipelineStateGithubWriterFactory() {
 
     var attempt = 0;
     var lastErr = null;
+    // css-s3: shared across every attempt of THIS writer call's own
+    // 409-retry loop -- dedupes conflict logging (see applyStateUpdate's
+    // own comment) without affecting conflict resolution, which is safe to
+    // repeat on every attempt.
+    var conflictLogState = { logged: false };
     while (attempt < 3) {
       try {
         var fetched = await fetchState(apiBase, owner, repo, authHeaders);
-        var mutatedState = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate);
+        var mutatedState = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate, conflictLogState);
         var newContent = JSON.stringify(mutatedState, null, 2) + '\n';
         await putState(
           apiBase, owner, repo, authHeaders, newContent, fetched.sha,
