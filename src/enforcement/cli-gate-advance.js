@@ -3,10 +3,11 @@
 // validate() passes. Implements AC1–AC3 of cdg.7.
 'use strict';
 
+var fs = require('fs');
+var path = require('path');
 var { validate } = require('./cli-outer-loop');
-var { advance }  = require('./cli-advance');
+var { advance, findStory } = require('./cli-advance');
 var journeySyncClient = require('../sync/journey-sync-client');
-var GATE_MAP = require('./gate-map');
 
 // css-s1 (D37 rule 3): wiring the real HTTP transport is kept separate from
 // the sync business logic in journey-sync-client.js and from gateAdvance()'s
@@ -61,17 +62,16 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
   // error, no journey connected, env not configured) never changes
   // gateAdvance's own exit code -- the pipeline-state advance above already
   // succeeded or failed on its own terms.
-  if (advanceResult.exitCode === 0 && GATE_MAP[gateName]) {
+  if (advanceResult.exitCode === 0 && journeySyncClient.GATE_TO_JOURNEY_STAGE[gateName]) {
     try {
       var journey = await journeySyncClient.resolveJourneyForFeatureSlug(featureSlug);
       if (journey) {
         // css-s4: read this story's own locally-accumulated lastSyncedStage
         // for this story, to pass into syncGateAdvanceToJourney's own new
         // conflict-detection logic.
-        var _localState = JSON.parse(require('fs').readFileSync(require('path').join(repoRoot, '.github', 'pipeline-state.json'), 'utf8'));
+        var _localState = JSON.parse(fs.readFileSync(path.join(repoRoot, '.github', 'pipeline-state.json'), 'utf8'));
         var _localFeature = (_localState.features || []).find(function(f) { return f.slug === featureSlug || f.id === featureSlug; });
-        var _localStory = _localFeature && ((_localFeature.stories || []).find(function(s) { return s.id === storyId || s.slug === storyId; }) ||
-          (_localFeature.epics || []).reduce(function(found, epic) { return found || (epic.stories || []).find(function(s) { return s.id === storyId || s.slug === storyId; }); }, null));
+        var _localStory = _localFeature && findStory(_localFeature, storyId);
         var _lastSyncedStage = _localStory ? _localStory.lastSyncedStage : null;
         var _synced = await journeySyncClient.syncGateAdvanceToJourney(journey, gateName, _lastSyncedStage);
         // css-s3: keep the shared "last synced" marker current from the CLI
