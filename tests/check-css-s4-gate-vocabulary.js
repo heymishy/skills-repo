@@ -82,8 +82,9 @@ async function run() {
     const journeySyncClient = freshRequireJourneySyncClient();
     let transportCalled = false;
     journeySyncClient.setJourneySyncClient(async function() { transportCalled = true; return { updated: true }; });
-    await journeySyncClient.syncGateAdvanceToJourney({ journeyId: 'j1', featureSlug: 'f1', repoOwner: null, repoName: null, currentStage: null }, 'branch-complete');
+    const t5Result = await journeySyncClient.syncGateAdvanceToJourney({ journeyId: 'j1', featureSlug: 'f1', repoOwner: null, repoName: null, currentStage: null }, 'branch-complete');
     assert('T5-no-op-for-unrepresentable-gate', transportCalled === false, 'expected NO transport call for a gate with no journey-side representation');
+    assert('T5-returns-false-for-noop', t5Result === false, `expected syncGateAdvanceToJourney to return false for an unrepresentable gate no-op, got ${t5Result}`);
   })();
 
   // T6 (AC1): syncGateAdvanceToJourney works for a journey-representable gate, no conflict
@@ -94,9 +95,10 @@ async function run() {
       if (op === 'update') { updateCall = payload; return { updated: true }; }
       return null;
     });
-    await journeySyncClient.syncGateAdvanceToJourney({ journeyId: 'j1', featureSlug: 'f1', repoOwner: null, repoName: null, currentStage: 'discovery' }, 'benefit-metric-active');
+    const t6Result = await journeySyncClient.syncGateAdvanceToJourney({ journeyId: 'j1', featureSlug: 'f1', repoOwner: null, repoName: null, currentStage: 'discovery' }, 'benefit-metric-active');
     assert('T6-syncs-representable-gate', !!updateCall, 'expected an update transport call for a journey-representable gate');
     assert('T6-correct-stage-pushed', updateCall && updateCall.stage === 'benefit-metric', `expected stage 'benefit-metric' pushed, got "${updateCall && updateCall.stage}"`);
+    assert('T6-returns-true-on-success', t6Result === true, `expected syncGateAdvanceToJourney to return true for a successful push, got ${t6Result}`);
   })();
 
   // T7 (AC1, real conflict detection -- the NEW capability this story adds to css-s1's own direction): journey's own current stage conflicts with the gate being synced
@@ -112,7 +114,7 @@ async function run() {
     // marker, read from pipeline-state.json by the CALLER, not this
     // function) and 'definition' (the gate now being synced). Both sides
     // moved since last sync, to different values: a genuine conflict.
-    await journeySyncClient.syncGateAdvanceToJourney(
+    const t7Result = await journeySyncClient.syncGateAdvanceToJourney(
       { journeyId: 'j1', featureSlug: 'f1', repoOwner: null, repoName: null, currentStage: 'review' },
       'definition-complete',
       'discovery' // lastSyncedStage, passed by the caller (cli-gate-advance.js reads this from local pipeline-state.json)
@@ -121,6 +123,7 @@ async function run() {
     assert('T7-no-push-on-conflict', transportCalled === false, 'expected NO update transport call when a genuine conflict is detected -- pushing would silently overwrite the journey\'s own more-recent, disagreeing progress');
     const conflictCall = fakePool.calls.find(function(c) { return String(c.sql).toUpperCase().indexOf('SYNC_LOG') !== -1 && c.params.indexOf('conflict') !== -1; });
     assert('T7-conflict-logged', !!conflictCall, 'expected a sync_log conflict entry');
+    assert('T7-returns-false-on-conflict', t7Result === false, `expected syncGateAdvanceToJourney to return false when a conflict is detected (so the caller does not falsely advance lastSyncedStage), got ${t7Result}`);
   })();
 
   console.log(`[css-s4] ${totalPassed} passed, ${totalFailed} failed\n`);

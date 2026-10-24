@@ -101,12 +101,12 @@ async function resolveJourneyForFeatureSlug(featureSlug) {
  * @param {{journeyId:string, featureSlug:string, repoOwner:string|null, repoName:string|null, currentStage:string|null}} journey
  * @param {string} gate
  * @param {string|null} [lastSyncedStage] - read by the caller from local pipeline-state.json
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} true if the push to the journey actually happened, false otherwise (including on conflict/no-op/mismatch)
  */
 async function syncGateAdvanceToJourney(journey, gate, lastSyncedStage) {
   var targetStage = GATE_TO_JOURNEY_STAGE[gate];
-  if (targetStage === undefined) return; // unknown gate name -- defensive, should never happen given gate-map.js's own enum
-  if (targetStage === null) return; // css-s4: no journey-side representation for this gate -- safe no-op
+  if (targetStage === undefined) return false; // unknown gate name -- defensive, should never happen given gate-map.js's own enum
+  if (targetStage === null) return false; // css-s4: no journey-side representation for this gate -- safe no-op
 
   var ownRepoOwner = process.env.GITHUB_REPO_OWNER || null;
   var ownRepoName = process.env.GITHUB_REPO_NAME || null;
@@ -119,7 +119,7 @@ async function syncGateAdvanceToJourney(journey, gate, lastSyncedStage) {
       journeyId: journey.journeyId,
       reason: 'journey repo does not match this CLI\'s own repo identity'
     });
-    return;
+    return false;
   }
 
   // css-s4: real conflict detection, reusing css-s3's own mechanism. A
@@ -142,7 +142,7 @@ async function syncGateAdvanceToJourney(journey, gate, lastSyncedStage) {
       pipelineStateValue: targetStage,
       journeyValue: journey.currentStage
     });
-    return;
+    return false;
   }
 
   var transport = getJourneySyncClient();
@@ -152,6 +152,7 @@ async function syncGateAdvanceToJourney(journey, gate, lastSyncedStage) {
     stage: targetStage
   });
   _logger.info('journey-sync-success', { featureSlug: journey.featureSlug, journeyId: journey.journeyId });
+  return true;
 }
 
 /**

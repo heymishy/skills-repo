@@ -73,7 +73,7 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
         var _localStory = _localFeature && ((_localFeature.stories || []).find(function(s) { return s.id === storyId || s.slug === storyId; }) ||
           (_localFeature.epics || []).reduce(function(found, epic) { return found || (epic.stories || []).find(function(s) { return s.id === storyId || s.slug === storyId; }); }, null));
         var _lastSyncedStage = _localStory ? _localStory.lastSyncedStage : null;
-        await journeySyncClient.syncGateAdvanceToJourney(journey, gateName, _lastSyncedStage);
+        var _synced = await journeySyncClient.syncGateAdvanceToJourney(journey, gateName, _lastSyncedStage);
         // css-s3: keep the shared "last synced" marker current from the CLI
         // side too, after a successful sync. Bookkeeping only -- no real
         // conflict-branch call here; this direction's real call site cannot
@@ -89,9 +89,16 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
         // journey-representable gates -- a null-mapped (inner-loop) gate
         // has no journey-side stage to mark as synced, and recording one
         // anyway would stamp a false "last synced" value nothing actually
-        // pushed.
+        // pushed. Also gated on _synced === true: syncGateAdvanceToJourney
+        // now returns false whenever it detected a genuine conflict and
+        // skipped the push (in addition to the no-op/mismatch cases) -- the
+        // marker must only advance when the push genuinely happened, not
+        // merely attempted, otherwise a resolved-to-conflict case would
+        // silently mask an unresolved disagreement by falsely advancing the
+        // marker past the point where the journey and pipeline-state.json
+        // actually agreed.
         var _syncedTargetStage = journeySyncClient.GATE_TO_JOURNEY_STAGE[gateName];
-        if (_syncedTargetStage) {
+        if (_syncedTargetStage && _synced) {
           try {
             advance(featureSlug, storyId, ['lastSyncedStage=' + _syncedTargetStage], repoRoot);
           } catch (markerErr) {
