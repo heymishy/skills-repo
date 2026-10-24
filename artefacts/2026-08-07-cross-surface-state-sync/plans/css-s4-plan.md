@@ -32,18 +32,20 @@ Modify:
 
 ---
 
-## Task 1: `sync_log.resolved_at` column migration
+## Task 1: `sync_log.resolved_at` column migration ✅ DONE (commits `64dfa93c`, `0f41d421`)
 
 **Files:**
 - Modify: `src/web-ui/server.js`
 
 No dedicated test — matches this file's own established no-test convention for incremental `ALTER TABLE ADD COLUMN` migrations (the `product_rollups` table's own `health_counts`/`test_coverage`/`ac_coverage`/`taxonomy` precedents, none of which have a dedicated migration test either).
 
-- [ ] **Step 1: Locate the insertion point**
+> **Build-time correction (code-quality review):** the ALTER TABLE must be chained inside the `sync_log` CREATE TABLE's own `.then()` (not fired as an independent query) — same race-condition fix pattern as the `a1`/`product_modules` → `journeys.module_id` migration elsewhere in this file. Fixed in commit `0f41d421`, re-reviewed and approved.
+
+- [x] **Step 1: Locate the insertion point**
 
 Find the `sync_log` migration block (search for `CREATE TABLE IF NOT EXISTS sync_log`). Insert the new migration immediately after its own `.then()/.catch()` block.
 
-- [ ] **Step 2: Add the migration**
+- [x] **Step 2: Add the migration**
 
 ```javascript
 // css-s4: sync_log.resolved_at -- tracks whether a logged reconciliation
@@ -58,7 +60,7 @@ _creditsPool.query(`ALTER TABLE sync_log ADD COLUMN IF NOT EXISTS resolved_at TI
 });
 ```
 
-- [ ] **Step 3: Validate and run full suite**
+- [x] **Step 3: Validate and run full suite**
 
 ```bash
 node -e "require('./src/web-ui/server.js')" 2>&1 | head -5
@@ -68,7 +70,7 @@ node scripts/run-all-tests.js
 
 Expected: no `SyntaxError`; one grep match; all tests passing (baseline 792, confirmed at `/branch-setup`).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/web-ui/server.js
@@ -77,13 +79,15 @@ git commit -m "feat(css-s4): add sync_log.resolved_at column migration"
 
 ---
 
-## Task 2: `getLatestKnownStage()` + `handleJourneySyncResolve` extension
+## Task 2: `getLatestKnownStage()` + `handleJourneySyncResolve` extension ✅ DONE (commit `d0da45c7`)
+
+> **Code-quality review note (Minor, non-blocking):** no test combines a known + unrepresentable stage in one `completedStages` array (safe by construction, confirmed by reviewer); committed `internal-sync.js` comment is shorter than this plan's drafted version and drops the `decisions.md` cross-reference. Neither required a fix.
 
 **Files:**
 - Modify: `src/web-ui/modules/journey-store.js`, `src/web-ui/routes/internal-sync.js`
 - Test: `tests/check-css-s4-gate-vocabulary.js` (Step 1 only — this task's own red/green portion; Task 4 appends the rest)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```javascript
 #!/usr/bin/env node
@@ -140,7 +144,7 @@ async function run() {
 run();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-css-s4-gate-vocabulary.js
@@ -148,7 +152,7 @@ node tests/check-css-s4-gate-vocabulary.js
 
 Expected: `TypeError: journeyStore.getLatestKnownStage is not a function`.
 
-- [ ] **Step 3: Add `getLatestKnownStage` to `journey-store.js`**
+- [x] **Step 3: Add `getLatestKnownStage` to `journey-store.js`**
 
 Add immediately after the existing `isKnownStage` function (added in css-s3's Task 7):
 
@@ -222,7 +226,7 @@ with:
 }
 ```
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-css-s4-gate-vocabulary.js
@@ -230,15 +234,15 @@ node tests/check-css-s4-gate-vocabulary.js
 
 Expected: `[css-s4] 6 passed, 0 failed (partial -- Task 2 only; Task 4 appends more below)`.
 
-- [ ] **Step 6: Run full suite**
+- [x] **Step 6: Run full suite**
 
 ```bash
 node scripts/run-all-tests.js
 ```
 
-Expected: all tests passing, including `tests/check-css-s1-journey-sync-client.js`, `tests/check-css-s1-journey-sync-wiring.js` (confirm `handleJourneySyncResolve`'s response shape change is purely additive — the new `currentStage` field must not break any existing test that destructures or asserts on the `journey` object's own shape).
+Expected: all tests passing, including `tests/check-css-s1-journey-sync-client.js`, `tests/check-css-s1-journey-sync-wiring.js` (confirm `handleJourneySyncResolve`'s response shape change is purely additive — the new `currentStage` field must not break any existing test that destructures or asserts on the `journey` object's own shape). Actual result: 793/793.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/web-ui/modules/journey-store.js src/web-ui/routes/internal-sync.js tests/check-css-s4-gate-vocabulary.js

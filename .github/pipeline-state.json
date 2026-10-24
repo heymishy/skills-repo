@@ -19895,9 +19895,9 @@
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-10-24T20:59:06.852Z",
+              "updatedAt": "2026-10-25T00:00:00.000Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md",
@@ -19919,13 +19919,13 @@
                 {
                   "id": "task-1",
                   "name": "sync_log.resolved_at column migration (server.js)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "getLatestKnownStage() + handleJourneySyncResolve extension (AC1 prep)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 },
                 {
