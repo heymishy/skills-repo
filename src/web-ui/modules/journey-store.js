@@ -391,6 +391,30 @@ function isKnownStage(stage) {
 }
 
 /**
+ * css-s4: finds the highest-index STAGE_SEQUENCE member present in a
+ * journey's own completedStages array -- the journey's own "current
+ * representable stage" for cross-surface conflict comparison purposes.
+ * Order-independent (scans the whole array, not just the last entry) --
+ * completedStages' own array order is insertion order, not guaranteed to
+ * track STAGE_SEQUENCE order (e.g. a regression/reopen could insert an
+ * earlier stage's entry after a later one). Ignores any completedStages
+ * entry whose skillName is outside STAGE_SEQUENCE entirely (e.g. an
+ * inner-loop gate name) rather than throwing or false-matching.
+ * @param {{completedStages?: Array<{skillName: string}>}|null} journey
+ * @returns {string|null}
+ */
+function getLatestKnownStage(journey) {
+  if (!journey || !Array.isArray(journey.completedStages)) return null;
+  var latestIdx = -1;
+  var latestStage = null;
+  journey.completedStages.forEach(function(cs) {
+    var idx = STAGE_SEQUENCE.indexOf(cs && cs.skillName);
+    if (idx > latestIdx) { latestIdx = idx; latestStage = cs.skillName; }
+  });
+  return latestStage;
+}
+
+/**
  * res-s4: every stage after currentStage in STAGE_SEQUENCE — the single
  * ordering source, reused rather than a second hardcoded list (named
  * anti-pattern, previously caught in dtra-s1/dspw-s1).
@@ -658,6 +682,7 @@ module.exports = {
   updateCompletedStageSessionId,
   getNextStage,
   isKnownStage,
+  getLatestKnownStage,
   getDownstreamStages,
   isStrictlyLaterStage,
   regressToStage,

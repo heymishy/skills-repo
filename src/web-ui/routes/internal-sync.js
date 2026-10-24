@@ -86,6 +86,11 @@ async function handleJourneySyncResolve(req, res) {
     }
   }
 
+  // css-s4: the journey's own highest-known STAGE_SEQUENCE stage, included
+  // so the caller can perform real conflict detection on css-s1's own sync
+  // direction (consumed by a later task -- not implemented here).
+  var currentStage = _journeyStore.getLatestKnownStage(journey);
+
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({
     found: true,
@@ -93,7 +98,8 @@ async function handleJourneySyncResolve(req, res) {
       journeyId: journey.journeyId,
       featureSlug: journey.featureSlug,
       repoOwner: repoOwner,
-      repoName: repoName
+      repoName: repoName,
+      currentStage: currentStage
     }
   }));
 }
