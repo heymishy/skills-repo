@@ -19695,26 +19695,73 @@
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-06T22:52:31.034Z",
+              "updatedAt": "2026-10-24T00:24:13.576Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 13,
-                "passing": 0,
+                "totalTests": 17,
+                "passing": 17,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s1-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s1-verification.md",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-07-cross-surface-state-sync/dor/css-s1-dor.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "journey-sync-client.js -- D37 stub + resolveJourneyForFeatureSlug (AC2, AC6)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "journey-sync-client.js -- syncGateAdvanceToJourney (AC1, AC3, AC4, NFR-Audit, NFR-Security)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "internal-sync.js -- handleJourneySyncResolve (AC2, AC3 data, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "internal-sync.js -- handleJourneySyncUpdate (AC1, AC5, idempotency)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Mount the two new routes in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Real HTTP transport + D37 wiring + behavioural-correctness test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Integrate sync into gateAdvance(), make async, fix existing callers (AC1, AC2, NFR-Performance)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1016"
             },
             {
               "slug": "css-s2",

@@ -80,6 +80,7 @@ const { setStripeAdapter }                                           = require('
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
+const { handleJourneySyncResolve, handleJourneySyncUpdate }         = require('./routes/internal-sync');     // css-s1
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
@@ -3082,6 +3083,15 @@ async function router(req, res) {
   } else if (pathname === '/auth/e2e-stub/audit' && req.method === 'GET') {
     // a1-staging-safe-auth-stub: NFR-Audit read endpoint, same gate as above.
     await handleAuthStubAudit(req, res);
+
+  } else if (pathname === '/internal/journey-sync/resolve' && req.method === 'POST') {
+    // css-s1: machine-to-machine only, gated by INTERNAL_SYNC_SECRET (never a
+    // per-user token) -- see routes/internal-sync.js for the full gate.
+    await handleJourneySyncResolve(req, res);
+
+  } else if (pathname === '/internal/journey-sync/update' && req.method === 'POST') {
+    // css-s1: same gate as /internal/journey-sync/resolve above.
+    await handleJourneySyncUpdate(req, res);
 
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));

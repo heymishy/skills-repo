@@ -5,6 +5,21 @@
 
 var { validate } = require('./cli-outer-loop');
 var { advance }  = require('./cli-advance');
+var journeySyncClient = require('../sync/journey-sync-client');
+
+// css-s1 (D37 rule 3): wiring the real HTTP transport is kept separate from
+// the sync business logic in journey-sync-client.js and from gateAdvance()'s
+// own control flow (a later task) -- this line is the entire "wiring" task.
+// The CLI has no long-running server.js-style startup point; this module's
+// own load time is the equivalent "once, at startup" moment for a one-shot
+// CLI process.
+// Never wired in NODE_ENV=test (tests call setJourneySyncClient() themselves
+// with a mock); the throwing stub stays active there, matching the pattern
+// already used by server.js's adapter wiring blocks.
+if (process.env.NODE_ENV !== 'test') {
+  journeySyncClient.setJourneySyncClient(journeySyncClient.realJourneySyncTransport);
+  console.log('[css-s1] journey-sync client wired');
+}
 
 var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]';
 
@@ -18,9 +33,9 @@ var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <a
  * @param {string}   artefactPath — path to the artefact to validate
  * @param {string[]} rawFields    — array of "field=value" pairs for advance()
  * @param {string}   repoRoot     — absolute path to the repository root
- * @returns {{ exitCode: number, stdout: string, stderr: string }}
+ * @returns {Promise<{ exitCode: number, stdout: string, stderr: string }>}
  */
-function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot) {
+async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot) {
   // AC3: all four positional args are required
   if (!featureSlug || !storyId || !gateName || !artefactPath) {
     return {
@@ -38,7 +53,25 @@ function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, re
   }
 
   // AC2: validation passed — advance pipeline-state fields
-  return advance(featureSlug, storyId, rawFields || [], repoRoot);
+  var advanceResult = advance(featureSlug, storyId, rawFields || [], repoRoot);
+
+  // css-s1 AC1/AC2/AC3/AC4/AC6: synchronous CLI -> web-UI journey sync,
+  // scoped to the discovery-approved gate only. A sync failure (network
+  // error, no journey connected, env not configured) never changes
+  // gateAdvance's own exit code -- the pipeline-state advance above already
+  // succeeded or failed on its own terms.
+  if (advanceResult.exitCode === 0 && gateName === journeySyncClient.SYNC_GATE) {
+    try {
+      var journey = await journeySyncClient.resolveJourneyForFeatureSlug(featureSlug);
+      if (journey) {
+        await journeySyncClient.syncGateAdvanceToJourney(journey, gateName);
+      }
+    } catch (err) {
+      process.stderr.write('[journey-sync] warning: ' + ((err && err.message) || String(err)) + '\n');
+    }
+  }
+
+  return advanceResult;
 }
 
 module.exports = { gateAdvance };
