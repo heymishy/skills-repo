@@ -175,7 +175,7 @@ function _parseJsonbField(value, fallback) {
 // All tabs below -- removed so each group renders exactly once. Only the
 // summary "Test coverage: X%" line remains (see coverageHtml below).
 
-function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, mockData) {
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, csrfToken, mockData) {
   mockData = mockData || { pendingActionsCount: 0, actions: [], inProgressCount: 0, recent: [] };
   var body;
   var containerMaxWidth = products.length === 0 ? '720px' : '1040px';
@@ -201,7 +201,8 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
       inProgressCount: mockData.inProgressCount,
       skills: _DASHBOARD_SKILLS_CATALOG,
       actions: mockData.actions,
-      recent: mockData.recent
+      recent: mockData.recent,
+      csrfToken: csrfToken
     });
   }
   // wnl-s3: presence-only entry point (no numeric count -- decisions.md,
@@ -2837,7 +2838,11 @@ async function handleGetDashboard(req, res, _next, pool) {
     }
     var journeyData = _dashboardDataWiring._deriveDashboardJourneyData(journeys, 5);
 
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, { pendingActionsCount: mapped.pendingActionsCount, actions: mapped.actions, inProgressCount: journeyData.inProgressCount, recent: journeyData.recent });
+    // dssc-s1 -- the "Run a skill" cards' forms need a real CSRF token or
+    // every submission is unconditionally rejected by csrfGuard (routes/skills.js).
+    var csrfToken = await _csrf.generateCsrfToken(req);
+
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, csrfToken, { pendingActionsCount: mapped.pendingActionsCount, actions: mapped.actions, inProgressCount: journeyData.inProgressCount, recent: journeyData.recent });
 
     // rpiw-s1: identify() + login_completed on the route real authenticated
     // users actually land on -- SECURITY: only login/tenantId are ever

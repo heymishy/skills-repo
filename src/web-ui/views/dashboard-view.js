@@ -5,6 +5,7 @@
 
 const { escHtml } = require('../utils/html-shell');
 const { pill, btn } = require('./components');
+const { csrfField } = require('../middleware/csrf'); // dssc-s1
 
 /**
  * @param {object} data
@@ -15,12 +16,14 @@ const { pill, btn } = require('./components');
  * @param {Array<{name,label,desc,est,stage}>} data.skills
  * @param {Array<{what,feature,age,you}>} data.actions
  * @param {Array<{skill,feature,when,stage,tone}>} data.recent
+ * @param {string} data.csrfToken              dssc-s1 -- embedded in each skill card's form
  */
 function renderDashboard(data) {
   const skills = (data.skills || []).slice(0, 6).map(function(s) {
     return [
       '<a class="sw-skill-card" href="/api/skills/' + escHtml(s.name) + '/sessions" data-method="POST">',
         '<form method="POST" action="/api/skills/' + escHtml(s.name) + '/sessions" style="all:unset;display:contents">',
+          csrfField(data.csrfToken),
           '<div class="sw-skill-card__head">',
             '<div class="sw-skill-card__name">' + escHtml(s.label) + '</div>',
             pill('neutral', s.stage, { dot: false }),
