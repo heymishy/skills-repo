@@ -1239,19 +1239,29 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`).then(function() {
       console.log('[css-s2] sync_log table ready');
+
+      // css-s4: sync_log.resolved_at -- tracks whether a logged reconciliation
+      // gap (entry_type='gap') has since been resolved by the reconciliation
+      // safety net (src/sync/reconciliation.js). NULL = still open. Conflict
+      // entries (entry_type='conflict') never use this column -- they are
+      // already-final audit records, not open items awaiting resolution.
+      //
+      // Chained inside this .then() rather than fired as a second,
+      // independent _creditsPool.query() call -- pg.Pool checks out a
+      // separate client per query, so two unchained queries race for their
+      // own connection; on a genuinely fresh database (first boot, sync_log
+      // table doesn't exist yet from any prior deploy) this ALTER TABLE
+      // could reach Postgres before the CREATE TABLE's DDL committed on its
+      // own separate connection, failing with "relation \"sync_log\" does
+      // not exist" (same race pattern as a1's product_modules /
+      // journeys.module_id migration above).
+      return _creditsPool.query(`ALTER TABLE sync_log ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`).then(function() {
+        console.log('[css-s4] sync_log.resolved_at column ready');
+      }).catch(function(err) {
+        console.error('[css-s4] sync_log.resolved_at migration failed:', err.message);
+      });
     }).catch(function(err) {
       console.error('[css-s2] sync_log migration failed:', err.message);
-    });
-
-    // css-s4: sync_log.resolved_at -- tracks whether a logged reconciliation
-    // gap (entry_type='gap') has since been resolved by the reconciliation
-    // safety net (src/sync/reconciliation.js). NULL = still open. Conflict
-    // entries (entry_type='conflict') never use this column -- they are
-    // already-final audit records, not open items awaiting resolution.
-    _creditsPool.query(`ALTER TABLE sync_log ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`).then(function() {
-      console.log('[css-s4] sync_log.resolved_at column ready');
-    }).catch(function(err) {
-      console.error('[css-s4] sync_log.resolved_at migration failed:', err.message);
     });
 
     // psh-s1: journeys.product_id FK column
