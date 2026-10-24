@@ -23,7 +23,7 @@
 > The browser lands on a real skill session page — not a `403 Forbidden` plain-text response.
 
 **Result:** [ ] Pass [ ] Fail
-**Notes:** Pre-fix baseline (2026-10-24): 3/3 attempts produced `403 Forbidden`, confirmed via `fly logs` showing `csrf_guard_check` with `submittedPrefix: "(empty)"` against a correctly-generated `expectedPrefix` — this is the bug this story fixes, not yet verified fixed.
+**Notes:** Pre-fix baseline (2026-10-24): 3/3 attempts produced `403 Forbidden`, confirmed via `fly logs` showing `csrf_guard_check` with `submittedPrefix: "(empty)"` against a correctly-generated `expectedPrefix` — this is the bug this story fixes. Not yet re-verified live against a real deploy (automated test coverage above confirms the mechanism directly: AC3's `skillStartForm_withCorrectCsrfToken_passesGuard` proves a correctly-rendered form passes the real, unmocked `csrfGuard`). Re-run this scenario live on `wuce-staging.fly.dev` once this story's PR is merged and deployed, before closing out `/definition-of-done`.
 
 ---
 
@@ -38,8 +38,8 @@
 **Expected outcome:**
 > Every pre-existing test in these files still passes — the fix only adds a field, nothing existing broke.
 
-**Result:** [ ] Pass [ ] Fail
-**Notes:**
+**Result:** [x] Pass
+**Notes:** All 7 files exit 0, 0 failures each (dashboard-wiring: all `ok`; product-dashboard-wiring: all `ok`; pending-actions-mapping: all `ok`; skills-nav-wiring: 20/20; html-shell: 42/42; skill-launcher-landing: 35/35; banner-exit-permission: 24/24).
 
 ---
 
@@ -53,8 +53,8 @@
 **Expected outcome:**
 > 0 failures.
 
-**Result:** [ ] Pass [ ] Fail
-**Notes:**
+**Result:** [x] Pass
+**Notes:** `784 file(s) run, 0 failed` (783 baseline + 1 new test file for this story).
 
 ---
 

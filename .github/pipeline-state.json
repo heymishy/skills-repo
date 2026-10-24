@@ -43147,15 +43147,16 @@
       "stories": [
         {
           "id": "dssc-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-24-dashboard-skill-start-csrf/dor/dssc-s1-dor.md",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0
+            "passing": 5
           },
-          "updatedAt": "2026-10-24T03:48:47.831Z"
+          "updatedAt": "2026-10-24T04:11:01.332Z",
+          "health": "green"
         }
       ],
       "metrics": [],
