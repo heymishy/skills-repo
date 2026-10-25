@@ -43288,7 +43288,7 @@
       "id": "2026-10-25-ppc-capture-live-test",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-10-25-ppc-capture-live-test/discovery.md",
-      "stage": "review"
+      "stage": "test-plan"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
