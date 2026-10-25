@@ -14,6 +14,24 @@ const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
+
+// ppc-s4: injectable, matching routes/artefact.js's own setFetcher
+// convention -- tests inject a fake fetcher rather than mocking global
+// fetch through the real fetchArtefact/GitHub-Contents-API call chain.
+var _fetchArtefact = require('../adapters/artefact-fetcher').fetchArtefact;
+function setFetcherModule(fn) { _fetchArtefact = fn; }
+
+// ppc-s4: css-parity fallback. _resolveJourney's fast path requires a
+// Postgres journeys row whose completedStages already has a
+// 'definition-of-done' entry -- a signal only ever created by a real web
+// chat walkthrough. A feature delivered entirely via the CLI pipeline (its
+// own dodStatus: "complete" on every story in the connected repo's
+// GitHub-synced .github/pipeline-state.json) has no such row and 404s.
+// Reuses the same pipelineStateFetchAdapter / product-rollup.js
+// fetchPipelineState the css epic and product-rollup sync already use --
+// no new adapter pair, per CLAUDE.md's D37 rule.
+var _productRollup = require('../modules/product-rollup');
+var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter');
 var _csrf = require('../middleware/csrf');
 var { createRateLimiter } = require('../middleware/rate-limiter');
 
@@ -240,31 +258,59 @@ function _notFound(res) {
   _sendJson(res, 404, { error: 'not found' });
 }
 
-async function _resolveJourney(req) {
+async function _resolveJourney(req, pool) {
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.productId;
   var featureSlug = req.params && req.params.featureSlug;
   if (!tenantId || !productId || !featureSlug) return null;
+
   var journey = _journeyStore.getJourneyByTenantProductSlug(tenantId, productId, featureSlug);
-  if (!journey || !_journeyStore.isDodComplete(journey)) return null;
-  return journey;
+  if (journey && _journeyStore.isDodComplete(journey)) return journey;
+
+  // ppc-s4: css-parity fallback -- see _resolveViaPipelineState's own doc
+  // comment. Only reached on a cold miss; every subsequent request for the
+  // same tenant/product/feature hits the fast path above instead.
+  return await _resolveViaPipelineState(req, pool, tenantId, productId, featureSlug);
 }
 
-async function _getDodAcList(journey) {
+async function _getDodAcList(journey, req, pool) {
   var artefacts = await _journeyStore.getArtefactsForJourney(journey.journeyId);
   var dodRow = (artefacts || []).find(function(a) { return a.skill_name === 'definition-of-done'; });
-  if (!dodRow) return [];
-  return parseDodAcCoverage(dodRow.content);
+  if (dodRow) return parseDodAcCoverage(dodRow.content);
+
+  // ppc-s4 (AC6): no Postgres artefact row exists -- true for every journey
+  // auto-provisioned by _resolveViaPipelineState, since no chat walkthrough
+  // ever ran /definition-of-done for it. Fetch each DoD-complete story's
+  // real markdown content directly from GitHub instead, aggregating across
+  // every one of them (a feature may have several DoD-complete stories).
+  var storySlugs = journey.pipelineStateStorySlugs;
+  if (!storySlugs || storySlugs.length === 0) return [];
+
+  var accessToken = req.session && req.session.accessToken;
+  var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
+  if (!ownerRepo || !accessToken) return [];
+
+  var acs = [];
+  for (var i = 0; i < storySlugs.length; i++) {
+    try {
+      var content = await _fetchArtefact(journey.featureSlug, 'dod/' + storySlugs[i] + '-dod', accessToken, ownerRepo);
+      acs = acs.concat(parseDodAcCoverage(content));
+    } catch (_) {
+      // One story's DoD content missing/unfetchable must not blank the
+      // whole list -- the other stories' ACs are still real evidence.
+    }
+  }
+  return acs;
 }
 
 /**
  * AC1 (list, tenant+product scoped), AC4 ("not set" state), AC5 (inline screenshot).
  */
-async function handleGetPlaybackEvidence(req, res) {
-  var journey = await _resolveJourney(req);
+async function handleGetPlaybackEvidence(req, res, _next, pool) {
+  var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
-  var acRows = await _getDodAcList(journey);
+  var acRows = await _getDodAcList(journey, req, pool);
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
 
@@ -303,8 +349,8 @@ async function handleGetPlaybackEvidence(req, res) {
  * disk, same as handlePostCaptureTrigger's own read-back immediately after
  * capture -- this story's own already-established pattern, not a new one.
  */
-async function handleGetCaptureScreenshot(req, res) {
-  var journey = await _resolveJourney(req);
+async function handleGetCaptureScreenshot(req, res, _next, pool) {
+  var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
   var acId = req.params && req.params.acId;
@@ -327,11 +373,11 @@ async function handleGetCaptureScreenshot(req, res) {
 /**
  * AC2 — one-time manual target entry per AC.
  */
-async function handlePostCaptureTarget(req, res) {
+async function handlePostCaptureTarget(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
 
-  var journey = await _resolveJourney(req);
+  var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
   var acId = req.params && req.params.acId;
@@ -363,13 +409,20 @@ async function handlePostCaptureTarget(req, res) {
  * A query failure or missing pool is treated as "no connected repo" (null),
  * matching this codebase's own optional-Postgres-feature convention
  * (journey.js's equivalent _dasOwnerRepo resolution).
+ *
+ * ppc-s4: takes productId/tenantId directly rather than a journey object,
+ * so it can also be called from _resolveViaPipelineState below, before any
+ * journey exists.
+ * @param {string} productId
+ * @param {string} tenantId
+ * @param {object} pool
  */
-async function _resolveOwnerRepo(journey, pool) {
+async function _resolveOwnerRepo(productId, tenantId, pool) {
   if (!pool) return null;
   try {
     var result = await pool.query(
       'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
-      [journey.productId, journey.tenantId]
+      [productId, tenantId]
     );
     var row = result.rows[0];
     if (!row || !row.repo_owner || !row.repo_name) return null;
@@ -377,6 +430,92 @@ async function _resolveOwnerRepo(journey, pool) {
   } catch (_) {
     return null;
   }
+}
+
+/**
+ * ppc-s4 (AC1, AC3, AC6) -- walks a parsed pipeline-state.json's own
+ * features[] for featureSlug, handling both the flat feature.stories[] and
+ * epic-nested feature.epics[].stories[] shapes (same walk as
+ * product-rollup.js's computeDodStatusRollup). Returns null when the
+ * feature isn't found or has zero stories -- never a false "complete".
+ * @param {object} pipelineState - parsed pipeline-state.json content
+ * @param {string} featureSlug
+ * @returns {{allComplete: boolean, storySlugs: string[]}|null}
+ */
+function _featureDodStatus(pipelineState, featureSlug) {
+  var features = (pipelineState && pipelineState.features) || [];
+  var feature = features.find(function(f) { return f.slug === featureSlug; });
+  if (!feature) return null;
+
+  var stories = [];
+  if (Array.isArray(feature.epics) && feature.epics.length > 0) {
+    feature.epics.forEach(function(epic) {
+      (epic.stories || []).forEach(function(story) { stories.push(story); });
+    });
+  } else {
+    stories = feature.stories || [];
+  }
+  if (stories.length === 0) return null;
+
+  return {
+    allComplete: stories.every(function(s) { return s.dodStatus === 'complete'; }),
+    storySlugs: stories.map(function(s) { return s.slug || s.id; }).filter(Boolean)
+  };
+}
+
+/**
+ * ppc-s4 (AC1, AC2, AC5) -- the css-parity fallback: when no Postgres
+ * journey exists (or isn't yet DoD-complete), check whether the feature is
+ * DoD-complete per the connected repo's own GitHub-synced
+ * pipeline-state.json, and if so auto-provision a bare journey scoped to
+ * THIS tenantId/productId pair -- never resolved by featureSlug alone
+ * (ADR-025), matching getJourneyByTenantProductSlug's own fail-closed
+ * guard. Returns null on any failure (no connected repo, fetch error,
+ * feature not found/not complete) -- the caller's existing 404 behaviour is
+ * unchanged.
+ * @param {object} req
+ * @param {object} pool
+ * @param {string} tenantId
+ * @param {string} productId
+ * @param {string} featureSlug
+ * @returns {Promise<object|null>}
+ */
+async function _resolveViaPipelineState(req, pool, tenantId, productId, featureSlug) {
+  // Defense in depth, mirroring getJourneyByTenantProductSlug's own
+  // SECURITY guard (journey-store.js) -- _resolveJourney's caller already
+  // checks this before reaching here, but this function must also fail
+  // closed on its own, since it is directly callable/testable.
+  if (!tenantId || !productId || !featureSlug) return null;
+
+  var accessToken = req.session && req.session.accessToken;
+  if (!accessToken) return null;
+
+  var ownerRepo = await _resolveOwnerRepo(productId, tenantId, pool);
+  if (!ownerRepo) return null;
+
+  var pipelineState;
+  try {
+    pipelineState = await _productRollup.fetchPipelineState(_pipelineStateFetchAdapter, {
+      productId: productId,
+      repoOwner: ownerRepo.owner,
+      repoName: ownerRepo.repo,
+      accessToken: accessToken
+    });
+  } catch (_) {
+    return null;
+  }
+
+  var dodStatus = _featureDodStatus(pipelineState, featureSlug);
+  if (!dodStatus || !dodStatus.allComplete) return null;
+
+  var journey = _journeyStore.createJourney(featureSlug);
+  _journeyStore.setJourneyFields(journey.journeyId, {
+    tenantId: tenantId,
+    productId: productId,
+    completedStages: [{ skillName: 'definition-of-done', artefactPath: null, completedAt: new Date().toISOString() }],
+    pipelineStateStorySlugs: dodStatus.storySlugs
+  });
+  return journey;
 }
 
 /**
@@ -444,7 +583,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   _captureRateLimiter(req, res, function() { rateLimitOk = true; });
   if (!rateLimitOk) return;
 
-  var journey = await _resolveJourney(req);
+  var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
   var acId = req.params && req.params.acId;
@@ -459,7 +598,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     return;
   }
 
-  var ownerRepo = await _resolveOwnerRepo(journey, pool);
+  var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
   if (!ownerRepo) {
     _sendJson(res, 400, { error: 'product has no connected repo' });
     return;
@@ -519,7 +658,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
   _captureRateLimiter(req, res, function() { rateLimitOk = true; });
   if (!rateLimitOk) return;
 
-  var journey = await _resolveJourney(req);
+  var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
   if (!captureAllLock.tryAcquireLock(journey.journeyId)) {
@@ -528,7 +667,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
   }
 
   try {
-    var acRows = await _getDodAcList(journey);
+    var acRows = await _getDodAcList(journey, req, pool);
     var listResult = buildCaptureAllList({ acs: acRows, captureTargets: journey.captureTargets || [] });
     captureAllLock.setTotal(journey.journeyId, listResult.toCapture.length);
 
@@ -549,7 +688,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
       return;
     }
 
-    var ownerRepo = await _resolveOwnerRepo(journey, pool);
+    var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
     if (!ownerRepo) {
       _sendJson(res, 400, { error: 'product has no connected repo' });
       return;
@@ -632,7 +771,11 @@ module.exports = {
   handleGetCaptureScreenshot,
   handlePostCaptureAll,
   setJourneyStoreModule,
+  setFetcherModule,
   _resolveJourney,
+  _resolveViaPipelineState,
+  _featureDodStatus,
+  _getDodAcList,
   _notFound,
   _sendJson,
   _captureOneAc,
