@@ -43287,7 +43287,8 @@
       "slug": "2026-10-25-ppc-capture-live-test",
       "id": "2026-10-25-ppc-capture-live-test",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-10-25-ppc-capture-live-test/discovery.md"
+      "artefact": "artefacts/2026-10-25-ppc-capture-live-test/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
