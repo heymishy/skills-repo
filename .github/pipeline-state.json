@@ -19692,7 +19692,7 @@
         {
           "slug": "css-e1-cross-surface-state-sync",
           "name": "Pipeline-state.json and web-UI journeys stay in automatic agreement",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "css-s1",
@@ -19771,26 +19771,55 @@
             {
               "slug": "css-s2",
               "name": "Automatically reflect a web-UI journey stage completion in pipeline-state.json",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-06T22:52:31.034Z",
+              "updatedAt": "2026-10-24T09:30:07.907Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s2-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 11,
+                "passing": 11,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s2-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s2-verification.md",
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-07-cross-surface-state-sync/dor/css-s2-dor.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "sync_log table migration (server.js)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "sync-log.js adapter module + unit tests",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire gap-logging into journey.js catch block + integration test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC2 latency NFR test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1018"
             },
             {
               "slug": "css-s3",
