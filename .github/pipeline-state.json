@@ -42995,11 +42995,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T08:00:00.000Z",
+              "updatedAt": "2026-10-26T11:00:00.000Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 22,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 8,
               "acVerified": 0,
@@ -43009,9 +43009,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s5-dor.md",
               "tasks": [
-                { "id": "task-1", "name": "Extract and harden captureVideoRecording into src/", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-2", "name": "Add AC5 cleanup-on-failure regression test", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-3", "name": "Add captureVideos to journey-store-pg.js's allowlist", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
+                { "id": "task-1", "name": "Extract and harden captureVideoRecording into src/", "tddState": "committed", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
+                { "id": "task-2", "name": "Add AC5 cleanup-on-failure regression test", "tddState": "committed", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
+                { "id": "task-3", "name": "Add captureVideos to journey-store-pg.js's allowlist", "tddState": "committed", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
                 { "id": "task-4", "name": "New shared _captureVideoForAcIds helper; wire into single-AC trigger (AC1, AC3)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
                 { "id": "task-5", "name": "New tenant-scoped video-serving route + server.js registration (AC2)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
                 { "id": "task-6", "name": "Render <video> with AC7 attributes; AC6 empty state; AC2 also-covers note", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },

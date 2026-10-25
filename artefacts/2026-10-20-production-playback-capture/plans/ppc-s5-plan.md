@@ -34,13 +34,15 @@ Modify:
 
 ## Task 1: Extract and harden `captureVideoRecording` into `src/`
 
+> **✅ Complete.** Implementer commit `2e9be45f`; code-quality fix-round commit `30c2f022` (dedup `scripts/playback-capture.js`'s delegation, defensive cleanup against secondary failures, added failure-path test, removed dead mock code). Spec compliance ✅, code quality ✅ (Approved on re-review). Both tests in `tests/check-ppc-s5-video-capture.js` pass (2/2).
+
 **Why hardened, not byte-for-byte (unlike `capture-screenshots.js`'s own extraction):** AC5 requires that a mid-capture failure leave no partial/corrupt video file behind. The original `scripts/playback-capture.js`'s `captureVideoRecording` has no try/catch at all — if `clip.run()` throws, `context.close()` never runs, so Playwright never flushes the video to disk and nothing is left to clean up anyway in THAT version; but once this story adds a `clip.run` callback that calls real navigation (`page.goto`), a throw there is a real, expected failure mode this story must handle. This version closes the context in a `finally` block (flushing whatever Playwright already wrote), then deletes the partial file if `clip.run` threw — mirroring `captureVideoForClip`'s own established cleanup half (`rpca-video-hotfix1`) without adopting its caption-generation half (`decisions.md` 2026-10-25 DESIGN entry).
 
 **Files:**
 - Create: `src/utils/capture-video.js`
 - Test: `tests/check-ppc-s5-video-capture.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // tests/check-ppc-s5-video-capture.js — top of file, first test block
@@ -111,7 +113,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -119,7 +121,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL — captureVideoRecording_extractedToSrc_producesDifferentCorrectPathsForDifferentClips` (`Cannot find module '../src/utils/capture-video'`)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```js
 'use strict';
@@ -162,7 +164,7 @@ async function captureVideoRecording({ browser, featureSlug, storySlug, clips })
 module.exports = { captureVideoRecording };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -170,7 +172,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: captureVideoRecording_extractedToSrc_producesDifferentCorrectPathsForDifferentClips`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -178,7 +180,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing (no existing file requires `src/utils/capture-video.js` yet, so this is additive only)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-video.js tests/check-ppc-s5-video-capture.js
@@ -189,10 +191,12 @@ git commit -m "feat(ppc-s5): extract captureVideoRecording into src/, add partia
 
 ## Task 2: Add a second unit test for AC5's cleanup behaviour
 
+> **✅ Complete.** Commit `31d61482`. Spec compliance ✅, code quality ✅ Approved (3 Minor, non-blocking: test naming doesn't follow the `captureVideoRecording_` prefix convention; an unused `page.context()` mock field was reintroduced; the fixture temp directory isn't cleaned up in a `finally` like the sibling test does — none fixed, accepted as Minor). Confirmed NOT redundant with Task 1's compound-failure test — this covers the baseline single-failure path, the other covers `close()` also throwing. All 3 tests in `tests/check-ppc-s5-video-capture.js` pass.
+
 **Files:**
 - Test: `tests/check-ppc-s5-video-capture.js` (append)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -228,7 +232,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -236,11 +240,11 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: this test should actually already PASS given Task 1's implementation — if it fails, Task 1's try/catch/finally logic has a bug. Treat a failure here as a signal to re-check Task 1's implementation, not as an expected red step.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 No implementation change needed — Task 1 already added this behaviour. This step is a no-op; proceed to Step 4.
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -248,7 +252,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: videoCapture_midFailure_leavesNoPartialFileOnDisk`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -256,7 +260,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/check-ppc-s5-video-capture.js
@@ -267,10 +271,12 @@ git commit -m "test(ppc-s5): add AC5 cleanup-on-failure regression test for capt
 
 ## Task 3: Add `captureVideos` to `journey-store-pg.js`'s allowlist
 
+> **✅ Complete.** Commit `27bbeb3c`. Spec compliance ✅, code quality ✅ Approved, zero findings. Comment/default-value style confirmed consistent with sibling allowlist entries (`captureScreenshots`'s map/`{}` pattern, not `captureTargets`'s array/`[]` pattern). 4/4 tests pass.
+
 **Files:**
 - Modify: `src/web-ui/adapters/journey-store-pg.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // tests/check-ppc-s5-video-capture.js (append)
@@ -284,7 +290,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -292,7 +298,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL — journeyStorePg_sanitise_retainsCaptureVideosField` (`sanitised.captureVideos` is `undefined`, not the expected object)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/adapters/journey-store-pg.js`, inside `_sanitise()`, immediately after the existing `pipelineStateStorySlugs` line:
 
@@ -314,7 +320,7 @@ In `src/web-ui/adapters/journey-store-pg.js`, inside `_sanitise()`, immediately 
 
 (This replaces the existing closing `};` of the `data` object literal — the new `captureVideos` line becomes the new last property.)
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -322,7 +328,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: journeyStorePg_sanitise_retainsCaptureVideosField`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -330,7 +336,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/adapters/journey-store-pg.js tests/check-ppc-s5-video-capture.js
