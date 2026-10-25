@@ -2,8 +2,8 @@
 
 **Feature:** 2026-10-20-production-playback-capture
 **Created:** 2026-10-21
-**Last updated:** 2026-10-23
-**Status:** Verified at 2026-10-23 (`ppc-s1`, `ppc-s2`, `ppc-s3` all reached `/definition-of-done` with every NFR row addressed and evidenced)
+**Last updated:** 2026-10-25
+**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), not yet verified — pending their own DoD.
 
 ---
 
@@ -14,6 +14,8 @@
 | Single-AC capture time | No fixed SLA — expected a few seconds based on `rpca`'s proven per-screenshot timing | Observed during implementation | `ppc-s1` |
 | Full-feature capture time | No fixed SLA yet — ~30-60s is the named threshold for revisiting sync vs. async | Real wall-clock measurement recorded as DoD evidence (story AC3) | `ppc-s2` |
 | Rate-limiter overhead | Negligible — matches existing `sign-off.js` usage | Consistent with existing `createRateLimiter` implementation, no new infra | `ppc-s3` |
+| Video-inclusive capture-all duration | Not yet defined — `ppc-s2`'s 30-60s threshold was sized for screenshot-only capture; `ppc-s5` must measure real video-inclusive duration and confirm/revise the threshold | Real wall-clock measurement recorded as DoD evidence | `ppc-s5` |
+| Summary section fetch overhead | Bounded — two additional `fetchArtefact` calls per page load, same cost class as `ppc-s4`'s own DoD-content fetch | Consistent with existing `fetchArtefact` usage, no new infra | `ppc-s6` |
 
 **Source:** Story AC (`ppc-s2` AC3/AC4) / Not yet a committed SLO — this feature's own build is what establishes the real baseline.
 
@@ -71,6 +73,8 @@ Classified Confidential because captured screenshots show a tenant's real, live 
 | Feature list / AC list / "Capture evidence" action keyboard access | Meets WCAG 2.1 AA; fully keyboard-accessible | Manual check (no automated a11y tooling in this repo — see `workspace/learnings.md` D48) | `ppc-s1` |
 | Capture progress indicator | Exposed to assistive technology via an `aria-live` region, not purely visual | Manual check | `ppc-s2` |
 | Rate-limit rejection message | Exposed via `role="alert"` HTML (form path) or a parsed JSON error body (API path), not a visual-only toast | Unit test + live Chrome accessibility-tree check during `/verify-completion` | `ppc-s3` |
+| Captured video has no audio narration — not subject to WCAG audio-caption requirement for this use case; transcript explicitly deferred, not silently dropped | See `decisions.md` 2026-10-25 DESIGN entry | Manual check | `ppc-s5` |
+| Dashboard-shell wrap preserves existing keyboard-operable, no-client-JS interaction model | No new JS-dependent interaction introduced by the shell wrap | Manual check | `ppc-s6` |
 
 **Source:** Each story's own NFRs section — added retroactively by `/trace` (2026-10-23, Finding 2) after all 3 stories' DoD artefacts had already independently addressed and evidenced an accessibility requirement with no feature-level section to record it in.
 

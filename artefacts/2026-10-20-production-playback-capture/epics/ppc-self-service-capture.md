@@ -13,7 +13,8 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 ## Out of Scope
 
 **Fast-follow (next iteration after MVP validates):**
-- Video capture (`captureVideoForClip` exists; natural next step once screenshot-only is proven)
+- ~~Video capture~~ — now in scope via `ppc-s5` (2026-10-25), screenshot-only capture proven and live in production
+- Captions/transcript for captured video — deferred further; `ppc-s5` ships video-only (see `decisions.md` 2026-10-25 DESIGN entry)
 - Presentation polish (ffmpeg zoom/annotation)
 - Automated redaction/PII handling (needs its own build-and-measure story with a human-verification gate)
 
@@ -36,6 +37,9 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 - [x] Walking skeleton: tenant-scoped surface + single-AC capture via session-reuse auth — `stories/ppc-s1.md`
 - [x] Extend to full-feature capture loop with timing validation — `stories/ppc-s2.md`
 - [x] Rate-limit the capture-trigger endpoint per tenant/user — `stories/ppc-s3.md`
+- [x] Recognise pipeline-state.json DoD-complete features (CLI/web-UI parity fallback) — `stories/ppc-s4-pipeline-state-dod-fallback.md`
+- [ ] Self-service video capture per AC — `stories/ppc-s5-video-capture.md`
+- [ ] Dashboard-shell UX/CX parity and scope/benefit summary — `stories/ppc-s6-dashboard-shell-parity.md`
 
 ## Human Oversight Level
 

@@ -42649,7 +42649,7 @@
       "stage": "definition",
       "health": "green",
       "blocker": "",
-      "updatedAt": "2026-10-23T09:34:34.108Z",
+      "updatedAt": "2026-10-25T09:04:44.988Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42924,6 +42924,42 @@
               "prStatus": "merged",
               "dodStatus": "complete",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1022"
+            },
+            {
+              "slug": "ppc-s5",
+              "name": "Self-service video capture per AC",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-25T09:04:44.986Z",
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "not-started",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
+            },
+            {
+              "slug": "ppc-s6",
+              "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-25T09:04:44.988Z",
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "not-started",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
             }
           ]
         }

@@ -60,9 +60,9 @@ This is a standard product capability for real tenants validating their own deli
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Self-service DoD validation adoption | `ppc-s1` (makes it possible at all), `ppc-s2` (makes it meaningful at feature scale), `ppc-s3` (protects sustained adoption from accidental load) | Covered |
+| Metric 1 — Self-service DoD validation adoption | `ppc-s1` (makes it possible at all), `ppc-s2` (makes it meaningful at feature scale), `ppc-s3` (protects sustained adoption from accidental load), `ppc-s4` (removes a false-negative 404 for CLI-delivered DoD-complete features), `ppc-s5` (richer video evidence increases trust), `ppc-s6` (removes the UX/discoverability friction named in Metric 3's own feedback loop) | Covered |
 | Metric 2 — Time to DoD sign-off | `ppc-s2` (the full-feature, single-sitting capture loop) | Covered |
-| Metric 3 — Engineer manual-demo load removed | `ppc-s1`, `ppc-s2` (the capability's existence structurally removes the need for an engineer to demo; measured qualitatively per this artefact's own Metric 3 definition) | Covered |
+| Metric 3 — Engineer manual-demo load removed | `ppc-s1`, `ppc-s2` (the capability's existence structurally removes the need for an engineer to demo; measured qualitatively per this artefact's own Metric 3 definition), `ppc-s5`/`ppc-s6` (directly address this metric's own named feedback-loop risk: "the gap is either trust in the captured evidence or a UX/discoverability problem for the PO") | Covered |
 
 ---
 
