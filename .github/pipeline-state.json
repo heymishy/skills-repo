@@ -19664,9 +19664,12 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "css-s1 (walking-skeleton proof for this gate type/direction) merged and DoD-complete 2026-10-24; m1 remains not-yet-measured since meaningful agreement-rate measurement requires css-s2/css-s3/css-s4 to also be built and real multi-surface usage to occur over time.",
+          "evidence": "All 4 stories (css-s1 through css-s4) merged and DoD-complete 2026-10-25 -- the full mechanism (bidirectional propagation, conflict resolution, full 7-gate vocabulary, reconciliation safety net) now exists. m1 remains not-yet-measured since the 90% minimum-validation-signal threshold requires a real 4-week production usage window, starting now, not just the mechanism existing.",
           "contributingStories": [
-            "css-s1"
+            "css-s1",
+            "css-s2",
+            "css-s3",
+            "css-s4"
           ]
         },
         {
@@ -19676,8 +19679,11 @@
           "baseline": "N/A - no conflict-resolution mechanism exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "No conflict-resolution mechanism exists yet -- that is css-s3 scope, not yet dispatched. css-s1 does not contribute to m2.",
-          "contributingStories": []
+          "evidence": "css-s3 builds the entire conflict-resolution mechanism m2 measures (AC1-AC4, 36 passing tests); css-s4 extends conflict detection to the 5 representable gates. m2 remains not-yet-measured since a real signal requires an actual cross-surface conflict to occur under real production usage, not just the mechanism existing.",
+          "contributingStories": [
+            "css-s3",
+            "css-s4"
+          ]
         }
       ],
       "updatedAt": "2026-08-06T22:52:31.034Z",
@@ -19771,9 +19777,9 @@
             {
               "slug": "css-s2",
               "name": "Automatically reflect a web-UI journey stage completion in pipeline-state.json",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-10-25T05:34:59.150Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-10-25T06:04:13.055Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s2-review-2.md",
@@ -19819,14 +19825,16 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1018"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1018",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
               "slug": "css-s3",
               "name": "Detect a genuine cross-surface conflict, resolve it to pipeline-state.json value, and log it",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-25T05:35:03.860Z",
+              "updatedAt": "2026-10-25T06:06:02.404Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s3-review-1.md",
@@ -19890,14 +19898,16 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1021"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1021",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-25T05:35:08.311Z",
+              "updatedAt": "2026-10-25T06:00:00.000Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md",
@@ -19949,7 +19959,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1020"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1020",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
