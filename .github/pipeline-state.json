@@ -43282,6 +43282,12 @@
       "metrics": [],
       "updatedAt": "2026-10-24T06:44:57.883Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-10-25-ppc-capture-live-test",
+      "id": "2026-10-25-ppc-capture-live-test",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-10-25-ppc-capture-live-test/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
