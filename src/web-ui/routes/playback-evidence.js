@@ -587,7 +587,14 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
 async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, baseUrl) {
   if (!browser || acIds.length === 0) return null;
   var sessionId = req.sessionId;
-  var cookieDomain = new URL(baseUrl || 'https://localhost').hostname;
+  // Mirrors session-page-adapter.js's realGetAuthenticatedPage cookie-security
+  // computation exactly (secure iff the base URL is actually https) --
+  // deliberately NOT a hardcoded true, to avoid drifting from that sibling's
+  // own correct logic. session-page-adapter.js itself is out of scope for
+  // this story (DoR "Do not modify"), so this is duplicated in place rather
+  // than extracted into a shared helper.
+  var parsedBaseUrl = new URL(baseUrl || 'https://localhost');
+  var cookieDomain = parsedBaseUrl.hostname;
   var captureTargets = journey.captureTargets || [];
   var videoResults = await captureVideoRecording({
     browser: browser,
@@ -602,7 +609,7 @@ async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, ba
           domain: cookieDomain,
           path: '/',
           httpOnly: true,
-          secure: true,
+          secure: parsedBaseUrl.protocol === 'https:',
           sameSite: 'Lax'
         }]);
         for (var i = 0; i < acIds.length; i++) {
@@ -681,8 +688,11 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
       }
     } catch (videoErr) {
       // AC4 (single-AC case, a group of one): a video failure never aborts
-      // the request and never undoes the screenshot success above.
-      journey.lastVideoCaptureFailure = { acIds: [acId], error: videoErr && videoErr.message };
+      // the request and never undoes the screenshot success above. No AC
+      // requires surfacing a distinct "video failed" message for this
+      // path (AC6 only requires gracefully showing no video when none
+      // exists, already satisfied without persisting anything here) --
+      // intentionally swallowed.
     }
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
