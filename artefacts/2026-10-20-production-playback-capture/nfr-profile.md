@@ -3,7 +3,7 @@
 **Feature:** 2026-10-20-production-playback-capture
 **Created:** 2026-10-21
 **Last updated:** 2026-10-26
-**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), refined by a CX/UX spike (2026-10-26, see `spikes/cx-ux-playback-pattern-outcome.md`); `ppc-s7` rows added at `/definition` (2026-10-26), same spike — none of `ppc-s5`/`ppc-s6`/`ppc-s7` verified yet, pending their own DoD.
+**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), refined by a CX/UX spike (2026-10-26, see `spikes/cx-ux-playback-pattern-outcome.md`) and a design-system compliance check against `DESIGN.md` (2026-10-26, see `decisions.md`); `ppc-s7` rows added at `/definition` (2026-10-26), same spike + design-system check — none of `ppc-s5`/`ppc-s6`/`ppc-s7` verified yet, pending their own DoD.
 
 ---
 
@@ -33,6 +33,7 @@
 | Secrets management | `session_id` is an unsigned bearer-equivalent value and must never leave the server process boundary — no client-side exposure, no logging | `discovery.md` Q1 resolution | `ppc-s1`, `ppc-s2` |
 | Audit logging | None identified for this feature at this stage — not a blocking gap, flagged as a candidate for a later story if usage patterns justify it | Not defined | `ppc-s1`–`ppc-s6` |
 | Sign-off decision identity | Resolved via `req.session.login || req.session.userId` (never `req.session.accessToken` — CLAUDE.md canonical-field rule), mirroring `admin-credits.js`'s own `adminId` audit-trail pattern | `admin-credits.js` precedent; CLAUDE.md | `ppc-s7` |
+| Design-token compliance | `ppc-s5`/`ppc-s6`/`ppc-s7` tagged `hasDesignSystemTrack: true` — `scripts/check-design-tokens.js` scans touched files against `DESIGN.md`'s token table at `/definition-of-ready` (H-DESIGN). Structural/layout compliance (responsive behavior, component variant selection) is manual-reviewer-judged, not automated. | `artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`; `dsa-s5` | `ppc-s5`, `ppc-s6`, `ppc-s7` |
 
 **Data classification:**
 - [ ] Public — no PII, no sensitive data

@@ -32,6 +32,8 @@ So that **the decision is a durable, visible record instead of something that on
 - The decision is stored in `journeys.data.signOff` — add it to `journey-store-pg.js`'s `_sanitise()` allowlist (`fdn-s1` rule: an unlisted field silently vanishes after a Postgres-backed restart). No schema migration.
 - ADR-025: the write and the read both filter by the same `tenant_id`/`product_id` pair as every other `ppc` route — reuses the existing access-control guard, does not introduce a new one.
 - NFR-Accessibility (carried from `ppc-s1`/`ppc-s6` precedent): the sign-off form uses plain `<form>`/`<button>` elements, no client-side JS required.
+- MC-SEC-01 (`architecture-guardrails.md`) / `escHtml()` rule (`web-ui-patterns.md`): the free-text comment field (AC1) is PO-authored, unconstrained text — it MUST be passed through `escHtml()` before being rendered back on later page loads (AC3), the same requirement `ppc-s6`'s own render call site must satisfy for its summary content.
+- `DESIGN.md` (`hasDesignSystemTrack: true`): "Approve" uses the primary button variant (accent fill); "Needs changes" uses the destructive variant (danger-soft fill, danger text/border) — not an unstyled or ambiguous pair. The recorded decision (AC3) renders as a status badge/pill (`JetBrains Mono`, soft-background + ink-colored text) using `--success`/`--danger` tokens for approved/needs-changes, consistent with this system's existing "badges for status only" convention — not new inline styles.
 
 ## Dependencies
 
@@ -40,11 +42,11 @@ So that **the decision is a durable, visible record instead of something that on
 
 ## Acceptance Criteria
 
-**AC1:** Given a PO is viewing the capture-evidence page for one of their own features, When the page renders, Then a sign-off action area shows two choices — "Approve" and "Needs changes" — plus an optional free-text comment field, using the same plain `<form>`/`<button>` pattern as the existing capture-trigger forms.
+**AC1:** Given a PO is viewing the capture-evidence page for one of their own features, When the page renders, Then a sign-off action area shows two choices — "Approve" (primary button variant) and "Needs changes" (destructive button variant, per `DESIGN.md`) — plus an optional free-text comment field, using the same plain `<form>`/`<button>` pattern as the existing capture-trigger forms.
 
 **AC2:** Given the PO submits a sign-off decision, When the form posts, Then the decision is written to `journeys.data.signOff` as `{ status: 'approved' | 'needs-changes', by, at, comment, coverageSnapshot }` — `by` resolved via `req.session.login || req.session.userId` (never `accessToken`), `at` a UTC timestamp, `coverageSnapshot` the AC coverage summary at the moment of decision (e.g. "7 of 7 ACs captured") — scoped to the same `tenant_id`/`product_id` as every other `ppc` write.
 
-**AC3:** Given a sign-off decision already exists for this feature, When the PO (or anyone else with access) reloads the page, Then the recorded decision — status, who, when, and the coverage snapshot it was made against — renders near the existing coverage line, so a later viewer sees it was already decided without re-deriving anything.
+**AC3:** Given a sign-off decision already exists for this feature, When the PO (or anyone else with access) reloads the page, Then the recorded decision renders near the existing coverage line as a status badge (`--success` token for "Approved", `--danger` token for "Needs changes") alongside the `escHtml()`-escaped who/when/comment/coverage-snapshot text, so a later viewer sees it was already decided without re-deriving anything.
 
 **AC4:** Given a sign-off decision already exists and new evidence is captured afterward (e.g. the PO re-runs capture-all), When the page renders, Then the existing recorded decision stays visible but is explicitly marked with the coverage snapshot it was recorded against (e.g. "Approved against 5 of 7 ACs") — it must never silently imply it covers evidence captured after the decision was made.
 
@@ -62,9 +64,10 @@ So that **the decision is a durable, visible record instead of something that on
 ## NFRs
 
 - **Performance:** One additional JSONB write on form submit — same cost class as `ppc-s2`'s existing `captureAllDuration` write, no new infra.
-- **Security:** Identity resolved via `req.session.login || req.session.userId`, never `accessToken` (CLAUDE.md canonical-field rule); ADR-025 tenant/product scoping identical to every other `ppc` write (AC5).
+- **Security:** Identity resolved via `req.session.login || req.session.userId`, never `accessToken` (CLAUDE.md canonical-field rule); ADR-025 tenant/product scoping identical to every other `ppc` write (AC5). Free-text comment escaped via `escHtml()` before render (MC-SEC-01).
 - **Accessibility:** Plain `<form>`/`<button>` elements, no client-side JS required (AC1) — matches `ppc-s1`/`ppc-s6`'s own keyboard-operable precedent. Empty-state specificity per AC6.
 - **Audit:** This story is itself the audit mechanism closing `benefit-metric.md` Metric 2's own measurement gap — no separate audit requirement beyond what AC2/AC3 already store and display.
+- **Design system:** Tagged `hasDesignSystemTrack: true` — `scripts/check-design-tokens.js` scans this story's touched files for non-token colors at `/definition-of-ready` (H-DESIGN). Button/badge variant selection (AC1/AC3) is manual-reviewer-judged per `DESIGN.md`'s own hybrid enforcement model.
 
 ## Complexity Rating
 

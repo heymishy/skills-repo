@@ -333,10 +333,11 @@ Update these files when the product context changes (new regulatory requirement,
 
 **Architecture guardrails:** `.github/architecture-guardrails.md`
 **EA registry repo (optional):** `https://github.com/heymishy/ea-registry`
-**Pattern library:** [FILL IN — URL or path to your pattern / component library]
-**Style guide:** [FILL IN — URL or path to your style guide]
-**Reference implementation:** [FILL IN — path in repo, e.g. `src/reference/`]
+**Pattern library / Style guide (web-ui / wuce product):** `artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md` — referenced, not embedded, via `context.yml`'s `design.system_reference` (per `product/constraints.md` #8/#9). Tokens, typography, components, and layout patterns for any screen in `src/web-ui/`. Enforced at `/definition-of-ready` via the `H-DESIGN` hard block (`dsa-s5`, `scripts/check-design-tokens.js`) **only for stories with `hasDesignSystemTrack: true`** on their `pipeline-state.json` entry — this flag is opt-in per story, not automatic; any story that adds or changes UI in `src/web-ui/` should set it. Structural/layout compliance (as opposed to color tokens) is manual reviewer judgment, not automated — check new layout patterns against DESIGN.md's own rules (e.g. its mandatory 768px responsive behavior per pattern) directly.
+**Reference implementation (web-ui shared shell):** `src/web-ui/utils/html-shell.js` (low-level `renderShell`) + `src/web-ui/routes/products.js`'s `renderShellWithNav` (the nav-data-fetching wrapper every full-page handler must call — see `web-ui-patterns.md`, "the single most common web-ui defect in this repo").
 **Repo-level ADR register:** `.github/architecture-guardrails.md` (Active ADRs section)
+
+**2026-10-26 miss, corrected:** a `/review` session on `ppc-s5`/`ppc-s6`/`ppc-s7` initially concluded no design system existed for `src/web-ui/`, reasoning from these three rows still reading `[FILL IN]` and from `architecture-guardrails.md`'s own Style Guide section (which only covers the pipeline-tooling viz, not the product). The design system existed the whole time — a full `DESIGN.md` plus a working DoR enforcement mechanism (`dsa-s5`) — just never linked from here. A `[FILL IN]` placeholder, or a doc that answers a narrower question than the one being asked, is not evidence the thing doesn't exist; grep `artefacts/**/design.md` and `.github/context.yml`'s `design:` block before concluding a design system is absent from a repo using this pipeline.
 
 When `context.yml` sets `architecture.ea_registry_authoritative: true`, keep
 application/interface/domain entries in the EA registry repo and use `/ea-registry`

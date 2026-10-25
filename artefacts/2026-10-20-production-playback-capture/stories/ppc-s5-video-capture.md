@@ -30,6 +30,7 @@ So that **I can confirm a feature does what was promised by watching it happen, 
 - ADR-025: tenant/product scoping must hold identically to screenshot capture — video is committed to the same tenant-connected repo via the same `commitArtefact`/`_resolveOwnerRepo` path.
 - D37: `captureVideoRecording` must be extracted into `src/` the same way `captureAcScreenshots` was (`ppc-s1` Task 0) before this route can call it — `scripts/` is never deployed.
 - See `decisions.md` 2026-10-25 DESIGN entry: this story ships video-only, no captions/transcript.
+- `DESIGN.md` (`hasDesignSystemTrack: true`): the `<video>` element's inline sizing/attributes (AC2, AC7) must match the existing `<img>` screenshot's own current inline-style convention (`playback-evidence.js`'s `style="max-width:480px;display:block;margin-top:8px"`) exactly — not a new, differently-styled treatment. Neither element currently uses `DESIGN.md`'s card/component pattern; fixing that for both is explicitly out of scope here (see `decisions.md` 2026-10-26 RISK-ACCEPT entry) — this story's job is consistency with the existing precedent, not correcting it unilaterally.
 
 ## Dependencies
 
@@ -65,6 +66,7 @@ So that **I can confirm a feature does what was promised by watching it happen, 
 - **Security:** No new exposure surface — see AC3 and `discovery.md`'s own resolved Q1/Q3. Video files follow the same tenant-scoped commit/serve path as screenshots (ADR-025).
 - **Accessibility:** The captured video has no audio narration (an automated UI interaction, not a human-narrated walkthrough) — not subject to WCAG's audio-caption requirement for this specific use case. A transcript remains a deferred fast-follow (see Out of Scope), not a silently-dropped requirement.
 - **Audit:** No new audit requirement beyond what `ppc-s1`/`ppc-s2` already log.
+- **Design system:** Tagged `hasDesignSystemTrack: true` — `scripts/check-design-tokens.js` scans this story's touched files for non-token colors at `/definition-of-ready` (H-DESIGN). No new inline colors are introduced (the `<video>` element reuses the existing `<img>`'s own sizing attributes, not a new style block).
 
 ## Complexity Rating
 
