@@ -1,16 +1,17 @@
-# Definition of Ready: Self-service video capture per AC
+# Definition of Ready: Self-service video capture, combined across ACs where possible
 
 **Story reference:** artefacts/2026-10-20-production-playback-capture/stories/ppc-s5-video-capture.md
 **Test plan reference:** artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s5-test-plan.md
 **Contract proposal:** artefacts/2026-10-20-production-playback-capture/dor/ppc-s5-dor-contract.md
 **Assessed by:** Claude (session)
 **Date:** 2026-10-26
+**Amended 2026-10-26 (pre-implementation, before Task 1 started):** combined-video redesign — see `decisions.md` 2026-10-26 DESIGN entry. No hard block is affected by this amendment; all checks below re-confirmed against the revised story/test-plan/contract.
 
 ---
 
 ## Contract Review
 
-✅ **Contract review passed** — proposed implementation aligns with all 7 ACs. No mismatch found between the Contract Proposal and the story's own ACs/test plan.
+✅ **Contract review passed** — proposed implementation aligns with all 8 ACs (AC1, AC1-combined, AC2–AC7). No mismatch found between the Contract Proposal and the story's own ACs/test plan.
 
 ---
 
@@ -19,8 +20,8 @@
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | User story As/Want/So, named persona | ✅ | Tenant Product Owner |
-| H2 | ≥3 ACs in Given/When/Then | ✅ | 7 ACs |
-| H3 | Every AC has ≥1 test | ✅ | AC1–AC7 all covered, `ppc-s5-test-plan.md` |
+| H2 | ≥3 ACs in Given/When/Then | ✅ | 8 ACs (AC1, AC1-combined, AC2–AC7) |
+| H3 | Every AC has ≥1 test | ✅ | AC1, AC1-combined, AC2–AC7 all covered, `ppc-s5-test-plan.md` (22 tests) |
 | H4 | Out-of-scope populated | ✅ | 4 named exclusions |
 | H5 | Benefit linkage references a named metric | ✅ | m1, m3 |
 | H6 | Complexity rated | ✅ | 2 |
@@ -28,7 +29,7 @@
 | H8 | No uncovered ACs in test plan | ✅ | No gap-table entries |
 | H8-ext | Cross-story schema dependency check | ✅ | `schemaDepends: []` declared — dependency is on `ppc-s1`/`ppc-s2`'s shipped code path, not a `pipeline-state.schema.json` field |
 | H9 | Architecture Constraints populated; no Category E HIGH | ✅ | ADR-018, ADR-025 named; `/review` Run 2 Category E score 5 |
-| H-E2E | Layout-dependent AC without E2E tooling/RISK-ACCEPT | ✅ | AC6/AC7 are CSS-layout-dependent, covered by 2 new Playwright E2E tests — tooling already configured (ADR-018), no RISK-ACCEPT needed |
+| H-E2E | Layout-dependent AC without E2E tooling/RISK-ACCEPT | ✅ | AC6/AC7 are CSS-layout-dependent, covered by 2 new Playwright E2E tests — tooling already configured (ADR-018), no RISK-ACCEPT needed. Unaffected by the combined-video redesign — the layout-dependent clauses are about page-render behaviour, not capture mechanics. |
 | H-NFR | NFR profile exists | ✅ | `artefacts/2026-10-20-production-playback-capture/nfr-profile.md` |
 | H-NFR2 | Compliance NFR with named clause has human sign-off | ✅ (N/A) | No compliance framework applies to this feature |
 | H-NFR3 | Data classification not blank | ✅ | "Confidential" |
@@ -78,7 +79,7 @@ These are appended to the Coding Agent Instructions block below.
 ## Coding Agent Instructions
 
 Proceed: Yes
-Story: Self-service video capture per AC — artefacts/2026-10-20-production-playback-capture/stories/ppc-s5-video-capture.md
+Story: Self-service video capture, combined across ACs where possible — artefacts/2026-10-20-production-playback-capture/stories/ppc-s5-video-capture.md
 Test plan: artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s5-test-plan.md
 
 Goal:
@@ -86,7 +87,8 @@ Make every test in the test plan pass. Do not add scope, behaviour, or structure
 beyond what the tests and ACs specify.
 
 Touch-points: src/utils/capture-video.js (new), src/web-ui/routes/playback-evidence.js,
-src/web-ui/adapters/journey-store-pg.js, tests/check-ppc-s5-video-capture.js (new),
+src/web-ui/adapters/journey-store-pg.js, src/web-ui/server.js (route registration --
+amended 2026-10-26, see dor-contract.md), tests/check-ppc-s5-video-capture.js (new),
 tests/e2e/ppc-s5-video-lazy-load.spec.js (new)
 
 Do not modify: src/web-ui/adapters/session-page-adapter.js, src/utils/capture-screenshots.js,
@@ -96,11 +98,22 @@ Constraints:
 - Plain Node.js, raw http.createServer, no Express, no new npm dependencies (web-ui-patterns.md)
 - captureVideoRecording is a PLAIN extracted function (mirrors src/utils/capture-screenshots.js),
   NOT a D37 adapter — do not add a setX()/stub-throws wrapper for it
-- Reuse the EXISTING session-page-adapter.js's setSessionPageAdapter seam for all test mocking —
+- Reuse the EXISTING session-page-adapter.js's setSessionPageAdapter seam for all test mocking --
   do not introduce a parallel mocking seam
-- getAuthenticatedPage must be called exactly once per AC (AC3) — video capture reuses the
-  SAME authed.browser the screenshot capture already obtained
-- Every <video> element: preload="none", a poster attribute, explicit width/height (AC7)
+- Video capture is COMBINED, not per-AC: a single shared helper runs ONCE per capture-trigger
+  request (after the screenshot loop/single screenshot completes), recording ONE video spanning
+  every AC captured in that request, then associates that SAME video path with every AC in the
+  group. _captureOneAc itself stays screenshot-only -- do not embed video capture inside it.
+- getAuthenticatedPage must be called exactly once per REQUEST, not once per AC (AC3) -- the
+  combined video capture reuses the SAME authed.browser the screenshot loop already obtained
+- A new Playwright context created from that browser does NOT inherit the session cookie seeded
+  on the original context -- the combined-capture clip's own run() callback must re-seed it via
+  page.context().addCookies() before navigating to each AC's own target URL
+- Every <video> element: preload="none", a poster attribute, explicit width/height (AC7); when a
+  video is shared across multiple ACs, each AC's own section shows a note naming the others (AC2)
+- A combined video's failure is tracked via captureAllFailed for EVERY AC in the group (all-or-
+  nothing for the group), never for only some of them, and never deletes any AC's own already-
+  succeeded screenshot (AC4)
 - Video served only via the new tenant-scoped route — never via the existing untenanted
   /playback-media/ route (AC2)
 - Architecture standards: read .github/architecture-guardrails.md before implementing —
@@ -129,6 +142,6 @@ Oversight level: Medium
 
 **Oversight level:** Medium
 **Sign-off required:** Operator awareness stands in for tech-lead sign-off (no named tech lead configured, solo-operator repo — same standing convention as `ppc-s1`–`ppc-s4`).
-**Signed off by:** Pending — awaiting operator confirmation in chat.
+**Signed off by:** Hamish King (Platform Owner), via direct chat confirmation to proceed into the inner coding loop, 2026-10-26. Re-confirmed implicitly by directing the combined-video redesign amendment on the same date, before any task was executed.
 
-**Definition of ready: PROCEED** (pending sign-off confirmation above)
+**Definition of ready: PROCEED**

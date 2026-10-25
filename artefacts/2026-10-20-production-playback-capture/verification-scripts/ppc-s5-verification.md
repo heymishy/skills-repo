@@ -1,4 +1,4 @@
-# AC Verification Script: Self-service video capture per AC
+# AC Verification Script: Self-service video capture, combined across ACs where possible
 
 **Story reference:** artefacts/2026-10-20-production-playback-capture/stories/ppc-s5-video-capture.md
 **Technical test plan:** artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s5-test-plan.md
@@ -71,17 +71,34 @@
 
 ---
 
-### Scenario 4: Capturing a whole feature includes video for every video-enabled AC, and one failure doesn't stop the rest
+### Scenario 4a: Capturing a whole feature produces ONE shared video covering every AC, not a separate video each
+
+**Covers:** AC1-combined, AC2 (also-covers note)
+
+**Steps:**
+1. Click "Capture all" on a feature with 3 or more ACs that don't have targets set yet.
+2. Wait for it to finish.
+3. Open any two of the captured ACs and compare their video players.
+4. Look just below each AC's video for a note about other ACs.
+
+**Expected outcome:**
+> Every captured AC has a video, and it is the SAME video for all of them (the same clip plays the same sequence of actions for each AC you check). Each AC's section shows a short note naming which other ACs the video also covers, e.g. "This video also covers: AC2, AC3."
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 4b: A combined video failure doesn't stop the screenshot run, and is all-or-nothing for the group
 
 **Covers:** AC4
 
 **Steps:**
-1. Click "Capture all" on a feature with several ACs.
-2. Wait for it to finish.
-3. (If the engineer running this session has simulated one AC's video failing) Check that specific AC.
+1. (Ask the engineer running this session to force the combined video recording to fail after the screenshots for a 3-AC capture-all run have already succeeded.)
+2. Reload the page and check all 3 ACs.
 
 **Expected outcome:**
-> Every AC that was supposed to get a video now has one, except the one that was made to fail — that AC still shows its screenshot, plus a note that video capture failed for it. The capture-all run completes for all ACs; it doesn't stop partway through.
+> All 3 ACs still show their own screenshot, captured successfully. None of them has a video, and each shows the same "video capture failed" note — it is not the case that some of the 3 got a video while others didn't. The capture-all run itself still completed; it didn't stop partway through the screenshots.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -144,7 +161,8 @@
 | Scenario 1 (AC1) | | |
 | Scenario 2 (AC2) | | |
 | Scenario 3 (AC3) | | |
-| Scenario 4 (AC4) | | |
+| Scenario 4a (AC1-combined, AC2) | | |
+| Scenario 4b (AC4) | | |
 | Scenario 5 (AC5) | | |
 | Scenario 6 (AC6) | | |
 | Edge case (AC7) | | |

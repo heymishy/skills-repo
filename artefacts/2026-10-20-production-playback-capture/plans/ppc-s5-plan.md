@@ -1,4 +1,6 @@
-# Self-service video capture per AC — Implementation Plan
+# Self-service video capture, combined across ACs where possible — Implementation Plan
+
+> **Revised 2026-10-26, before Task 1 was executed:** combined-video redesign per the operator's own request — see `decisions.md` 2026-10-26 DESIGN entry and the story's own Background correction. Tasks 1–3, 5, 8 are unchanged. Tasks 4, 6, 7 are reworked below: video capture moves out of `_captureOneAc` into a new shared `_captureVideoForAcIds` helper, called ONCE per capture-trigger request (not once per AC), after the screenshot work completes.
 
 > **For agent execution:** Use /subagent-execution (if subagents available)
 > or /tdd per task if executing in this session.
@@ -15,12 +17,15 @@
 ```
 Create:
   src/utils/capture-video.js             — extracted, failure-hardened captureVideoRecording
-  tests/check-ppc-s5-video-capture.js    — 19 unit/integration tests (test plan AC1-AC7)
+  tests/check-ppc-s5-video-capture.js    — 22 unit/integration tests (test plan AC1, AC1-combined, AC2-AC7)
   tests/e2e/ppc-s5-video-lazy-load.spec.js — 2 Playwright E2E tests (AC6 console-error, AC7 eager-download/layout-shift)
 
 Modify:
-  src/web-ui/routes/playback-evidence.js — _captureOneAc extended for video; new handleGetCaptureVideo;
-                                            <video> render fragment; handlePostCaptureAll video loop + failure tracking
+  src/web-ui/routes/playback-evidence.js — NEW shared _captureVideoForAcIds helper (combined video,
+                                            not embedded in _captureOneAc, which stays unchanged);
+                                            new handleGetCaptureVideo; <video> render fragment +
+                                            also-covers note; handlePostCaptureAll combined-video
+                                            step + all-or-nothing captureAllFailed tracking
   src/web-ui/adapters/journey-store-pg.js — add captureVideos to _sanitise()'s allowlist (fdn-s1 rule)
   src/web-ui/server.js                    — register the new video-serving route
 ```
@@ -334,7 +339,9 @@ git commit -m "feat(ppc-s5): add captureVideos to journey-store-pg.js's fdn-s1 a
 
 ---
 
-## Task 4: Extend `_captureOneAc` and `handlePostCaptureTrigger` to capture video alongside the screenshot (AC1, AC3)
+## Task 4: New shared `_captureVideoForAcIds` helper; wire it into `handlePostCaptureTrigger` (AC1, AC3)
+
+**Design note:** `_captureOneAc` stays screenshot-only, exactly as `ppc-s1`/`ppc-s2` shipped it — no signature change, no return-type change. Video capture is a SEPARATE step, run once per capture-trigger request (a group of one AC for the single-AC trigger path; multiple ACs for capture-all, see Task 7), not embedded per-AC inside `_captureOneAc`.
 
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
@@ -384,7 +391,7 @@ function setupDodCompleteJourney(store, opts) {
 function makeMockPool(rows) { return { query: async function() { return { rows: rows }; } }; }
 
 queue.push(function() {
-  return test('handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forVideoEnabledAc', async function() {
+  return test('handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
@@ -413,11 +420,15 @@ queue.push(function() {
       video: function() { return { path: async function() { return fakeVideoPath; } }; }
     };
     var fakeContext = { newPage: async function() { return fakeVideoPage; }, close: async function() {} };
+    var newContextCallCount = 0;
     var browserClosed = false;
     sessionPageAdapter.setSessionPageAdapter(async function() {
       return {
         page: fakePage,
-        browser: { close: async function() { browserClosed = true; }, newContext: async function() { return fakeContext; } }
+        browser: {
+          close: async function() { browserClosed = true; },
+          newContext: async function() { newContextCallCount++; return fakeContext; }
+        }
       };
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
@@ -431,6 +442,7 @@ queue.push(function() {
     await pe.handlePostCaptureTrigger(req, res, null, mockPool);
 
     assert.strictEqual(res._json.ok, true);
+    assert.strictEqual(newContextCallCount, 1, 'exactly one video recording context for a single-AC trigger');
     assert.ok(seenCookies.length > 0, 'the video-recording context must have its session cookie re-seeded');
     assert.strictEqual(seenCookies[0][0].value, req.sessionId, 'the re-seeded cookie must carry the SAME session id, no second/new auth path');
     var reloaded = store2.getJourney(setup.journeyId);
@@ -446,7 +458,7 @@ queue.push(function() {
 node tests/check-ppc-s5-video-capture.js
 ```
 
-Expected output: `FAIL — handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forVideoEnabledAc` (`reloaded.captureVideos` is `undefined` — `_captureOneAc` doesn't call `captureVideoRecording` yet)
+Expected output: `FAIL — handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc` (`reloaded.captureVideos` is `undefined` — no video-capture step exists yet)
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -457,113 +469,89 @@ In `src/web-ui/routes/playback-evidence.js`:
 const { captureVideoRecording } = require('../../utils/capture-video');
 ```
 
-2. Replace `_captureOneAc`'s signature and body:
+2. `_captureOneAc` itself is UNCHANGED — do not modify its signature or body. Add this NEW function immediately after it:
 ```js
 /**
+ * ppc-s5 (AC1, AC1-combined, AC3): records ONE video spanning every AC in
+ * acIds, in a single Playwright recording context -- a group of one for a
+ * single-AC trigger, several ACs for capture-all (Task 7). Reuses the SAME
+ * authenticated browser the screenshot work already obtained (AC3) -- a new
+ * context created from that browser does NOT inherit the cookie seeded on
+ * the original context, so the clip's own run() callback re-seeds it via
+ * page.context().addCookies() before navigating to each AC's own target URL
+ * in sequence. Returns the resulting video path (or null if nothing could
+ * be recorded), or throws on failure -- callers decide how to track a
+ * failure against each acId in the group (AC4, Task 7).
  * @param {object} journey
- * @param {string} acId
- * @param {{url:string, selector:string}} target
+ * @param {string[]} acIds
  * @param {{owner:string, repo:string}} ownerRepo
  * @param {object} req
- * @param {object} page
- * @param {object} [browser] - ppc-s5: when provided, video is captured
- *   alongside the screenshot using the SAME authenticated browser.
- * @param {string} [baseUrl] - ppc-s5: same baseUrl already used by
- *   getAuthenticatedPage, reused here to re-seed the video context's cookie.
- * @returns {Promise<{screenshotPath:string, videoError:(Error|null)}>}
+ * @param {object} browser
+ * @param {string} baseUrl
+ * @returns {Promise<string|null>}
  */
-async function _captureOneAc(journey, acId, target, ownerRepo, req, page, browser, baseUrl) {
-  await page.goto(target.url);
-  var shots = await captureAcScreenshots({
-    page: page,
+async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, baseUrl) {
+  if (!browser || acIds.length === 0) return null;
+  var sessionId = req.sessionId;
+  var cookieDomain = new URL(baseUrl || 'https://localhost').hostname;
+  var captureTargets = journey.captureTargets || [];
+  var videoResults = await captureVideoRecording({
+    browser: browser,
     featureSlug: journey.featureSlug,
     storySlug: 'ppc-s1',
-    acList: [{ acId: acId, selector: target.selector }]
-  });
-  var shot = shots[0];
-
-  var repoRoot = getRepoRoot(req);
-  // Defense in depth, in addition to (not instead of) the ACID_RE allowlist
-  // at each call site -- CLAUDE.md's path traversal guard rule requires both.
-  // Never log the raw resolved path on failure.
-  var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
-  if (!resolvedShotPath) {
-    var invalidPathErr = new Error('invalid capture path');
-    invalidPathErr.invalidPath = true;
-    throw invalidPathErr;
-  }
-  var content = fs.readFileSync(resolvedShotPath);
-
-  await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-
-  var screenshots = journey.captureScreenshots || {};
-  screenshots[acId] = shot.path;
-  _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
-
-  // ppc-s5 (AC1, AC3): video capture reuses the SAME authenticated browser
-  // -- a new Playwright context does NOT inherit the cookie seeded on the
-  // original context (session-page-adapter.js's realGetAuthenticatedPage
-  // seeds it at context level, not browser level), so the clip's own run()
-  // callback re-seeds it via page.context().addCookies() before navigating.
-  // This keeps the exposure bound identical to screenshot capture -- no
-  // second, new, or differently-scoped auth path (AC3).
-  var videoError = null;
-  if (browser) {
-    try {
-      var sessionId = req.sessionId;
-      var cookieDomain = new URL(baseUrl || 'https://localhost').hostname;
-      var videoResults = await captureVideoRecording({
-        browser: browser,
-        featureSlug: journey.featureSlug,
-        storySlug: 'ppc-s1',
-        clips: [{
-          name: acId,
-          run: async function(videoPage) {
-            await videoPage.context().addCookies([{
-              name: 'session_id',
-              value: sessionId,
-              domain: cookieDomain,
-              path: '/',
-              httpOnly: true,
-              secure: true,
-              sameSite: 'Lax'
-            }]);
-            await videoPage.goto(target.url);
+    clips: [{
+      name: acIds.join('+'),
+      run: async function(videoPage) {
+        await videoPage.context().addCookies([{
+          name: 'session_id',
+          value: sessionId,
+          domain: cookieDomain,
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'Lax'
+        }]);
+        for (var i = 0; i < acIds.length; i++) {
+          var targetState = _journeyStore.getCaptureTargetState(captureTargets, acIds[i]);
+          if (targetState && targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET) {
+            await videoPage.goto(targetState.url);
           }
-        }]
-      });
-      var videoResult = videoResults[0];
-      if (videoResult && videoResult.path) {
-        var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoResult.path);
-        if (resolvedVideoPath) {
-          var videoContent = fs.readFileSync(resolvedVideoPath);
-          await commitArtefact(videoResult.path, videoContent.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-          var videos = journey.captureVideos || {};
-          videos[acId] = videoResult.path;
-          _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
         }
       }
-    } catch (err) {
-      // AC4: a video failure must never abort the whole run and must never
-      // delete the screenshot already persisted above -- returned to the
-      // caller as videoError, not thrown, so the screenshot-success path
-      // above is already durable by the time this runs.
-      videoError = err;
-    }
-  }
+    }]
+  });
+  var videoResult = videoResults[0];
+  if (!videoResult || !videoResult.path) return null;
 
-  return { screenshotPath: shot.path, videoError: videoError };
+  var repoRoot = getRepoRoot(req);
+  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoResult.path);
+  if (!resolvedVideoPath) return null;
+  var videoContent = fs.readFileSync(resolvedVideoPath);
+  await commitArtefact(videoResult.path, videoContent.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+  return videoResult.path;
 }
 ```
 
-3. Update `handlePostCaptureTrigger`'s call site (previously `var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);`):
+3. Update `handlePostCaptureTrigger`'s call site -- AFTER the existing `_captureOneAc` call succeeds (do not change `_captureOneAc`'s own call signature at all):
 ```js
-    var captureResult = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page, authed.browser, baseUrl);
+    var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
+    try {
+      var videoPath = await _captureVideoForAcIds(journey, [acId], ownerRepo, req, authed.browser, baseUrl);
+      if (videoPath) {
+        var videos = journey.captureVideos || {};
+        videos[acId] = videoPath;
+        _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
+      }
+    } catch (videoErr) {
+      // AC4 (single-AC case, a group of one): a video failure never aborts
+      // the request and never undoes the screenshot success above.
+      journey.lastVideoCaptureFailure = { acIds: [acId], error: videoErr && videoErr.message };
+    }
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
     }
-    _sendJson(res, 200, { ok: true, screenshotPath: captureResult.screenshotPath });
+    _sendJson(res, 200, { ok: true, screenshotPath: shotPath });
 ```
 
 - [ ] **Step 4: Run test — must pass**
@@ -572,7 +560,7 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page, browse
 node tests/check-ppc-s5-video-capture.js
 ```
 
-Expected output: `PASS: handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forVideoEnabledAc`
+Expected output: `PASS: handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc`
 
 - [ ] **Step 5: Run full suite — no regressions**
 
@@ -580,13 +568,13 @@ Expected output: `PASS: handlePostCaptureTrigger_recordsVideoAlongsideScreenshot
 node scripts/run-all-tests.js
 ```
 
-Expected output: all tests passing — **pay special attention to `tests/check-ppc-s1-playback-evidence-route.js` and `tests/check-ppc-s2-capture-all-route.js`**, since `_captureOneAc`'s return type changed from a plain string to `{screenshotPath, videoError}`. Their existing `setSessionPageAdapter` mocks return `{ page: fakePage, browser: { close: ... } }` with no `newContext` — since this task's code only calls `captureVideoRecording` `if (browser)` is truthy (always true, since `browser` is always provided by both callers), those existing tests' fake `browser` objects will now need `newContext` too, or they'll throw inside the new `if (browser)` block. **If this run shows new failures in those two files, add a minimal `newContext: async function() { throw new Error('video not expected in this test'); }` is wrong — instead add a no-op `newContext` returning a context whose `newPage()` returns a page with `goto`, `context().addCookies()`, and `video().path()` returning `null`, so the existing screenshot-only tests continue to pass with video capture simply recording nothing (matches AC6: video is additive, never required).** This is expected, bounded regression-test maintenance, not a new gap — note it in the PR description.
+Expected output: all tests passing. `_captureOneAc` itself is unchanged, so `tests/check-ppc-s1-playback-evidence-route.js`'s and `tests/check-ppc-s2-capture-all-route.js`'s existing assertions on its own return value need no changes. Their `setSessionPageAdapter` mocks return `{ page: fakePage, browser: { close: ... } }` with no `newContext` — since `_captureVideoForAcIds` is a NEW, separate call these existing tests never exercise it, so no `newContext` mock is needed there either.
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
-git commit -m "feat(ppc-s5): capture video alongside screenshot on single-AC trigger, reusing the authenticated browser (AC1, AC3)"
+git commit -m "feat(ppc-s5): add shared _captureVideoForAcIds helper, wire into single-AC trigger (AC1, AC3)"
 ```
 
 ---
@@ -723,7 +711,7 @@ git commit -m "feat(ppc-s5): add tenant-scoped GET route for serving captured vi
 
 ---
 
-## Task 6: Render `<video>` inline with AC7 attributes; AC6 empty/no-video state
+## Task 6: Render `<video>` inline with AC7 attributes; AC6 empty/no-video state; AC2 "also covers" note for shared videos
 
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
@@ -769,6 +757,40 @@ queue.push(function() {
     assert.ok(/width="\d+"/.test(res._body) && /height="\d+"/.test(res._body), 'AC7: explicit width/height required');
   });
 });
+
+queue.push(function() {
+  return test('renderEvidencePage_combinedVideo_showsAlsoCoversNoteNamingOtherAcs', async function() {
+    var store6b = getStore();
+    var setup = setupDodCompleteJourney(store6b, {});
+    store6b.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    var videoRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/combined.webm';
+    // All 3 ACs share the SAME video path -- this is what "combined" means
+    // on disk: one path, multiple acId keys pointing at it.
+    store6b.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRel, AC2: videoRel, 'AC1 — Shows the dashboard': videoRel } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.ok(res._body.indexOf('also covers') !== -1, 'a shared video must show a note naming the other ACs it also covers');
+  });
+});
+
+queue.push(function() {
+  return test('renderEvidencePage_soloVideo_showsNoAlsoCoversNote', async function() {
+    var store6c = getStore();
+    var setup = setupDodCompleteJourney(store6c, {});
+    store6c.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    var videoRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1-only.webm';
+    store6c.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRel } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._body.indexOf('also covers'), -1, 'a video not shared with any other AC must show no "also covers" note');
+  });
+});
 ```
 
 - [ ] **Step 2: Run test — must fail**
@@ -801,18 +823,29 @@ In `handleGetPlaybackEvidence`, in the `acs = acRows.map(...)` block, add `video
       lastCaptureFailure: captureAllFailed[ac.acId] || null
     };
   });
+  // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own
+  // section to name the others -- computed here (not in the render
+  // function) since it needs the full acs list, which the render function
+  // only sees one row of at a time.
+  acs.forEach(function(ac) {
+    if (!ac.videoPath) { ac.coCoveredAcIds = []; return; }
+    ac.coCoveredAcIds = acs.filter(function(other) { return other.acId !== ac.acId && other.videoPath === ac.videoPath; }).map(function(other) { return other.acId; });
+  });
 ```
 
-In `_renderPlaybackEvidenceHtml`'s `rows = acs.map(...)` block, add a `videoHtml` fragment and include it in the `<li>` output, using a placeholder poster image path (reusing the existing screenshot as its own poster when both exist, falling back to no `poster` attribute only if no screenshot exists — but AC1 already guarantees a screenshot is always captured alongside video, so a screenshot path is always available when a video exists):
+In `_renderPlaybackEvidenceHtml`'s `rows = acs.map(...)` block, add a `videoHtml` fragment (with the "also covers" note when `coCoveredAcIds` is non-empty) and include it in the `<li>` output, using a placeholder poster image path (reusing the existing screenshot as its own poster when both exist, falling back to no `poster` attribute only if no screenshot exists — but AC1 already guarantees a screenshot is always captured alongside video, so a screenshot path is always available when a video exists):
 
 ```js
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
       : '';
+    var alsoCoversHtml = (ac.coCoveredAcIds && ac.coCoveredAcIds.length > 0)
+      ? '<p>This video also covers: ' + ac.coCoveredAcIds.map(_escapeHtml).join(', ') + '</p>'
+      : '';
     var videoHtml = ac.videoPath
       ? '<video controls preload="none" poster="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" width="480" height="270" style="display:block;margin-top:8px" src="' + baseUrl + '/video/' + encodeURIComponent(ac.acId) + '">' +
           'Your browser does not support the video tag.' +
-        '</video>'
+        '</video>' + alsoCoversHtml
       : '';
 ```
 
@@ -845,12 +878,14 @@ Expected output: all tests passing
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
-git commit -m "feat(ppc-s5): render <video> inline with preload=none/poster/explicit dimensions (AC2, AC6, AC7)"
+git commit -m "feat(ppc-s5): render <video> inline with preload=none/poster/explicit dimensions and an also-covers note for shared videos (AC2, AC6, AC7)"
 ```
 
 ---
 
-## Task 7: Extend `handlePostCaptureAll`'s loop for video + `captureAllFailed` tracking (AC4)
+## Task 7: `handlePostCaptureAll` records ONE combined video for the whole run (AC1-combined, AC4)
+
+**Design note:** `_captureOneAc`'s own per-item call inside the existing loop is UNCHANGED (screenshot-only, as it always was). The combined video is a separate step, run ONCE after the loop finishes, still inside the SAME `try` block so the authenticated browser (closed in the existing `finally`) is still open for it.
 
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
@@ -860,11 +895,62 @@ git commit -m "feat(ppc-s5): render <video> inline with preload=none/poster/expl
 
 ```js
 queue.push(function() {
-  return test('handlePostCaptureAll_includesVideoInTheSameLoop_oneAcVideoFailureDoesNotAbortRun', async function() {
+  return test('handlePostCaptureAll_combinedVideo_coversEveryScreenshottedAc', async function() {
     var store7 = getStore();
     var setup = setupDodCompleteJourney(store7, {});
-    store7.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    store7.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+
+    var fakeCombinedVideoPath = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/combined.webm';
+    var fakeVideoAbs = path.join(tmpRoot, fakeCombinedVideoPath);
+    fs.mkdirSync(path.dirname(fakeVideoAbs), { recursive: true });
+    fs.writeFileSync(fakeVideoAbs, Buffer.from('fake webm bytes'));
+
+    var fakePage = {
+      goto: async function() {},
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    var gotoUrls = [];
+    var fakeVideoPage = {
+      goto: async function(url) { gotoUrls.push(url); },
+      context: function() { return { addCookies: async function() {} }; },
+      video: function() { return { path: async function() { return fakeCombinedVideoPath; } }; }
+    };
+    var newContextCallCount = 0;
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return {
+        page: fakePage,
+        browser: {
+          close: async function() {},
+          newContext: async function() { newContextCallCount++; return { newPage: async function() { return fakeVideoPage; }, close: async function() {} }; }
+        }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(newContextCallCount, 1, 'exactly one combined recording context for the whole run, not one per AC');
+    assert.strictEqual(gotoUrls.length, 1, 'one AC in this fixture -- one navigation inside the combined recording');
+    var reloaded = store7.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureVideos && reloaded.captureVideos.AC1, 'the combined video must be recorded against AC1');
+  });
+});
+
+queue.push(function() {
+  return test('handlePostCaptureAll_combinedVideoFailure_trackedForEveryAcInTheGroup_screenshotsUnaffected', async function() {
+    var store7b = getStore();
+    var setup = setupDodCompleteJourney(store7b, {});
+    store7b.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-fail-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
     repoRootAdapter.setRepoRoot(tmpRoot);
 
@@ -881,9 +967,7 @@ queue.push(function() {
         page: fakePage,
         browser: {
           close: async function() {},
-          newContext: async function() {
-            return { newPage: async function() { throw new Error('simulated video failure'); }, close: async function() {} };
-          }
+          newContext: async function() { return { newPage: async function() { throw new Error('simulated combined video failure'); }, close: async function() {} }; }
         }
       };
     });
@@ -894,9 +978,10 @@ queue.push(function() {
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
     assert.strictEqual(res._json.captured.length, 1, 'the AC must still be reported captured (screenshot succeeded)');
-    var reloaded = store7.getJourney(setup.journeyId);
-    assert.ok(reloaded.captureScreenshots.AC1, 'screenshot must survive the video failure');
+    var reloaded = store7b.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureScreenshots.AC1, 'screenshot must survive the combined video failure');
     assert.ok(reloaded.captureAllFailed && reloaded.captureAllFailed.AC1, 'the video failure must be tracked via the existing captureAllFailed mechanism');
+    assert.strictEqual((reloaded.captureVideos || {}).AC1, undefined, 'no video must be recorded for the AC when the combined recording fails');
   });
 });
 ```
@@ -907,36 +992,55 @@ queue.push(function() {
 node tests/check-ppc-s5-video-capture.js
 ```
 
-Expected output: `FAIL` — `handlePostCaptureAll` still treats `_captureOneAc`'s return value as a plain string (`item.acId, screenshotPath: shotPath`) and has no video-failure tracking yet; `reloaded.captureAllFailed.AC1` is `undefined`
+Expected output: `FAIL` on both — `handlePostCaptureAll` has no combined-video step yet; `reloaded.captureVideos` is `undefined`
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `handlePostCaptureAll`'s loop, replace:
+In `handlePostCaptureAll`, the existing loop itself is UNCHANGED. Add the combined-video step immediately after the `for` loop, still inside the same `try` block (before its `finally`):
+
 ```js
+    var captured = [];
+    var failed = [];
+    var startedAt = Date.now();
+    try {
+      for (var i = 0; i < listResult.toCapture.length; i++) {
+        var item = listResult.toCapture[i];
+        captureAllLock.updateProgress(journey.journeyId, i + 1);
         try {
           var shotPath = await _captureOneAc(journey, item.acId, item.target, ownerRepo, req, authed.page);
           captured.push({ acId: item.acId, screenshotPath: shotPath });
         } catch (acErr) {
           failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
         }
-```
-with:
-```js
+      }
+      // ppc-s5 (AC1-combined, AC4): ONE combined video spans every AC that
+      // screenshotted successfully in this run -- recorded here, still
+      // inside the authenticated browser's own lifetime (closed in the
+      // existing finally block below). All-or-nothing for the group: either
+      // every AC in capturedAcIds gets the SAME video path, or (on failure)
+      // every one of them gets the SAME captureAllFailed entry -- never a
+      // partial split within the group.
+      var capturedAcIds = captured.map(function(c) { return c.acId; });
+      if (capturedAcIds.length > 0) {
         try {
-          var captureResult = await _captureOneAc(journey, item.acId, item.target, ownerRepo, req, authed.page, authed.browser, baseUrl);
-          captured.push({ acId: item.acId, screenshotPath: captureResult.screenshotPath });
-          // ppc-s5 (AC4): a video-only failure is tracked the same way a
-          // full capture failure is -- via captureAllFailed -- but the
-          // screenshot above has ALREADY been persisted and is NOT
-          // affected; this AC still counts as "captured" for the
-          // screenshot, with an additional video-specific failure note.
-          if (captureResult.videoError) {
-            failed.push({ acId: item.acId, retry: true, error: captureResult.videoError.message, videoOnly: true });
+          var combinedVideoPath = await _captureVideoForAcIds(journey, capturedAcIds, ownerRepo, req, authed.browser, baseUrl);
+          if (combinedVideoPath) {
+            var videos = journey.captureVideos || {};
+            capturedAcIds.forEach(function(acId) { videos[acId] = combinedVideoPath; });
+            _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
           }
-        } catch (acErr) {
-          failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
+        } catch (videoErr) {
+          capturedAcIds.forEach(function(acId) {
+            failed.push({ acId: acId, retry: true, error: videoErr && videoErr.message, videoOnly: true });
+          });
         }
+      }
+    } finally {
+      if (authed.browser && authed.browser.close) { await authed.browser.close(); }
+    }
 ```
+
+(This is the SAME `try`/`finally` structure already in `handlePostCaptureAll` — only the new block between the closing `}` of the `for` loop and the `finally` is added. The existing `captureAllFailed` consolidation code further below, which already does `failed.forEach(function(f) { captureAllFailed[f.acId] = ...; })`, needs no change — it already handles whatever `failed` contains.)
 
 - [ ] **Step 4: Run test — must pass**
 
@@ -944,7 +1048,7 @@ with:
 node tests/check-ppc-s5-video-capture.js
 ```
 
-Expected output: `PASS: handlePostCaptureAll_includesVideoInTheSameLoop_oneAcVideoFailureDoesNotAbortRun`
+Expected output: `PASS: handlePostCaptureAll_combinedVideo_coversEveryScreenshottedAc`, `PASS: handlePostCaptureAll_combinedVideoFailure_trackedForEveryAcInTheGroup_screenshotsUnaffected`
 
 - [ ] **Step 5: Run full suite — no regressions**
 
@@ -952,13 +1056,13 @@ Expected output: `PASS: handlePostCaptureAll_includesVideoInTheSameLoop_oneAcVid
 node scripts/run-all-tests.js
 ```
 
-Expected output: all tests passing — **re-check `tests/check-ppc-s2-capture-all-route.js`'s own existing `captureAllFailed` assertions specifically**, since a video-only failure now ALSO populates `captureAllFailed`, a field that story's own tests assert on.
+Expected output: all tests passing — **re-check `tests/check-ppc-s2-capture-all-route.js`'s own existing fixtures**: their `setSessionPageAdapter` mocks return `{ page: fakePage, browser: { close: ... } }` with no `newContext`. Since this task's new code only calls `_captureVideoForAcIds` when `capturedAcIds.length > 0` (i.e. at least one screenshot succeeded), and `_captureVideoForAcIds` itself calls `browser.newContext(...)`, any existing `ppc-s2` fixture with at least one successful screenshot will now also need a `newContext` on its mocked `browser`, or it will throw inside this new step. Add a no-op `newContext` returning a context whose `newPage()` resolves a page with `goto`, `context().addCookies()`, and `video().path()` returning `null` (consistent with "video is additive, never required" — the combined step simply records nothing useful and `combinedVideoPath` stays falsy). This is expected, bounded regression-test maintenance.
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
-git commit -m "feat(ppc-s5): track a video-only capture-all failure via the existing captureAllFailed mechanism (AC4)"
+git commit -m "feat(ppc-s5): record one combined video per capture-all run, tracked all-or-nothing via captureAllFailed (AC1-combined, AC4)"
 ```
 
 ---
