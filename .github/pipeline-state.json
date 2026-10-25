@@ -42646,10 +42646,10 @@
       "slug": "2026-10-20-production-playback-capture",
       "name": "Production Playback Capture",
       "track": "standard",
-      "stage": "review",
+      "stage": "definition-of-ready",
       "health": "green",
       "blocker": "",
-      "updatedAt": "2026-10-26T02:00:00.000Z",
+      "updatedAt": "2026-10-26T04:00:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -42660,36 +42660,54 @@
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
-          "evidence": "ppc-s6-review-2.md, ppc-s7-review-2.md -- escHtml() now explicit in Architecture Constraints and ACs for discovery.md/benefit-metric.md summary content (ppc-s6) and the free-text sign-off comment (ppc-s7), resolving 1-M1 from Run 1",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-26T02:00:00.000Z"
+          "evidence": "ppc-s5/s6/s7-dor.md H9 -- escHtml() explicit in Architecture Constraints/ACs for discovery.md/benefit-metric.md summary content (ppc-s6) and the free-text sign-off comment (ppc-s7); confirmed again at /definition-of-ready",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
         },
         {
           "id": "ppc-design-system",
           "category": "pattern",
           "label": "DESIGN.md token/component/layout compliance (dsa-s5 / H-DESIGN)",
           "status": "met",
-          "evidence": "ppc-s5/s6/s7 retroactively tagged hasDesignSystemTrack:true; ppc-s6 AC6 adds the mandatory 768px responsive stack; ppc-s7 AC1/AC3 name the real button/badge variants -- see decisions.md 2026-10-26 DESIGN entry",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-26T02:00:00.000Z"
+          "evidence": "H-DESIGN run via node scripts/check-design-tokens.js against ppc-s5/s6/s7's real touch points (playback-evidence.js, journey-store-pg.js) -- PASS on both after fixing one pre-existing non-token color (#ddd -> #E4E7EB). html-shell.js/products.js are not touch points for these stories and were correctly excluded -- see decisions.md 2026-10-26 DESIGN entry for a much larger pre-existing gap found there, logged separately",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
         },
         {
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; auth bypass is test-fixture-layer only",
           "status": "met",
-          "evidence": "ppc-s5-review-1.md -- Architecture Constraints explicitly names ADR-018; video capture reuses ppc-s1's existing session-reuse mechanism, no new auth path",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-26T01:00:00.000Z"
+          "evidence": "ppc-s5-dor.md H9/H-E2E -- Architecture Constraints explicitly names ADR-018; video capture reuses ppc-s1's existing session-reuse mechanism, no new auth path; AC6/AC7's layout-dependent claims covered by real Playwright E2E tests",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
         },
         {
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer via tenant_id scoping",
           "status": "met",
-          "evidence": "ppc-s5-review-1.md, ppc-s6-review-1.md, ppc-s7-review-1.md -- all three stories explicitly scope reads/writes by tenant_id/product_id, no new cross-tenant exposure surface found",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-26T01:00:00.000Z"
+          "evidence": "ppc-s5/s6/s7-dor.md H9 -- all three stories explicitly scope reads/writes by tenant_id/product_id, no new cross-tenant exposure surface found; re-confirmed at /definition-of-ready including AC5's dedicated cross-tenant test (ppc-s7)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
+        },
+        {
+          "id": "NFR-ppc-s5s6s7-performance",
+          "category": "nfr",
+          "label": "Bounded per-request overhead (video page-render lazy-load, summary fetch, sign-off write) -- no new class of latency risk",
+          "status": "met",
+          "evidence": "nfr-profile.md Performance section -- ppc-s5 AC7 (preload=none), ppc-s6 (2 bounded fetchArtefact calls), ppc-s7 (1 bounded JSONB write)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
+        },
+        {
+          "id": "NFR-ppc-s5s6s7-accessibility",
+          "category": "nfr",
+          "label": "Keyboard-operable, no client-side JS required; text-distinct (not colour-only) status states",
+          "status": "met",
+          "evidence": "nfr-profile.md Accessibility section -- ppc-s5 (no audio-caption requirement, native video controls), ppc-s6 (shell-wrap preserves existing forms), ppc-s7 (plain form elements, empty-state specificity)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-26T03:00:00.000Z"
         }
       ],
       "spikes": [
@@ -42973,11 +42991,11 @@
             {
               "slug": "ppc-s5",
               "name": "Self-service video capture per AC",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T03:00:00.000Z",
+              "updatedAt": "2026-10-26T04:00:00.000Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
@@ -42988,7 +43006,8 @@
               "hasLayoutDependentGaps": "true",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "true",
-              "dorStatus": "not-started",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s5-dor.md",
               "tasks": [],
               "verifyStatus": "not-started",
               "prStatus": "none",
@@ -42997,11 +43016,11 @@
             {
               "slug": "ppc-s6",
               "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T03:00:00.000Z",
+              "updatedAt": "2026-10-26T04:00:00.000Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -43012,7 +43031,8 @@
               "hasLayoutDependentGaps": "true",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "true",
-              "dorStatus": "not-started",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s6-dor.md",
               "tasks": [],
               "verifyStatus": "not-started",
               "prStatus": "none",
@@ -43021,11 +43041,11 @@
             {
               "slug": "ppc-s7",
               "name": "Record an in-app sign-off decision on captured evidence",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T03:00:00.000Z",
+              "updatedAt": "2026-10-26T04:00:00.000Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -43036,7 +43056,8 @@
               "hasLayoutDependentGaps": "false",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "false",
-              "dorStatus": "not-started",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s7-dor.md",
+              "dorStatus": "signed-off",
               "tasks": [],
               "verifyStatus": "not-started",
               "prStatus": "none",

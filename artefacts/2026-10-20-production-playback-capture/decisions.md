@@ -139,3 +139,21 @@
 **Revisit trigger:** If a future fast-follow story is proposed for evidence-display visual polish, treat this entry as its starting context rather than re-discovering the gap from scratch.
 
 ---
+
+**2026-10-26 | DESIGN | `/definition-of-ready`'s H-DESIGN gate found and fixed one real violation; found but did NOT fix a much larger pre-existing gap outside this feature's scope**
+**Decision:** Fixed `playback-evidence.js`'s own pre-existing `#ddd` divider color (line 229, a per-AC `<li>` border) to `#E4E7EB` — `DESIGN.md`'s `--line` light-mode token (the closest semantic + visual match; `--line-2` has no published light-mode value, so it wasn't a safe choice for a page with no dark-mode toggle wired). This is the only real touch-point violation found across `ppc-s5`/`ppc-s6`/`ppc-s7`'s actual files (`playback-evidence.js`, `journey-store-pg.js`) — both now pass `node scripts/check-design-tokens.js` cleanly.
+**Context:** Running the same scan against `html-shell.js`/`products.js` (out of curiosity, since these are the shared shell `ppc-s6` calls into) found dozens of non-token colors already present in the shared shell infrastructure every page in the app depends on — including what appear to be legitimate third-party brand colors (Google's `#4285F4`/`#34A853`/`#FBBC05`/`#EA4335` on an OAuth button) alongside what may be genuine un-tokenised choices. **This is explicitly NOT treated as a finding against `ppc-s5`/`ppc-s6`/`ppc-s7`** — none of the three stories modify `html-shell.js` or `products.js`'s own source; they only call the already-exported `renderShellWithNav`/`renderShell` functions, so those files are correctly outside their own `H-DESIGN` touch-point scope.
+**Rationale:** Fixing one hardcoded color in a file this feature already modifies is a trivial, zero-risk correction (no behavioural change, exempt from the full artefact chain per ADR-011). Fixing html-shell.js/products.js's extensive pre-existing non-compliance is a large, repo-wide undertaking requiring its own judgment call (which colors are legitimate brand/third-party requirements vs. genuine violations) — clearly out of scope for this feature and not something to attempt unprompted mid-DoR-run for three unrelated stories.
+**Made by:** Claude (session), via `/definition-of-ready`, 2026-10-26.
+**Revisit trigger:** Logged in `workspace/capture-log.md` (2026-10-26) as a candidate for a future `design-system-adoption` (dsa) story. Any future story that DOES modify `html-shell.js`/`products.js` directly should expect an `H-DESIGN FAIL` on those files today — that story's own DoR will need to resolve it then, informed by this note.
+
+---
+
+**2026-10-26 | RISK-ACCEPT | W4 (verification script not yet reviewed by a domain expert) acknowledged and accepted for `ppc-s5`, `ppc-s6`, `ppc-s7`**
+**Risk:** At `/definition-of-ready`, Warning W4 ("verification script reviewed by a domain expert") flagged as unresolved across all three stories — the plain-language verification scenarios in `verification-scripts/ppc-s5-verification.md`, `ppc-s6-verification.md`, and `ppc-s7-verification.md` were authored by the same solo operator (Hamish King, Platform Owner) who wrote the ACs themselves, with no independent domain-expert walkthrough before coding starts.
+**Decision:** Accept the risk and proceed to the inner coding loop without a separate pre-coding walkthrough — identical standing acceptance to `ppc-s1`–`ppc-s4` (`decisions.md`, 2026-10-21/22).
+**Rationale:** No second reviewer is available in this repo's current operating model; blocking on one would stall the feature indefinitely. Each verification scenario will be checked against actual running behaviour at `/verify-completion` instead of a pre-coding desk check.
+**Made by:** Hamish King (Platform Owner), via chat confirmation (standing acceptance, reapplied per `/definition-of-ready`'s own instruction to log each new occurrence), 2026-10-26.
+**Revisit trigger:** Same as the original 2026-10-22 entry — if a second operator/reviewer ever joins this repo, route future verification scripts through them before DoR sign-off.
+
+---

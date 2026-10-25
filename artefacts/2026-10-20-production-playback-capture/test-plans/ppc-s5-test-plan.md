@@ -59,20 +59,20 @@ See Gap table below (AC6, AC7 — CSS-layout-dependent, handled via E2E, not man
 
 ## Unit Tests
 
-### captureVideoRecording_extractedToSrc_isWiredBehaviorallyCorrect
+### captureVideoRecording_extractedToSrc_producesDifferentCorrectPathsForDifferentClips
 
-- **Verifies:** AC1 (D37 wiring correctness — CLAUDE.md's rule: assert an observable, differentiating outcome, not just that a reference was assigned)
-- **Precondition:** `captureVideoRecording` extracted into `src/` and wired via an injectable setter in `playback-evidence.js`, mirroring `ppc-s1`'s own Task 0 extraction of `captureAcScreenshots`
-- **Action:** Call the wired adapter with two different mocked clips (different `interactionSequenceText`/mock video paths)
-- **Expected result:** Two different, individually-correct recorded video paths are returned — not merely that the setter was called once
+- **Verifies:** AC1
+- **Precondition:** `captureVideoRecording` extracted into `src/utils/capture-video.js` (plain function, same shape as `capture-screenshots.js` — no new D37 adapter, see Background correction), called with the fake `browser`/`context`/`page` returned by a mocked `setSessionPageAdapter` (same seam `ppc-s1`'s own route tests already use for screenshots)
+- **Action:** Call it with two different mocked clips (different `interactionSequenceText`/mock video paths)
+- **Expected result:** Two different, individually-correct recorded video paths are returned — proves the extracted function's own real logic, not a hollow pass-through
 - **Edge case:** No
 
-### captureVideoRecording_sessionReuse_callsSameCookieSeedingHelperAs_captureOneAc
+### captureVideoCapture_sessionReuse_usesTheSameAuthenticatedBrowserAsScreenshotCapture
 
 - **Verifies:** AC3
-- **Precondition:** `_captureOneAc`'s existing cookie-seeding helper is exported/spy-able
-- **Action:** Trigger video capture for an AC
-- **Expected result:** The same cookie-seeding helper function reference is called (same identity, not a re-implementation) — proven via a source-level/reference-identity assertion, mirroring `s3.1`'s own `dragAndClickShareTheSameAdvanceAndErrorFunctions` precedent for proving shared-mechanism reuse
+- **Precondition:** `getAuthenticatedPage` (from `session-page-adapter.js`) is spy-able; `_captureOneAc` already calls it once per AC to get `authed.browser`/`authed.page`
+- **Action:** Trigger capture for a video-enabled AC
+- **Expected result:** `getAuthenticatedPage` is called exactly once for the AC — video capture reuses the same `authed.browser` the screenshot capture already obtained, it does not call `getAuthenticatedPage` a second time or seed a second, independent session
 - **Edge case:** No
 
 ### videoCapture_midFailure_leavesNoPartialFileOnDisk
@@ -104,10 +104,10 @@ See Gap table below (AC6, AC7 — CSS-layout-dependent, handled via E2E, not man
 ### handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forVideoEnabledAc
 
 - **Verifies:** AC1
-- **Components involved:** Route handler, injected (mocked) `captureVideoRecording` (mirroring `ppc-s1`'s own `captureAcScreenshots` injection convention)
+- **Components involved:** Route handler, `setSessionPageAdapter` mocked to return a fake `browser`/`context`/`page` (same seam `ppc-s1`'s own route tests already use for screenshots — `captureVideoRecording` itself is not module-mocked, its real logic runs against the fake Playwright objects)
 - **Precondition:** A stored capture target for a video-enabled AC
 - **Action:** Trigger capture for that AC
-- **Expected result:** Both a screenshot record AND a video record are persisted for the AC; the mocked `captureVideoRecording` call receives the same `{url, selector}` the screenshot capture used
+- **Expected result:** Both a screenshot record AND a video record are persisted for the AC, both derived from the same fake `page`/`context` the mocked adapter returned
 
 ### handlePostCaptureTrigger_videoEnabled_usesExtractedSrcVersion_notScriptsVersion
 
@@ -144,7 +144,7 @@ See Gap table below (AC6, AC7 — CSS-layout-dependent, handled via E2E, not man
 ### handlePostCaptureAll_includesVideoInTheSameLoop_oneAcVideoFailureDoesNotAbortRun
 
 - **Verifies:** AC4
-- **Components involved:** `handlePostCaptureAll`, mocked `captureVideoRecording` (one AC's mock rejects, others resolve)
+- **Components involved:** `handlePostCaptureAll`, `setSessionPageAdapter` mocked so one AC's fake `page`/`video()` throws, others resolve normally
 - **Precondition:** A feature with 3 video-enabled ACs, one mocked to throw
 - **Action:** Trigger capture-all
 - **Expected result:** The run completes for all 3 ACs; the failing AC is recorded in `captureAllFailed`; the other 2 ACs' video AND screenshot records are both present
