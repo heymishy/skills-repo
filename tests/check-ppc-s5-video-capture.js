@@ -23,25 +23,11 @@ var queue = [];
 queue.push(function() {
   return test('captureVideoRecording_extractedToSrc_producesDifferentCorrectPathsForDifferentClips', async function() {
     var capVideo = require('../src/utils/capture-video');
-    var mockBrowser = {
-      newContext: async function() {
-        return {
-          newPage: async function() {
-            return {
-              _calls: [],
-              goto: async function(url) { this._calls.push(url); },
-              context: function() { return { addCookies: async function() {} }; },
-              video: function() { return { path: async function() { return this._fakePath; }.bind(this) }; }
-            };
-          },
-          close: async function() {}
-        };
-      }
-    };
     // Two distinct fake video paths, one per clip, assigned after newPage()
     // via a wrapper so each clip's own mock page resolves its own path.
     var pathsToReturn = ['artefacts/fx/playback/ppc-s1/video/clip1.webm', 'artefacts/fx/playback/ppc-s1/video/clip2.webm'];
     var callIndex = 0;
+    var mockBrowser = {};
     mockBrowser.newContext = async function() {
       var myPath = pathsToReturn[callIndex++];
       var mockPage = {
@@ -61,6 +47,47 @@ queue.push(function() {
     assert.strictEqual(results[0].path, pathsToReturn[0]);
     assert.strictEqual(results[1].path, pathsToReturn[1]);
     assert.notStrictEqual(results[0].path, results[1].path, 'two different clips must produce two different, individually-correct paths');
+  });
+});
+
+queue.push(function() {
+  return test('captureVideoRecording_midCaptureFailure_deletesPartialFileAndRethrowsOriginalErrorEvenWhenContextCloseAlsoThrows', async function() {
+    var capVideo = require('../src/utils/capture-video');
+    // Mirrors tests/check-rpca-s3-video-capture-wired-for-real.js's own AC3
+    // ("a mid-capture failure leaves no partial file on disk") mocking shape,
+    // extended to also make context.close() throw a SECOND, unrelated error
+    // during cleanup -- proving the ORIGINAL clip.run error still wins and
+    // the partial file is still deleted, rather than the secondary close()
+    // failure masking the original error or aborting cleanup.
+    var fixtureDir = path.join(__dirname, '..', 'artefacts', 'ppc-s5-test-fixture-cleanup', 'playback', 'ppc-fixture-story', 'video');
+    fs.mkdirSync(fixtureDir, { recursive: true });
+    var partialVideoPath = path.join(fixtureDir, 'partial-fixture.webm');
+    fs.writeFileSync(partialVideoPath, 'fake partial video bytes written by Playwright before the failure');
+    var closeCallCount = 0;
+    var mockPage = {
+      video: function() { return { path: async function() { return partialVideoPath; } }; }
+    };
+    var mockContext = {
+      newPage: async function() { return mockPage; },
+      close: async function() {
+        closeCallCount++;
+        throw new Error('simulated secondary failure closing context');
+      }
+    };
+    var mockBrowser = { newContext: async function() { return mockContext; } };
+    var clip = { name: 'AC1', run: async function() { throw new Error('simulated mid-recording failure'); } };
+    var threw = null;
+    try {
+      await capVideo.captureVideoRecording({ browser: mockBrowser, featureSlug: 'ppc-s5-test-fixture-cleanup', storySlug: 'ppc-fixture-story', clips: [clip] });
+    } catch (e) { threw = e; }
+    try {
+      assert.ok(threw, 'expected the failure to be surfaced, not swallowed');
+      assert.strictEqual(threw.message, 'simulated mid-recording failure', 'expected the ORIGINAL error to propagate unmasked, even though context.close() also threw during cleanup');
+      assert.strictEqual(closeCallCount, 1, 'expected context.close() to still be attempted during cleanup');
+      assert.strictEqual(fs.existsSync(partialVideoPath), false, 'expected the partial file to be deleted even though context.close() threw during cleanup');
+    } finally {
+      fs.rmSync(path.join(__dirname, '..', 'artefacts', 'ppc-s5-test-fixture-cleanup'), { recursive: true, force: true });
+    }
   });
 });
 

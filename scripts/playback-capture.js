@@ -23,6 +23,12 @@ const { parseDodAcCoverage, parseDodMetricSignal, parseBenefitMetricTargets } = 
 // change required on their part. Grouped here with the sibling dod-parsing
 // re-export above for discoverability -- both are the same class of fix.
 const { captureAcScreenshots } = require('../src/utils/capture-screenshots');
+// ppc-s5 Task 1: same pattern, same reason -- captureVideoRecording moved to
+// src/utils/capture-video.js because src/web-ui/routes/playback-evidence.js
+// (a production route) also needs it, and scripts/ is never copied into the
+// deployed Docker image. Re-exported here unchanged so every existing caller
+// of this module keeps working with no change required on their part.
+const { captureVideoRecording } = require('../src/utils/capture-video');
 
 // rpca-s5: evaluates every story's own dodStatus evidence field directly
 // (ADR-002 -- gates must use evidence fields, not a stage/field proxy), instead
@@ -186,25 +192,6 @@ function isPackageComplete(statusObj) {
   if (statusObj.status !== 'complete') return false;
   if (Array.isArray(statusObj.videos) && statusObj.videos.some(v => !v.reviewed)) return false;
   return true;
-}
-
-// fpd-s2: Playwright recordVideo capture. One browser context per clip --
-// the engineer's own choice of single combined walkthrough vs. several
-// per-AC/per-flow clips (AC2) is just the length of `clips`, no branching
-// logic difference.
-async function captureVideoRecording({ browser, featureSlug, storySlug, clips }) {
-  const dir = `artefacts/${featureSlug}/playback/${storySlug}/video/`;
-  const results = [];
-  for (const clip of clips) {
-    const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
-    const page = await context.newPage();
-    if (clip.run) await clip.run(page);
-    await context.close();
-    const video = page.video ? page.video() : null;
-    const resultPath = video ? await video.path() : null;
-    results.push({ name: clip.name, path: resultPath });
-  }
-  return results;
 }
 
 // fpd-s2: generates captions + a standalone transcript for one video via the

@@ -16,19 +16,25 @@ async function captureVideoRecording({ browser, featureSlug, storySlug, clips })
   for (const clip of clips) {
     const context = await browser.newContext({ recordVideo: { dir, size: { width: 1280, height: 720 } } });
     const page = await context.newPage();
-    let runErr = null;
+    let resultPath;
     try {
       if (clip.run) await clip.run(page);
-    } catch (err) {
-      runErr = err;
-    } finally {
       await context.close();
-    }
-    const video = page.video ? page.video() : null;
-    const resultPath = video ? await video.path() : null;
-    if (runErr) {
-      if (resultPath && fs.existsSync(resultPath)) fs.unlinkSync(resultPath);
-      throw runErr;
+      const video = page.video ? page.video() : null;
+      resultPath = video ? await video.path() : null;
+    } catch (err) {
+      // Mirrors scripts/playback-capture.js's own captureVideoForClip cleanup
+      // half (rpca-video-hotfix1): close and the subsequent video()/path()
+      // lookup are each wrapped in their own try/catch so a SECONDARY failure
+      // during cleanup can never replace or mask the ORIGINAL error -- and
+      // cleanup is always best-effort, never required to succeed.
+      try { await context.close(); } catch (_) { /* already closed or closing failed -- still attempt cleanup below */ }
+      try {
+        const video = page.video ? page.video() : null;
+        const partialPath = video ? await video.path() : null;
+        if (partialPath && fs.existsSync(partialPath)) fs.unlinkSync(partialPath);
+      } catch (_) { /* best-effort cleanup -- never mask the original error */ }
+      throw err;
     }
     results.push({ name: clip.name, path: resultPath });
   }
