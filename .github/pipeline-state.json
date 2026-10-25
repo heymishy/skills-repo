@@ -19943,7 +19943,7 @@
                 {
                   "id": "task-5",
                   "name": "Structural NFR check (parameterized sync) + css-s2-direction vocabulary test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 }
               ]

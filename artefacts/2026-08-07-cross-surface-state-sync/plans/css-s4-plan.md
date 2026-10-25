@@ -184,7 +184,7 @@ function getLatestKnownStage(journey) {
 
 Add `getLatestKnownStage,` to `module.exports`, next to the existing `isKnownStage,` line.
 
-- [ ] **Step 4: Extend `handleJourneySyncResolve` in `internal-sync.js`**
+- [x] **Step 4: Extend `handleJourneySyncResolve` in `internal-sync.js`**
 
 Replace:
 
@@ -941,12 +941,14 @@ git commit -m "feat(css-s4): add reconciliation safety net and wire it into hand
 
 ---
 
-## Task 5: Structural NFR check (parameterized, not 7 copies) + css-s2-direction vocabulary test
+## Task 5: Structural NFR check (parameterized, not 7 copies) + css-s2-direction vocabulary test ✅ DONE (commits `56b6ea27`, `5615a076`)
+
+> **Build-time fix:** the test wrapper's `execSync` call needed its path argument quoted (this repo's real worktree path contains a space, "skills repo") — matches this repo's own established convention elsewhere. **Code-quality fix:** the structural check's `Object.keys(GATE_MAP)` regex was widened to tolerate internal whitespace (`Object.keys( GATE_MAP )`), independently re-reviewed and confirmed to not loosen the check's actual specificity.
 
 **Files:**
 - Create: `scripts/check-sync-mechanism-is-parameterized.js`, `tests/check-sync-mechanism-is-parameterized.js`, `tests/check-css-s4-css-s2-vocabulary.js`
 
-- [ ] **Step 1: Write the structural check script**
+- [x] **Step 1: Write the structural check script**
 
 ```javascript
 #!/usr/bin/env node
@@ -993,7 +995,7 @@ if (!failed) {
 process.exit(failed ? 1 : 0);
 ```
 
-- [ ] **Step 2: Write its test wrapper**
+- [x] **Step 2: Write its test wrapper**
 
 ```javascript
 #!/usr/bin/env node
@@ -1024,7 +1026,7 @@ console.log(`[check-sync-mechanism-is-parameterized] ${totalPassed} passed, ${to
 process.exit(totalFailed === 0 ? 0 : 1);
 ```
 
-- [ ] **Step 3: Write the css-s2-direction vocabulary test**
+- [x] **Step 3: Write the css-s2-direction vocabulary test**
 
 ```javascript
 #!/usr/bin/env node
@@ -1115,7 +1117,7 @@ async function run() {
 run();
 ```
 
-- [ ] **Step 4: Run all three, confirm passing**
+- [x] **Step 4: Run all three, confirm passing**
 
 ```bash
 node scripts/check-sync-mechanism-is-parameterized.js
@@ -1125,13 +1127,13 @@ node tests/check-css-s4-css-s2-vocabulary.js
 
 Expected: script prints `OK:`; wrapper reports `1 passed, 0 failed`; vocabulary test reports `8 passed, 0 failed` (1 T0 + 7 gate values).
 
-- [ ] **Step 5: Run full suite**
+- [x] **Step 5: Run full suite**
 
 ```bash
 node scripts/run-all-tests.js
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/check-sync-mechanism-is-parameterized.js tests/check-sync-mechanism-is-parameterized.js tests/check-css-s4-css-s2-vocabulary.js
