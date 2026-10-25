@@ -10,6 +10,7 @@
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 const { getAuthenticatedPage } = require('../adapters/session-page-adapter');
 const { captureAcScreenshots } = require('../../utils/capture-screenshots');
+const { captureVideoRecording } = require('../../utils/capture-video');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
@@ -565,6 +566,66 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
 }
 
 /**
+ * ppc-s5 (AC1, AC1-combined, AC3): records ONE video spanning every AC in
+ * acIds, in a single Playwright recording context -- a group of one for a
+ * single-AC trigger, several ACs for capture-all (a later task). Reuses the
+ * SAME authenticated browser the screenshot work already obtained (AC3) --
+ * a new context created from that browser does NOT inherit the cookie
+ * seeded on the original context, so the clip's own run() callback re-seeds
+ * it via page.context().addCookies() before navigating to each AC's own
+ * target URL in sequence. Returns the resulting video path (or null if
+ * nothing could be recorded), or throws on failure -- callers decide how to
+ * track a failure against each acId in the group.
+ * @param {object} journey
+ * @param {string[]} acIds
+ * @param {{owner:string, repo:string}} ownerRepo
+ * @param {object} req
+ * @param {object} browser
+ * @param {string} baseUrl
+ * @returns {Promise<string|null>}
+ */
+async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, baseUrl) {
+  if (!browser || acIds.length === 0) return null;
+  var sessionId = req.sessionId;
+  var cookieDomain = new URL(baseUrl || 'https://localhost').hostname;
+  var captureTargets = journey.captureTargets || [];
+  var videoResults = await captureVideoRecording({
+    browser: browser,
+    featureSlug: journey.featureSlug,
+    storySlug: 'ppc-s1',
+    clips: [{
+      name: acIds.join('+'),
+      run: async function(videoPage) {
+        await videoPage.context().addCookies([{
+          name: 'session_id',
+          value: sessionId,
+          domain: cookieDomain,
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'Lax'
+        }]);
+        for (var i = 0; i < acIds.length; i++) {
+          var targetState = _journeyStore.getCaptureTargetState(captureTargets, acIds[i]);
+          if (targetState && targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET) {
+            await videoPage.goto(targetState.url);
+          }
+        }
+      }
+    }]
+  });
+  var videoResult = videoResults[0];
+  if (!videoResult || !videoResult.path) return null;
+
+  var repoRoot = getRepoRoot(req);
+  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoResult.path);
+  if (!resolvedVideoPath) return null;
+  var videoContent = fs.readFileSync(resolvedVideoPath);
+  await commitArtefact(videoResult.path, videoContent.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+  return videoResult.path;
+}
+
+/**
  * AC3 -- session-reuse capture (ADR-018: real session only, never a service
  * credential or the NODE_ENV=test bypass).
  */
@@ -611,6 +672,18 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
     var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
+    try {
+      var videoPath = await _captureVideoForAcIds(journey, [acId], ownerRepo, req, authed.browser, baseUrl);
+      if (videoPath) {
+        var videos = journey.captureVideos || {};
+        videos[acId] = videoPath;
+        _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
+      }
+    } catch (videoErr) {
+      // AC4 (single-AC case, a group of one): a video failure never aborts
+      // the request and never undoes the screenshot success above.
+      journey.lastVideoCaptureFailure = { acIds: [acId], error: videoErr && videoErr.message };
+    }
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
@@ -779,5 +852,6 @@ module.exports = {
   _notFound,
   _sendJson,
   _captureOneAc,
+  _captureVideoForAcIds,
   _renderCaptureAllProgress
 };

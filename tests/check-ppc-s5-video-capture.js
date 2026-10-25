@@ -132,6 +132,104 @@ queue.push(function() {
   });
 });
 
+var store = require('../src/web-ui/modules/journey-store');
+var pe = require('../src/web-ui/routes/playback-evidence');
+var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
+var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
+var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
+pe.setJourneyStoreModule(store);
+
+function getStore() { store._clearForTesting(); return store; }
+function makeRes() {
+  var res = { _status: null, _json: null, _body: null, json: function(b) { res._status = res._status || 200; res._json = b; }, writeHead: function(s) { res._status = s; }, end: function(b) { res._body = b; } };
+  res.status = function(c) { res._status = c; return res; };
+  return res;
+}
+var _makeReqCallCount = 0;
+function makeReq(tenantId, productId, featureSlug, extra) {
+  _makeReqCallCount++;
+  return Object.assign({
+    session: { tenantId: tenantId, userId: 'ppc-s5-test-user-' + _makeReqCallCount, accessToken: 'test-token', login: 'user', csrfToken: 'test-csrf-token' },
+    sessionId: 'sid-' + tenantId,
+    params: { productId: productId, featureSlug: featureSlug }
+  }, extra || {});
+}
+function setupDodCompleteJourney(store, opts) {
+  opts = opts || {};
+  var slug = opts.featureSlug || ('ppc-s5-feature-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, { tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' });
+  var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |'].join('\n');
+  store.setPgAdapterForTesting({
+    saveJourney: async function() {},
+    getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+  });
+  store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+  return { journeyId: j.journeyId, featureSlug: slug, tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' };
+}
+function makeMockPool(rows) { return { query: async function() { return { rows: rows }; } }; }
+
+queue.push(function() {
+  return test('handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc', async function() {
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-capture-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+
+    var fakeVideoPath = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1.webm';
+    var fakeVideoAbs = path.join(tmpRoot, fakeVideoPath);
+    fs.mkdirSync(path.dirname(fakeVideoAbs), { recursive: true });
+    fs.writeFileSync(fakeVideoAbs, Buffer.from('fake webm bytes'));
+
+    var seenCookies = [];
+    var fakePage = {
+      goto: async function(url) { fakePage._gotoUrl = url; },
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    var fakeVideoPage = {
+      goto: async function(url) { fakeVideoPage._gotoUrl = url; },
+      context: function() { return { addCookies: async function(cookies) { seenCookies.push(cookies); } }; },
+      video: function() { return { path: async function() { return fakeVideoPath; } }; }
+    };
+    var fakeContext = { newPage: async function() { return fakeVideoPage; }, close: async function() {} };
+    var newContextCallCount = 0;
+    var browserClosed = false;
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return {
+        page: fakePage,
+        browser: {
+          close: async function() { browserClosed = true; },
+          newContext: async function() { newContextCallCount++; return fakeContext; }
+        }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var mockPool = makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]);
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
+      params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' }
+    });
+    var res = makeRes();
+    await pe.handlePostCaptureTrigger(req, res, null, mockPool);
+
+    assert.strictEqual(res._json.ok, true);
+    assert.strictEqual(newContextCallCount, 1, 'exactly one video recording context for a single-AC trigger');
+    assert.ok(seenCookies.length > 0, 'the video-recording context must have its session cookie re-seeded');
+    assert.strictEqual(seenCookies[0][0].value, req.sessionId, 'the re-seeded cookie must carry the SAME session id, no second/new auth path');
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureScreenshots.AC1, 'screenshot must still be persisted');
+    assert.ok(reloaded.captureVideos && reloaded.captureVideos.AC1, 'video must also be persisted for the AC');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
