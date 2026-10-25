@@ -19931,7 +19931,7 @@
                 {
                   "id": "task-3",
                   "name": "GATE_TO_JOURNEY_STAGE map + generalise journey-sync-client.js + cli-gate-advance.js (AC1, css-s1 direction)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 },
                 {

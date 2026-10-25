@@ -251,7 +251,7 @@ git commit -m "feat(css-s4): add getLatestKnownStage() and extend journey-sync r
 
 ---
 
-## Task 3: `GATE_TO_JOURNEY_STAGE` map + generalise `journey-sync-client.js` (AC1, css-s1 direction)
+## Task 3: `GATE_TO_JOURNEY_STAGE` map + generalise `journey-sync-client.js` (AC1, css-s1 direction) ✅ DONE (commits `4a87a288`, `9c044244`, `e45a5de9`)
 
 **Files:**
 - Modify: `src/sync/journey-sync-client.js`, `src/enforcement/cli-gate-advance.js`
@@ -259,7 +259,9 @@ git commit -m "feat(css-s4): add getLatestKnownStage() and extend journey-sync r
 
 This is the most significant task in this story. Read it carefully before implementing.
 
-- [ ] **Step 1: Write the failing tests**
+> **Build-time corrections:** (1) `detectConflict` is only invoked when `lastSyncedStage` is truthy — a first-ever sync with no recorded baseline must not falsely flag a conflict against a null baseline. (2) `cli-gate-advance.js`'s `lastSyncedStage` marker bookkeeping reads `GATE_TO_JOURNEY_STAGE[gateName]` (the removed `SYNC_STAGE` constant's generalised replacement). (3) **Real correctness fix (commit `9c044244`):** `syncGateAdvanceToJourney` now returns `true`/`false` signaling whether the push actually happened; the `lastSyncedStage` marker write is gated on this, so a detected conflict no longer silently advances the marker as if sync had succeeded (previously would have masked the conflict from future reconciliation). (4) **Code-quality fixes (commit `e45a5de9`):** sync-eligibility guard narrowed from `GATE_MAP[gateName]` to `GATE_TO_JOURNEY_STAGE[gateName]` (skips pointless disk read + network call for the 2 non-representable gates); `fs`/`path` requires hoisted to top of file; shared `findStory()` helper extracted to `cli-advance.js` (was duplicated inline). Two sibling test files (`check-css-s3-last-synced-bookkeeping.js`, `check-css-s1-journey-sync-client.js`) updated for the removed `SYNC_GATE`/`SYNC_STAGE` exports and the now-wider sync vocabulary — both independently reviewed and confirmed to preserve original test intent.
+
+- [x] **Step 1: Write the failing tests**
 
 REPLACE the entire content of `tests/check-css-s4-gate-vocabulary.js` with:
 
@@ -400,7 +402,7 @@ async function run() {
 run();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-css-s4-gate-vocabulary.js
@@ -408,7 +410,7 @@ node tests/check-css-s4-gate-vocabulary.js
 
 Expected: fails on T2 (`journeySyncClient.GATE_TO_JOURNEY_STAGE is undefined`) and later tests (T5-T7 depend on the new 3-arg `syncGateAdvanceToJourney` signature).
 
-- [ ] **Step 3: Generalise `journey-sync-client.js`**
+- [x] **Step 3: Generalise `journey-sync-client.js`**
 
 Replace the ENTIRE file content with:
 
@@ -596,7 +598,7 @@ module.exports = {
 
 **Important:** `SYNC_GATE`/`SYNC_STAGE` are REMOVED from the exports (replaced by `GATE_TO_JOURNEY_STAGE`). Task 3's own Step 4 below updates the one place that referenced `SYNC_GATE` (`cli-gate-advance.js`). If any OTHER file references `journeySyncClient.SYNC_GATE`/`SYNC_STAGE`, grep for it and report as DONE_WITH_CONCERNS rather than silently patching around it.
 
-- [ ] **Step 4: Generalise `cli-gate-advance.js`'s own gate check**
+- [x] **Step 4: Generalise `cli-gate-advance.js`'s own gate check**
 
 In `src/enforcement/cli-gate-advance.js`, add this require near the top:
 
@@ -634,23 +636,23 @@ with:
 
 Everything else in this block (the `lastSyncedStage` bookkeeping `advance()` call added in css-s3's Task 5, the catch blocks) stays exactly as-is -- this change only widens the gate check and threads one new argument through.
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-css-s4-gate-vocabulary.js
 ```
 
-Expected output: count your own assertions (T1: 6, T2: 1, T3: 5, T4: 2, T5: 1, T6: 2, T7: 2 = 19) — trust your own run's real output over this arithmetic if they differ.
+Expected output: count your own assertions (T1: 6, T2: 1, T3: 5, T4: 2, T5: 1, T6: 2, T7: 2 = 19) — trust your own run's real output over this arithmetic if they differ. Actual final count (after the return-contract fix added 3 more assertions): 22.
 
-- [ ] **Step 6: Run full suite**
+- [x] **Step 6: Run full suite**
 
 ```bash
 node scripts/run-all-tests.js
 ```
 
-Expected: all tests passing. Pay particular attention to `tests/check-css-s1-journey-sync-client.js`, `tests/check-css-s1-gate-advance-integration.js`, `tests/check-css-s1-journey-sync-wiring.js`, `tests/check-css-s3-last-synced-bookkeeping.js` (all exercise the files this task modifies) — these tests likely reference `journeySyncClient.SYNC_GATE`/`SYNC_STAGE` directly, which no longer exist. If any of these fail because they reference the removed exports, this is a REAL regression you introduced -- fix those test files to use `GATE_TO_JOURNEY_STAGE['discovery-approved']` (which equals the old `SYNC_STAGE` value, `'discovery'`) and `'discovery-approved'` (the old `SYNC_GATE` value) as literal replacements, preserving each test's own original intent exactly. Report exactly which files you had to touch and why.
+Expected: all tests passing. Pay particular attention to `tests/check-css-s1-journey-sync-client.js`, `tests/check-css-s1-gate-advance-integration.js`, `tests/check-css-s1-journey-sync-wiring.js`, `tests/check-css-s3-last-synced-bookkeeping.js` (all exercise the files this task modifies) — these tests likely reference `journeySyncClient.SYNC_GATE`/`SYNC_STAGE` directly, which no longer exist. If any of these fail because they reference the removed exports, this is a REAL regression you introduced -- fix those test files to use `GATE_TO_JOURNEY_STAGE['discovery-approved']` (which equals the old `SYNC_STAGE` value, `'discovery'`) and `'discovery-approved'` (the old `SYNC_GATE` value) as literal replacements, preserving each test's own original intent exactly. Report exactly which files you had to touch and why. Actual: `check-css-s3-last-synced-bookkeeping.js` (plan-anticipated) and `check-css-s1-journey-sync-client.js` (not plan-anticipated, but a legitimate equivalent fix — see Task 3's build-time corrections note above). Final result: 793/793.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/sync/journey-sync-client.js src/enforcement/cli-gate-advance.js tests/check-css-s4-gate-vocabulary.js
