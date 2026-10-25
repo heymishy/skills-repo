@@ -99,4 +99,9 @@ async function logConflict(featureSlug, tenantId, pipelineStateValue, journeyVal
   );
 }
 
-module.exports = { logReconciliationGap, logConflict, _setPoolForTesting };
+// css-s4: exported so reconciliation.js (src/sync/reconciliation.js) can
+// share this module's own Pool/testing convention directly -- same "no new
+// adapter seam" reasoning conflict-resolver.js already documents for itself
+// (see that file's own header comment), rather than opening a second,
+// independent Postgres connection pool to the same sync_log table.
+module.exports = { logReconciliationGap, logConflict, _setPoolForTesting, _getPool };

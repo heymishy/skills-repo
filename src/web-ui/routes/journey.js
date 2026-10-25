@@ -2873,6 +2873,26 @@ async function handlePostGateConfirm(req, res) {
         }));
       }
     }
+
+    // css-4 (AC2): opportunistic reconciliation -- if THIS SAME feature has
+    // an open sync_log gap from a PRIOR request's own exhausted retry, use
+    // this request's own already-live _pipelineStateContext/writer to
+    // re-attempt it. Never blocks or changes this request's own outcome --
+    // the gap check and re-attempt are both best-effort, wrapped in their
+    // own try/catch, same non-blocking contract as every other optional
+    // Postgres-backed feature in this file.
+    if (process.env.DATABASE_URL) {
+      try {
+        var _reconcileResult = await require('../../sync/reconciliation').reconcile(
+          journey.featureSlug, storyId, _pipelineStateContext, _pipelineStateWriter, stateUpdate
+        );
+        if (_reconcileResult.resolved) {
+          console.info(JSON.stringify({ event: 'reconciliation_gap_resolved', featureSlug: journey.featureSlug, storyId: storyId }));
+        }
+      } catch (_reconcileErr) {
+        console.error('[reconciliation] check failed:', _reconcileErr.message);
+      }
+    }
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
     // css-s2 (AC3): log a queryable reconciliation-gap entry once this
