@@ -226,7 +226,7 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var failureHtml = ac.lastCaptureFailure
       ? '<p role="alert">Capture failed: ' + _escapeHtml(ac.lastCaptureFailure.error || 'unknown error') + ' -- use the button above to retry.</p>'
       : '';
-    return '<li style="margin-bottom:24px;border-bottom:1px solid #ddd;padding-bottom:16px">' +
+    return '<li style="margin-bottom:24px;border-bottom:1px solid #E4E7EB;padding-bottom:16px">' +
       '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
       statusHtml +
       '<form method="POST" action="' + baseUrl + '/targets/' + encodeURIComponent(ac.acId) + '">' +
