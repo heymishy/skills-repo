@@ -365,6 +365,56 @@ function getNextStage(currentStage) {
 }
 
 /**
+ * css-s3 (Task 7, Critical review finding): true only when `stage` is one
+ * of the 8 outer-loop stage names this journey model actually represents
+ * (STAGE_SEQUENCE). pipeline-state.json's own feature-level `stage` schema
+ * enum is far broader (23 values spanning inner-loop gate names like
+ * `branch-complete` and other-track stages); the story-level `stage` field
+ * this conflict path actually writes has no enum constraint at all, so the
+ * real value space is wider still -- `infra-plan`/`schema-migration-review`
+ * are free-form session.skillName literals used elsewhere in journey.js's
+ * own trace-emission guards, not schema-enum members (correction, 2026-10-25
+ * review). A cross-surface conflict resolved to a value outside
+ * STAGE_SEQUENCE cannot be meaningfully reassigned onto a journey's own
+ * session.skillName, since getNextStage() would silently return null
+ * (treated as "journey complete") and infra-plan/schema-migration-review's
+ * own trace-emission guards would fire using fields
+ * (session.infraPlanPath/session.migrationReviewPath) this session never
+ * actually populated. Distinguishes "not in the sequence at all" from
+ * getNextStage()'s own, different null meaning ("last stage in the
+ * sequence, nothing comes after").
+ * @param {string} stage
+ * @returns {boolean}
+ */
+function isKnownStage(stage) {
+  return STAGE_SEQUENCE.indexOf(stage) !== -1;
+}
+
+/**
+ * css-s4: finds the highest-index STAGE_SEQUENCE member present in a
+ * journey's own completedStages array -- the journey's own "current
+ * representable stage" for cross-surface conflict comparison purposes.
+ * Order-independent (scans the whole array, not just the last entry) --
+ * completedStages' own array order is insertion order, not guaranteed to
+ * track STAGE_SEQUENCE order (e.g. a regression/reopen could insert an
+ * earlier stage's entry after a later one). Ignores any completedStages
+ * entry whose skillName is outside STAGE_SEQUENCE entirely (e.g. an
+ * inner-loop gate name) rather than throwing or false-matching.
+ * @param {{completedStages?: Array<{skillName: string}>}|null} journey
+ * @returns {string|null}
+ */
+function getLatestKnownStage(journey) {
+  if (!journey || !Array.isArray(journey.completedStages)) return null;
+  var latestIdx = -1;
+  var latestStage = null;
+  journey.completedStages.forEach(function(cs) {
+    var idx = STAGE_SEQUENCE.indexOf(cs && cs.skillName);
+    if (idx > latestIdx) { latestIdx = idx; latestStage = cs.skillName; }
+  });
+  return latestStage;
+}
+
+/**
  * res-s4: every stage after currentStage in STAGE_SEQUENCE — the single
  * ordering source, reused rather than a second hardcoded list (named
  * anti-pattern, previously caught in dtra-s1/dspw-s1).
@@ -631,6 +681,8 @@ module.exports = {
   completeStage,
   updateCompletedStageSessionId,
   getNextStage,
+  isKnownStage,
+  getLatestKnownStage,
   getDownstreamStages,
   isStrictlyLaterStage,
   regressToStage,

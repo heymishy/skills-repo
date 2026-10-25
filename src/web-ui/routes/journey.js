@@ -2811,8 +2811,95 @@ async function handlePostGateConfirm(req, res) {
     }
     var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
     var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
-    await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, _pipelineStateContext);
+    var _pipelineStateWriteResult = await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, _pipelineStateContext);
     stateWriteSucceeded = true;
+    // css-s3 (AC2, Task 7): a genuine cross-surface conflict was detected
+    // and resolved to pipeline-state.json's own value -- correct THIS
+    // SIDE too by treating the resolved stage as if it were what just
+    // completed, for every downstream decision below (trace emission,
+    // nextStage computation, PER_STORY_SEQ handling, setActiveSession
+    // calls) that already keys off session.skillName. A standalone
+    // Postgres write at this point would be overwritten again by those
+    // same downstream calls later in this same request -- see
+    // decisions.md's Task 7 ARCH entry for the full safety analysis
+    // (completeStage() already persisted the TRUE historical skillName at
+    // line ~2737, well before this point, so that record is never
+    // affected by this reassignment).
+    //
+    // Critical fix (found at this task's own independent review): the
+    // resolved value is NOT guaranteed to be one of the 8 outer-loop stage
+    // names the web journey's own STAGE_SEQUENCE models. pipeline-state.
+    // json's feature-level `stage` schema enum is far broader (23 values,
+    // confirmed via .github/pipeline-state.schema.json), and the STORY-
+    // level `stage` field (the one this actual conflict path writes) has
+    // no enum constraint at all -- "infra-plan"/"schema-migration-review"
+    // below are free-form session.skillName literals used elsewhere in
+    // this same file's own trace-emission guards, not schema-enum members
+    // (correction, 2026-10-25 review: an earlier version of this comment
+    // mischaracterised them as such) -- making the real value space even
+    // LESS constrained than a fixed enum would be, if anything reinforcing
+    // why this guard is needed. Reassigning session.skillName to an
+    // unmodeled value would make getNextStage() silently return null
+    // (treated as "journey complete" -- a false completion) or, for
+    // infra-plan/schema-migration-review specifically, fire THOSE
+    // trace-emission guards using session fields
+    // (infraPlanPath/migrationReviewPath) this session never populated,
+    // fabricating an audit trace record for a sign-off that never
+    // happened in this request. Only reassign when the resolved value is
+    // actually representable in this journey model; otherwise, log the
+    // gap and fall back to the original (pre-Task-7) behaviour -- the
+    // pipeline-state.json side (AC2's primary, canonical-value guarantee)
+    // is unaffected either way; only the journey-side "catch-up" is
+    // skipped for a stage this model has no concept of.
+    if (_pipelineStateWriteResult && _pipelineStateWriteResult.conflict) {
+      var _resolvedStage = _pipelineStateWriteResult.conflict.resolved;
+      if (_journeyStore.isKnownStage(_resolvedStage)) {
+        console.info(JSON.stringify({
+          event: 'cross_surface_conflict_corrected',
+          featureSlug: journey.featureSlug,
+          storyId: storyId,
+          journeyStaleValue: session.skillName,
+          resolvedValue: _resolvedStage
+        }));
+        session.skillName = _resolvedStage;
+      } else {
+        console.info(JSON.stringify({
+          event: 'cross_surface_conflict_correction_skipped',
+          featureSlug: journey.featureSlug,
+          storyId: storyId,
+          journeyStaleValue: session.skillName,
+          resolvedValue: _resolvedStage,
+          reason: 'resolved value is outside the web journey\'s own stage vocabulary (STAGE_SEQUENCE) -- correction skipped to avoid a false journey-completion or a fabricated trace record'
+        }));
+      }
+    }
+
+    // css-4 (AC2): opportunistic reconciliation -- if THIS SAME feature has
+    // an open sync_log gap from a PRIOR request's own exhausted retry, use
+    // this request's own already-live _pipelineStateContext/writer to
+    // re-attempt it. Never blocks or changes this request's own outcome --
+    // the gap check and re-attempt are both best-effort, wrapped in their
+    // own try/catch, same non-blocking contract as every other optional
+    // Postgres-backed feature in this file.
+    //
+    // css-s4 correctness fix: reconcile() no longer takes this request's
+    // own storyId/stateUpdate -- it replays the GAP's OWN stored storyId/
+    // stateUpdate (read back from journey_value), so an unrelated gap from
+    // a different story/write is never resolved by THIS request's own
+    // unrelated success. Only context/writerFn (this request's own live
+    // token/owner/repo and already-wired writer) are passed through.
+    if (process.env.DATABASE_URL) {
+      try {
+        var _reconcileResult = await require('../../sync/reconciliation').reconcile(
+          journey.featureSlug, _pipelineStateContext, _pipelineStateWriter
+        );
+        if (_reconcileResult.resolved) {
+          console.info(JSON.stringify({ event: 'reconciliation_gap_resolved', featureSlug: journey.featureSlug, storyId: storyId }));
+        }
+      } catch (_reconcileErr) {
+        console.error('[reconciliation] check failed:', _reconcileErr.message);
+      }
+    }
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
     // css-s2 (AC3): log a queryable reconciliation-gap entry once this
@@ -2822,10 +2909,16 @@ async function handlePostGateConfirm(req, res) {
     // guarded like every other optional-Postgres write in this file (e.g.
     // the saveArtefact call above). Never let this logging call itself
     // throw and mask the already-non-blocking failure path above.
+    //
+    // css-s4 correctness fix: storyId and stateUpdate (this request's own,
+    // still in scope from earlier in this same function) are now passed
+    // through and stored alongside gateName, so a later reconcile() call
+    // can replay THIS SPECIFIC failed write instead of substituting
+    // whatever an unrelated, subsequent request happens to be writing.
     if (process.env.DATABASE_URL) {
       try {
         await require('../adapters/sync-log').logReconciliationGap(
-          journey.featureSlug, journey.tenantId || req.session.tenantId || null, session.skillName
+          journey.featureSlug, journey.tenantId || req.session.tenantId || null, session.skillName, storyId, stateUpdate
         );
       } catch (_syncLogErr) {
         console.error('[sync-log] gap logging failed:', _syncLogErr.message);

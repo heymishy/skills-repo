@@ -192,18 +192,44 @@ process.stdout.write('\n[shr.1] Unit tests\n');
 }
 
 // schema-and-harness-in-same-commit
+//
+// css-s3 fix: this check validates a ONE-TIME historical fact (shr.1's own
+// commit added hasInfraTrack to both the schema and the integrity harness
+// together) -- it is not a standing rule that every future commit touching
+// pipeline-state.schema.json must also touch check-pipeline-state-integrity.js.
+// The original implementation found "the most recent commit touching the
+// schema file" via `git log --follow | head -1`, which only coincidentally
+// matched the hasInfraTrack-introducing commit at the time this test was
+// written. Any later schema-only commit (e.g. css-s3's own single-line
+// lastSyncedStage addition, which needs no new integrity-check logic) then
+// becomes "the most recent" and fails this test forever, regardless of
+// whether it has anything to do with hasInfraTrack. Pin to the actual
+// commit that introduced hasInfraTrack via `git log -S` (finds the commit
+// where that string's occurrence count changed -- i.e. was added), not
+// "whatever is most recent" -- this is the correct, stable query for a
+// check about one specific historical commit.
 {
   try {
+    // No quotes around the -S argument: hasInfraTrack has no shell-special
+    // characters, and single quotes are not a string delimiter in
+    // cmd.exe (Windows) -- they would be passed through literally as part
+    // of the search string, silently matching nothing.
     const log = execSync(
-      'git log --oneline --follow -- .github/pipeline-state.schema.json',
+      'git log -S hasInfraTrack --oneline -- .github/pipeline-state.schema.json',
       { cwd: ROOT, stdio: ['pipe', 'pipe', 'pipe'] }
     ).toString().trim();
 
     if (!log) {
-      assert(false, 'schema-and-harness-in-same-commit: no commits found for schema file');
+      // hasInfraTrack not yet introduced anywhere in schema history
+      // (implementation not done) — test should fail
+      assert(false, 'schema-and-harness-in-same-commit: hasInfraTrack not yet in schema commit (run T2 first)');
     } else {
-      // Get the most recent commit SHA that touched pipeline-state.schema.json
-      const shaLine = log.split('\n')[0];
+      // The commit that introduced hasInfraTrack (oldest match from -S, since
+      // -S finds every commit that changed the string's occurrence count --
+      // take the last line, i.e. the earliest such commit, which is the
+      // introduction, not a later removal/re-addition).
+      const lines = log.split('\n');
+      const shaLine = lines[lines.length - 1];
       const sha = shaLine.split(' ')[0];
 
       // Check if check-pipeline-state-integrity.js was also in that commit
@@ -215,22 +241,10 @@ process.stdout.write('\n[shr.1] Unit tests\n');
       const schemaInCommit = files.includes('pipeline-state.schema.json');
       const harnessInCommit = files.includes('check-pipeline-state-integrity.js');
 
-      // Find the specific commit that adds hasInfraTrack
-      const schemaContent = execSync(
-        `git show ${sha}:.github/pipeline-state.schema.json`,
-        { cwd: ROOT, stdio: ['pipe', 'pipe', 'pipe'] }
-      ).toString();
-
-      if (!schemaContent.includes('hasInfraTrack')) {
-        // The most recent commit to schema.json doesn't contain hasInfraTrack yet
-        // (implementation not done) — test should fail
-        assert(false, 'schema-and-harness-in-same-commit: hasInfraTrack not yet in schema commit (run T2 first)');
-      } else {
-        assert(
-          schemaInCommit && harnessInCommit,
-          `schema-and-harness-in-same-commit: commit ${sha} contains both schema.json and check-pipeline-state-integrity.js`
-        );
-      }
+      assert(
+        schemaInCommit && harnessInCommit,
+        `schema-and-harness-in-same-commit: commit ${sha} (the one that introduced hasInfraTrack) contains both schema.json and check-pipeline-state-integrity.js`
+      );
     }
   } catch (e) {
     assert(false, `schema-and-harness-in-same-commit: error running git log — ${e.message}`);

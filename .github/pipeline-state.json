@@ -19824,50 +19824,132 @@
             {
               "slug": "css-s3",
               "name": "Detect a genuine cross-surface conflict, resolve it to pipeline-state.json value, and log it",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-06T22:52:31.034Z",
+              "updatedAt": "2026-10-24T20:41:09.306Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s3-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0,
+                "totalTests": 36,
+                "passing": 36,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s3-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s3-verification.md",
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-07-cross-surface-state-sync/dor/css-s3-dor.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Schema -- add lastSyncedStage",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "sync-log.js -- add logConflict()",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "conflict-resolver.js -- detector + resolver",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire real conflict detection into pipeline-state-github-writer.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "lastSyncedStage bookkeeping for css-s1 direction",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "NFR tests",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Correct journey Postgres record on conflict (AC2, found missing at final review)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1019"
             },
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-06T22:52:31.034Z",
+              "updatedAt": "2026-10-25T00:00:00.000Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0,
+                "totalTests": 46,
+                "passing": 46,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s4-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s4-verification.md",
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-07-cross-surface-state-sync/dor/css-s4-dor.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "sync_log.resolved_at column migration (server.js)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "getLatestKnownStage() + handleJourneySyncResolve extension (AC1 prep)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "GATE_TO_JOURNEY_STAGE map + generalise journey-sync-client.js + cli-gate-advance.js (AC1, css-s1 direction)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "reconciliation.js + wiring into journey.js (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Structural NFR check (parameterized sync) + css-s2-direction vocabulary test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1020"
             }
           ]
         }

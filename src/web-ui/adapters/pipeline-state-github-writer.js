@@ -35,6 +35,7 @@ var { applyAdvance } = require('../../enforcement/cli-advance');
 // posthogServer.captureException on the shared require-cache singleton and
 // have this module's calls observe the replacement.
 var posthogServer = require('../modules/posthog-server');
+var conflictResolver = require('../../sync/conflict-resolver');
 
 var STATE_PATH = '.github/pipeline-state.json';
 var RETRY_DELAYS_MS = [150, 400]; // 3 total attempts: initial + 2 retries, per wsd-s2 decisions.md
@@ -45,7 +46,7 @@ var VALID_DOR_STATUS = ['not-started', 'in-progress', 'signed-off'];
 var VALID_HEALTH     = ['green', 'amber', 'red'];
 
 var FEATURE_LEVEL_KEYS = ['discoveryStatus', 'artefact', 'stage', 'health'];
-var STORY_LEVEL_KEYS   = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt'];
+var STORY_LEVEL_KEYS   = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt', 'lastSyncedStage'];
 
 function sleep(ms) {
   return new Promise(function(resolve) { setTimeout(resolve, ms); });
@@ -78,6 +79,21 @@ function guardPrototypePollution(stateUpdate) {
   }
 }
 
+/** Read-only story lookup -- flat feature.stories[] first, then epic-nested. Never creates. */
+function _findStoryReadOnly(feature, storyId) {
+  if (Array.isArray(feature.stories)) {
+    var flat = feature.stories.find(function(s) { return s.id === storyId || s.slug === storyId; });
+    if (flat) return flat;
+  }
+  var epics = feature.epics || [];
+  for (var ei = 0; ei < epics.length; ei++) {
+    var epicStories = epics[ei].stories || [];
+    var found = epicStories.find(function(s) { return s.id === storyId || s.slug === storyId; });
+    if (found) return found;
+  }
+  return null;
+}
+
 /**
  * Apply stateUpdate to an in-memory pipeline-state object: feature-level
  * fields mirror pipeline-state-writer.js's own featureLevelKeys.forEach()
@@ -85,7 +101,7 @@ function guardPrototypePollution(stateUpdate) {
  * which owns enum validation, epic-nested story lookup, and the
  * storyWasCreated visibility fix.
  */
-function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
+async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, conflictLogState) {
   if (!Array.isArray(state.features)) state.features = [];
   var feature = state.features.find(function(f) {
     return f.slug === featureSlug || f.id === featureSlug;
@@ -98,7 +114,56 @@ function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
     if (stateUpdate[key] !== undefined) feature[key] = stateUpdate[key];
   });
 
+  var detectedConflict = null;
   if (storyId) {
+    // css-s3: conflict detection -- compare the CURRENT (freshly-fetched)
+    // pipeline-state.json stage value against stateUpdate's own incoming
+    // stage value, using lastSyncedStage as the "last agreed" marker. Only
+    // meaningful when stateUpdate actually carries a new stage value --
+    // other story-level fields (dorStatus, prStatus, prUrl) are untouched.
+    if (stateUpdate.stage !== undefined) {
+      var existingStory = _findStoryReadOnly(feature, storyId);
+      if (existingStory) {
+        var conflict = conflictResolver.detectConflict(existingStory.lastSyncedStage, existingStory.stage, stateUpdate.stage);
+        stateUpdate = Object.assign({}, stateUpdate);
+        if (conflict) {
+          // css-s3 (Critical, found at code-quality review): this function
+          // is re-run on every attempt of the writer's own, PRE-EXISTING
+          // 409-retry loop (an unrelated Contents-API optimistic-concurrency
+          // mechanism -- someone else wrote to pipeline-state.json between
+          // our GET and PUT). A failed PUT persists nothing, so a retry
+          // re-observes the SAME on-disk state and would re-detect the
+          // SAME logical cross-surface conflict. Resolving again (always
+          // pipelineStateValue) is safe/idempotent, but logConflict's own
+          // sync_log INSERT is NOT idempotent -- without this guard, one
+          // logical conflict produces up to 3 duplicate sync_log rows
+          // under 409 pressure, corrupting the audit trail this feature's
+          // own benefit-metric depends on. conflictLogState is a plain
+          // object shared across all retry attempts of ONE writer call
+          // (declared once before that call's while loop) -- log exactly
+          // once per logical conflict per call, resolve on every attempt.
+          var resolved = conflict.pipelineStateValue;
+          if (!conflictLogState || !conflictLogState.logged) {
+            resolved = await conflictResolver.resolveConflict(featureSlug, null, conflict.pipelineStateValue, conflict.journeyValue);
+            if (conflictLogState) conflictLogState.logged = true;
+          }
+          delete stateUpdate.stage; // pipeline-state.json's own value wins -- do not apply the incoming stage
+          stateUpdate.lastSyncedStage = resolved;
+          // css-s3 (AC2, Task 7): surface the resolution to the caller
+          // (journey.js) so it can correct ITS OWN side too -- see
+          // decisions.md's Task 7 ARCH entry for why a standalone Postgres
+          // write at this point would be ineffective (journey.js's own
+          // later, session.skillName-driven logic would silently overwrite
+          // it again within the same request) and why reassigning
+          // session.skillName to `resolved` at the call site is the real
+          // fix instead.
+          detectedConflict = { pipelineStateValue: conflict.pipelineStateValue, journeyValue: conflict.journeyValue, resolved: resolved };
+        } else {
+          stateUpdate.lastSyncedStage = stateUpdate.stage;
+        }
+      }
+    }
+
     var rawFields = [];
     STORY_LEVEL_KEYS.forEach(function(key) {
       if (stateUpdate[key] !== undefined) rawFields.push(key + '=' + stateUpdate[key]);
@@ -108,10 +173,10 @@ function applyStateUpdate(state, featureSlug, storyId, stateUpdate) {
       if (result.exitCode !== 0) {
         throw new Error('pipeline-state advance failed: ' + result.stderr);
       }
-      return result.state;
+      return { state: result.state, conflict: detectedConflict };
     }
   }
-  return state;
+  return { state: state, conflict: detectedConflict };
 }
 
 function githubApiBase() {
@@ -241,11 +306,16 @@ module.exports = function pipelineStateGithubWriterFactory() {
 
     var attempt = 0;
     var lastErr = null;
+    // css-s3: shared across every attempt of THIS writer call's own
+    // 409-retry loop -- dedupes conflict logging (see applyStateUpdate's
+    // own comment) without affecting conflict resolution, which is safe to
+    // repeat on every attempt.
+    var conflictLogState = { logged: false };
     while (attempt < 3) {
       try {
         var fetched = await fetchState(apiBase, owner, repo, authHeaders);
-        var mutatedState = applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate);
-        var newContent = JSON.stringify(mutatedState, null, 2) + '\n';
+        var applyResult = await applyStateUpdate(fetched.state, featureSlug, storyId, stateUpdate, conflictLogState);
+        var newContent = JSON.stringify(applyResult.state, null, 2) + '\n';
         await putState(
           apiBase, owner, repo, authHeaders, newContent, fetched.sha,
           authorName, authorEmail,
@@ -259,7 +329,10 @@ module.exports = function pipelineStateGithubWriterFactory() {
           via:          'github-api',
           attempt:      attempt + 1,
         }));
-        return;
+        // css-s3 (AC2, Task 7): surface the resolved conflict (or null) to
+        // the caller so it can correct its own side -- see
+        // decisions.md's Task 7 ARCH entry.
+        return { conflict: applyResult.conflict };
       } catch (err) {
         lastErr = err;
         if (err && err.isConflict && attempt < 2) {
