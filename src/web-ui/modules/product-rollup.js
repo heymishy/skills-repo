@@ -529,17 +529,20 @@ async function pruneOrphanedFeatureModuleAssignments(pool, productId, taxonomy) 
 }
 
 /**
- * Fetches a product's connected repo's pipeline-state.json via the wired
- * adapter, computes the DoD-status rollup, and writes it to the
- * product_rollups cache table scoped by product_id. Throws (does not write)
- * if the fetch fails, so a failed sync never silently shows stale or empty
- * data as if it were current (AC3).
+ * ppc-s4: fetches and parses a connected repo's pipeline-state.json via the
+ * wired adapter, extracted out of syncProductRollup so a second call site
+ * (playback-evidence.js's pipeline-state-sourced DoD fallback) can reuse the
+ * exact same Contents-API/Blob-API truncation-fallback logic (psbf-s1)
+ * rather than re-deriving it. Throws if the fetch/parse ultimately fails --
+ * callers decide how to handle that (syncProductRollup lets it propagate so
+ * a failed sync never writes stale/empty data; a cold-path DoD check can
+ * catch it and treat it as "not found").
  *
- * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
- * @param {{getPipelineStateFetchAdapter: Function}} adapterModule
+ * @param {{getPipelineStateFetchAdapter: Function, getPipelineStateBlobFetchAdapter: Function}} adapterModule
  * @param {{productId: string, repoOwner: string, repoName: string, accessToken: string}} opts
+ * @returns {Promise<object>} parsed pipeline-state.json content
  */
-async function syncProductRollup(pool, adapterModule, opts) {
+async function fetchPipelineState(adapterModule, opts) {
   var raw = await adapterModule.getPipelineStateFetchAdapter()(opts.repoOwner, opts.repoName, opts.accessToken);
   var decodedBuf = Buffer.from(raw.content, 'base64');
   var truncated = typeof raw.size === 'number' && decodedBuf.length !== raw.size;
@@ -595,6 +598,23 @@ async function syncProductRollup(pool, adapterModule, opts) {
       throw fallbackErr;
     }
   }
+
+  return pipelineState;
+}
+
+/**
+ * Fetches a product's connected repo's pipeline-state.json via the wired
+ * adapter, computes the DoD-status rollup, and writes it to the
+ * product_rollups cache table scoped by product_id. Throws (does not write)
+ * if the fetch fails, so a failed sync never silently shows stale or empty
+ * data as if it were current (AC3).
+ *
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {{getPipelineStateFetchAdapter: Function}} adapterModule
+ * @param {{productId: string, repoOwner: string, repoName: string, accessToken: string}} opts
+ */
+async function syncProductRollup(pool, adapterModule, opts) {
+  var pipelineState = await fetchPipelineState(adapterModule, opts);
 
   var rollup = computeDodStatusRollup(pipelineState);
   var healthCounts = computeHealthCounts(pipelineState);
@@ -662,6 +682,7 @@ async function triggerProductSync(pool, adapterModule, opts) {
 }
 
 module.exports = {
+  fetchPipelineState,
   computeDodStatusRollup,
   computeHealthCounts,
   computeOverallHealthSignal,

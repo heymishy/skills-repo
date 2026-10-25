@@ -78,7 +78,14 @@ function _sanitise(journey) {
     // Postgres-backed restart.
     captureAllDuration: journey.captureAllDuration  || null,
     captureAllCompletedAt: journey.captureAllCompletedAt  || null,
-    captureAllFailed: journey.captureAllFailed  || {}
+    captureAllFailed: journey.captureAllFailed  || {},
+    // ppc-s4: added to the allowlist per this file's own fdn-s1 rule --
+    // must be listed explicitly or it silently vanishes after a
+    // Postgres-backed restart. Populated only for a journey auto-provisioned
+    // from pipeline-state.json's own DoD signal (no Postgres artefact rows
+    // exist for it) -- lets _getDodAcList know which of the feature's
+    // stories to fetch real DoD content for from GitHub.
+    pipelineStateStorySlugs: journey.pipelineStateStorySlugs || null
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;

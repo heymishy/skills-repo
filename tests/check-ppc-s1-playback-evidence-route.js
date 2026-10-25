@@ -439,13 +439,24 @@ queue.push(function() {
       headers: { cookie: 'session_id=' + sid }
     };
     var resStatus = null, resBody = null;
-    var res = {
-      writeHead: function(status) { resStatus = status; },
-      end: function(body) { resBody = body; },
-      setHeader: function() {}
-    };
-
-    await router(req, res);
+    // ppc-s4: _resolveJourney now has an extra async fallback hop
+    // (_resolveViaPipelineState) before reaching its 404 branch for a
+    // not-found feature. authGuard (routes/auth.js) is fire-and-forget --
+    // it invokes next() and only .catch()es it, never awaiting/returning
+    // that promise up to router()'s own caller (same class of race
+    // check-vrne-s1-server-wiring.js's dispatchAndAwaitResponse already
+    // documents and fixes for /products/confirm). `await router(req, res)`
+    // alone is no longer guaranteed to run after the real write -- wait for
+    // res.end() itself to fire instead.
+    var responded = new Promise(function(resolve) {
+      var res2 = {
+        writeHead: function(status) { resStatus = status; },
+        end: function(body) { resBody = body; resolve(); },
+        setHeader: function() {}
+      };
+      router(req, res2).catch(resolve);
+    });
+    await responded;
 
     // No journey exists for this product+slug -- the real handler must
     // reach its own 404 branch (via the real getJourneyByTenantProductSlug,

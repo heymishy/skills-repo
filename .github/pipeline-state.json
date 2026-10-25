@@ -42900,6 +42900,29 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "layoutGapsAtMerge": false
+            },
+            {
+              "slug": "ppc-s4",
+              "name": "Recognise pipeline-state.json DoD-complete features in self-service playback capture",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-25T08:14:13.099Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 18,
+                "passing": 18
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
             }
           ]
         }
