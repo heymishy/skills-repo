@@ -347,13 +347,15 @@ git commit -m "feat(ppc-s5): add captureVideos to journey-store-pg.js's fdn-s1 a
 
 ## Task 4: New shared `_captureVideoForAcIds` helper; wire it into `handlePostCaptureTrigger` (AC1, AC3)
 
+> **✅ Complete.** Implementer commit `f9d80019`; code-quality fix-round commit `28f8426e` (removed a dead `journey.lastVideoCaptureFailure` write that was never persisted/read; fixed a cookie `secure` flag drift from `session-page-adapter.js`'s own sibling computation, without touching that file). Spec compliance ✅, code quality ✅ Approved on re-review. `_captureOneAc` confirmed byte-for-byte unchanged throughout. 5/22 tests pass; `check-ppc-s1`/`check-ppc-s2`'s own existing tests re-confirmed unaffected.
+
 **Design note:** `_captureOneAc` stays screenshot-only, exactly as `ppc-s1`/`ppc-s2` shipped it — no signature change, no return-type change. Video capture is a SEPARATE step, run once per capture-trigger request (a group of one AC for the single-AC trigger path; multiple ACs for capture-all, see Task 7), not embedded per-AC inside `_captureOneAc`.
 
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s5-video-capture.js` (append)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 // tests/check-ppc-s5-video-capture.js (append) -- mirrors check-ppc-s1's
@@ -458,7 +460,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -466,7 +468,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL — handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc` (`reloaded.captureVideos` is `undefined` — no video-capture step exists yet)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/playback-evidence.js`:
 
@@ -560,7 +562,7 @@ async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, ba
     _sendJson(res, 200, { ok: true, screenshotPath: shotPath });
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -568,7 +570,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -576,7 +578,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing. `_captureOneAc` itself is unchanged, so `tests/check-ppc-s1-playback-evidence-route.js`'s and `tests/check-ppc-s2-capture-all-route.js`'s existing assertions on its own return value need no changes. Their `setSessionPageAdapter` mocks return `{ page: fakePage, browser: { close: ... } }` with no `newContext` — since `_captureVideoForAcIds` is a NEW, separate call these existing tests never exercise it, so no `newContext` mock is needed there either.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
