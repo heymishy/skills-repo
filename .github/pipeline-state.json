@@ -19692,7 +19692,7 @@
         {
           "slug": "css-e1-cross-surface-state-sync",
           "name": "Pipeline-state.json and web-UI journeys stay in automatic agreement",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "css-s1",
@@ -19773,7 +19773,7 @@
               "name": "Automatically reflect a web-UI journey stage completion in pipeline-state.json",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-24T09:30:07.907Z",
+              "updatedAt": "2026-10-25T05:34:59.150Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s2-review-2.md",
@@ -19818,7 +19818,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1018"
             },
             {
@@ -19826,7 +19826,7 @@
               "name": "Detect a genuine cross-surface conflict, resolve it to pipeline-state.json value, and log it",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-24T20:41:09.306Z",
+              "updatedAt": "2026-10-25T05:35:03.860Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s3-review-1.md",
@@ -19889,15 +19889,15 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1019"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1021"
             },
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-25T00:00:00.000Z",
+              "updatedAt": "2026-10-25T05:35:08.311Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md",
@@ -19948,7 +19948,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1020"
             }
           ]
