@@ -42904,11 +42904,11 @@
             {
               "slug": "ppc-s4",
               "name": "Recognise pipeline-state.json DoD-complete features in self-service playback capture",
-              "stage": "definition-of-ready",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-25T08:23:34.560Z",
+              "updatedAt": "2026-10-25T08:38:33.261Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -42921,8 +42921,8 @@
               "dorStatus": "signed-off",
               "tasks": [],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "dodStatus": "not-started",
+              "prStatus": "merged",
+              "dodStatus": "complete",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1022"
             }
           ]
