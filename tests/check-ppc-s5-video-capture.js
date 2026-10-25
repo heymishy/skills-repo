@@ -91,6 +91,38 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('videoCapture_midFailure_leavesNoPartialFileOnDisk', async function() {
+    var capVideo = require('../src/utils/capture-video');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-video-' + Date.now());
+    var partialPath = path.join(tmpRoot, 'partial.webm');
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    fs.writeFileSync(partialPath, 'fake partial video bytes written by Playwright before the failure');
+
+    var mockPage = {
+      goto: async function() { throw new Error('simulated mid-recording failure'); },
+      context: function() { return { addCookies: async function() {} }; },
+      video: function() { return { path: async function() { return partialPath; } }; }
+    };
+    var mockContext = { newPage: async function() { return mockPage; }, close: async function() {} };
+    var mockBrowser = { newContext: async function() { return mockContext; } };
+
+    var threw = null;
+    try {
+      await capVideo.captureVideoRecording({
+        browser: mockBrowser,
+        featureSlug: 'fx',
+        storySlug: 'ppc-s1',
+        clips: [{ name: 'AC1', run: async function(p) { await p.goto('http://x'); } }]
+      });
+    } catch (e) { threw = e; }
+
+    assert.ok(threw, 'expected the failure to be surfaced, not swallowed');
+    assert.strictEqual(threw.message, 'simulated mid-recording failure', 'expected the original error to propagate unmasked');
+    assert.strictEqual(fs.existsSync(partialPath), false, 'expected the partial file to be deleted, not left behind');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
