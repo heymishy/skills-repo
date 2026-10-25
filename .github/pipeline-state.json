@@ -19895,7 +19895,7 @@
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "updatedAt": "2026-10-25T00:00:00.000Z",
               "reviewStatus": "passed",
@@ -19903,13 +19903,13 @@
               "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0,
+                "totalTests": 46,
+                "passing": 46,
                 "artefact": "artefacts/2026-08-07-cross-surface-state-sync/test-plans/css-s4-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-07-cross-surface-state-sync/verification-scripts/css-s4-verification.md",
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -19946,7 +19946,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
