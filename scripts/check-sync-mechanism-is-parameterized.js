@@ -22,7 +22,7 @@ let failed = false;
 
 // Check 1: GATE_TO_JOURNEY_STAGE's keys must be derived from gate-map.js's
 // own require, not a second hardcoded array of the same 7 gate-name strings.
-if (!/Object\.keys\(GATE_MAP\)/.test(content)) {
+if (!/Object\.keys\(\s*GATE_MAP\s*\)/.test(content)) {
   console.error('[check-sync-mechanism-is-parameterized] FAIL: GATE_TO_JOURNEY_STAGE does not derive its keys from Object.keys(GATE_MAP) -- the 7 gate names may be duplicated as a second hardcoded list.');
   failed = true;
 }
