@@ -19895,7 +19895,7 @@
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-10-25T00:00:00.000Z",
               "reviewStatus": "passed",
@@ -19947,7 +19947,9 @@
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1020"
             }
           ]
         }
