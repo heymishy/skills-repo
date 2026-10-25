@@ -2,8 +2,8 @@
 
 **Feature:** 2026-10-20-production-playback-capture
 **Created:** 2026-10-21
-**Last updated:** 2026-10-25
-**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), not yet verified — pending their own DoD.
+**Last updated:** 2026-10-26
+**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), refined by a CX/UX spike (2026-10-26, see `spikes/cx-ux-playback-pattern-outcome.md`) — not yet verified, pending their own DoD.
 
 ---
 
@@ -15,6 +15,7 @@
 | Full-feature capture time | No fixed SLA yet — ~30-60s is the named threshold for revisiting sync vs. async | Real wall-clock measurement recorded as DoD evidence (story AC3) | `ppc-s2` |
 | Rate-limiter overhead | Negligible — matches existing `sign-off.js` usage | Consistent with existing `createRateLimiter` implementation, no new infra | `ppc-s3` |
 | Video-inclusive capture-all duration | Not yet defined — `ppc-s2`'s 30-60s threshold was sized for screenshot-only capture; `ppc-s5` must measure real video-inclusive duration and confirm/revise the threshold | Real wall-clock measurement recorded as DoD evidence | `ppc-s5` |
+| Video page-render load (distinct from capture-time) | Every rendered `<video>` uses `preload="none"` + `poster` + explicit dimensions — no eager download of every clip on page load, no layout shift | Manual check — confirmed via CX/UX spike (`spikes/cx-ux-playback-pattern-outcome.md`, 2026-10-26) as a named best-practice pattern, formalised as `ppc-s5` AC7 | `ppc-s5` |
 | Summary section fetch overhead | Bounded — two additional `fetchArtefact` calls per page load, same cost class as `ppc-s4`'s own DoD-content fetch | Consistent with existing `fetchArtefact` usage, no new infra | `ppc-s6` |
 
 **Source:** Story AC (`ppc-s2` AC3/AC4) / Not yet a committed SLO — this feature's own build is what establishes the real baseline.

@@ -50,6 +50,8 @@ So that **I can confirm a feature does what was promised by watching it happen, 
 
 **AC6:** Given a tenant's repo has no video for a given AC yet (not yet captured), When the PO views the playback-evidence page, Then that AC shows its existing screenshot-only state (or "not captured" state) with no broken `<video>` element and no console error — video is additive, never required.
 
+**AC7:** Given a feature with multiple video-enabled ACs renders on one page, When the page loads, Then every `<video>` element uses `preload="none"` with a `poster` thumbnail and explicit `width`/`height` attributes — so videos are not eagerly downloaded on page load (bounding the Performance NFR's own named risk) and the page has no layout shift while they load.
+
 ## Out of Scope
 
 - Captions and a standalone transcript for the captured video — explicitly deferred (see `decisions.md` 2026-10-25 DESIGN entry); `fpd`'s own `generateCaptionsAndTranscript` D37 adapter is not wired or called by this story.
@@ -59,7 +61,7 @@ So that **I can confirm a feature does what was promised by watching it happen, 
 
 ## NFRs
 
-- **Performance:** Video recording adds meaningfully more time than a screenshot per AC. `ppc-s2`'s existing `checkTimingThreshold`/30-60s threshold was sized for screenshot-only capture — this story must measure real video-inclusive capture-all duration and confirm whether that threshold still holds, or needs its own video-aware value, as part of implementation (not assumed either way up front).
+- **Performance:** Video recording adds meaningfully more time than a screenshot per AC. `ppc-s2`'s existing `checkTimingThreshold`/30-60s threshold was sized for screenshot-only capture — this story must measure real video-inclusive capture-all duration and confirm whether that threshold still holds, or needs its own video-aware value, as part of implementation (not assumed either way up front). Page-render performance (as opposed to capture-time performance) is bounded by AC7 — lazy-loaded video prevents a feature with many video-enabled ACs from eagerly downloading every clip on page load.
 - **Security:** No new exposure surface — see AC3 and `discovery.md`'s own resolved Q1/Q3. Video files follow the same tenant-scoped commit/serve path as screenshots (ADR-025).
 - **Accessibility:** The captured video has no audio narration (an automated UI interaction, not a human-narrated walkthrough) — not subject to WCAG's audio-caption requirement for this specific use case. A transcript remains a deferred fast-follow (see Out of Scope), not a silently-dropped requirement.
 - **Audit:** No new audit requirement beyond what `ppc-s1`/`ppc-s2` already log.

@@ -94,3 +94,21 @@
 **Revisit trigger:** If a future story adds narration or treats the captured video as a primary (not supplementary) evidence format, revisit whether a transcript becomes an accessibility requirement rather than a deferred nice-to-have.
 
 ---
+
+**2026-10-26 | DESIGN | CX/UX spike: two bounded AC changes to `ppc-s5`/`ppc-s6` before `/review`**
+**Decision:** (1) `ppc-s5` gains AC7: every rendered `<video>` element uses `preload="none"` + `poster` thumbnail + explicit `width`/`height`, so a feature with multiple video-enabled ACs does not eagerly download every clip on page load and the page has no layout shift. (2) `ppc-s6` AC4's wording is tightened: the Scope/Benefit "not available" state must name the specific missing artefact (e.g. "discovery.md not found in the connected repo"), not a generic message.
+**Context:** `spikes/cx-ux-playback-pattern-outcome.md` (9 research passes: progressive disclosure, visual-regression review tools, Playwright trace viewer, approval/UAT workflows, bug-report tools, changelog UX, SOC2/audit evidence portals, empty-state design, WCAG video accessibility, video lazy-loading). Most of `ppc-s5`/`ppc-s6`'s existing ACs already matched best practice (progressive disclosure ordering, text-distinct coverage states, native `<video controls>` over a custom player, caption deferral being accessibility-safe under WCAG 1.2.2 rather than a compliance gap, flat AC list, video-as-enrichment-not-requirement). Two gaps were concrete and nameable: no AC governed video-loading performance at all, and the empty-state AC permitted a generic message where best practice (and the UAT "state what was not tested" pattern) both call for naming the specific cause.
+**Rationale:** Both changes are small, within the existing architecture and complexity rating of each story — no new infrastructure, no new story, no complexity re-rating needed. Fixing them now, before `/review`, is cheaper than finding them at `/review` or later.
+**Made by:** Claude (session), via `/spike`, confirmed by Hamish King (Platform Owner)'s request to run the research and act on bounded findings, 2026-10-26.
+**Revisit trigger:** None — both changes are applied directly to the story files as part of this decision.
+
+---
+
+**2026-10-26 | SCOPE | Open question: does "sign-off decision made" require an in-app recorded decision, or is off-platform sign-off acceptable?**
+**Finding:** The same CX/UX spike (`spikes/cx-ux-playback-pattern-outcome.md`) found that every approval-workflow and UAT-sign-off source researched converged on the same structural element: a recorded decision tied to a named approver and an exact evidence version. No story in this epic (`ppc-s1`–`ppc-s6`) builds any such mechanism — the epic's own goal statement ("evidence viewed, sign-off decision made") is satisfied today purely by the PO viewing evidence and deciding off-platform (verbally, in a ticket, etc.).
+**Decision:** Not decided — logged as an open question, not folded into `ppc-s5`/`ppc-s6` as new scope and not blocking either story's `/review`. Building an in-app decision-recording mechanism (approver identity, decision state, audit trail tied to an evidence version) would be a materially larger feature than either story's own benefit linkage calls for, and `discovery.md` never scoped it.
+**Rationale:** This is a product-scope choice for the Platform Owner, not something CX/UX research can resolve on its own — off-platform sign-off may be entirely intentional for this MVP.
+**Made by:** Claude (session), via `/spike`, 2026-10-26.
+**Revisit trigger:** If the Platform Owner decides in-app sign-off recording is needed, scope it as its own story (or small epic) with its own ACs — do not retrofit it into `ppc-s5`/`ppc-s6`.
+
+---

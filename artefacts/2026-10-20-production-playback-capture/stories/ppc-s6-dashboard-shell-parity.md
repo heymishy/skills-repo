@@ -46,7 +46,7 @@ So that **I can orient myself and make a sign-off decision without the page feel
 
 **AC3:** Given the page renders, When the AC list loads, Then an at-a-glance coverage line appears above the per-AC sections ("N of M ACs have captured evidence" / "Full coverage" / "0 of M..."), reusing `renderCoverageSummaryHtml`/`computeAcCoverageSummary` as-is, including their existing text-distinct (not colour-only) full/partial/none states.
 
-**AC4:** Given a tenant's connected repo has no `discovery.md` or `benefit-metric.md` at the expected path (e.g. an older feature, or a `fetchArtefact` 404), When the summary section attempts to load, Then the page still renders fully — the Scope/Benefit section shows a clear "not available" state instead of a broken fetch or a 500, and the rest of the page (AC list, capture forms) is unaffected.
+**AC4:** Given a tenant's connected repo has no `discovery.md` or `benefit-metric.md` at the expected path (e.g. an older feature, or a `fetchArtefact` 404), When the summary section attempts to load, Then the page still renders fully — the Scope/Benefit section shows a "not available" state that names the specific missing artefact (e.g. "discovery.md not found in the connected repo") rather than a generic message, and the rest of the page (AC list, capture forms) is unaffected.
 
 **AC5:** Given the existing plain `<form>`/`<input>`/`<button>` capture-target and capture-trigger elements (`ppc-s1`/`ppc-s2`), When the page is wrapped in the dashboard shell, Then every existing form still submits correctly with no client-side JS required — the shell wrap changes layout/chrome only, not the existing keyboard-operable interaction model.
 
