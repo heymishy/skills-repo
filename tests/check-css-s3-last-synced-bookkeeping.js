@@ -132,7 +132,10 @@ function freshRequire(modPath) {
 
     var finalState = JSON.parse(fs.readFileSync(path.join(stateDir, 'pipeline-state.json'), 'utf8'));
     var story = finalState.features[0].stories[0];
-    assert.strictEqual(story.lastSyncedStage, journeySyncClient.SYNC_STAGE, 'expected lastSyncedStage to be updated to the synced stage ("discovery") after a successful sync');
+    // css-s4: SYNC_STAGE was removed (generalised into GATE_TO_JOURNEY_STAGE,
+    // keyed by gate name) -- GATE_TO_JOURNEY_STAGE['discovery-approved']
+    // equals the old SYNC_STAGE value ('discovery'), same literal check.
+    assert.strictEqual(story.lastSyncedStage, journeySyncClient.GATE_TO_JOURNEY_STAGE['discovery-approved'], 'expected lastSyncedStage to be updated to the synced stage ("discovery") after a successful sync');
   });
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');

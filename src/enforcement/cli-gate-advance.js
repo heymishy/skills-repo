@@ -3,8 +3,10 @@
 // validate() passes. Implements AC1–AC3 of cdg.7.
 'use strict';
 
+var fs = require('fs');
+var path = require('path');
 var { validate } = require('./cli-outer-loop');
-var { advance }  = require('./cli-advance');
+var { advance, findStory } = require('./cli-advance');
 var journeySyncClient = require('../sync/journey-sync-client');
 
 // css-s1 (D37 rule 3): wiring the real HTTP transport is kept separate from
@@ -60,11 +62,18 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
   // error, no journey connected, env not configured) never changes
   // gateAdvance's own exit code -- the pipeline-state advance above already
   // succeeded or failed on its own terms.
-  if (advanceResult.exitCode === 0 && gateName === journeySyncClient.SYNC_GATE) {
+  if (advanceResult.exitCode === 0 && journeySyncClient.GATE_TO_JOURNEY_STAGE[gateName]) {
     try {
       var journey = await journeySyncClient.resolveJourneyForFeatureSlug(featureSlug);
       if (journey) {
-        await journeySyncClient.syncGateAdvanceToJourney(journey, gateName);
+        // css-s4: read this story's own locally-accumulated lastSyncedStage
+        // for this story, to pass into syncGateAdvanceToJourney's own new
+        // conflict-detection logic.
+        var _localState = JSON.parse(fs.readFileSync(path.join(repoRoot, '.github', 'pipeline-state.json'), 'utf8'));
+        var _localFeature = (_localState.features || []).find(function(f) { return f.slug === featureSlug || f.id === featureSlug; });
+        var _localStory = _localFeature && findStory(_localFeature, storyId);
+        var _lastSyncedStage = _localStory ? _localStory.lastSyncedStage : null;
+        var _synced = await journeySyncClient.syncGateAdvanceToJourney(journey, gateName, _lastSyncedStage);
         // css-s3: keep the shared "last synced" marker current from the CLI
         // side too, after a successful sync. Bookkeeping only -- no real
         // conflict-branch call here; this direction's real call site cannot
@@ -73,10 +82,28 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
         // here is logged the same as a sync failure above -- it must never
         // change gateAdvance's own exit code, which already reflects the
         // pipeline-state advance's own success.
-        try {
-          advance(featureSlug, storyId, ['lastSyncedStage=' + journeySyncClient.SYNC_STAGE], repoRoot);
-        } catch (markerErr) {
-          process.stderr.write('[journey-sync] warning: lastSyncedStage update failed: ' + ((markerErr && markerErr.message) || String(markerErr)) + '\n');
+        //
+        // css-s4: generalised from the removed SYNC_STAGE constant (which
+        // only ever covered the single discovery-approved gate) to this
+        // gate's own GATE_TO_JOURNEY_STAGE target. Only recorded for the 5
+        // journey-representable gates -- a null-mapped (inner-loop) gate
+        // has no journey-side stage to mark as synced, and recording one
+        // anyway would stamp a false "last synced" value nothing actually
+        // pushed. Also gated on _synced === true: syncGateAdvanceToJourney
+        // now returns false whenever it detected a genuine conflict and
+        // skipped the push (in addition to the no-op/mismatch cases) -- the
+        // marker must only advance when the push genuinely happened, not
+        // merely attempted, otherwise a resolved-to-conflict case would
+        // silently mask an unresolved disagreement by falsely advancing the
+        // marker past the point where the journey and pipeline-state.json
+        // actually agreed.
+        var _syncedTargetStage = journeySyncClient.GATE_TO_JOURNEY_STAGE[gateName];
+        if (_syncedTargetStage && _synced) {
+          try {
+            advance(featureSlug, storyId, ['lastSyncedStage=' + _syncedTargetStage], repoRoot);
+          } catch (markerErr) {
+            process.stderr.write('[journey-sync] warning: lastSyncedStage update failed: ' + ((markerErr && markerErr.message) || String(markerErr)) + '\n');
+          }
         }
       }
     } catch (err) {

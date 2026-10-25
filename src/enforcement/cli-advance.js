@@ -36,6 +36,34 @@ var STRING_FIELDS = [
 var USAGE = 'Usage: skills advance <feature-slug> <story-id> <field>=<value>...';
 
 /**
+ * Find a story by id/slug within a feature — checks the flat `stories[]`
+ * array first, then falls back to epic-nested `epics[].stories[]` (cdg.6/B2
+ * epic-nested story bookkeeping). Shared by applyAdvance() below and by
+ * cli-gate-advance.js's own journey-sync lookup (css-s4 code-quality finding
+ * — this lookup must not be reimplemented a second time independently).
+ *
+ * @param {object} feature — pipeline-state feature object
+ * @param {string} storyId — story id or slug to match
+ * @returns {object|undefined} the matched story object, or undefined if not found in either location
+ */
+function findStory(feature, storyId) {
+  var story = (feature.stories || []).find(function(s) {
+    return s.id === storyId || s.slug === storyId;
+  });
+  if (!story) {
+    var epics = feature.epics || [];
+    for (var ei = 0; ei < epics.length; ei++) {
+      var epicStories = epics[ei].stories || [];
+      var found = epicStories.find(function(s) {
+        return s.id === storyId || s.slug === storyId;
+      });
+      if (found) { story = found; break; }
+    }
+  }
+  return story;
+}
+
+/**
  * Apply a pipeline-state advance mutation to an in-memory state object.
  * Pure function over `state` — no disk I/O. `advance()` below is the thin
  * file-based wrapper that reads/writes disk around this core (wsd-s1).
@@ -162,20 +190,7 @@ function applyAdvance(state, featureSlug, storyId, rawFields) {
   var storyWasCreated = false;
   if (storyKeys.length > 0) {
     if (!Array.isArray(feature.stories)) feature.stories = [];
-    story = feature.stories.find(function(s) {
-      return s.id === storyId || s.slug === storyId;
-    });
-    // If not in flat stories, search epic-nested stories
-    if (!story) {
-      var epics = feature.epics || [];
-      for (var ei = 0; ei < epics.length; ei++) {
-        var epicStories = epics[ei].stories || [];
-        var found = epicStories.find(function(s) {
-          return s.id === storyId || s.slug === storyId;
-        });
-        if (found) { story = found; break; }
-      }
-    }
+    story = findStory(feature, storyId);
     // Still not found — create a new flat entry. Creation itself stays
     // permitted (CLAUDE.md cdg.6 sanctions it for initial story creation) —
     // only the observability of that path changes below (acv-s1).
@@ -281,4 +296,4 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   return { exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr };
 }
 
-module.exports = { advance: advance, applyAdvance: applyAdvance };
+module.exports = { advance: advance, applyAdvance: applyAdvance, findStory: findStory };
