@@ -99,9 +99,42 @@ async function logConflict(featureSlug, tenantId, pipelineStateValue, journeyVal
   );
 }
 
-// css-s4: exported so reconciliation.js (src/sync/reconciliation.js) can
-// share this module's own Pool/testing convention directly -- same "no new
-// adapter seam" reasoning conflict-resolver.js already documents for itself
-// (see that file's own header comment), rather than opening a second,
-// independent Postgres connection pool to the same sync_log table.
-module.exports = { logReconciliationGap, logConflict, _setPoolForTesting, _getPool };
+/**
+ * Finds the most recent unresolved 'gap' entry for a feature, or null.
+ * css-s4: moved here from reconciliation.js (src/sync/reconciliation.js) so
+ * this module remains the single owner of sync_log's schema/column
+ * knowledge -- reconciliation.js now calls this function directly instead
+ * of running its own SELECT against a pool it reached for independently.
+ * @param {string} featureSlug
+ * @returns {Promise<{id:number, feature_slug:string, entry_type:string, created_at:string, resolved_at:null}|null>}
+ */
+async function findOpenGap(featureSlug) {
+  const pool = _getPool();
+  if (!pool) return null;
+  const result = await pool.query(
+    "SELECT id, feature_slug, entry_type, created_at, resolved_at FROM sync_log WHERE feature_slug = $1 AND entry_type = 'gap' AND resolved_at IS NULL ORDER BY created_at DESC LIMIT 1",
+    [featureSlug]
+  );
+  return result.rows[0] || null;
+}
+
+/**
+ * Marks a 'gap' entry as resolved (sets resolved_at to NOW()).
+ * css-s4: moved here from reconciliation.js for the same reason as
+ * findOpenGap above -- see that function's comment.
+ * @param {number} gapId
+ * @returns {Promise<void>}
+ */
+async function markGapResolved(gapId) {
+  const pool = _getPool();
+  if (!pool) return;
+  await pool.query('UPDATE sync_log SET resolved_at = NOW() WHERE id = $1', [gapId]);
+}
+
+// css-s4: _getPool is intentionally NOT exported -- nothing outside this
+// file uses it any longer. reconciliation.js (src/sync/reconciliation.js)
+// now calls findOpenGap()/markGapResolved() directly instead of reaching
+// for the pool itself, matching conflict-resolver.js's own precedent of
+// pure orchestration over this module's data-access functions, with no
+// second override point for the same table.
+module.exports = { logReconciliationGap, logConflict, findOpenGap, markGapResolved, _setPoolForTesting };

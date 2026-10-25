@@ -8,26 +8,16 @@
 // established no-stored-credential constraint, see decisions.md). Reuses
 // whatever live context/token the CALLING request already has.
 //
-// css-s4 build-time correction: reuses sync-log.js's own Pool/testing
-// convention directly, via its exported _getPool(), rather than opening a
-// second, independent Postgres connection pool to the same sync_log table
-// -- same "no new adapter seam" reasoning conflict-resolver.js already
-// documents for itself. _setPoolForTesting below is kept for interface
-// symmetry/direct-override use; when not explicitly set, this module falls
-// through to sync-log.js's own pool (and its own test override).
+// css-s4 build-time correction: this module is pure orchestration over
+// sync-log.js's own data-access functions (findOpenGap/markGapResolved) --
+// it never touches a Postgres pool or runs SQL of its own, matching
+// conflict-resolver.js's actual precedent exactly (that module also never
+// introduces a pool override of its own; it just calls into sync-log.js
+// and lets that module own all pool/table access end-to-end). This avoids
+// two independent, unsynchronized override points for the same sync_log
+// table, and keeps all sync_log schema/column knowledge in one file.
 
 var syncLog = require('../web-ui/adapters/sync-log');
-
-let _poolForTesting = null;
-
-function _setPoolForTesting(pool) {
-  _poolForTesting = pool;
-}
-
-function _getPool() {
-  if (_poolForTesting) return _poolForTesting;
-  return syncLog._getPool();
-}
 
 /**
  * Finds the most recent unresolved 'gap' entry for a feature, or null.
@@ -35,13 +25,7 @@ function _getPool() {
  * @returns {Promise<{id:number, feature_slug:string, entry_type:string, created_at:string, resolved_at:null}|null>}
  */
 async function findOpenGap(featureSlug) {
-  var pool = _getPool();
-  if (!pool) return null;
-  var result = await pool.query(
-    "SELECT id, feature_slug, entry_type, created_at, resolved_at FROM sync_log WHERE feature_slug = $1 AND entry_type = 'gap' AND resolved_at IS NULL ORDER BY created_at DESC LIMIT 1",
-    [featureSlug]
-  );
-  return result.rows[0] || null;
+  return syncLog.findOpenGap(featureSlug);
 }
 
 /**
@@ -57,15 +41,12 @@ async function findOpenGap(featureSlug) {
  * @returns {Promise<{resolved: boolean}>}
  */
 async function reconcile(featureSlug, storyId, context, writerFn, stateUpdate) {
-  var pool = _getPool();
-  if (!pool) return { resolved: false };
-
-  var gap = await findOpenGap(featureSlug);
+  var gap = await syncLog.findOpenGap(featureSlug);
   if (!gap) return { resolved: false };
 
   try {
     await writerFn(featureSlug, storyId, stateUpdate, context);
-    await pool.query('UPDATE sync_log SET resolved_at = NOW() WHERE id = $1', [gap.id]);
+    await syncLog.markGapResolved(gap.id);
     return { resolved: true };
   } catch (reconcileErr) {
     // Re-attempt itself failed -- the gap stays open (resolved_at untouched)
@@ -76,4 +57,4 @@ async function reconcile(featureSlug, storyId, context, writerFn, stateUpdate) {
   }
 }
 
-module.exports = { findOpenGap: findOpenGap, reconcile: reconcile, _setPoolForTesting: _setPoolForTesting };
+module.exports = { findOpenGap: findOpenGap, reconcile: reconcile };

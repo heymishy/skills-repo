@@ -75,7 +75,7 @@ async function run() {
     const result = await reconciliation.reconcile('test-feat-2', 's1', { token: 'this-requests-own-live-token', owner: 'acme', repo: 'proj' }, mockWriter, { stage: 'definition' });
 
     assert('T3-calls-writer', !!writerCalledWith, 'expected reconcile to call the provided writer function');
-    assert('T3-uses-live-context-token', writerCalledWith && writerCalledWith.context.token === 'this-requests-own-live-token', 'expected the writer to be called with the CALLING request\'s own context/token, not a stored one -- reconcile() accepts no credential parameter of its own at all');
+    assert('T3-uses-live-context-token', writerCalledWith && writerCalledWith.context.token === 'this-requests-own-live-token', 'expected the writer to receive the same context object reconcile() was passed, unchanged (passthrough) -- reconcile() accepts no credential parameter of its own at all');
     assert('T3-marks-resolved', pool.calls.some(function(c) { return String(c.sql).toUpperCase().indexOf('UPDATE') === 0 && String(c.sql).toUpperCase().indexOf('RESOLVED_AT') !== -1; }), 'expected an UPDATE ... resolved_at query after a successful re-attempt');
     assert('T3-result-resolved-true', result.resolved === true, `expected result.resolved === true, got ${JSON.stringify(result)}`);
   })();
