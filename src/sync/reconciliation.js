@@ -30,22 +30,49 @@ async function findOpenGap(featureSlug) {
 
 /**
  * Re-attempts a pipeline-state.json write for a feature with an open gap,
- * using the CALLING request's own live writer/context -- reconcile() never
- * accepts or stores a credential of its own; `writerFn` and `context` are
- * both supplied fresh by the caller on every invocation.
+ * using the CALLING request's own live context/writer, but replaying the
+ * GAP'S OWN stored storyId/stateUpdate -- never the calling request's own
+ * storyId/stateUpdate.
+ *
+ * css-s4 build-time correction: an earlier version of this function took
+ * `storyId`/`stateUpdate` as parameters from the caller, which meant a
+ * later, unrelated, successful request on the same feature slug would
+ * resolve the gap using ITS OWN payload -- marking the ORIGINAL failed
+ * write "resolved" even though that original write was never actually
+ * recovered. The fix: storyId and stateUpdate are no longer accepted as
+ * parameters at all. They are read back from the gap row itself
+ * (gap.journey_value.storyId / gap.journey_value.stateUpdate, written by
+ * sync-log.js's logReconciliationGap at the time the gap was first logged)
+ * so the replay is guaranteed to be the SAME write that originally failed.
+ * If a gap has no stored storyId/stateUpdate (e.g. a legacy row logged
+ * before this fix, or a malformed entry), there is nothing safe to replay,
+ * so reconcile() no-ops without attempting any write.
+ *
+ * reconcile() still never accepts or stores a credential of its own;
+ * `context` and `writerFn` are supplied fresh by the caller on every
+ * invocation and are the CALLING request's own live values (token/owner/
+ * repo and already-wired writer), reused only for transport -- not for
+ * deciding what to write.
  * @param {string} featureSlug
- * @param {string} storyId
  * @param {object} context - the CALLING request's own live _pipelineStateContext (token/owner/repo)
  * @param {Function} writerFn - the CALLING request's own already-wired _pipelineStateWriter
- * @param {object} stateUpdate - the write payload for the re-attempt
  * @returns {Promise<{resolved: boolean}>}
  */
-async function reconcile(featureSlug, storyId, context, writerFn, stateUpdate) {
+async function reconcile(featureSlug, context, writerFn) {
   var gap = await syncLog.findOpenGap(featureSlug);
   if (!gap) return { resolved: false };
 
+  var gapStoryId = gap.journey_value && gap.journey_value.storyId;
+  var gapStateUpdate = gap.journey_value && gap.journey_value.stateUpdate;
+  if (!gapStoryId || !gapStateUpdate) {
+    // Nothing safe to replay -- e.g. a legacy gap logged before storyId/
+    // stateUpdate were stored, or a malformed row. Do not guess at a
+    // substitute payload; just leave the gap open for manual follow-up.
+    return { resolved: false };
+  }
+
   try {
-    await writerFn(featureSlug, storyId, stateUpdate, context);
+    await writerFn(featureSlug, gapStoryId, gapStateUpdate, context);
     await syncLog.markGapResolved(gap.id);
     return { resolved: true };
   } catch (reconcileErr) {

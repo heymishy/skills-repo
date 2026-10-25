@@ -11,7 +11,9 @@
 // "css-s2, pre-code discovery").
 //
 // This module never accepts or stores a token/credential parameter -- its
-// signature is deliberately (featureSlug, tenantId, gateName) only.
+// logReconciliationGap signature is deliberately
+// (featureSlug, tenantId, gateName, storyId, stateUpdate) -- none of those
+// 5 params is ever a token/credential.
 
 const { Pool } = require('pg');
 
@@ -57,21 +59,34 @@ function _getPool() {
  * `pipeline_state_write_failed` catch block) MUST wrap this call in their
  * own try/catch so a failed gap-log write doesn't turn their already-non-
  * blocking failure path into a hard failure.
+ *
+ * css-s4 correctness fix: storyId and stateUpdate are now stored alongside
+ * gateName because they are the exact payload reconciliation.js's
+ * reconcile() needs to replay LATER, from a different, subsequent request.
+ * Without them, reconcile() had no way to know WHAT write actually failed --
+ * it was substituting whatever storyId/stateUpdate the later, unrelated,
+ * calling request happened to be writing at the time, and marking this
+ * entry's own gap resolved on that unrelated success instead of on genuine
+ * recovery of the data that was actually lost.
  * @param {string} featureSlug
  * @param {string|null} tenantId
  * @param {string} gateName - the gate/stage name that failed to sync (session.skillName)
+ * @param {string} storyId - the story whose write failed; stored so reconcile() can replay against the SAME story, not whatever story a later request is writing
+ * @param {object} stateUpdate - the write payload that failed; stored so reconcile() can replay the SAME write, not a later request's unrelated payload
  * @returns {Promise<void>}
  */
-async function logReconciliationGap(featureSlug, tenantId, gateName) {
+async function logReconciliationGap(featureSlug, tenantId, gateName, storyId, stateUpdate) {
   const pool = _getPool();
   if (!pool) return;
-  // journey_value carries this gap entry's own context payload (gateName) --
-  // pipeline_state_value/resolved_value stay null for 'gap' entries, reserved
-  // for css-s3's future 'conflict' entries which will populate all three
-  // columns for an actual pipeline-state-vs-journey diff.
+  // journey_value carries this gap entry's own context payload (gateName,
+  // storyId, stateUpdate) -- all three are needed so a later reconcile()
+  // call can replay THIS SPECIFIC failed write. pipeline_state_value/
+  // resolved_value stay null for 'gap' entries, reserved for css-s3's
+  // 'conflict' entries which populate all three columns for an actual
+  // pipeline-state-vs-journey diff.
   await pool.query(
     'INSERT INTO sync_log (feature_slug, tenant_id, entry_type, journey_value, created_at) VALUES ($1, $2, $3, $4, NOW())',
-    [featureSlug, tenantId || null, 'gap', JSON.stringify({ gateName: gateName })]
+    [featureSlug, tenantId || null, 'gap', JSON.stringify({ gateName: gateName, storyId: storyId, stateUpdate: stateUpdate })]
   );
 }
 
@@ -105,14 +120,24 @@ async function logConflict(featureSlug, tenantId, pipelineStateValue, journeyVal
  * this module remains the single owner of sync_log's schema/column
  * knowledge -- reconciliation.js now calls this function directly instead
  * of running its own SELECT against a pool it reached for independently.
+ * css-s4 correctness fix: journey_value is now included in the SELECT so
+ * the caller (reconciliation.js's reconcile()) can read back the gap's own
+ * stored {gateName, storyId, stateUpdate} payload and replay the SPECIFIC
+ * write that failed, instead of substituting a later, unrelated request's
+ * own payload.
  * @param {string} featureSlug
- * @returns {Promise<{id:number, feature_slug:string, entry_type:string, created_at:string, resolved_at:null}|null>}
+ * @returns {Promise<{id:number, feature_slug:string, entry_type:string, created_at:string, resolved_at:null, journey_value:object}|null>}
  */
 async function findOpenGap(featureSlug) {
   const pool = _getPool();
   if (!pool) return null;
+  // journey_value is a JSONB column: a real Postgres connection (via `pg`)
+  // auto-deserializes it into a plain JS object on the returned row, so
+  // row.journey_value is already {gateName, storyId, stateUpdate} here --
+  // no JSON.parse needed. A fake pool used in tests must mirror this by
+  // putting a plain object (not a JSON string) in its mocked journey_value.
   const result = await pool.query(
-    "SELECT id, feature_slug, entry_type, created_at, resolved_at FROM sync_log WHERE feature_slug = $1 AND entry_type = 'gap' AND resolved_at IS NULL ORDER BY created_at DESC LIMIT 1",
+    "SELECT id, feature_slug, entry_type, created_at, resolved_at, journey_value FROM sync_log WHERE feature_slug = $1 AND entry_type = 'gap' AND resolved_at IS NULL ORDER BY created_at DESC LIMIT 1",
     [featureSlug]
   );
   return result.rows[0] || null;

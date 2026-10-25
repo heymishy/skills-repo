@@ -2881,10 +2881,17 @@ async function handlePostGateConfirm(req, res) {
     // the gap check and re-attempt are both best-effort, wrapped in their
     // own try/catch, same non-blocking contract as every other optional
     // Postgres-backed feature in this file.
+    //
+    // css-s4 correctness fix: reconcile() no longer takes this request's
+    // own storyId/stateUpdate -- it replays the GAP's OWN stored storyId/
+    // stateUpdate (read back from journey_value), so an unrelated gap from
+    // a different story/write is never resolved by THIS request's own
+    // unrelated success. Only context/writerFn (this request's own live
+    // token/owner/repo and already-wired writer) are passed through.
     if (process.env.DATABASE_URL) {
       try {
         var _reconcileResult = await require('../../sync/reconciliation').reconcile(
-          journey.featureSlug, storyId, _pipelineStateContext, _pipelineStateWriter, stateUpdate
+          journey.featureSlug, _pipelineStateContext, _pipelineStateWriter
         );
         if (_reconcileResult.resolved) {
           console.info(JSON.stringify({ event: 'reconciliation_gap_resolved', featureSlug: journey.featureSlug, storyId: storyId }));
@@ -2902,10 +2909,16 @@ async function handlePostGateConfirm(req, res) {
     // guarded like every other optional-Postgres write in this file (e.g.
     // the saveArtefact call above). Never let this logging call itself
     // throw and mask the already-non-blocking failure path above.
+    //
+    // css-s4 correctness fix: storyId and stateUpdate (this request's own,
+    // still in scope from earlier in this same function) are now passed
+    // through and stored alongside gateName, so a later reconcile() call
+    // can replay THIS SPECIFIC failed write instead of substituting
+    // whatever an unrelated, subsequent request happens to be writing.
     if (process.env.DATABASE_URL) {
       try {
         await require('../adapters/sync-log').logReconciliationGap(
-          journey.featureSlug, journey.tenantId || req.session.tenantId || null, session.skillName
+          journey.featureSlug, journey.tenantId || req.session.tenantId || null, session.skillName, storyId, stateUpdate
         );
       } catch (_syncLogErr) {
         console.error('[sync-log] gap logging failed:', _syncLogErr.message);
