@@ -21,15 +21,15 @@
 
 ---
 
-### Scenario 1: Every gate type syncs, not just discovery-approved
+### Scenario 1: Every journey-representable gate syncs, not just discovery-approved
 
 **Covers:** AC1
 
 **Steps:**
-1. For each of the 7 pipeline stages (discovery, benefit-metric, definition, test-plan, DoR, branch-complete, definition-of-done), advance that gate on the CLI for a feature with a connected journey.
+1. For each of the 7 `gate-map.js` gates (discovery-approved, benefit-metric-active, definition-complete, test-plan-complete, dor-signed-off, branch-complete, definition-of-done), advance that gate on the CLI for a feature with a connected journey.
 
 **Expected outcome:**
-> Each time, the connected journey reflects that specific stage's completion — not just the first one you tried.
+> For the 5 journey-representable gates (discovery-approved → discovery, benefit-metric-active → benefit-metric, definition-complete → definition, test-plan-complete → test-plan, dor-signed-off → definition-of-ready), the connected journey reflects that specific stage's completion — not just the first one you tried. For the 2 CLI-only inner-loop gates (`branch-complete`, `definition-of-done`), there is deliberately no journey-side effect at all — the web journey model has no concept of these stages (see `decisions.md`'s "gate-to-journey-stage mapping" ARCH entry and the DoR contract's 2026-10-25 revision); confirm these 2 gates advance cleanly on the CLI side with no error and no attempted journey write, not that they produce a journey-visible change.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
