@@ -40,6 +40,7 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 - [x] Recognise pipeline-state.json DoD-complete features (CLI/web-UI parity fallback) — `stories/ppc-s4-pipeline-state-dod-fallback.md`
 - [ ] Self-service video capture per AC — `stories/ppc-s5-video-capture.md`
 - [ ] Dashboard-shell UX/CX parity and scope/benefit summary — `stories/ppc-s6-dashboard-shell-parity.md`
+- [ ] Record an in-app sign-off decision on captured evidence — `stories/ppc-s7-sign-off-recording.md`
 
 ## Human Oversight Level
 

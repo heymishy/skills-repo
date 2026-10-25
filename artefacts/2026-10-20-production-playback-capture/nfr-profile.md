@@ -3,7 +3,7 @@
 **Feature:** 2026-10-20-production-playback-capture
 **Created:** 2026-10-21
 **Last updated:** 2026-10-26
-**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), refined by a CX/UX spike (2026-10-26, see `spikes/cx-ux-playback-pattern-outcome.md`) — not yet verified, pending their own DoD.
+**Status:** Verified at 2026-10-23 for `ppc-s1`–`ppc-s3` (all reached `/definition-of-done` with every NFR row addressed and evidenced); `ppc-s4` NFR rows verified at its own DoD (2026-10-25); `ppc-s5`/`ppc-s6` rows added at `/definition` (2026-10-25), refined by a CX/UX spike (2026-10-26, see `spikes/cx-ux-playback-pattern-outcome.md`); `ppc-s7` rows added at `/definition` (2026-10-26), same spike — none of `ppc-s5`/`ppc-s6`/`ppc-s7` verified yet, pending their own DoD.
 
 ---
 
@@ -17,6 +17,7 @@
 | Video-inclusive capture-all duration | Not yet defined — `ppc-s2`'s 30-60s threshold was sized for screenshot-only capture; `ppc-s5` must measure real video-inclusive duration and confirm/revise the threshold | Real wall-clock measurement recorded as DoD evidence | `ppc-s5` |
 | Video page-render load (distinct from capture-time) | Every rendered `<video>` uses `preload="none"` + `poster` + explicit dimensions — no eager download of every clip on page load, no layout shift | Manual check — confirmed via CX/UX spike (`spikes/cx-ux-playback-pattern-outcome.md`, 2026-10-26) as a named best-practice pattern, formalised as `ppc-s5` AC7 | `ppc-s5` |
 | Summary section fetch overhead | Bounded — two additional `fetchArtefact` calls per page load, same cost class as `ppc-s4`'s own DoD-content fetch | Consistent with existing `fetchArtefact` usage, no new infra | `ppc-s6` |
+| Sign-off write overhead | Negligible — one additional JSONB write on form submit, same cost class as `ppc-s2`'s existing `captureAllDuration` write | Consistent with existing `journeys.data` write pattern, no new infra | `ppc-s7` |
 
 **Source:** Story AC (`ppc-s2` AC3/AC4) / Not yet a committed SLO — this feature's own build is what establishes the real baseline.
 
@@ -30,7 +31,8 @@
 | Authorisation | Access-control check filters by both `tenant_id` AND `product_id`; capture content is strictly bounded to what the triggering Product Owner's own session can already see | `decisions.md` 2026-10-21 ARCHITECTURE entries | `ppc-s1`, `ppc-s2` |
 | Input validation | N/A — no new user-supplied path/query parameters beyond existing authenticated routing; path-traversal guard convention applies if any file path is built from request data (CLAUDE.md mandatory) | CLAUDE.md "Path traversal guard for disk writes" | `ppc-s1` |
 | Secrets management | `session_id` is an unsigned bearer-equivalent value and must never leave the server process boundary — no client-side exposure, no logging | `discovery.md` Q1 resolution | `ppc-s1`, `ppc-s2` |
-| Audit logging | None identified for this feature at this stage — not a blocking gap, flagged as a candidate for a later story if usage patterns justify it | Not defined | All stories |
+| Audit logging | None identified for this feature at this stage — not a blocking gap, flagged as a candidate for a later story if usage patterns justify it | Not defined | `ppc-s1`–`ppc-s6` |
+| Sign-off decision identity | Resolved via `req.session.login || req.session.userId` (never `req.session.accessToken` — CLAUDE.md canonical-field rule), mirroring `admin-credits.js`'s own `adminId` audit-trail pattern | `admin-credits.js` precedent; CLAUDE.md | `ppc-s7` |
 
 **Data classification:**
 - [ ] Public — no PII, no sensitive data

@@ -112,3 +112,12 @@
 **Revisit trigger:** If the Platform Owner decides in-app sign-off recording is needed, scope it as its own story (or small epic) with its own ACs — do not retrofit it into `ppc-s5`/`ppc-s6`.
 
 ---
+
+**2026-10-26 | SCOPE | Resolved: in-app sign-off recording IS wanted — added as `ppc-s7`, same epic**
+**Decision:** The open question above is resolved: build a lightweight in-app sign-off action now, not later. New story `ppc-s7` (`stories/ppc-s7-sign-off-recording.md`) adds an Approve / Needs-changes decision, recorded with the PO's resolved identity (`req.session.login || req.session.userId`, reusing `admin-credits.js`'s own `adminId` pattern — never `accessToken`), a timestamp, an optional comment, and the AC-coverage snapshot the decision was made against — stored in `journeys.data.signOff` following the same `fdn-s1` allowlist pattern as `ppc-s1`'s `captureTargets`/`ppc-s4`'s `pipelineStateStorySlugs`. No new table, no migration, no new access-control mechanism (reuses ADR-025 scoping as-is).
+**Context:** Chosen directly by the Platform Owner over two alternatives — (a) leave sign-off off-platform and fix `benefit-metric.md`'s Metric 2 wording to match that reality, or (b) defer the decision entirely. This also resolves a real inconsistency the spike surfaced: `benefit-metric.md`'s Metric 2 already claimed to measure "time to... recording a sign-off decision," but its measurement method only captured a page-view event, because nothing was ever actually recorded — `ppc-s7` makes that claim true instead of leaving it as an overclaim. `benefit-metric.md`'s Metric 2 measurement method and Metric Coverage Matrix are updated in this same session to reference `ppc-s7`'s real decision-recorded event.
+**Rationale:** A small, bounded addition (one new JSONB field, one reused identity pattern, one reused access-control guard) directly closes a named measurement gap rather than leaving it as a known-wrong metric definition. The epic now has 7 stories — still under the "~8 stories: single epic is fine" guideline from `/definition`, but close enough to the threshold that any further fast-follow addition after `ppc-s7` should prompt an epic-split re-assessment rather than being added by default.
+**Made by:** Hamish King (Platform Owner), via direct chat instruction, 2026-10-26.
+**Revisit trigger:** If a further fast-follow item is proposed after `ppc-s7`, reassess whether the epic (now at 7 stories) should split before adding an 8th.
+
+---

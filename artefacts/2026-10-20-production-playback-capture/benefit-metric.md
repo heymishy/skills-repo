@@ -40,7 +40,7 @@ This is a standard product capability for real tenants validating their own deli
 | **Baseline** | Not yet established — no self-service mechanism existed before this feature, and manual evidence collation was rarely performed in practice (per the `fpd-s5` finding), so there is no reliable "today" number to compare against. Will measure actual times during the first 4 weeks post-launch. |
 | **Target** | Median time under 10 minutes, single sitting — consistent with the synchronous trigger design confirmed in `discovery.md`. |
 | **Minimum validation signal** | At least one real captured-and-signed-off cycle completes in under 30 minutes end-to-end — proves the self-service loop works at all, even before it's tuned to target speed. |
-| **Measurement method** | Timestamp delta between the DoD-complete marking event and the first self-service capture-view event, both logged via PostHog. Reviewed weekly by the Platform Owner during the pilot window. |
+| **Measurement method** | **Corrected 2026-10-26 (CX/UX spike finding, `spikes/cx-ux-playback-pattern-outcome.md`):** until `ppc-s7` ships, no decision is actually recorded anywhere, so this metric could only be approximated by a page-view event — an overclaim against what "recording a sign-off decision" actually means. From `ppc-s7` onward: timestamp delta between the DoD-complete marking event and the real `journeys.data.signOff` write event (AC2), both logged via PostHog. Before `ppc-s7` ships, report the page-view proxy explicitly labelled as a proxy, not as sign-off itself. Reviewed weekly by the Platform Owner during the pilot window. |
 | **Feedback loop** | If the minimum signal isn't hit, check whether the bottleneck is capture duration itself (the `discovery.md` MVP Scope's own flagged risk — synchronous capture pushing past ~30-60s) versus PO responsiveness/scheduling (outside this feature's control) before concluding the mechanism failed. |
 
 ### Metric 3: Engineer manual-demo load removed
@@ -60,8 +60,8 @@ This is a standard product capability for real tenants validating their own deli
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Self-service DoD validation adoption | `ppc-s1` (makes it possible at all), `ppc-s2` (makes it meaningful at feature scale), `ppc-s3` (protects sustained adoption from accidental load), `ppc-s4` (removes a false-negative 404 for CLI-delivered DoD-complete features), `ppc-s5` (richer video evidence increases trust), `ppc-s6` (removes the UX/discoverability friction named in Metric 3's own feedback loop) | Covered |
-| Metric 2 — Time to DoD sign-off | `ppc-s2` (the full-feature, single-sitting capture loop) | Covered |
+| Metric 1 — Self-service DoD validation adoption | `ppc-s1` (makes it possible at all), `ppc-s2` (makes it meaningful at feature scale), `ppc-s3` (protects sustained adoption from accidental load), `ppc-s4` (removes a false-negative 404 for CLI-delivered DoD-complete features), `ppc-s5` (richer video evidence increases trust), `ppc-s6` (removes the UX/discoverability friction named in Metric 3's own feedback loop), `ppc-s7` (a recorded decision is itself evidence the loop was used end-to-end, not just opened) | Covered |
+| Metric 2 — Time to DoD sign-off | `ppc-s2` (the full-feature, single-sitting capture loop), `ppc-s7` (makes "recording a sign-off decision" literally true instead of a page-view proxy — see corrected Measurement method above) | Covered |
 | Metric 3 — Engineer manual-demo load removed | `ppc-s1`, `ppc-s2` (the capability's existence structurally removes the need for an engineer to demo; measured qualitatively per this artefact's own Metric 3 definition), `ppc-s5`/`ppc-s6` (directly address this metric's own named feedback-loop risk: "the gap is either trust in the captured evidence or a UX/discoverability problem for the PO") | Covered |
 
 ---
