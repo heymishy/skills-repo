@@ -662,14 +662,16 @@ git commit -m "feat(css-s4): generalise journey-sync-client.js to all 7 gates wi
 
 ---
 
-## Task 4: `reconciliation.js` + wiring into `journey.js` (AC2)
+## Task 4: `reconciliation.js` + wiring into `journey.js` (AC2) ✅ DONE (commits `ab71086e`, `912628a2`)
 
 **Files:**
 - Create: `src/sync/reconciliation.js`
 - Modify: `src/web-ui/routes/journey.js`
 - Test: `tests/check-css-s4-reconciliation.js`
 
-- [ ] **Step 1: Write the failing test**
+> **Build-time corrections:** (1) `sync-log.js` gained a new `_getPool` export (later removed again — see (3)) so `reconciliation.js` could initially share its pool rather than opening a second one; (2) the wiring snippet's require path was corrected from `../sync/reconciliation` to `../../sync/reconciliation` (journey.js is 2 directories, not 1, above reconciliation.js). (3) **Code-quality fix (commit `912628a2`):** moved `reconciliation.js`'s SELECT/UPDATE SQL into two new `sync-log.js` functions (`findOpenGap`, `markGapResolved`), removing `reconciliation.js`'s own pool access entirely — it's now pure orchestration, matching `conflict-resolver.js`'s real precedent exactly. `_getPool` removed from `sync-log.js`'s exports again (confirmed unused externally).
+
+- [x] **Step 1: Write the failing test**
 
 ```javascript
 #!/usr/bin/env node
@@ -783,7 +785,7 @@ async function run() {
 run();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-css-s4-reconciliation.js
@@ -791,7 +793,7 @@ node tests/check-css-s4-reconciliation.js
 
 Expected: `Error: Cannot find module '../src/sync/reconciliation'`.
 
-- [ ] **Step 3: Write `src/sync/reconciliation.js`**
+- [x] **Step 3: Write `src/sync/reconciliation.js`**
 
 ```javascript
 'use strict';
@@ -882,7 +884,7 @@ async function reconcile(featureSlug, storyId, context, writerFn, stateUpdate) {
 module.exports = { findOpenGap: findOpenGap, reconcile: reconcile, _setPoolForTesting: _setPoolForTesting };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-css-s4-reconciliation.js
@@ -890,7 +892,7 @@ node tests/check-css-s4-reconciliation.js
 
 Expected: `[css-s4] 7 passed, 0 failed` (2 T1 + 1 T2 + 3 T3 + 1 T4 = 7 — trust your own run over this count).
 
-- [ ] **Step 5: Wire the reconciliation check into `journey.js`**
+- [x] **Step 5: Wire the reconciliation check into `journey.js`**
 
 In `src/web-ui/routes/journey.js`, find the block that reads (added in css-s3's Task 7, right after the conflict-correction `if` block, still inside the `try` that wraps the pipeline-state write):
 
@@ -922,7 +924,7 @@ In `src/web-ui/routes/journey.js`, find the block that reads (added in css-s3's 
     }
 ```
 
-- [ ] **Step 6: Run full suite**
+- [x] **Step 6: Run full suite**
 
 ```bash
 node scripts/run-all-tests.js
@@ -930,7 +932,7 @@ node scripts/run-all-tests.js
 
 Expected: all tests passing. Pay particular attention to every test exercising `handlePostGateConfirm` (`check-acdg-s2-durability-signal.js`, `check-css-s2-gate-confirm-sync-log-integration.js`, `check-css-s3-journey-correction.js`, `check-css-s3-pipeline-state-conflict-wiring.js`) -- confirm none of them regress, since this adds a new DATABASE_URL-guarded block to a function they all exercise.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/sync/reconciliation.js src/web-ui/routes/journey.js tests/check-css-s4-reconciliation.js

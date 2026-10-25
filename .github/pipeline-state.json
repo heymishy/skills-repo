@@ -19937,7 +19937,7 @@
                 {
                   "id": "task-4",
                   "name": "reconciliation.js + wiring into journey.js (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-07-cross-surface-state-sync/plans/css-s4-plan.md"
                 },
                 {
