@@ -123,6 +123,15 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('journeyStorePg_sanitise_retainsCaptureVideosField', function() {
+    delete require.cache[require.resolve('../src/web-ui/adapters/journey-store-pg')];
+    var pg = require('../src/web-ui/adapters/journey-store-pg');
+    var sanitised = pg._sanitiseForTesting({ captureVideos: { AC1: 'artefacts/fx/playback/ppc-s1/video/x.webm' } });
+    assert.deepStrictEqual(sanitised.captureVideos, { AC1: 'artefacts/fx/playback/ppc-s1/video/x.webm' }, 'captureVideos must survive _sanitise() or it silently vanishes after a Postgres-backed restart (fdn-s1)');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
