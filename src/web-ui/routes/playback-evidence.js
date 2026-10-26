@@ -8,6 +8,9 @@
 // tenant_id and product_id (AC1, AC6, AC7).
 
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
+// Unused by Task 5's own new dispatch code -- kept because Task 6 (ppc-s9)
+// re-wires this into handleGetPlaybackEvidence's own finalise step, fed from
+// a downloaded artifact buffer instead of a local fs.readFileSync.
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
