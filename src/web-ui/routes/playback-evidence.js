@@ -8,13 +8,21 @@
 // tenant_id and product_id (AC1, AC6, AC7).
 
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
-const { getAuthenticatedPage } = require('../adapters/session-page-adapter');
-const { captureAcScreenshots } = require('../../utils/capture-screenshots');
-const { captureVideoRecording } = require('../../utils/capture-video');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+
+// ppc-s9 (Task 5): dispatch-based capture replaces the old in-process
+// getAuthenticatedPage + captureAcScreenshots/captureVideoRecording path --
+// the actual Playwright work now runs in a GitHub Actions capture-worker
+// (Task 4's own script), triggered via dispatchCaptureWorkflow below. The
+// real req.sessionId is never put directly into the workflow_dispatch
+// input -- issueNonce() exchanges it for a short-lived, single-use nonce
+// first (capture-nonce-store.js).
+const { issueNonce } = require('../adapters/capture-nonce-store');
+const { dispatchCaptureWorkflow } = require('../adapters/capture-dispatch-adapter');
 
 // ppc-s4: injectable, matching routes/artefact.js's own setFetcher
 // convention -- tests inject a fake fetcher rather than mocking global
@@ -80,18 +88,15 @@ var _captureRateLimiter = createRateLimiter({
     _sendJson(res, 429, { error: 'rate limit exceeded -- wait a minute before triggering another capture' });
   }
 });
-// ppc-s2 Task 5: kept as a module reference (not destructured) -- Task 5's
-// own AC4 test monkey-patches captureAllModule.measureCaptureDuration
-// directly on this exact cached module object (`require(...)` in the test
-// file resolves to the SAME object Node already cached here). A destructured
-// `var { measureCaptureDuration } = require(...)` would copy the function
-// reference at require-time, and a later property reassignment on the
-// module object would NOT be visible through that local binding -- call
-// sites below must go through `captureAllModule.measureCaptureDuration(...)`
-// so the monkey-patch is observed at call time, not require-time.
+// ppc-s9 (Task 5): measureCaptureDuration/checkTimingThreshold and
+// decisions-log-writer's appendScopeNote were ppc-s2's own synchronous
+// "how long did the in-process Playwright run take" measurement -- with
+// capture now dispatched asynchronously, there is no synchronous duration
+// left for THIS handler to measure (see handlePostCaptureAll's own comment
+// at its response below). Only buildCaptureAllList (grouping which ACs have
+// a target) is still needed here.
 var captureAllModule = require('../../utils/capture-all');
-var { buildCaptureAllList, checkTimingThreshold } = captureAllModule;
-var decisionsLogWriter = require('../adapters/decisions-log-writer');
+var { buildCaptureAllList } = captureAllModule;
 
 // Matches journey.js's/features.js's own setJourneyStoreModule DI
 // convention -- tests inject a fresh/mock store explicitly via
@@ -576,121 +581,15 @@ async function _resolveViaPipelineState(req, pool, tenantId, productId, featureS
 }
 
 /**
- * ppc-s2: single-AC capture mechanics, extracted from handlePostCaptureTrigger
- * so handlePostCaptureAll (ppc-s2) can reuse the identical mechanism per AC
- * in a loop, instead of a second, parallel capture path (DoR constraint).
- * Takes an already-authenticated `page` (acquired once by the caller) rather
- * than acquiring its own -- handlePostCaptureAll acquires one authenticated
- * page for an entire capture-all run, not once per AC.
- * @param {object} journey
- * @param {string} acId
- * @param {{url:string, selector:string}} target
- * @param {{owner:string, repo:string}} ownerRepo
- * @param {object} req
- * @param {object} page
- * @returns {Promise<string>} the committed screenshot's repo-relative path
- */
-async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
-  await page.goto(target.url);
-  var shots = await captureAcScreenshots({
-    page: page,
-    featureSlug: journey.featureSlug,
-    storySlug: 'ppc-s1',
-    acList: [{ acId: acId, selector: target.selector }]
-  });
-  var shot = shots[0];
-
-  var repoRoot = getRepoRoot(req);
-  // Defense in depth, in addition to (not instead of) the ACID_RE allowlist
-  // at each call site -- CLAUDE.md's path traversal guard rule requires both.
-  // Never log the raw resolved path on failure.
-  var resolvedShotPath = _resolveSafeShotPath(repoRoot, shot.path);
-  if (!resolvedShotPath) {
-    var invalidPathErr = new Error('invalid capture path');
-    invalidPathErr.invalidPath = true;
-    throw invalidPathErr;
-  }
-  var content = fs.readFileSync(resolvedShotPath);
-
-  await commitArtefact(shot.path, content.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-
-  var screenshots = journey.captureScreenshots || {};
-  screenshots[acId] = shot.path;
-  _journeyStore.setJourneyFields(journey.journeyId, { captureScreenshots: screenshots });
-
-  return shot.path;
-}
-
-/**
- * ppc-s5 (AC1, AC1-combined, AC3): records ONE video spanning every AC in
- * acIds, in a single Playwright recording context -- a group of one for a
- * single-AC trigger, several ACs for capture-all (a later task). Reuses the
- * SAME authenticated browser the screenshot work already obtained (AC3) --
- * a new context created from that browser does NOT inherit the cookie
- * seeded on the original context, so the clip's own run() callback re-seeds
- * it via page.context().addCookies() before navigating to each AC's own
- * target URL in sequence. Returns the resulting video path (or null if
- * nothing could be recorded), or throws on failure -- callers decide how to
- * track a failure against each acId in the group.
- * @param {object} journey
- * @param {string[]} acIds
- * @param {{owner:string, repo:string}} ownerRepo
- * @param {object} req
- * @param {object} browser
- * @param {string} baseUrl
- * @returns {Promise<string|null>}
- */
-async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, baseUrl) {
-  if (!browser || acIds.length === 0) return null;
-  var sessionId = req.sessionId;
-  // Mirrors session-page-adapter.js's realGetAuthenticatedPage cookie-security
-  // computation exactly (secure iff the base URL is actually https) --
-  // deliberately NOT a hardcoded true, to avoid drifting from that sibling's
-  // own correct logic. session-page-adapter.js itself is out of scope for
-  // this story (DoR "Do not modify"), so this is duplicated in place rather
-  // than extracted into a shared helper.
-  var parsedBaseUrl = new URL(baseUrl || 'https://localhost');
-  var cookieDomain = parsedBaseUrl.hostname;
-  var captureTargets = journey.captureTargets || [];
-  var videoResults = await captureVideoRecording({
-    browser: browser,
-    featureSlug: journey.featureSlug,
-    storySlug: 'ppc-s1',
-    clips: [{
-      name: acIds.join('+'),
-      run: async function(videoPage) {
-        await videoPage.context().addCookies([{
-          name: 'session_id',
-          value: sessionId,
-          domain: cookieDomain,
-          path: '/',
-          httpOnly: true,
-          secure: parsedBaseUrl.protocol === 'https:',
-          sameSite: 'Lax'
-        }]);
-        for (var i = 0; i < acIds.length; i++) {
-          var targetState = _journeyStore.getCaptureTargetState(captureTargets, acIds[i]);
-          if (targetState && targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET) {
-            await videoPage.goto(targetState.url);
-          }
-        }
-      }
-    }]
-  });
-  var videoResult = videoResults[0];
-  if (!videoResult || !videoResult.path) return null;
-
-  var repoRoot = getRepoRoot(req);
-  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoResult.path);
-  if (!resolvedVideoPath) return null;
-  var videoContent = fs.readFileSync(resolvedVideoPath);
-  await commitArtefact(videoResult.path, videoContent.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
-  return videoResult.path;
-}
-
-/**
  * AC3 -- session-reuse capture (ADR-018: real session only, never a service
  * credential or the NODE_ENV=test bypass).
+ *
+ * ppc-s9 (Task 5): no longer launches Chromium in-process. Dispatches the
+ * platform's GitHub Actions capture-worker workflow (Task 4) and returns
+ * immediately -- the real session id is exchanged for a short-lived,
+ * single-use nonce first (issueNonce), so it never appears directly in the
+ * workflow_dispatch input. handleGetPlaybackEvidence (Task 6) later polls
+ * for the resulting artifact and finalises the capture.
  */
 async function handlePostCaptureTrigger(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
@@ -732,56 +631,57 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   // hardcoded/env-configured base URL, which would silently scope the
   // seeded auth cookie to the wrong domain outside local dev.
   var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
-  var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
+
+  // ppc-s9 (Task 5): ownerRepo is still resolved above (and still required
+  // -- a product with no connected repo must still 400 before dispatching),
+  // but it is NOT passed into the dispatch itself. The workflow never
+  // touches the tenant's repo directly; ownerRepo is only needed again by
+  // Task 6's own finalise step (its commitArtefact call), once the artifact
+  // comes back.
   try {
-    var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
-    try {
-      var videoPath = await _captureVideoForAcIds(journey, [acId], ownerRepo, req, authed.browser, baseUrl);
-      if (videoPath) {
-        var videos = journey.captureVideos || {};
-        videos[acId] = videoPath;
-        _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
-      }
-    } catch (videoErr) {
-      // AC4 (single-AC case, a group of one): a video failure never aborts
-      // the request and never undoes the screenshot success above. No AC
-      // requires surfacing a distinct "video failed" message for this
-      // path (AC6 only requires gracefully showing no video when none
-      // exists, already satisfied without persisting anything here) --
-      // intentionally swallowed.
-    }
+    var correlationId = crypto.randomBytes(16).toString('hex');
+    var nonce = await issueNonce(req.sessionId);
+    await dispatchCaptureWorkflow({
+      nonce: nonce,
+      baseUrl: baseUrl,
+      featureSlug: journey.featureSlug,
+      acIds: [acId],
+      targets: [{ acId: acId, url: target.url, selector: target.selector }],
+      correlationId: correlationId
+    });
+
+    var captureInProgress = Object.assign({}, journey.captureInProgress);
+    captureInProgress[acId] = { correlationId: correlationId, dispatchedAt: new Date().toISOString() };
+    _journeyStore.setJourneyFields(journey.journeyId, { captureInProgress: captureInProgress });
+
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
     }
-    _sendJson(res, 200, { ok: true, screenshotPath: shotPath });
-  } catch (captureErr) {
-    if (captureErr && captureErr.invalidPath) {
-      _sendJson(res, 400, { error: 'invalid capture path' });
-      return;
-    }
+    _sendJson(res, 200, { ok: true, dispatched: true, correlationId: correlationId });
+  } catch (dispatchErr) {
     // Matches journey.js's handlePostGateConfirm precedent for this exact
     // operation (committing an artefact to GitHub, acdg-s1/acdg-s2): an
     // uncaught failure here is otherwise invisible -- a bare 500 with no
     // actionable message, surfaced only by server.js's generic top-level
     // handler. Structured JSON instead, via this file's own _sendJson.
     _sendJson(res, 502, {
-      error: 'capture-failed',
-      message: 'Could not complete the capture (navigation, screenshot, or commit to the connected repository failed). Nothing was marked captured -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
-      detail: captureErr && captureErr.message
+      error: 'capture-dispatch-failed',
+      message: 'Could not dispatch the capture workflow. Nothing was marked captured -- try again shortly.',
+      detail: dispatchErr && dispatchErr.message
     });
-  } finally {
-    if (authed.browser && authed.browser.close) { await authed.browser.close(); }
   }
 }
 
 /**
- * AC1, AC2, AC3, AC4, AC5, AC6 -- sequential capture across every AC that
- * already has a stored target, reusing _captureOneAc per AC (the same
- * session-reuse mechanism ppc-s1 established, not a second parallel
- * capture path). One authenticated page is acquired for the whole run --
- * re-authenticating per AC would multiply Playwright startup cost for no
- * benefit, since the same session is reused for every AC in one run.
+ * AC1, AC2, AC3, AC4, AC5, AC6 -- across every AC that already has a stored
+ * target.
+ *
+ * ppc-s9 (Task 5): no longer loops through Playwright captures in-process.
+ * ONE dispatchCaptureWorkflow call carries every AC in the group (mirroring
+ * ppc-s1's own single-dispatch shape, generalised from one AC to many) --
+ * not one dispatch per AC, which would multiply workflow-run startup cost
+ * for no benefit.
  */
 async function handlePostCaptureAll(req, res, _next, pool) {
   var csrfOk = await _csrf.csrfGuard(req, res);
@@ -834,92 +734,73 @@ async function handlePostCaptureAll(req, res, _next, pool) {
     }
 
     var baseUrl = (req.headers && req.headers.host) ? 'https://' + req.headers.host : 'https://localhost';
-    var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
 
-    var captured = [];
-    var failed = [];
-    var startedAt = Date.now();
+    // ppc-s9 (Task 5): ONE dispatch call covers every AC in the group,
+    // mirroring ppc-s5's own "same video path for every AC in the group"
+    // convention -- now "same correlationId for every AC in the group".
+    // captureAllLock.updateProgress (AC2's own live-progress indicator) no
+    // longer has a meaningful per-AC moment to update against, since the
+    // real work is no longer a loop in THIS process -- see this task's own
+    // scope note (final report) re: what the lock still protects now that
+    // capture is async. setTotal above is kept so getLockState keeps
+    // reporting a sensible total while a capture-in-progress fragment
+    // renders (Task 6).
     try {
-      for (var i = 0; i < listResult.toCapture.length; i++) {
-        var item = listResult.toCapture[i];
-        captureAllLock.updateProgress(journey.journeyId, i + 1);
-        try {
-          var shotPath = await _captureOneAc(journey, item.acId, item.target, ownerRepo, req, authed.page);
-          captured.push({ acId: item.acId, screenshotPath: shotPath });
-        } catch (acErr) {
-          failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
-        }
-      }
-      // ppc-s5 (AC1-combined, AC4): ONE combined video spans every AC that
-      // screenshotted successfully in this run -- recorded here, still
-      // inside the authenticated browser's own lifetime (closed in the
-      // existing finally block below). All-or-nothing for the group: either
-      // every AC in capturedAcIds gets the SAME video path, or (on failure)
-      // every one of them gets the SAME captureAllFailed entry -- never a
-      // partial split within the group.
-      var capturedAcIds = captured.map(function(c) { return c.acId; });
-      if (capturedAcIds.length > 0) {
-        try {
-          var combinedVideoPath = await _captureVideoForAcIds(journey, capturedAcIds, ownerRepo, req, authed.browser, baseUrl);
-          if (combinedVideoPath) {
-            var videos = journey.captureVideos || {};
-            capturedAcIds.forEach(function(acId) { videos[acId] = combinedVideoPath; });
-            _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
-          }
-        } catch (videoErr) {
-          capturedAcIds.forEach(function(acId) {
-            failed.push({ acId: acId, retry: true, error: videoErr && videoErr.message, videoOnly: true });
-          });
-        }
-      }
-    } finally {
-      if (authed.browser && authed.browser.close) { await authed.browser.close(); }
-    }
+      var correlationId = crypto.randomBytes(16).toString('hex');
+      var nonce = await issueNonce(req.sessionId);
+      var acIds = listResult.toCapture.map(function(item) { return item.acId; });
+      var targets = listResult.toCapture.map(function(item) {
+        return { acId: item.acId, url: item.target.url, selector: item.target.selector };
+      });
 
-    var durationMs = captureAllModule.measureCaptureDuration(startedAt, Date.now());
-    // ppc-s2 (final-review fix): persist which ACs failed in THIS run, keyed
-    // by acId, so handleGetPlaybackEvidence/_renderPlaybackEvidenceHtml can
-    // render a clear retry notice (AC5) even after the operator navigates
-    // away and back. A successful capture for an acId must clear any STALE
-    // failure entry from a prior run -- otherwise a successfully-retried AC
-    // would still show a stale "failed" badge.
-    var captureAllFailed = Object.assign({}, journey.captureAllFailed || {});
-    captured.forEach(function(c) { delete captureAllFailed[c.acId]; });
-    failed.forEach(function(f) { captureAllFailed[f.acId] = Object.assign({ error: f.error, retry: true }, f.videoOnly ? { videoOnly: true } : null); });
-    _journeyStore.setJourneyFields(journey.journeyId, {
-      captureAllDuration: durationMs,
-      captureAllCompletedAt: new Date().toISOString(),
-      captureAllFailed: captureAllFailed
-    });
+      await dispatchCaptureWorkflow({
+        nonce: nonce,
+        baseUrl: baseUrl,
+        featureSlug: journey.featureSlug,
+        acIds: acIds,
+        targets: targets,
+        correlationId: correlationId
+      });
 
-    var thresholdResult = checkTimingThreshold(durationMs);
-    if (thresholdResult.exceedsThreshold) {
-      try {
-        await decisionsLogWriter.appendScopeNote(journey, ownerRepo, req.session.accessToken, { featureSlug: journey.featureSlug, durationMs: durationMs });
-      } catch (logErr) {
-        // Best-effort -- a failure to log the SCOPE note must never fail
-        // the capture-all run itself; the real evidence below is already computed.
-        console.error('[playback-evidence] decisions-log-writer failed:', logErr && logErr.message);
+      var captureInProgress = Object.assign({}, journey.captureInProgress);
+      var dispatchedAt = new Date().toISOString();
+      acIds.forEach(function(acId) {
+        captureInProgress[acId] = { correlationId: correlationId, dispatchedAt: dispatchedAt };
+      });
+      _journeyStore.setJourneyFields(journey.journeyId, { captureInProgress: captureInProgress });
+
+      // ppc-s9 (Task 5 scope note, see this task's own final report): the
+      // durationMs/exceedsTimingThreshold fields below used to measure how
+      // long the SYNCHRONOUS in-process Playwright loop just took
+      // (captureAllModule.measureCaptureDuration + checkTimingThreshold +
+      // decisionsLogWriter.appendScopeNote, all removed in this change).
+      // That loop no longer runs in this handler -- the real "how long did
+      // capture take" question is only answerable later, once
+      // handleGetPlaybackEvidence (Task 6) detects the dispatched workflow's
+      // own completion. Reporting a real async-duration metric is out of
+      // this task's scope (not named in any of ppc-s9's own ACs) -- these
+      // fields are kept in the response shape for backward compatibility
+      // but are now always 0/false rather than computed from a real
+      // synchronous measurement.
+      if (_isFormSubmission(req)) {
+        _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+        return;
       }
+      _sendJson(res, 200, {
+        dispatched: true,
+        acIds: acIds,
+        correlationId: correlationId,
+        skipped: listResult.skipped,
+        durationMs: 0,
+        exceedsTimingThreshold: false
+      });
+    } catch (dispatchErr) {
+      _sendJson(res, 502, {
+        error: 'capture-dispatch-failed',
+        message: 'Could not dispatch the capture workflow. Nothing was marked captured -- try again shortly.',
+        detail: dispatchErr && dispatchErr.message
+      });
     }
-
-    // ppc-s2 (final-review fix): a real browser submits this via the plain
-    // <form method="POST"> rendered in _renderPlaybackEvidenceHtml -- matches
-    // handlePostCaptureTarget's/handlePostCaptureTrigger's own existing
-    // success-path redirect convention (CLAUDE.md et al). Error responses
-    // above (400/409/502) stay JSON-only even for a form submission, matching
-    // this file's existing convention -- only the success path redirects.
-    if (_isFormSubmission(req)) {
-      _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
-      return;
-    }
-    _sendJson(res, 200, {
-      captured: captured,
-      failed: failed,
-      skipped: listResult.skipped,
-      durationMs: durationMs,
-      exceedsTimingThreshold: thresholdResult.exceedsThreshold
-    });
   } finally {
     captureAllLock.releaseLock(journey.journeyId);
   }
@@ -940,7 +821,5 @@ module.exports = {
   _getDodAcList,
   _notFound,
   _sendJson,
-  _captureOneAc,
-  _captureVideoForAcIds,
   _renderCaptureAllProgress
 };
