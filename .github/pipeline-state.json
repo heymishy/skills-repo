@@ -43442,7 +43442,7 @@
                 {
                   "id": "task-4",
                   "name": "New GitHub Actions workflow + its own capture script",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
                 },
                 {
