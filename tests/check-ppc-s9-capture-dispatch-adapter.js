@@ -1,5 +1,6 @@
 'use strict';
 var assert = require('assert');
+var zlib = require('zlib');
 var passed = 0; var failed = 0; var failures = [];
 function test(name, fn) {
   try {
@@ -47,6 +48,76 @@ function withMockFetch(impl, fn) {
   return Promise.resolve().then(fn).finally(function() {
     global.fetch = originalFetch;
   });
+}
+
+// Builds a minimal, valid ZIP archive in memory (local file headers + central
+// directory + EOCD) so realDownloadCaptureArtifact's hand-written _unzipEntries
+// parser can be exercised without needing a real GitHub Actions artifact
+// archive or live credentials. Supports STORED (0) and DEFLATE (8) entries --
+// the only two methods _unzipEntries implements. CRC-32 fields are left as 0
+// since the parser does not validate them (confirmed by reading the source).
+function buildTestZip(entries) {
+  var localParts = [];
+  var centralParts = [];
+  var offset = 0;
+
+  entries.forEach(function(entry) {
+    var compressed = entry.method === 8 ? zlib.deflateRawSync(entry.data) : entry.data;
+    var nameBuf = Buffer.from(entry.name, 'utf8');
+
+    var localHeader = Buffer.alloc(30);
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(0, 6);
+    localHeader.writeUInt16LE(entry.method, 8);
+    localHeader.writeUInt16LE(0, 10);
+    localHeader.writeUInt16LE(0, 12);
+    localHeader.writeUInt32LE(0, 14);
+    localHeader.writeUInt32LE(compressed.length, 18);
+    localHeader.writeUInt32LE(entry.data.length, 22);
+    localHeader.writeUInt16LE(nameBuf.length, 26);
+    localHeader.writeUInt16LE(0, 28);
+    var localEntry = Buffer.concat([localHeader, nameBuf, compressed]);
+    localParts.push(localEntry);
+
+    var centralHeader = Buffer.alloc(46);
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt16LE(0, 8);
+    centralHeader.writeUInt16LE(entry.method, 10);
+    centralHeader.writeUInt16LE(0, 12);
+    centralHeader.writeUInt16LE(0, 14);
+    centralHeader.writeUInt32LE(0, 16);
+    centralHeader.writeUInt32LE(compressed.length, 20);
+    centralHeader.writeUInt32LE(entry.data.length, 24);
+    centralHeader.writeUInt16LE(nameBuf.length, 28);
+    centralHeader.writeUInt16LE(0, 30);
+    centralHeader.writeUInt16LE(0, 32);
+    centralHeader.writeUInt16LE(0, 34);
+    centralHeader.writeUInt16LE(0, 36);
+    centralHeader.writeUInt32LE(0, 38);
+    centralHeader.writeUInt32LE(offset, 42);
+    centralParts.push(Buffer.concat([centralHeader, nameBuf]));
+
+    offset += localEntry.length;
+  });
+
+  var localSection = Buffer.concat(localParts);
+  var centralSection = Buffer.concat(centralParts);
+  var cdOffset = localSection.length;
+
+  var eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(0, 4);
+  eocd.writeUInt16LE(0, 6);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(centralSection.length, 12);
+  eocd.writeUInt32LE(cdOffset, 16);
+  eocd.writeUInt16LE(0, 20);
+
+  return Buffer.concat([localSection, centralSection, eocd]);
 }
 
 // --- D37 stub-throws, all three functions, before any wiring ---
@@ -238,6 +309,37 @@ queue.push(function() {
           assert.strictEqual(calls, 2, 'must have followed pagination to the second page');
           assert.strictEqual(result.found, true);
           assert.strictEqual(result.archiveDownloadUrl, 'https://correct.example/2.zip');
+        }
+      );
+    });
+  });
+});
+
+// --- downloadCaptureArtifact: real _unzipEntries parser against a synthetic
+// in-memory zip (STORED + DEFLATE entries), exercised without needing a real
+// GitHub Actions artifact archive or live credentials. ---
+queue.push(function() {
+  return test('realDownloadCaptureArtifact: unzips a synthetic archive (STORED .png + DEFLATE .webm) into the matching buffers', function() {
+    return withEnv(ALL_PLATFORM_ENV, function() {
+      var mod = require(ADAPTER_PATH);
+      var screenshotData = Buffer.from('FAKE-PNG-BYTES-' + 'X'.repeat(50));
+      var videoData = Buffer.from('FAKE-WEBM-BYTES-' + 'Y'.repeat(500));
+
+      var zipBuffer = buildTestZip([
+        { name: 'ac1-screenshot.png', data: screenshotData, method: 0 },
+        { name: 'ac1-video.webm', data: videoData, method: 8 }
+      ]);
+
+      return withMockFetch(
+        async function() {
+          return { ok: true, status: 200, arrayBuffer: async function() { return zipBuffer; } };
+        },
+        async function() {
+          var result = await mod.realDownloadCaptureArtifact('https://example.test/archive.zip');
+          assert.ok(Buffer.isBuffer(result.screenshotBuffer), 'screenshotBuffer must be present and a Buffer');
+          assert.ok(result.screenshotBuffer.equals(screenshotData), 'STORED .png entry must round-trip byte-for-byte');
+          assert.ok(Buffer.isBuffer(result.videoBuffer), 'videoBuffer must be present and a Buffer');
+          assert.ok(result.videoBuffer.equals(videoData), 'DEFLATE .webm entry must inflate back to the original bytes');
         }
       );
     });
