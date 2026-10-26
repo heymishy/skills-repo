@@ -8,9 +8,10 @@
 // tenant_id and product_id (AC1, AC6, AC7).
 
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
-// Unused by Task 5's own new dispatch code -- kept because Task 6 (ppc-s9)
-// re-wires this into handleGetPlaybackEvidence's own finalise step, fed from
-// a downloaded artifact buffer instead of a local fs.readFileSync.
+// ppc-s9 (Task 6): re-wired into handleGetPlaybackEvidence's own finalise
+// step below (_finaliseInProgressCaptures), fed from a downloaded artifact
+// buffer instead of a local fs.readFileSync -- same call shape Task 5's own
+// commit left here unused for.
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
@@ -25,7 +26,17 @@ const crypto = require('crypto');
 // input -- issueNonce() exchanges it for a short-lived, single-use nonce
 // first (capture-nonce-store.js).
 const { issueNonce } = require('../adapters/capture-nonce-store');
-const { dispatchCaptureWorkflow } = require('../adapters/capture-dispatch-adapter');
+const {
+  dispatchCaptureWorkflow,
+  checkCaptureArtifact,
+  downloadCaptureArtifact
+} = require('../adapters/capture-dispatch-adapter');
+
+// ppc-s9 (Task 6): named constant, not a magic number inline -- how long
+// handleGetPlaybackEvidence keeps rendering the "capture in progress"
+// fragment for a dispatched-but-not-yet-found artifact before giving up and
+// recording a captureAllFailed timeout entry instead.
+var CAPTURE_WAIT_WINDOW_MS = 5 * 60 * 1000;
 
 // ppc-s4: injectable, matching routes/artefact.js's own setFetcher
 // convention -- tests inject a fake fetcher rather than mocking global
@@ -220,11 +231,21 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var statusHtml = ac.targetSet
       ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
       : '<p role="status">Capture target not set</p>';
-    var captureFormHtml = ac.targetSet
+    // ppc-s9 (Task 6): re-triggering a capture that's already dispatched and
+    // awaiting its artifact doesn't make sense -- suppress the normal
+    // capture form while ac.captureInProgress is true, same as the
+    // targetSet-false branch above.
+    var captureFormHtml = (ac.targetSet && !ac.captureInProgress)
       ? '<form method="POST" action="' + baseUrl + '/capture/' + encodeURIComponent(ac.acId) + '">' +
           _csrf.csrfField(csrfToken) +
           '<button type="submit">Capture evidence</button>' +
         '</form>'
+      : '';
+    // ppc-s9 (Task 6, AC4): plain-text-only status fragment -- no
+    // spinner/client-JS/websocket, matching this file's own failureHtml/
+    // statusHtml convention immediately above and below.
+    var inProgressHtml = ac.captureInProgress
+      ? '<p role="status">Capture in progress...</p>'
       : '';
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
@@ -266,6 +287,7 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
         '<button type="submit">Set capture target</button>' +
       '</form>' +
       captureFormHtml +
+      inProgressHtml +
       failureHtml +
       screenshotHtml +
       videoHtml +
@@ -333,6 +355,151 @@ async function _getDodAcList(journey, req, pool) {
 }
 
 /**
+ * ppc-s9 (Task 6): checks every in-flight capture dispatch recorded against
+ * this journey (journey.captureInProgress, written by handlePostCaptureTrigger
+ * / handlePostCaptureAll -- Task 5 above), grouped by correlationId rather
+ * than by acId -- a capture-all dispatch shares ONE correlationId across
+ * several acIds, so checkCaptureArtifact is only called once per unique
+ * correlationId, never once per acId.
+ *
+ * For each group:
+ *  - found: downloads the artifact, commits whichever of
+ *    {screenshotBuffer, videoBuffer} are present via the EXISTING, UNCHANGED
+ *    commitArtefact call shape (_captureOneAc/_captureVideoForAcIds's own
+ *    pre-dispatch convention), updates captureScreenshots/captureVideos,
+ *    and clears the group from captureInProgress (and from any stale
+ *    captureAllFailed entry -- a just-succeeded retry must not still render
+ *    the old failure notice).
+ *  - not found, within CAPTURE_WAIT_WINDOW_MS of dispatchedAt: left
+ *    untouched; the acId is returned in the in-progress set so the caller
+ *    can render the new "capture in progress" fragment instead of the
+ *    normal capture form.
+ *  - not found, past CAPTURE_WAIT_WINDOW_MS: records a captureAllFailed
+ *    entry (the EXISTING ppc-s2 field/rendering path -- not a new one) and
+ *    clears captureInProgress for the group.
+ *
+ * Mutates `journey` in place so the caller's own acs-building code
+ * (immediately after this call) sees the fresh state, and persists exactly
+ * ONE setJourneyFields call for the whole request, however many groups were
+ * processed.
+ * @param {object} journey
+ * @param {object} req
+ * @param {object} pool
+ * @returns {Promise<Object<string,boolean>>} map of acId -> true for every AC still in progress
+ */
+async function _finaliseInProgressCaptures(journey, req, pool) {
+  var captureInProgress = journey.captureInProgress || {};
+  var inProgressAcIds = Object.keys(captureInProgress);
+  if (inProgressAcIds.length === 0) return {};
+
+  var groups = {};
+  inProgressAcIds.forEach(function(acId) {
+    var entry = captureInProgress[acId];
+    var correlationId = entry.correlationId;
+    if (!groups[correlationId]) {
+      groups[correlationId] = { correlationId: correlationId, dispatchedAt: entry.dispatchedAt, acIds: [] };
+    }
+    groups[correlationId].acIds.push(acId);
+  });
+
+  var nextCaptureInProgress = Object.assign({}, captureInProgress);
+  var nextCaptureScreenshots = Object.assign({}, journey.captureScreenshots || {});
+  var nextCaptureVideos = Object.assign({}, journey.captureVideos || {});
+  var nextCaptureAllFailed = Object.assign({}, journey.captureAllFailed || {});
+  var stillInProgress = {};
+
+  // Resolved lazily, at most once per request -- same "don't re-fetch
+  // redundantly" instruction as the existing handlers' own ownerRepo
+  // resolution, just lazy here since handleGetPlaybackEvidence (unlike
+  // handlePostCaptureTrigger/handlePostCaptureAll) has no pre-existing
+  // reason to resolve it when there is nothing in progress to finalise.
+  var ownerRepo = null;
+  var ownerRepoFetched = false;
+  var accessToken = req.session && req.session.accessToken;
+
+  var correlationIds = Object.keys(groups);
+  for (var i = 0; i < correlationIds.length; i++) {
+    var group = groups[correlationIds[i]];
+    var checkResult;
+    try {
+      checkResult = await checkCaptureArtifact(group.correlationId);
+    } catch (_) {
+      // A transient artifact-check failure is treated the same as "not
+      // found yet" -- retried on the next page load, same as a genuinely
+      // still-running workflow, until CAPTURE_WAIT_WINDOW_MS itself expires.
+      checkResult = { found: false };
+    }
+
+    if (checkResult && checkResult.found) {
+      var downloaded;
+      try {
+        downloaded = await downloadCaptureArtifact(checkResult.archiveDownloadUrl);
+      } catch (_) {
+        downloaded = {};
+      }
+
+      if ((downloaded.screenshotBuffer || downloaded.videoBuffer) && !ownerRepoFetched) {
+        ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
+        ownerRepoFetched = true;
+      }
+
+      if (ownerRepo) {
+        if (downloaded.screenshotBuffer) {
+          for (var s = 0; s < group.acIds.length; s++) {
+            var shotAcId = group.acIds[s];
+            var shotPath = 'artefacts/' + journey.featureSlug + '/playback/ppc-s1/screenshots/' + shotAcId + '.png';
+            await commitArtefact(shotPath, downloaded.screenshotBuffer.toString('base64'), accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+            nextCaptureScreenshots[shotAcId] = shotPath;
+          }
+        }
+        if (downloaded.videoBuffer) {
+          // ppc-s5's own "same video path for every AC in the group"
+          // convention, generalised to this task's own group shape --
+          // mirrors _captureVideoForAcIds's clip.name: acIds.join('+').
+          var videoPath = 'artefacts/' + journey.featureSlug + '/playback/ppc-s1/video/' + group.acIds.join('+') + '.webm';
+          await commitArtefact(videoPath, downloaded.videoBuffer.toString('base64'), accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+          group.acIds.forEach(function(vidAcId) { nextCaptureVideos[vidAcId] = videoPath; });
+        }
+
+        group.acIds.forEach(function(doneAcId) {
+          delete nextCaptureInProgress[doneAcId];
+          delete nextCaptureAllFailed[doneAcId];
+        });
+      }
+      // ownerRepo === null (no connected repo): leave this group's
+      // captureInProgress entries as-is -- nothing was committed, so there
+      // is nothing safe to finalise yet; the next page load will retry the
+      // artifact-check (and, eventually, time out via the branch below if
+      // the wait window elapses first).
+    } else {
+      var elapsedMs = Date.now() - new Date(group.dispatchedAt).getTime();
+      if (elapsedMs < CAPTURE_WAIT_WINDOW_MS) {
+        group.acIds.forEach(function(waitingAcId) { stillInProgress[waitingAcId] = true; });
+      } else {
+        group.acIds.forEach(function(timedOutAcId) {
+          nextCaptureAllFailed[timedOutAcId] = { error: 'capture workflow did not complete within the expected window', retry: true };
+          delete nextCaptureInProgress[timedOutAcId];
+        });
+      }
+    }
+  }
+
+  journey.captureInProgress = nextCaptureInProgress;
+  journey.captureScreenshots = nextCaptureScreenshots;
+  journey.captureVideos = nextCaptureVideos;
+  journey.captureAllFailed = nextCaptureAllFailed;
+
+  _journeyStore.setJourneyFields(journey.journeyId, {
+    captureInProgress: nextCaptureInProgress,
+    captureScreenshots: nextCaptureScreenshots,
+    captureVideos: nextCaptureVideos,
+    captureAllFailed: nextCaptureAllFailed
+  });
+
+  return stillInProgress;
+}
+
+/**
  * AC1 (list, tenant+product scoped), AC4 ("not set" state), AC5 (inline screenshot).
  */
 async function handleGetPlaybackEvidence(req, res, _next, pool) {
@@ -340,6 +507,12 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   if (!journey) { _notFound(res); return; }
 
   var acRows = await _getDodAcList(journey, req, pool);
+
+  // ppc-s9 (Task 6): must run BEFORE building the acs render array below, so
+  // a just-completed/just-failed/just-timed-out capture is reflected in the
+  // SAME render rather than requiring a second page load.
+  var inProgressAcIds = await _finaliseInProgressCaptures(journey, req, pool);
+
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
   var videos = journey.captureVideos || {};
@@ -357,7 +530,12 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
       videoPath: videos[ac.acId] || null,
       // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
       // in the most recent capture-all run from one simply never attempted.
-      lastCaptureFailure: captureAllFailed[ac.acId] || null
+      lastCaptureFailure: captureAllFailed[ac.acId] || null,
+      // ppc-s9 (Task 6): an AC whose dispatched capture hasn't resolved yet
+      // (found or timed-out) -- re-triggering a capture already in flight
+      // doesn't make sense, so this also suppresses the normal capture form
+      // in _renderPlaybackEvidenceHtml below.
+      captureInProgress: !!inProgressAcIds[ac.acId]
     };
   });
   // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own

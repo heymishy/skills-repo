@@ -32,6 +32,13 @@ var pe = require('../src/web-ui/routes/playback-evidence');
 var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
 var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 var captureAllLock = require('../src/web-ui/modules/capture-all-lock');
+// ppc-s9 Task 6: commitArtefact (artefact-commit-writer.js) is already a
+// proper D37 injectable adapter (setArtefactCommitAdapter/
+// getArtefactCommitAdapter, throw-on-unwired default) -- same mocking
+// convention check-das-s1-commit-artefact-git-fallback.js and
+// check-acdg-s1-commit-guard.js already use. No change needed to that
+// adapter file itself; this is just the test-side mock installation.
+var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
 pe.setJourneyStoreModule(store);
 
 function getStore() {
@@ -270,6 +277,189 @@ queue.push(function() {
     assert.strictEqual(res._json.error, 'capture-dispatch-failed');
     var reloaded = store.getJourney(setup.journeyId);
     assert.strictEqual(reloaded.captureInProgress, undefined);
+  });
+});
+
+// ppc-s9 Task 6: handleGetPlaybackEvidence's own artifact-check + finalise
+// logic (AC4, AC5) -- found/not-found-recent/not-found-timed-out/grouping.
+
+queue.push(function() {
+  return test('AC4/AC5: handleGetPlaybackEvidence, artifact found -- commits screenshot+video via the exact real tenant token/owner/repo/base64 shape, updates journey fields, clears captureInProgress, renders the normal completed state', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+    store.setJourneyFields(setup.journeyId, {
+      captureInProgress: { AC1: { correlationId: 'corr-found-1', dispatchedAt: new Date().toISOString() } }
+    });
+
+    var screenshotBuffer = Buffer.from('fake-png-bytes');
+    var videoBuffer = Buffer.from('fake-webm-bytes');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function(correlationId) {
+        assert.strictEqual(correlationId, 'corr-found-1');
+        return { found: true, archiveDownloadUrl: 'https://example.invalid/archive.zip' };
+      },
+      downloadCaptureArtifact: async function(url) {
+        assert.strictEqual(url, 'https://example.invalid/archive.zip');
+        return { screenshotBuffer: screenshotBuffer, videoBuffer: videoBuffer };
+      }
+    });
+
+    var commitCalls = [];
+    artefactCommitWriter.setArtefactCommitAdapter(async function(artefactPath, content, token, owner, repo, encoding) {
+      commitCalls.push({ artefactPath: artefactPath, content: content, token: token, owner: owner, repo: repo, encoding: encoding });
+      return { ok: true };
+    });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(commitCalls.length, 2, 'one commitArtefact call for the screenshot, one for the video');
+    var screenshotCall = commitCalls.find(function(c) { return c.artefactPath.indexOf('screenshots/') !== -1; });
+    var videoCall = commitCalls.find(function(c) { return c.artefactPath.indexOf('/video/') !== -1; });
+    assert.ok(screenshotCall, 'a screenshot commitArtefact call must have happened');
+    assert.ok(videoCall, 'a video commitArtefact call must have happened');
+
+    assert.strictEqual(screenshotCall.artefactPath, 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png');
+    assert.strictEqual(screenshotCall.content, screenshotBuffer.toString('base64'));
+    assert.strictEqual(screenshotCall.token, 'test-token', 'must use req.session.accessToken, the real tenant token');
+    assert.strictEqual(screenshotCall.owner, 'acme');
+    assert.strictEqual(screenshotCall.repo, 'widgets');
+    assert.strictEqual(screenshotCall.encoding, 'base64');
+
+    assert.strictEqual(videoCall.artefactPath, 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1.webm');
+    assert.strictEqual(videoCall.content, videoBuffer.toString('base64'));
+    assert.strictEqual(videoCall.token, 'test-token');
+    assert.strictEqual(videoCall.owner, 'acme');
+    assert.strictEqual(videoCall.repo, 'widgets');
+    assert.strictEqual(videoCall.encoding, 'base64');
+
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.strictEqual(reloaded.captureScreenshots.AC1, screenshotCall.artefactPath);
+    assert.strictEqual(reloaded.captureVideos.AC1, videoCall.artefactPath);
+    assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'captureInProgress must be cleared for AC1 once finalised');
+
+    assert.ok(res._body.indexOf('Capture in progress') === -1, 'must NOT still render the in-progress fragment once the capture has completed');
+    assert.ok(res._body.indexOf('<img') !== -1, 'the normal completed screenshot render must appear');
+    assert.ok(res._body.indexOf('<video') !== -1, 'the normal completed video render must appear');
+  });
+});
+
+queue.push(function() {
+  return test('AC4: handleGetPlaybackEvidence, artifact not found but still within the wait window -- renders the in-progress fragment, makes no commitArtefact call, leaves captureInProgress untouched', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+    var dispatchedAt = new Date().toISOString();
+    store.setJourneyFields(setup.journeyId, {
+      captureInProgress: { AC1: { correlationId: 'corr-recent-1', dispatchedAt: dispatchedAt } }
+    });
+
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { throw new Error('must not be called when not found'); }
+    });
+
+    var commitCalled = false;
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { commitCalled = true; return { ok: true }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(commitCalled, false, 'no commitArtefact call must happen while the artifact has not been found yet');
+    assert.ok(res._body.indexOf('Capture in progress') !== -1, 'the in-progress fragment must render');
+
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.deepStrictEqual(reloaded.captureInProgress, { AC1: { correlationId: 'corr-recent-1', dispatchedAt: dispatchedAt } }, 'captureInProgress must be left completely untouched while still within the wait window');
+    assert.strictEqual(reloaded.captureAllFailed && reloaded.captureAllFailed.AC1, undefined, 'no failure entry must be written while still within the wait window');
+  });
+});
+
+queue.push(function() {
+  return test('AC4: handleGetPlaybackEvidence, artifact not found past the wait window -- writes the EXACT captureAllFailed timeout shape, clears captureInProgress, renders the existing failure fragment', async function() {
+    var store = getStore();
+    var setup = setupDodCompleteJourney(store, {});
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+    // 6 minutes ago -- past the 5-minute CAPTURE_WAIT_WINDOW_MS.
+    var dispatchedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+    store.setJourneyFields(setup.journeyId, {
+      captureInProgress: { AC1: { correlationId: 'corr-timeout-1', dispatchedAt: dispatchedAt } }
+    });
+
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { throw new Error('must not be called when not found'); }
+    });
+
+    var commitCalled = false;
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { commitCalled = true; return { ok: true }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(commitCalled, false);
+
+    var reloaded = store.getJourney(setup.journeyId);
+    assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'captureInProgress must be cleared once timed out');
+    assert.deepStrictEqual(reloaded.captureAllFailed.AC1, { error: 'capture workflow did not complete within the expected window', retry: true }, 'must reuse the EXISTING captureAllFailed field with exactly this shape -- not a new failure field');
+
+    assert.ok(res._body.indexOf('Capture failed') !== -1, 'the EXISTING failure-render fragment must appear, reading from journey.captureAllFailed');
+    assert.ok(res._body.indexOf('Capture in progress') === -1, 'must NOT still render the in-progress fragment once timed out');
+  });
+});
+
+queue.push(function() {
+  return test('AC6 grouping: a capture-all-shaped captureInProgress with 2 acIds sharing ONE correlationId calls checkCaptureArtifact exactly once for that correlationId, not once per acId', async function() {
+    var store = getStore();
+    var slug = 'ppc-s9-finalise-group-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store.createJourney(slug);
+    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+
+    var dispatchedAt = new Date().toISOString();
+    store.setJourneyFields(j.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt },
+        AC2: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt }
+      }
+    });
+
+    var checkCallCount = 0;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function(correlationId) {
+        checkCallCount++;
+        assert.strictEqual(correlationId, 'corr-group-1');
+        return { found: false };
+      },
+      downloadCaptureArtifact: async function() { throw new Error('must not be called when not found'); }
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { throw new Error('must not be called while not found'); });
+
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(checkCallCount, 1, 'checkCaptureArtifact must be called exactly ONCE for the shared correlationId, not once per acId');
+
+    var reloaded = store.getJourney(j.journeyId);
+    assert.deepStrictEqual(reloaded.captureInProgress, {
+      AC1: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt },
+      AC2: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt }
+    }, 'both ACs in the group must still be in progress -- still within the wait window');
   });
 });
 
