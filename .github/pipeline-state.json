@@ -43249,11 +43249,11 @@
             {
               "slug": "ppc-s5",
               "name": "Self-service video capture, combined across ACs where possible",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T04:48:53.436Z",
+              "updatedAt": "2026-10-26T04:53:49.908Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -43317,8 +43317,9 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "none",
-              "dodStatus": "not-started"
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1024"
             },
             {
               "slug": "ppc-s6",
