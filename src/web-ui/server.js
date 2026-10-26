@@ -81,6 +81,7 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { handleJourneySyncResolve, handleJourneySyncUpdate }         = require('./routes/internal-sync');     // css-s1
+const { handleCaptureExchange }                                      = require('./routes/capture-worker-auth'); // ppc-s9 Task 2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
@@ -3266,6 +3267,12 @@ async function router(req, res) {
   } else if (pathname === '/internal/journey-sync/update' && req.method === 'POST') {
     // css-s1: same gate as /internal/journey-sync/resolve above.
     await handleJourneySyncUpdate(req, res);
+
+  } else if (pathname === '/internal/capture/exchange' && req.method === 'POST') {
+    // ppc-s9 Task 2: machine-to-machine only, gated by CAPTURE_EXCHANGE_SECRET
+    // (reachable in production, unlike auth-stub.js's own staging-only
+    // convention -- see routes/capture-worker-auth.js for the full gate).
+    await handleCaptureExchange(req, res);
 
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));
