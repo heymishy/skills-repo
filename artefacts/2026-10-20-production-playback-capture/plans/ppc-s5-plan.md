@@ -589,12 +589,14 @@ git commit -m "feat(ppc-s5): add shared _captureVideoForAcIds helper, wire into 
 
 ## Task 5: New tenant-scoped video-serving route (AC2) + `server.js` registration
 
+> **✅ Complete.** Implementer commit `86dd3d21`; code-quality fix-round commit `c4553327` (test mock's `makeRes()` now captures response headers, so the route's one real differentiator — `Content-Type: video/webm` — is actually asserted, not just bytes/status). Spec compliance ✅, code quality ✅ Approved on re-review. Confirmed no collision between the new `/video/` route and the existing `/screenshots/` route (mutually exclusive literal path segments). 7/22 tests pass. One Minor finding (no crafted-acId test for the new route, mirroring the screenshot sibling's own such case) accepted as non-blocking — exercises already-tested shared guard logic, not new logic.
+
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Modify: `src/web-ui/server.js`
 - Test: `tests/check-ppc-s5-video-capture.js` (append)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -636,7 +638,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -644,7 +646,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL` — both tests error with `pe.handleGetCaptureVideo is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/playback-evidence.js`, immediately after `handleGetCaptureScreenshot`'s closing `}` (line 371):
 
@@ -694,7 +696,7 @@ const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTri
 
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -702,7 +704,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: handleGetCaptureVideo_servesVideo_tenantProductAcidGuarded`, `PASS: handleGetCaptureVideo_crossTenantRequest_isDenied`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -710,7 +712,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js src/web-ui/server.js tests/check-ppc-s5-video-capture.js
