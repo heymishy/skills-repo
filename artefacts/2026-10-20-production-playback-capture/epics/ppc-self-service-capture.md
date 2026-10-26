@@ -29,7 +29,7 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 | Metric | Current baseline | Target | How this epic moves it |
 |--------|-----------------|--------|----------------------|
 | Self-service DoD validation adoption | 0% | ≥50% of a pilot tenant's own DoD-complete features captured self-service within 6 weeks, for at least one real tenant | Delivers the only mechanism by which this adoption can happen at all — currently no self-service path exists |
-| Time to DoD sign-off | Not yet established | Median under 10 minutes, single sitting | The synchronous capture-trigger action (S1/S2) removes the manual demo-scheduling loop entirely |
+| Time to DoD sign-off | Not yet established | Median under 10 minutes, single sitting | The capture-trigger action (S1/S2) removes the manual demo-scheduling loop entirely. **Correction (2026-10-26, `ppc-s9`):** capture execution moved from synchronous (in-process) to asynchronous (GitHub Actions dispatch, reload to see result) — see `decisions.md`'s own ARCHITECTURE entry. Still well within the "single sitting" target (30s-2min dispatch-to-completion), just no longer instant. |
 | Engineer manual-demo load removed | Not yet established | Zero engineer-hours per feature once adopted | Once a tenant's PO can self-serve capture, the engineer is no longer the one collating evidence for that feature |
 
 ## Stories in This Epic
@@ -41,7 +41,8 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 - [x] Self-service video capture per AC — `stories/ppc-s5-video-capture.md`
 - [ ] Dashboard-shell UX/CX parity and scope/benefit summary — `stories/ppc-s6-dashboard-shell-parity.md`
 - [ ] Record an in-app sign-off decision on captured evidence — `stories/ppc-s7-sign-off-recording.md`
-- [ ] Production bug fix: `playwright` module missing from the deployed image, capture mechanism never actually worked in production — `stories/ppc-s8-playwright-production-dependency.md`
+- [x] Production bug fix: `playwright` module missing from the deployed image, capture mechanism never actually worked in production — `stories/ppc-s8-playwright-production-dependency.md`. **Superseded (2026-10-26):** fixed the missing dependency, but the in-process Chromium launch kept hanging live even after 2 further fast-follow fixes (sandbox, `/dev/shm`) — a step-back architecture review found the deeper problem and `ppc-s9` retires this approach entirely. `ppc-s8`'s own AC3 is considered satisfied via `ppc-s9` instead.
+- [ ] Move capture execution to a GitHub Actions worker, retiring the in-process Chromium launch — `stories/ppc-s9-github-actions-capture-worker.md`
 
 ## Human Oversight Level
 

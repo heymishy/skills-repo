@@ -43380,7 +43380,7 @@
               "health": "amber",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T06:41:22.315Z",
+              "updatedAt": "2026-10-26T18:42:11.354Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -43397,8 +43397,33 @@
               "verifyStatus": "passed",
               "prStatus": "draft",
               "dodStatus": "not-started",
-              "blocker": "AC3 (real capture succeeding against the actually-deployed production app) requires a real deploy -- pending merge",
+              "blocker": "Superseded by ppc-s9 -- in-process Chromium launch retired entirely after 2 further fast-follow fixes (sandbox, dev-shm) still failed live; AC3 considered satisfied via ppc-s9 instead",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1025"
+            },
+            {
+              "slug": "ppc-s9",
+              "name": "Move capture execution to a GitHub Actions worker, retiring the in-process Chromium launch",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-26T18:42:06.277Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 8,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "hasInfraTrack": true,
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s9-dor.md",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
             }
           ]
         }
