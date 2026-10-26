@@ -109,6 +109,60 @@ function makeFakeFetch(impl) {
   return impl;
 }
 
+/**
+ * A second fake chromium module, used only by the outputDir-copy test below.
+ * Unlike makeFakeChromium() (which deliberately skips real file writes since
+ * it doesn't need them), this one DOES write real stub bytes at the same
+ * repo-relative paths captureAcScreenshots/captureVideoRecording really use
+ * -- so the orchestration's own outputDir-copy step (the fix for the
+ * "artifact never contains real bytes" finding) can be exercised with real
+ * fs operations, without ever launching a real Playwright browser. The
+ * written files live under a dedicated, cleaned-up-in-finally featureSlug
+ * directory so this test leaves no residue in the repo's own artefacts/ tree.
+ */
+function makeFakeChromiumWithRealFiles() {
+  var fakeBrowser = {
+    newContext: async function(opts) {
+      if (opts && opts.recordVideo) {
+        return {
+          newPage: async function() {
+            return {
+              goto: async function() {},
+              context: function() { return { addCookies: async function() {} }; },
+              video: function() {
+                return {
+                  path: async function() {
+                    var videoPath = opts.recordVideo.dir.replace(/\/$/, '') + '/combined.webm';
+                    fs.mkdirSync(path.dirname(videoPath), { recursive: true });
+                    fs.writeFileSync(videoPath, 'FAKE-WEBM-BYTES-FOR-COMBINED');
+                    return videoPath;
+                  }
+                };
+              }
+            };
+          },
+          close: async function() {}
+        };
+      }
+      return {
+        addCookies: async function() {},
+        newPage: async function() {
+          return {
+            goto: async function() {},
+            screenshot: async function(shotOpts) {
+              fs.mkdirSync(path.dirname(shotOpts.path), { recursive: true });
+              fs.writeFileSync(shotOpts.path, 'FAKE-PNG-BYTES-FOR-' + path.basename(shotOpts.path));
+            }
+          };
+        },
+        close: async function() {}
+      };
+    },
+    close: async function() {}
+  };
+  return { launch: async function() { return fakeBrowser; } };
+}
+
 // --- captureWorkerScript_neverReferencesAccessToken ---
 queue.push(function() {
   return test('captureWorkerScript_neverReferencesAccessToken', function() {
@@ -229,6 +283,49 @@ queue.push(function() {
 
     assert.strictEqual(fake.tracking.screenshotContextCallCount, 1, 'all screenshot navigations must happen inside a single shared context, not one per AC');
     assert.strictEqual(fake.tracking.screenshotGotoUrls.length, 3, 'one screenshot navigation per AC target');
+  });
+});
+
+// --- captureWorkerScript_outputDir_containsRealBytes ---
+// Regression test for the spec-compliance review finding: the uploaded
+// artifact must contain the REAL screenshot/video bytes, not just a path
+// manifest referencing files that only exist on the runner's own checkout.
+queue.push(function() {
+  return test('captureWorkerScript_outputDir_containsRealScreenshotAndVideoBytes_notJustAManifest', async function() {
+    delete require.cache[require.resolve(SCRIPT_MODULE_PATH)];
+    var worker = require(SCRIPT_MODULE_PATH);
+    var fakeFeatureSlug = 'test-tmp-ppc-s9-task4-outputdir-fix';
+    var fakeChromiumModule = makeFakeChromiumWithRealFiles();
+
+    var fetchImpl = makeFakeFetch(async function() {
+      return { ok: true, status: 200, json: async function() { return { sessionId: 'exchanged-session-output-test' }; } };
+    });
+
+    var outputDir = path.join(require('os').tmpdir(), 'ppc-s9-task4-output-test-' + Date.now());
+
+    try {
+      await worker.runCaptureWorker({
+        nonce: 'nonce-output-test',
+        baseUrl: 'https://capture.example.test',
+        featureSlug: fakeFeatureSlug,
+        acIds: ['AC1'],
+        targets: [{ acId: 'AC1', url: 'https://capture.example.test/page1', selector: '#el1' }],
+        correlationId: 'corr-output-test',
+        outputDir: outputDir
+      }, fakeChromiumModule, fetchImpl);
+
+      var manifest = JSON.parse(fs.readFileSync(path.join(outputDir, 'result.json'), 'utf8'));
+      assert.strictEqual(manifest.screenshots[0].path, 'AC1.png', 'manifest must reference the copied-in filename within outputDir, not the original repo-relative source path');
+      var screenshotBytes = fs.readFileSync(path.join(outputDir, 'AC1.png'), 'utf8');
+      assert.strictEqual(screenshotBytes, 'FAKE-PNG-BYTES-FOR-AC1.png', 'the REAL screenshot bytes must be copied into outputDir, not just a path string referencing them');
+
+      assert.strictEqual(manifest.video.path, 'video.webm', 'manifest must reference the copied-in video filename within outputDir');
+      var videoBytes = fs.readFileSync(path.join(outputDir, 'video.webm'), 'utf8');
+      assert.strictEqual(videoBytes, 'FAKE-WEBM-BYTES-FOR-COMBINED', 'the REAL video bytes must be copied into outputDir, not just a path string referencing them');
+    } finally {
+      try { fs.rmSync(outputDir, { recursive: true, force: true }); } catch (_) { /* best-effort cleanup */ }
+      try { fs.rmSync('artefacts/' + fakeFeatureSlug, { recursive: true, force: true }); } catch (_) { /* best-effort cleanup */ }
+    }
   });
 });
 

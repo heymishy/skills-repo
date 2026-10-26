@@ -169,10 +169,30 @@ async function runCaptureWorker(options, chromiumModule, fetchImpl) {
     const video = videoResults[0] || null;
 
     if (options.outputDir) {
+      // Copy the REAL bytes captureAcScreenshots/captureVideoRecording wrote
+      // (to their own artefacts/<featureSlug>/playback/... paths, unchanged)
+      // into outputDir -- the upload-artifact step only uploads outputDir, so
+      // without this copy the uploaded artifact would contain nothing but a
+      // path manifest, never the actual screenshot/video bytes Task 6's own
+      // downloadCaptureArtifact needs to extract (AC3).
       fs.mkdirSync(options.outputDir, { recursive: true });
+
+      const copiedScreenshots = screenshots.map(function(shot) {
+        const destName = shot.acId + '.png';
+        fs.copyFileSync(shot.path, path.join(options.outputDir, destName));
+        return { acId: shot.acId, path: destName };
+      });
+
+      let copiedVideo = null;
+      if (video && video.path) {
+        const destName = 'video.webm';
+        fs.copyFileSync(video.path, path.join(options.outputDir, destName));
+        copiedVideo = { name: video.name, path: destName };
+      }
+
       fs.writeFileSync(
         path.join(options.outputDir, 'result.json'),
-        JSON.stringify({ correlationId: options.correlationId, screenshots: screenshots, video: video }, null, 2)
+        JSON.stringify({ correlationId: options.correlationId, screenshots: copiedScreenshots, video: copiedVideo }, null, 2)
       );
     }
 
