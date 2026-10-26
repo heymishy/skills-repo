@@ -480,6 +480,115 @@ queue.push(function() {
 });
 
 queue.push(function() {
+  return test('spec-compliance fix regression: a found group with ONE AC permanently missing from result.screenshots stays in-progress (not failed, not silently cleared) while still within the wait window', async function() {
+    var store = getStore();
+    var slug = 'ppc-s9-finalise-missing-recent-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store.createJourney(slug);
+    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+
+    var dispatchedAt = new Date().toISOString();
+    store.setJourneyFields(j.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-missing-recent-1', dispatchedAt: dispatchedAt },
+        AC2: { correlationId: 'corr-missing-recent-1', dispatchedAt: dispatchedAt }
+      }
+    });
+
+    var bufferA = Buffer.from('fake-png-bytes-AC1-only');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: true, archiveDownloadUrl: 'https://example.invalid/group-archive.zip' }; },
+      // AC2's own screenshot never made it into the archive -- e.g. its own
+      // capture failed upstream in the worker while AC1's succeeded.
+      downloadCaptureArtifact: async function() { return { screenshots: { AC1: bufferA }, videoBuffer: null }; }
+    });
+
+    var commitCalls = [];
+    artefactCommitWriter.setArtefactCommitAdapter(async function(artefactPath, content, token, owner, repo, encoding) {
+      commitCalls.push({ artefactPath: artefactPath });
+      return { ok: true };
+    });
+
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    var screenshotCalls = commitCalls.filter(function(c) { return c.artefactPath.indexOf('screenshots/') !== -1; });
+    assert.strictEqual(screenshotCalls.length, 1, 'only AC1 -- the AC that actually has a buffer -- gets committed');
+    assert.ok(screenshotCalls[0].artefactPath.indexOf('AC1.png') !== -1);
+
+    var reloaded = store.getJourney(j.journeyId);
+    assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'AC1 finalised normally');
+    assert.ok(reloaded.captureInProgress.AC2, 'AC2 must stay in captureInProgress while still within the wait window -- not silently cleared, not failed yet');
+    assert.strictEqual(reloaded.captureAllFailed.AC2, undefined, 'must not be marked failed yet -- still within the wait window');
+
+    assert.ok(res._body.indexOf('Capture in progress') !== -1, 'AC2 must render the in-progress fragment (it is genuinely still in captureInProgress), not a stale capture button');
+  });
+});
+
+queue.push(function() {
+  return test('spec-compliance fix regression: a found group with ONE AC permanently missing from result.screenshots is bounded by CAPTURE_WAIT_WINDOW_MS, not retried forever', async function() {
+    var store = getStore();
+    var slug = 'ppc-s9-finalise-missing-timeout-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store.createJourney(slug);
+    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+
+    // 6 minutes ago -- past the 5-minute CAPTURE_WAIT_WINDOW_MS. Even though
+    // checkCaptureArtifact finds the group's own artifact (it will persist
+    // for GitHub's own retention window, far longer than this), AC2's own
+    // missing screenshot must still time out -- this is the exact unbounded-
+    // retry regression this fix exists to prevent (without it, the
+    // not-found/timeout branch is never reached again once the group's
+    // artifact is found, so a permanently-missing per-AC screenshot would
+    // retry forever).
+    var dispatchedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+    store.setJourneyFields(j.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-missing-timeout-1', dispatchedAt: dispatchedAt },
+        AC2: { correlationId: 'corr-missing-timeout-1', dispatchedAt: dispatchedAt }
+      }
+    });
+
+    var bufferA = Buffer.from('fake-png-bytes-AC1-only-timeout');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: true, archiveDownloadUrl: 'https://example.invalid/group-archive.zip' }; },
+      downloadCaptureArtifact: async function() { return { screenshots: { AC1: bufferA }, videoBuffer: null }; }
+    });
+
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    var reloaded = store.getJourney(j.journeyId);
+    assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'AC1 finalised normally');
+    assert.strictEqual(reloaded.captureInProgress.AC2, undefined, 'AC2 must be cleared from captureInProgress once the wait window elapses -- never left to retry forever');
+    assert.deepStrictEqual(reloaded.captureAllFailed.AC2, { error: 'capture workflow did not complete within the expected window', retry: true }, 'must reuse the EXISTING captureAllFailed shape -- same as the not-found/timeout branch');
+
+    assert.ok(res._body.indexOf('Capture failed') !== -1, 'the EXISTING failure-render fragment must appear for AC2');
+    assert.ok(res._body.indexOf('Capture in progress') === -1, 'must NOT still render the in-progress fragment once timed out');
+  });
+});
+
+queue.push(function() {
   return test('AC6 grouping: a capture-all-shaped captureInProgress with 2 acIds sharing ONE correlationId calls checkCaptureArtifact exactly once for that correlationId, not once per acId', async function() {
     var store = getStore();
     var slug = 'ppc-s9-finalise-group-' + Date.now() + '-' + Math.random().toString(36).slice(2);

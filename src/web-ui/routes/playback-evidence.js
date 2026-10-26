@@ -363,13 +363,19 @@ async function _getDodAcList(journey, req, pool) {
  * correlationId, never once per acId.
  *
  * For each group:
- *  - found: downloads the artifact, commits whichever of
- *    {screenshotBuffer, videoBuffer} are present via the EXISTING, UNCHANGED
- *    commitArtefact call shape (_captureOneAc/_captureVideoForAcIds's own
- *    pre-dispatch convention), updates captureScreenshots/captureVideos,
- *    and clears the group from captureInProgress (and from any stale
+ *  - found: downloads the artifact (downloadCaptureArtifact now returns
+ *    {screenshots: {[acId]: Buffer}, videoBuffer} -- each AC commits its OWN
+ *    screenshot buffer, keyed by its own acId; the video stays one shared
+ *    buffer per group) via the EXISTING, UNCHANGED commitArtefact call shape
+ *    (_captureOneAc/_captureVideoForAcIds's own pre-dispatch convention),
+ *    updates captureScreenshots/captureVideos, and clears each successfully-
+ *    finalised acId from captureInProgress (and from any stale
  *    captureAllFailed entry -- a just-succeeded retry must not still render
- *    the old failure notice).
+ *    the old failure notice). An acId whose own screenshot is missing from
+ *    the (otherwise-found) archive is bounded by the SAME
+ *    CAPTURE_WAIT_WINDOW_MS as the not-found branch below -- left in
+ *    progress for retry while still within the window, moved to
+ *    captureAllFailed once it elapses, never retried indefinitely.
  *  - not found, within CAPTURE_WAIT_WINDOW_MS of dispatchedAt: left
  *    untouched; the acId is returned in the in-progress set so the caller
  *    can render the new "capture in progress" fragment instead of the
@@ -430,6 +436,16 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
       checkResult = { found: false };
     }
 
+    // Computed once per group, before the found/not-found branch, so a
+    // permanently-missing per-AC screenshot (found branch, below) is bounded
+    // by the SAME CAPTURE_WAIT_WINDOW_MS the not-found branch already uses --
+    // without this, an AC whose own screenshot never appears in an otherwise-
+    // successful group would retry forever: once checkCaptureArtifact finds
+    // the group's artifact (GitHub artifacts persist well past any plausible
+    // wait window), the not-found/timeout branch below is never reached
+    // again for that correlationId (spec-compliance review fix).
+    var elapsedMs = Date.now() - new Date(group.dispatchedAt).getTime();
+
     if (checkResult && checkResult.found) {
       var downloaded;
       try {
@@ -467,8 +483,19 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
             // screenshot committed as its own evidence).
             var shotBuffer = downloaded.screenshots[shotAcId];
             if (!shotBuffer) {
-              console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' -- leaving it in progress for retry');
               missingScreenshotAcIds[shotAcId] = true;
+              if (elapsedMs < CAPTURE_WAIT_WINDOW_MS) {
+                console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' -- leaving it in progress for retry');
+                stillInProgress[shotAcId] = true;
+              } else {
+                // Bounded, same as the not-found/timeout branch below -- the
+                // group's artifact exists, but THIS AC's own screenshot never
+                // appeared in it within the wait window (e.g. its own capture
+                // failed upstream in the worker). Never retry indefinitely.
+                console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' after the wait window elapsed -- marking failed');
+                nextCaptureAllFailed[shotAcId] = { error: 'capture workflow did not complete within the expected window', retry: true };
+                delete nextCaptureInProgress[shotAcId];
+              }
               continue;
             }
             var shotPath = 'artefacts/' + journey.featureSlug + '/playback/ppc-s1/screenshots/' + shotAcId + '.png';
