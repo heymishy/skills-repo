@@ -128,6 +128,15 @@ const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.c
 // psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
 let _pshPool = null;
 
+// ppc-s5 (Task 8, E2E lazy-load/no-layout-shift spec): per-journeyId DoD
+// "AC Coverage" content for /test/seed-ppc-s5-journey below. A Map (not a
+// single last-value variable) so two journeys seeded independently in the
+// same E2E webServer process (shared across all Playwright workers) each see
+// only their OWN seeded content when journey-store.js's getArtefactsForJourney
+// is called -- avoids the same class of cross-test clobbering risk already
+// called out on /test/seed-pending-action's action-queue overrides above.
+let _ppcS5DodContentByJourney = new Map();
+
 // tir-s2: module-level handler references for /settings/link-account (assigned
 // inside the DATABASE_URL block, same pattern as _pshPool above — this route is
 // real-Postgres-only, matching tir-s1's own migrateTeamSchema/getRoleForTenant
@@ -2783,6 +2792,112 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ productId: productId, owner: owner, repo: repo }));
+    return;
+  }
+
+  // ppc-s5 (Task 8): seed a REAL, DoD-complete journey (via journey-store.js)
+  // for the video lazy-load / no-layout-shift E2E spec
+  // (tests/e2e/ppc-s5-video-lazy-load.spec.js), scoped to the caller's own
+  // tenantId + an arbitrary productId -- mirrors /test/seed-board-journey's
+  // established pattern immediately above, but for playback-evidence.js's
+  // OWN resolution path (_resolveJourney -> getJourneyByTenantProductSlug +
+  // isDodComplete), which is deliberately separate from getJourneyByFeatureSlug
+  // (see playback-evidence.js's header comment on the cross-tenant leak risk).
+  // No real product row or GitHub repo is created -- handleGetPlaybackEvidence's
+  // fast path (a Postgres-journeys-row already DoD-complete) never touches
+  // _pshPool/ownerRepo at all, so a synthetic productId string is sufficient.
+  //
+  // _getDodAcList (playback-evidence.js) resolves its AC list via
+  // journey-store.js's getArtefactsForJourney(), which only returns real rows
+  // when a PG adapter is wired -- unwired in this E2E webServer process
+  // (NODE_ENV=test with no DATABASE_URL). setPgAdapterForTesting() is
+  // journey-store.js's own D37 test-injection seam (already used by
+  // tests/check-ppc-s5-video-capture.js's unit fixtures); wiring it here,
+  // once, in the real server process is the same seam used for its intended
+  // purpose, not a new mechanism. getArtefactsForJourney looks up
+  // _ppcS5DodContentByJourney by journeyId (module-level Map declared near
+  // _pshPool above) so each journey seeded through this route only ever sees
+  // its OWN DoD content, independent of any other journey seeded in the same
+  // process.
+  //
+  // Body: { featureSlug?, tenantId?, productId?, acId?, acDescription?,
+  // videoRelPath? }. When videoRelPath is given, a small real (non-empty)
+  // fixture file is written to disk at that repo-relative path and linked
+  // into the journey's captureVideos for acId -- mirrors
+  // tests/check-ppc-s5-video-capture.js's own fixtures writing fake-but-real
+  // bytes directly to disk, needed here only because handleGetCaptureVideo
+  // reads the file from disk if the browser ever actually requests it; see
+  // this story's own decisions.md for why preload="none" means that request
+  // is not expected to happen at page-load time.
+  if (pathname === '/test/seed-ppc-s5-journey' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _journeyStoreForPpcS5 = require('./modules/journey-store');
+    const _repoRootForPpcS5 = require('./adapters/repo-root');
+    const _fsForPpcS5 = require('fs');
+
+    const featureSlug = body.featureSlug || ('ppc-s5-e2e-feature-' + Date.now());
+    const tenantId = body.tenantId || (req.session && req.session.tenantId) || 'e2e-tester';
+    const productId = body.productId || 'e2e-ppc-s5-product';
+    const acId = body.acId || 'AC1';
+    const acDescription = body.acDescription || 'Shows the dashboard widget';
+    const videoRelPath = body.videoRelPath || null;
+
+    const journeyObj = _journeyStoreForPpcS5.createJourney(featureSlug);
+    const journeyId = journeyObj.journeyId;
+    _journeyStoreForPpcS5.setJourneyFields(journeyId, { tenantId: tenantId, productId: productId });
+
+    const artefactPath = 'artefacts/' + featureSlug + '/dod/' + featureSlug + '-dod.md';
+    const dodContent = [
+      '## AC Coverage',
+      '',
+      '| AC | Satisfied? | Evidence |',
+      '|----|------------|----------|',
+      '| ' + acId + ' — ' + acDescription + ' | Yes | screenshot |'
+    ].join('\n');
+    _ppcS5DodContentByJourney.set(journeyId, [{ skill_name: 'definition-of-done', artefact_path: artefactPath, content: dodContent }]);
+    _journeyStoreForPpcS5.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
+    });
+
+    _journeyStoreForPpcS5.completeStage(journeyId, 'definition-of-done', artefactPath, null);
+
+    if (videoRelPath) {
+      const repoRootForSeed = _repoRootForPpcS5.getRepoRoot(req);
+      const videoAbsPath = _path.join(repoRootForSeed, videoRelPath);
+      _fsForPpcS5.mkdirSync(_path.dirname(videoAbsPath), { recursive: true });
+      _fsForPpcS5.writeFileSync(videoAbsPath, Buffer.from('fake webm bytes for ppc-s5 E2E fixture -- never expected to be fetched while preload=none'));
+      var videos = {};
+      videos[acId] = videoRelPath;
+      _journeyStoreForPpcS5.setJourneyFields(journeyId, { captureVideos: videos });
+
+      // Every real video capture (handlePostCaptureTrigger/handlePostCaptureAll,
+      // Tasks 1-7) always runs the screenshot capture for the same AC first and
+      // persists it to journey.captureScreenshots -- a video-only AC with no
+      // screenshot never occurs in production. _renderPlaybackEvidenceHtml's
+      // <video poster="..."> attribute always points at the screenshots route
+      // for the same acId regardless; seeding a video without a matching
+      // screenshot here would make the poster image 404 and log a real but
+      // UNRELATED console error (confirmed empirically while building this
+      // spec), contaminating AC6's "no console error" assertion with a
+      // fixture gap rather than a real AC6/AC7 regression. Also written here,
+      // not left to a separate seed call, so every caller of this route gets
+      // a production-realistic fixture automatically.
+      const screenshotRelPath = videoRelPath.replace('/video/', '/screenshots/').replace(/\.webm$/, '.png');
+      const screenshotAbsPath = _path.join(repoRootForSeed, screenshotRelPath);
+      _fsForPpcS5.mkdirSync(_path.dirname(screenshotAbsPath), { recursive: true });
+      _fsForPpcS5.writeFileSync(screenshotAbsPath, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      var screenshots = {};
+      screenshots[acId] = screenshotRelPath;
+      _journeyStoreForPpcS5.setJourneyFields(journeyId, { captureScreenshots: screenshots });
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: journeyId, featureSlug: featureSlug, tenantId: tenantId, productId: productId, acId: acId }));
     return;
   }
 
