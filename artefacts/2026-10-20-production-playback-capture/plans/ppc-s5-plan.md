@@ -911,13 +911,15 @@ git commit -m "feat(ppc-s5): render <video> inline with preload=none/poster/expl
 
 ## Task 7: `handlePostCaptureAll` records ONE combined video for the whole run (AC1-combined, AC4)
 
+> **✅ Complete.** Implementation: commit `6986e5cb`. Fix commit (2 Important findings from code-quality review): `c4852f26` — (1) a real bug: `videoOnly: true` was computed but silently dropped by the pre-existing `captureAllFailed` consolidation line, which only copied `error`/`retry`; fixed via `Object.assign`, now verified to persist through a reload. (2) a real test gap: both original Task 7 tests used only 1 AC, so the "one context covers the WHOLE group" behavior was never actually distinguished from "one context per AC, called once because there's only one AC" — both tests rewritten to use a 2-AC fixture (`setupTwoAcJourney`, not `setupDodCompleteJourney`, which only has one AC row), proving `newContextCallCount === 1` with `gotoUrls.length === 2` and `captureVideos.AC1 === captureVideos.AC2` for the success case, and both ACs landing in `captureAllFailed` (each `videoOnly === true`) for the failure case. This also closes a gap where the test-plan documented a 3rd AC4 scenario (`isAllOrNothingForTheGroup_notPartial`) that never made it into this task's original test code — now covered by the strengthened failure test rather than a separate one. Spec-compliance review: PASS, no Critical/Important findings (confirmed error-handling scope, browser-lifetime correctness, out-of-scope boundaries, and all `ppc-s2` mock additions were additive-only with zero existing assertions weakened).
+
 **Design note:** `_captureOneAc`'s own per-item call inside the existing loop is UNCHANGED (screenshot-only, as it always was). The combined video is a separate step, run ONCE after the loop finishes, still inside the SAME `try` block so the authenticated browser (closed in the existing `finally`) is still open for it.
 
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s5-video-capture.js` (append)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 **Correction (post-merge code-quality review of commit `6986e5cb`):** the version of these two tests originally drafted here used `setupDodCompleteJourney()` with a single capture target (AC1 only), so `capturedAcIds` was always length 1 and the assertions (`newContextCallCount === 1`, `gotoUrls.length === 1`) would have passed identically even if the implementation had wrongly called `_captureVideoForAcIds` once PER AC instead of once for the whole group — the actual "combining" behaviour was never exercised. The corrected version below builds its own 2-row DoD fixture (`setupTwoAcJourney`, AC1 + AC2) via a local helper — `setupDodCompleteJourney()`'s shared fixture DoD content has only one AC row, so it cannot carry a multi-AC group — and strengthens both tests to actually prove the group behaviour: test 1 asserts `reloaded.captureVideos.AC1 === reloaded.captureVideos.AC2` (both ACs resolve to the exact same video path), and test 2 asserts that BOTH ACs — not just one — land in `captureAllFailed`, each carrying `videoOnly: true`. This also closes the test plan's separately-documented `handlePostCaptureAll_combinedVideoFailure_isAllOrNothingForTheGroup_notPartial` scenario (test-plan line 177) in the same test, rather than needing a third one: with two ACs both screenshotting successfully and the single shared recording failing, there is no AC that ends up with a video while its sibling does not.
 
@@ -1049,7 +1051,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -1057,7 +1059,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL` on both — `handlePostCaptureAll` has no combined-video step yet; `reloaded.captureVideos` is `undefined` for test 1, and test 2's `captureAllFailed.AC1.videoOnly`/`.AC2.videoOnly` assertions fail since nothing yet pushes a `videoOnly` failure entry at all
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `handlePostCaptureAll`, the existing loop itself is UNCHANGED. Add the combined-video step immediately after the `for` loop, still inside the same `try` block (before its `finally`). **Correction (post-merge code-quality review of commit `6986e5cb`):** the `captureAllFailed` consolidation line further below (pre-existing code, shown unchanged in the snippet below except for this one line) originally only copied `error`/`retry` from each `failed` entry, silently dropping the new `videoOnly` flag before it reached persisted state — so after the one HTTP response, a reload could no longer distinguish a video-only failure from a screenshot failure, contradicting this file's own AC4 intent and the test plan's documented expectation (`ppc-s5-test-plan.md` line 175). The snippet below includes the fix: `Object.assign({ error: f.error, retry: true }, f.videoOnly ? { videoOnly: true } : null)`.
 
@@ -1113,7 +1115,7 @@ The existing `captureAllFailed` consolidation code further below DOES need a one
     failed.forEach(function(f) { captureAllFailed[f.acId] = Object.assign({ error: f.error, retry: true }, f.videoOnly ? { videoOnly: true } : null); });
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -1121,7 +1123,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: handlePostCaptureAll_combinedVideo_coversEveryScreenshottedAc`, `PASS: handlePostCaptureAll_combinedVideoFailure_trackedForEveryAcInTheGroup_screenshotsUnaffected`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -1129,7 +1131,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing — **re-check `tests/check-ppc-s2-capture-all-route.js`'s own existing fixtures**: their `setSessionPageAdapter` mocks return `{ page: fakePage, browser: { close: ... } }` with no `newContext`. Since this task's new code only calls `_captureVideoForAcIds` when `capturedAcIds.length > 0` (i.e. at least one screenshot succeeded), and `_captureVideoForAcIds` itself calls `browser.newContext(...)`, any existing `ppc-s2` fixture with at least one successful screenshot will now also need a `newContext` on its mocked `browser`, or it will throw inside this new step. Add a no-op `newContext` returning a context whose `newPage()` resolves a page with `goto`, `context().addCookies()`, and `video().path()` returning `null` (consistent with "video is additive, never required" — the combined step simply records nothing useful and `combinedVideoPath` stays falsy). This is expected, bounded regression-test maintenance.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
