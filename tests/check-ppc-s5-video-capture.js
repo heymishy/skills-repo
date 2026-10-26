@@ -389,6 +389,97 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('handlePostCaptureAll_combinedVideo_coversEveryScreenshottedAc', async function() {
+    var store7 = getStore();
+    var setup = setupDodCompleteJourney(store7, {});
+    store7.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+
+    var fakeCombinedVideoPath = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/combined.webm';
+    var fakeVideoAbs = path.join(tmpRoot, fakeCombinedVideoPath);
+    fs.mkdirSync(path.dirname(fakeVideoAbs), { recursive: true });
+    fs.writeFileSync(fakeVideoAbs, Buffer.from('fake webm bytes'));
+
+    var fakePage = {
+      goto: async function() {},
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    var gotoUrls = [];
+    var fakeVideoPage = {
+      goto: async function(url) { gotoUrls.push(url); },
+      context: function() { return { addCookies: async function() {} }; },
+      video: function() { return { path: async function() { return fakeCombinedVideoPath; } }; }
+    };
+    var newContextCallCount = 0;
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return {
+        page: fakePage,
+        browser: {
+          close: async function() {},
+          newContext: async function() { newContextCallCount++; return { newPage: async function() { return fakeVideoPage; }, close: async function() {} }; }
+        }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(newContextCallCount, 1, 'exactly one combined recording context for the whole run, not one per AC');
+    assert.strictEqual(gotoUrls.length, 1, 'one AC in this fixture -- one navigation inside the combined recording');
+    var reloaded = store7.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureVideos && reloaded.captureVideos.AC1, 'the combined video must be recorded against AC1');
+  });
+});
+
+queue.push(function() {
+  return test('handlePostCaptureAll_combinedVideoFailure_trackedForEveryAcInTheGroup_screenshotsUnaffected', async function() {
+    var store7b = getStore();
+    var setup = setupDodCompleteJourney(store7b, {});
+    store7b.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-fail-' + Date.now());
+    fs.mkdirSync(tmpRoot, { recursive: true });
+    repoRootAdapter.setRepoRoot(tmpRoot);
+
+    var fakePage = {
+      goto: async function() {},
+      screenshot: async function(opts) {
+        var abs = path.join(tmpRoot, opts.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true });
+        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      }
+    };
+    sessionPageAdapter.setSessionPageAdapter(async function() {
+      return {
+        page: fakePage,
+        browser: {
+          close: async function() {},
+          newContext: async function() { return { newPage: async function() { throw new Error('simulated combined video failure'); }, close: async function() {} }; }
+        }
+      };
+    });
+    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    assert.strictEqual(res._json.captured.length, 1, 'the AC must still be reported captured (screenshot succeeded)');
+    var reloaded = store7b.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureScreenshots.AC1, 'screenshot must survive the combined video failure');
+    assert.ok(reloaded.captureAllFailed && reloaded.captureAllFailed.AC1, 'the video failure must be tracked via the existing captureAllFailed mechanism');
+    assert.strictEqual((reloaded.captureVideos || {}).AC1, undefined, 'no video must be recorded for the AC when the combined recording fails');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

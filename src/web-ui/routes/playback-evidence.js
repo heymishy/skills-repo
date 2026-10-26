@@ -839,6 +839,28 @@ async function handlePostCaptureAll(req, res, _next, pool) {
           failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
         }
       }
+      // ppc-s5 (AC1-combined, AC4): ONE combined video spans every AC that
+      // screenshotted successfully in this run -- recorded here, still
+      // inside the authenticated browser's own lifetime (closed in the
+      // existing finally block below). All-or-nothing for the group: either
+      // every AC in capturedAcIds gets the SAME video path, or (on failure)
+      // every one of them gets the SAME captureAllFailed entry -- never a
+      // partial split within the group.
+      var capturedAcIds = captured.map(function(c) { return c.acId; });
+      if (capturedAcIds.length > 0) {
+        try {
+          var combinedVideoPath = await _captureVideoForAcIds(journey, capturedAcIds, ownerRepo, req, authed.browser, baseUrl);
+          if (combinedVideoPath) {
+            var videos = journey.captureVideos || {};
+            capturedAcIds.forEach(function(acId) { videos[acId] = combinedVideoPath; });
+            _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
+          }
+        } catch (videoErr) {
+          capturedAcIds.forEach(function(acId) {
+            failed.push({ acId: acId, retry: true, error: videoErr && videoErr.message, videoOnly: true });
+          });
+        }
+      }
     } finally {
       if (authed.browser && authed.browser.close) { await authed.browser.close(); }
     }
