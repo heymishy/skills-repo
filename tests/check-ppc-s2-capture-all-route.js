@@ -156,6 +156,30 @@ function setupDodCompleteJourney(store, opts) {
   store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
   return { journeyId: j.journeyId, featureSlug: slug, tenantId: opts.tenantId || 'tenant-a', productId: opts.productId || 'product-a' };
 }
+// ppc-s5 Task 7: handlePostCaptureAll now runs a combined-video step after
+// the screenshot loop whenever at least one AC succeeded, which calls
+// authed.browser.newContext(...) (_captureVideoForAcIds). None of this
+// file's own fixtures predate video capture, so their mocked `browser`
+// objects need a no-op newContext added -- otherwise any fixture with a
+// successful screenshot throws inside that new step. The video page
+// resolves goto/context().addCookies()/video().path()=>null so the
+// combined step records nothing (video is additive, never required) and
+// none of this file's own assertions about screenshots/failed/captured
+// change.
+function _noOpVideoNewContext() {
+  return async function() {
+    return {
+      newPage: async function() {
+        return {
+          goto: async function() {},
+          context: function() { return { addCookies: async function() {} }; },
+          video: function() { return { path: async function() { return null; } }; }
+        };
+      },
+      close: async function() {}
+    };
+  };
+}
 function setupFakeCapture(tmpPrefix) {
   var tmpRoot = path.join(os.tmpdir(), tmpPrefix + '-' + Date.now());
   fs.mkdirSync(tmpRoot, { recursive: true });
@@ -170,7 +194,7 @@ function setupFakeCapture(tmpPrefix) {
   };
   var browserClosed = false;
   sessionPageAdapter.setSessionPageAdapter(async function() {
-    return { page: fakePage, browser: { close: async function() { browserClosed = true; } } };
+    return { page: fakePage, browser: { close: async function() { browserClosed = true; }, newContext: _noOpVideoNewContext() } };
   });
   artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
   return { tmpRoot: tmpRoot, isBrowserClosed: function() { return browserClosed; } };
@@ -303,7 +327,7 @@ queue.push(function() {
       }
     };
     sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {} } };
+      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
     });
     require('../src/web-ui/adapters/artefact-commit-writer').setArtefactCommitAdapter(async function() { return { ok: true }; });
 
@@ -461,7 +485,7 @@ queue.push(function() {
       }
     };
     sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {} } };
+      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
@@ -509,7 +533,7 @@ queue.push(function() {
       }
     };
     sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {} } };
+      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 

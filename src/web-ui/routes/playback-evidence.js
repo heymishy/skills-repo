@@ -10,6 +10,7 @@
 const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 const { getAuthenticatedPage } = require('../adapters/session-page-adapter');
 const { captureAcScreenshots } = require('../../utils/capture-screenshots');
+const { captureVideoRecording } = require('../../utils/capture-video');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const path = require('path');
@@ -220,6 +221,25 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
       : '';
+    var alsoCoversHtml = (ac.coCoveredAcIds && ac.coCoveredAcIds.length > 0)
+      ? '<p>This video also covers: ' + ac.coCoveredAcIds.map(_escapeHtml).join(', ') + '</p>'
+      : '';
+    var videoHtml = ac.videoPath
+      // ppc-s5 (Task 8 E2E finding, AC7): the width/height attributes below
+      // still establish the intrinsic aspect ratio (needed for AC7's
+      // layout-shift-on-metadata-load clause) -- max-width:100%;height:auto
+      // is the missing responsive constraint, matching screenshotHtml's own
+      // sibling <img> (immediately above) which already uses max-width.
+      // Without it, a fixed 480px-wide video overflows any viewport
+      // narrower than 480px (confirmed empirically via a real Playwright
+      // E2E run: document.body.scrollWidth was genuinely 480 at a 375px
+      // viewport) -- a real regression introduced when this element was
+      // added, only caught once Task 8's own E2E test existed to exercise
+      // a real rendered page at a narrow viewport.
+      ? '<video controls preload="none" poster="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" width="480" height="270" style="display:block;margin-top:8px;max-width:100%;height:auto" src="' + baseUrl + '/video/' + encodeURIComponent(ac.acId) + '">' +
+          'Your browser does not support the video tag.' +
+        '</video>' + alsoCoversHtml
+      : '';
     // ppc-s2 (final-review fix, AC5): a clear, visible failure notice so a
     // just-failed AC is distinguishable from one never attempted. Placed
     // adjacent to captureFormHtml's retry button, not buried elsewhere.
@@ -240,6 +260,7 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
       captureFormHtml +
       failureHtml +
       screenshotHtml +
+      videoHtml +
     '</li>';
   }).join('');
   return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
@@ -313,6 +334,7 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   var acRows = await _getDodAcList(journey, req, pool);
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
+  var videos = journey.captureVideos || {};
 
   var captureAllFailed = journey.captureAllFailed || {};
   var acs = acRows.map(function(ac) {
@@ -324,10 +346,19 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
       targetSet: targetSet,
       target: targetSet ? targetState : null,
       screenshotPath: screenshots[ac.acId] || null,
+      videoPath: videos[ac.acId] || null,
       // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
       // in the most recent capture-all run from one simply never attempted.
       lastCaptureFailure: captureAllFailed[ac.acId] || null
     };
+  });
+  // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own
+  // section to name the others -- computed here (not in the render
+  // function) since it needs the full acs list, which the render function
+  // only sees one row of at a time.
+  acs.forEach(function(ac) {
+    if (!ac.videoPath) { ac.coCoveredAcIds = []; return; }
+    ac.coCoveredAcIds = acs.filter(function(other) { return other.acId !== ac.acId && other.videoPath === ac.videoPath; }).map(function(other) { return other.acId; });
   });
 
   if (_wantsHtml(req)) {
@@ -368,6 +399,32 @@ async function handleGetCaptureScreenshot(req, res, _next, pool) {
   var imageBuffer = fs.readFileSync(resolvedShotPath);
   res.writeHead(200, { 'Content-Type': 'image/png' });
   res.end(imageBuffer);
+}
+
+/**
+ * AC2 -- tenant-scoped video serving, mirroring handleGetCaptureScreenshot's
+ * own existing tenant+product+ACID_RE-guarded pattern exactly. Deliberately
+ * NOT a reuse of the existing untenanted /playback-media/ route.
+ */
+async function handleGetCaptureVideo(req, res, _next, pool) {
+  var journey = await _resolveJourney(req, pool);
+  if (!journey) { _notFound(res); return; }
+
+  var acId = req.params && req.params.acId;
+  if (!ACID_RE.test(acId || '')) { _notFound(res); return; }
+
+  var videos = journey.captureVideos || {};
+  var videoPath = videos[acId];
+  if (!videoPath) { _notFound(res); return; }
+
+  var repoRoot = getRepoRoot(req);
+  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoPath);
+  if (!resolvedVideoPath) { _notFound(res); return; }
+  if (!fs.existsSync(resolvedVideoPath)) { _notFound(res); return; }
+
+  var videoBuffer = fs.readFileSync(resolvedVideoPath);
+  res.writeHead(200, { 'Content-Type': 'video/webm' });
+  res.end(videoBuffer);
 }
 
 /**
@@ -565,6 +622,73 @@ async function _captureOneAc(journey, acId, target, ownerRepo, req, page) {
 }
 
 /**
+ * ppc-s5 (AC1, AC1-combined, AC3): records ONE video spanning every AC in
+ * acIds, in a single Playwright recording context -- a group of one for a
+ * single-AC trigger, several ACs for capture-all (a later task). Reuses the
+ * SAME authenticated browser the screenshot work already obtained (AC3) --
+ * a new context created from that browser does NOT inherit the cookie
+ * seeded on the original context, so the clip's own run() callback re-seeds
+ * it via page.context().addCookies() before navigating to each AC's own
+ * target URL in sequence. Returns the resulting video path (or null if
+ * nothing could be recorded), or throws on failure -- callers decide how to
+ * track a failure against each acId in the group.
+ * @param {object} journey
+ * @param {string[]} acIds
+ * @param {{owner:string, repo:string}} ownerRepo
+ * @param {object} req
+ * @param {object} browser
+ * @param {string} baseUrl
+ * @returns {Promise<string|null>}
+ */
+async function _captureVideoForAcIds(journey, acIds, ownerRepo, req, browser, baseUrl) {
+  if (!browser || acIds.length === 0) return null;
+  var sessionId = req.sessionId;
+  // Mirrors session-page-adapter.js's realGetAuthenticatedPage cookie-security
+  // computation exactly (secure iff the base URL is actually https) --
+  // deliberately NOT a hardcoded true, to avoid drifting from that sibling's
+  // own correct logic. session-page-adapter.js itself is out of scope for
+  // this story (DoR "Do not modify"), so this is duplicated in place rather
+  // than extracted into a shared helper.
+  var parsedBaseUrl = new URL(baseUrl || 'https://localhost');
+  var cookieDomain = parsedBaseUrl.hostname;
+  var captureTargets = journey.captureTargets || [];
+  var videoResults = await captureVideoRecording({
+    browser: browser,
+    featureSlug: journey.featureSlug,
+    storySlug: 'ppc-s1',
+    clips: [{
+      name: acIds.join('+'),
+      run: async function(videoPage) {
+        await videoPage.context().addCookies([{
+          name: 'session_id',
+          value: sessionId,
+          domain: cookieDomain,
+          path: '/',
+          httpOnly: true,
+          secure: parsedBaseUrl.protocol === 'https:',
+          sameSite: 'Lax'
+        }]);
+        for (var i = 0; i < acIds.length; i++) {
+          var targetState = _journeyStore.getCaptureTargetState(captureTargets, acIds[i]);
+          if (targetState && targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET) {
+            await videoPage.goto(targetState.url);
+          }
+        }
+      }
+    }]
+  });
+  var videoResult = videoResults[0];
+  if (!videoResult || !videoResult.path) return null;
+
+  var repoRoot = getRepoRoot(req);
+  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoResult.path);
+  if (!resolvedVideoPath) return null;
+  var videoContent = fs.readFileSync(resolvedVideoPath);
+  await commitArtefact(videoResult.path, videoContent.toString('base64'), req.session.accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+  return videoResult.path;
+}
+
+/**
  * AC3 -- session-reuse capture (ADR-018: real session only, never a service
  * credential or the NODE_ENV=test bypass).
  */
@@ -611,6 +735,21 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   var authed = await getAuthenticatedPage(req.sessionId, baseUrl);
   try {
     var shotPath = await _captureOneAc(journey, acId, target, ownerRepo, req, authed.page);
+    try {
+      var videoPath = await _captureVideoForAcIds(journey, [acId], ownerRepo, req, authed.browser, baseUrl);
+      if (videoPath) {
+        var videos = journey.captureVideos || {};
+        videos[acId] = videoPath;
+        _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
+      }
+    } catch (videoErr) {
+      // AC4 (single-AC case, a group of one): a video failure never aborts
+      // the request and never undoes the screenshot success above. No AC
+      // requires surfacing a distinct "video failed" message for this
+      // path (AC6 only requires gracefully showing no video when none
+      // exists, already satisfied without persisting anything here) --
+      // intentionally swallowed.
+    }
     if (_isFormSubmission(req)) {
       _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
       return;
@@ -711,6 +850,28 @@ async function handlePostCaptureAll(req, res, _next, pool) {
           failed.push({ acId: item.acId, retry: true, error: acErr && acErr.message });
         }
       }
+      // ppc-s5 (AC1-combined, AC4): ONE combined video spans every AC that
+      // screenshotted successfully in this run -- recorded here, still
+      // inside the authenticated browser's own lifetime (closed in the
+      // existing finally block below). All-or-nothing for the group: either
+      // every AC in capturedAcIds gets the SAME video path, or (on failure)
+      // every one of them gets the SAME captureAllFailed entry -- never a
+      // partial split within the group.
+      var capturedAcIds = captured.map(function(c) { return c.acId; });
+      if (capturedAcIds.length > 0) {
+        try {
+          var combinedVideoPath = await _captureVideoForAcIds(journey, capturedAcIds, ownerRepo, req, authed.browser, baseUrl);
+          if (combinedVideoPath) {
+            var videos = journey.captureVideos || {};
+            capturedAcIds.forEach(function(acId) { videos[acId] = combinedVideoPath; });
+            _journeyStore.setJourneyFields(journey.journeyId, { captureVideos: videos });
+          }
+        } catch (videoErr) {
+          capturedAcIds.forEach(function(acId) {
+            failed.push({ acId: acId, retry: true, error: videoErr && videoErr.message, videoOnly: true });
+          });
+        }
+      }
     } finally {
       if (authed.browser && authed.browser.close) { await authed.browser.close(); }
     }
@@ -724,7 +885,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
     // would still show a stale "failed" badge.
     var captureAllFailed = Object.assign({}, journey.captureAllFailed || {});
     captured.forEach(function(c) { delete captureAllFailed[c.acId]; });
-    failed.forEach(function(f) { captureAllFailed[f.acId] = { error: f.error, retry: true }; });
+    failed.forEach(function(f) { captureAllFailed[f.acId] = Object.assign({ error: f.error, retry: true }, f.videoOnly ? { videoOnly: true } : null); });
     _journeyStore.setJourneyFields(journey.journeyId, {
       captureAllDuration: durationMs,
       captureAllCompletedAt: new Date().toISOString(),
@@ -769,6 +930,7 @@ module.exports = {
   handlePostCaptureTarget,
   handlePostCaptureTrigger,
   handleGetCaptureScreenshot,
+  handleGetCaptureVideo,
   handlePostCaptureAll,
   setJourneyStoreModule,
   setFetcherModule,
@@ -779,5 +941,6 @@ module.exports = {
   _notFound,
   _sendJson,
   _captureOneAc,
+  _captureVideoForAcIds,
   _renderCaptureAllProgress
 };

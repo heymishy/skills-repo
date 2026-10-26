@@ -85,7 +85,12 @@ function _sanitise(journey) {
     // from pipeline-state.json's own DoD signal (no Postgres artefact rows
     // exist for it) -- lets _getDodAcList know which of the feature's
     // stories to fetch real DoD content for from GitHub.
-    pipelineStateStorySlugs: journey.pipelineStateStorySlugs || null
+    pipelineStateStorySlugs: journey.pipelineStateStorySlugs || null,
+    // ppc-s5: added to the allowlist per this file's own fdn-s1 rule --
+    // must be listed explicitly or it silently vanishes after a
+    // Postgres-backed restart. Mirrors captureScreenshots exactly -- keyed
+    // by acId, value is the committed video's repo-relative path.
+    captureVideos: journey.captureVideos || {}
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;

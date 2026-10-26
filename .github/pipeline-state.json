@@ -42659,474 +42659,6 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "met",
-          "evidence": "ppc-s5/s6/s7-dor.md H9 -- escHtml() explicit in Architecture Constraints/ACs for discovery.md/benefit-metric.md summary content (ppc-s6) and the free-text sign-off comment (ppc-s7); confirmed again at /definition-of-ready",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        },
-        {
-          "id": "ppc-design-system",
-          "category": "pattern",
-          "label": "DESIGN.md token/component/layout compliance (dsa-s5 / H-DESIGN)",
-          "status": "met",
-          "evidence": "H-DESIGN run via node scripts/check-design-tokens.js against ppc-s5/s6/s7's real touch points (playback-evidence.js, journey-store-pg.js) -- PASS on both after fixing one pre-existing non-token color (#ddd -> #E4E7EB). html-shell.js/products.js are not touch points for these stories and were correctly excluded -- see decisions.md 2026-10-26 DESIGN entry for a much larger pre-existing gap found there, logged separately",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        },
-        {
-          "id": "ADR-018",
-          "category": "adr",
-          "label": "Playwright is the E2E testing framework; auth bypass is test-fixture-layer only",
-          "status": "met",
-          "evidence": "ppc-s5-dor.md H9/H-E2E -- Architecture Constraints explicitly names ADR-018; video capture reuses ppc-s1's existing session-reuse mechanism, no new auth path; AC6/AC7's layout-dependent claims covered by real Playwright E2E tests",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        },
-        {
-          "id": "ADR-025",
-          "category": "adr",
-          "label": "Multi-tenancy enforced at the application layer via tenant_id scoping",
-          "status": "met",
-          "evidence": "ppc-s5/s6/s7-dor.md H9 -- all three stories explicitly scope reads/writes by tenant_id/product_id, no new cross-tenant exposure surface found; re-confirmed at /definition-of-ready including AC5's dedicated cross-tenant test (ppc-s7)",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        },
-        {
-          "id": "NFR-ppc-s5s6s7-performance",
-          "category": "nfr",
-          "label": "Bounded per-request overhead (video page-render lazy-load, summary fetch, sign-off write) -- no new class of latency risk",
-          "status": "met",
-          "evidence": "nfr-profile.md Performance section -- ppc-s5 AC7 (preload=none), ppc-s6 (2 bounded fetchArtefact calls), ppc-s7 (1 bounded JSONB write)",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        },
-        {
-          "id": "NFR-ppc-s5s6s7-accessibility",
-          "category": "nfr",
-          "label": "Keyboard-operable, no client-side JS required; text-distinct (not colour-only) status states",
-          "status": "met",
-          "evidence": "nfr-profile.md Accessibility section -- ppc-s5 (no audio-caption requirement, native video controls), ppc-s6 (shell-wrap preserves existing forms), ppc-s7 (plain form elements, empty-state specificity)",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-26T03:00:00.000Z"
-        }
-      ],
-      "spikes": [
-        {
-          "id": "video-capture-library",
-          "storySlug": "2026-10-20-production-playback-capture",
-          "verdict": "REDESIGN",
-          "outputArtefact": "artefacts/2026-10-20-production-playback-capture/spikes/video-capture-library-outcome.md",
-          "verdictAt": "2026-10-20T10:00:00.000Z"
-        },
-        {
-          "id": "cx-ux-playback-pattern",
-          "storySlug": "2026-10-20-production-playback-capture",
-          "verdict": "REDESIGN",
-          "outputArtefact": "artefacts/2026-10-20-production-playback-capture/spikes/cx-ux-playback-pattern-outcome.md",
-          "verdictAt": "2026-10-26T00:00:00.000Z"
-        }
-      ],
-      "epics": [
-        {
-          "slug": "ppc-self-service-capture",
-          "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
-          "status": "in-progress",
-          "stories": [
-            {
-              "slug": "ppc-s1",
-              "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
-              "stage": "trace",
-              "health": "amber",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-23T08:51:46.164Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 38,
-                "passing": 38
-              },
-              "acTotal": 8,
-              "acVerified": 8,
-              "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false",
-              "dorStatus": "signed-off",
-              "tasks": [
-                {
-                  "id": "task-0",
-                  "name": "Extract captureAcScreenshots so it is actually deployed",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-1",
-                  "name": "Add isDodComplete and getCaptureTargetState helpers",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Add tenant+product-scoped journey lookup",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Add setCaptureTarget and fix Postgres allowlist durability gap",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "Add session-to-Playwright adapter stub (AC8, D37)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-5",
-                  "name": "Wire session-page adapter in server.js (AC8 complete)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-6",
-                  "name": "Extend commitArtefact to accept base64 binary content",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-7",
-                  "name": "Add tenant-scoped playback-evidence surface (AC1, AC4, AC5)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-8",
-                  "name": "Add capture-target entry endpoint (AC2)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-9",
-                  "name": "Add session-reuse capture-trigger endpoint (AC3)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-10",
-                  "name": "Mount playback-evidence routes in server.js",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-11",
-                  "name": "Add dedicated AC6/AC7 tenant-isolation coverage",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-12",
-                  "name": "Add NFR coverage for session_id non-leak and ADR-018 compliance",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                },
-                {
-                  "id": "task-13",
-                  "name": "Build the missing UI layer (HTML rendering, screenshot route, form redirects) -- found by /verify-completion",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
-                }
-              ],
-              "verifyStatus": "passed",
-              "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1013",
-              "dodStatus": "complete",
-              "releaseReady": false,
-              "blocker": "Follow-up actions open (see ppc-s1-dod.md): AC3/AC5 need a real end-to-end live check (real Playwright + real GitHub commit + real rendered screenshot) once a staging env with a connected test repo exists -- no implementation defect, just no live environment available this session.",
-              "layoutGapsAtMerge": false
-            },
-            {
-              "slug": "ppc-s2",
-              "name": "Extend to full-feature capture loop with timing validation",
-              "stage": "trace",
-              "health": "green",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-23T08:51:46.328Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 26,
-                "passing": 26
-              },
-              "acTotal": 6,
-              "acVerified": 6,
-              "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false",
-              "dorStatus": "signed-off",
-              "tasks": [
-                {
-                  "id": "task-0",
-                  "name": "Extract _captureOneAc shared single-AC capture mechanics",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-1",
-                  "name": "buildCaptureAllList, measureCaptureDuration, checkTimingThreshold",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Concurrency lock -- capture-all-lock.js",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "_renderCaptureAllProgress -- aria-live progress markup",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "decisions-log-writer.js -- SCOPE-note writer",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-5",
-                  "name": "handlePostCaptureAll route handler",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-6",
-                  "name": "Durability -- journey-store-pg.js _sanitise allowlist",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                },
-                {
-                  "id": "task-7",
-                  "name": "Mount the route in server.js",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
-                }
-              ],
-              "verifyStatus": "passed",
-              "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1014",
-              "dodStatus": "complete",
-              "releaseReady": false,
-              "blocker": "AC3/AC4: no live run against a real multi-AC tenant feature has occurred yet -- see ppc-s2-dod.md Follow-up Action 1"
-            },
-            {
-              "slug": "ppc-s3",
-              "name": "Rate-limit the capture-trigger endpoint per tenant user",
-              "stage": "trace",
-              "health": "green",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-23T09:34:05.610Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 9,
-                "passing": 9
-              },
-              "acTotal": 3,
-              "acVerified": 3,
-              "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false",
-              "dorStatus": "signed-off",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "Extend createRateLimiter with keyFn/onLimited",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Wire per-user capture rate limiter into handlePostCaptureTrigger",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Share the rate limiter with handlePostCaptureAll",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
-                }
-              ],
-              "verifyStatus": "passed",
-              "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1015",
-              "dodStatus": "complete",
-              "releaseReady": true,
-              "layoutGapsAtMerge": false
-            },
-            {
-              "slug": "ppc-s4",
-              "name": "Recognise pipeline-state.json DoD-complete features in self-service playback capture",
-              "stage": "trace",
-              "health": "green",
-              "reviewStatus": "not-started",
-              "highFindings": 0,
-              "updatedAt": "2026-10-25T08:38:33.261Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 18,
-                "passing": 18
-              },
-              "acTotal": 6,
-              "acVerified": 6,
-              "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false",
-              "dorStatus": "signed-off",
-              "tasks": [],
-              "verifyStatus": "passed",
-              "prStatus": "merged",
-              "dodStatus": "complete",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1022"
-            },
-            {
-              "slug": "ppc-s5",
-              "name": "Self-service video capture, combined across ACs where possible",
-              "stage": "subagent-execution",
-              "health": "green",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-26T08:00:00.000Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 22,
-                "passing": 0
-              },
-              "acTotal": 8,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "hasDesignSystemTrack": true,
-              "e2eToolingRequired": "true",
-              "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s5-dor.md",
-              "tasks": [
-                { "id": "task-1", "name": "Extract and harden captureVideoRecording into src/", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-2", "name": "Add AC5 cleanup-on-failure regression test", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-3", "name": "Add captureVideos to journey-store-pg.js's allowlist", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-4", "name": "New shared _captureVideoForAcIds helper; wire into single-AC trigger (AC1, AC3)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-5", "name": "New tenant-scoped video-serving route + server.js registration (AC2)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-6", "name": "Render <video> with AC7 attributes; AC6 empty state; AC2 also-covers note", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-7", "name": "handlePostCaptureAll records one combined video; all-or-nothing captureAllFailed tracking (AC1-combined, AC4)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" },
-                { "id": "task-8", "name": "E2E tests for AC6/AC7 (no console error, no eager download/layout shift)", "tddState": "not-started", "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md" }
-              ],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
-              "dodStatus": "not-started"
-            },
-            {
-              "slug": "ppc-s6",
-              "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-26T04:00:00.000Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 15,
-                "passing": 0
-              },
-              "acTotal": 6,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "hasDesignSystemTrack": true,
-              "e2eToolingRequired": "true",
-              "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s6-dor.md",
-              "tasks": [],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
-              "dodStatus": "not-started"
-            },
-            {
-              "slug": "ppc-s7",
-              "name": "Record an in-app sign-off decision on captured evidence",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "updatedAt": "2026-10-26T04:00:00.000Z",
-              "testPlan": {
-                "status": "written",
-                "totalTests": 13,
-                "passing": 0
-              },
-              "acTotal": 6,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": "false",
-              "hasDesignSystemTrack": true,
-              "e2eToolingRequired": "false",
-              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s7-dor.md",
-              "dorStatus": "signed-off",
-              "tasks": [],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
-              "dodStatus": "not-started"
-            }
-          ]
-        }
-      ],
-      "stories": [],
-      "discoveryStatus": "approved",
-      "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md",
-      "benefitMetricStatus": "active",
-      "benefitMetricArtefact": "artefacts/2026-10-20-production-playback-capture/benefit-metric.md",
-      "metrics": [
-        {
-          "id": "m1",
-          "name": "Self-service DoD validation adoption",
-          "target": ">=50% of a pilot tenant's own DoD-complete features captured self-service within 6 weeks of launch, for at least one real tenant",
-          "baseline": "0%",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against.",
-          "contributingStories": [
-            "ppc-s1",
-            "ppc-s2",
-            "ppc-s3"
-          ]
-        },
-        {
-          "id": "m2",
-          "name": "Time to DoD sign-off",
-          "target": "median under 10 minutes, single sitting",
-          "baseline": "not yet established -- no self-service mechanism existed before this feature",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "ppc-s2 delivers the full-feature, single-sitting capture loop this metric measures, but wuce has no live paying tenants yet (pre-launch beta) -- no real sign-off cycle has run to measure against.",
-          "contributingStories": [
-            "ppc-s2"
-          ]
-        },
-        {
-          "id": "m3",
-          "name": "Engineer manual-demo load removed",
-          "target": "zero engineer-hours per feature once self-service capture is adopted for that feature",
-          "baseline": "not yet established",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "ppc-s1 and ppc-s2 together structurally remove the need for an engineer to manually demo a feature once a tenant adopts self-service capture, but with no live tenants yet there is no real usage to measure the qualitative signal against.",
-          "contributingStories": [
-            "ppc-s1",
-            "ppc-s2"
-          ]
-        }
-      ],
-      "slicingStrategy": "walking-skeleton",
-      "guardrails": [
-        {
-          "id": "MC-SEC-01",
-          "category": "mandatory-constraint",
-          "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "not-assessed"
         },
         {
@@ -43436,6 +42968,459 @@
           "assessedAt": "2026-10-23T08:51:53.717Z"
         }
       ],
+      "spikes": [
+        {
+          "id": "video-capture-library",
+          "storySlug": "2026-10-20-production-playback-capture",
+          "verdict": "REDESIGN",
+          "outputArtefact": "artefacts/2026-10-20-production-playback-capture/spikes/video-capture-library-outcome.md",
+          "verdictAt": "2026-10-20T10:00:00.000Z"
+        },
+        {
+          "id": "cx-ux-playback-pattern",
+          "storySlug": "2026-10-20-production-playback-capture",
+          "verdict": "REDESIGN",
+          "outputArtefact": "artefacts/2026-10-20-production-playback-capture/spikes/cx-ux-playback-pattern-outcome.md",
+          "verdictAt": "2026-10-26T00:00:00.000Z"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "ppc-self-service-capture",
+          "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ppc-s1",
+              "name": "Walking skeleton: tenant-scoped surface and single-AC capture via session-reuse auth",
+              "stage": "trace",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-23T08:51:46.164Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 38,
+                "passing": 38
+              },
+              "acTotal": 8,
+              "acVerified": 8,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Extract captureAcScreenshots so it is actually deployed",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Add isDodComplete and getCaptureTargetState helpers",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add tenant+product-scoped journey lookup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Add setCaptureTarget and fix Postgres allowlist durability gap",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Add session-to-Playwright adapter stub (AC8, D37)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire session-page adapter in server.js (AC8 complete)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Extend commitArtefact to accept base64 binary content",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Add tenant-scoped playback-evidence surface (AC1, AC4, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "Add capture-target entry endpoint (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-9",
+                  "name": "Add session-reuse capture-trigger endpoint (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-10",
+                  "name": "Mount playback-evidence routes in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-11",
+                  "name": "Add dedicated AC6/AC7 tenant-isolation coverage",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-12",
+                  "name": "Add NFR coverage for session_id non-leak and ADR-018 compliance",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                },
+                {
+                  "id": "task-13",
+                  "name": "Build the missing UI layer (HTML rendering, screenshot route, form redirects) -- found by /verify-completion",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1013",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "Follow-up actions open (see ppc-s1-dod.md): AC3/AC5 need a real end-to-end live check (real Playwright + real GitHub commit + real rendered screenshot) once a staging env with a connected test repo exists -- no implementation defect, just no live environment available this session.",
+              "layoutGapsAtMerge": false
+            },
+            {
+              "slug": "ppc-s2",
+              "name": "Extend to full-feature capture loop with timing validation",
+              "stage": "trace",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-23T08:51:46.328Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 26,
+                "passing": 26
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Extract _captureOneAc shared single-AC capture mechanics",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "buildCaptureAllList, measureCaptureDuration, checkTimingThreshold",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Concurrency lock -- capture-all-lock.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "_renderCaptureAllProgress -- aria-live progress markup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "decisions-log-writer.js -- SCOPE-note writer",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "handlePostCaptureAll route handler",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Durability -- journey-store-pg.js _sanitise allowlist",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Mount the route in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1014",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC3/AC4: no live run against a real multi-AC tenant feature has occurred yet -- see ppc-s2-dod.md Follow-up Action 1"
+            },
+            {
+              "slug": "ppc-s3",
+              "name": "Rate-limit the capture-trigger endpoint per tenant user",
+              "stage": "trace",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-23T09:34:05.610Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 9
+              },
+              "acTotal": 3,
+              "acVerified": 3,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extend createRateLimiter with keyFn/onLimited",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire per-user capture rate limiter into handlePostCaptureTrigger",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Share the rate limiter with handlePostCaptureAll",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1015",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
+            },
+            {
+              "slug": "ppc-s4",
+              "name": "Recognise pipeline-state.json DoD-complete features in self-service playback capture",
+              "stage": "trace",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-25T08:38:33.261Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 18,
+                "passing": 18
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "tasks": [],
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1022"
+            },
+            {
+              "slug": "ppc-s5",
+              "name": "Self-service video capture, combined across ACs where possible",
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-26T04:53:49.908Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 15,
+                "passing": 15
+              },
+              "acTotal": 8,
+              "acVerified": 8,
+              "hasLayoutDependentGaps": "true",
+              "hasDesignSystemTrack": true,
+              "e2eToolingRequired": "true",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s5-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extract and harden captureVideoRecording into src/",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add AC5 cleanup-on-failure regression test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Add captureVideos to journey-store-pg.js's allowlist",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "New shared _captureVideoForAcIds helper; wire into single-AC trigger (AC1, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "New tenant-scoped video-serving route + server.js registration (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Render <video> with AC7 attributes; AC6 empty state; AC2 also-covers note",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "handlePostCaptureAll records one combined video; all-or-nothing captureAllFailed tracking (AC1-combined, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "E2E tests for AC6/AC7 (no console error, no eager download/layout shift)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1024"
+            },
+            {
+              "slug": "ppc-s6",
+              "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-26T04:00:00.000Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "hasDesignSystemTrack": true,
+              "e2eToolingRequired": "true",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s6-dor.md",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
+            },
+            {
+              "slug": "ppc-s7",
+              "name": "Record an in-app sign-off decision on captured evidence",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-26T04:00:00.000Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "hasDesignSystemTrack": true,
+              "e2eToolingRequired": "false",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s7-dor.md",
+              "dorStatus": "signed-off",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started"
+            }
+          ]
+        }
+      ],
+      "stories": [],
+      "discoveryStatus": "approved",
+      "discoveryArtefact": "artefacts/2026-10-20-production-playback-capture/discovery.md",
+      "benefitMetricStatus": "active",
+      "benefitMetricArtefact": "artefacts/2026-10-20-production-playback-capture/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Self-service DoD validation adoption",
+          "target": ">=50% of a pilot tenant's own DoD-complete features captured self-service within 6 weeks of launch, for at least one real tenant",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against.",
+          "contributingStories": [
+            "ppc-s1",
+            "ppc-s2",
+            "ppc-s3"
+          ]
+        },
+        {
+          "id": "m2",
+          "name": "Time to DoD sign-off",
+          "target": "median under 10 minutes, single sitting",
+          "baseline": "not yet established -- no self-service mechanism existed before this feature",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "ppc-s2 delivers the full-feature, single-sitting capture loop this metric measures, but wuce has no live paying tenants yet (pre-launch beta) -- no real sign-off cycle has run to measure against.",
+          "contributingStories": [
+            "ppc-s2"
+          ]
+        },
+        {
+          "id": "m3",
+          "name": "Engineer manual-demo load removed",
+          "target": "zero engineer-hours per feature once self-service capture is adopted for that feature",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "ppc-s1 and ppc-s2 together structurally remove the need for an engineer to manually demo a feature once a tenant adopts self-service capture, but with no live tenants yet there is no real usage to measure the qualitative signal against.",
+          "contributingStories": [
+            "ppc-s1",
+            "ppc-s2"
+          ]
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
       "traceStatus": "passed"
     },
     {
