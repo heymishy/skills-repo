@@ -269,6 +269,92 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('renderEvidencePage_noVideoYet_showsScreenshotOnlyState_noVideoTagEmitted', async function() {
+    var store5 = getStore();
+    var setup = setupDodCompleteJourney(store5, {});
+    store5.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-render-' + Date.now());
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var shotRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png';
+    store5.setJourneyFields(setup.journeyId, { captureScreenshots: { AC1: shotRel } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.ok(res._body.indexOf('<img') !== -1, 'screenshot must still render');
+    assert.strictEqual(res._body.indexOf('<video'), -1, 'no <video> tag when no video has been captured yet');
+  });
+});
+
+queue.push(function() {
+  return test('videoElement_attributes_usePreloadNoneAndPosterAndExplicitDimensions', async function() {
+    var store6 = getStore();
+    var setup = setupDodCompleteJourney(store6, {});
+    store6.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    var videoRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1.webm';
+    store6.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRel } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.ok(res._body.indexOf('<video') !== -1, 'video tag must render when a video exists');
+    assert.ok(res._body.indexOf('preload="none"') !== -1, 'AC7: preload=none required');
+    assert.ok(res._body.indexOf('poster="') !== -1, 'AC7: poster attribute required');
+    assert.ok(/width="\d+"/.test(res._body) && /height="\d+"/.test(res._body), 'AC7: explicit width/height required');
+  });
+});
+
+queue.push(function() {
+  return test('renderEvidencePage_combinedVideo_showsAlsoCoversNoteNamingOtherAcs', async function() {
+    // NOTE: does NOT use setupDodCompleteJourney() -- that helper's fixture
+    // DoD content has only ONE AC row (AC1), so acs[] would only ever have
+    // one entry and the "co-covered" computation (which filters acs[], not
+    // journey.captureVideos' own keys) could never find a second AC to
+    // name. This test needs its own 2-row DoD fixture set up inline.
+    var store6b = getStore();
+    var slug = 'ppc-s5-combined-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store6b.createJourney(slug);
+    store6b.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store6b.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store6b.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store6b.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#y');
+    store6b.setCaptureTarget(j.journeyId, 'AC2', 'http://z', '#w');
+    var videoRel = 'artefacts/' + slug + '/playback/ppc-s1/video/combined.webm';
+    // Both ACs share the SAME video path -- this is what "combined" means
+    // on disk: one path, multiple acId keys pointing at it.
+    store6b.setJourneyFields(j.journeyId, { captureVideos: { AC1: videoRel, AC2: videoRel } });
+
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.ok(res._body.indexOf('also covers') !== -1, 'a shared video must show a note naming the other ACs it also covers');
+  });
+});
+
+queue.push(function() {
+  return test('renderEvidencePage_soloVideo_showsNoAlsoCoversNote', async function() {
+    var store6c = getStore();
+    var setup = setupDodCompleteJourney(store6c, {});
+    store6c.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
+    var videoRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1-only.webm';
+    store6c.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRel } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._body.indexOf('also covers'), -1, 'a video not shared with any other AC must show no "also covers" note');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

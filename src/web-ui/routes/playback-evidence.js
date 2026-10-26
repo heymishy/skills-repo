@@ -221,6 +221,14 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var screenshotHtml = ac.screenshotPath
       ? '<img src="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" alt="Captured evidence for ' + _escapeHtml(ac.acId) + '" style="max-width:480px;display:block;margin-top:8px">'
       : '';
+    var alsoCoversHtml = (ac.coCoveredAcIds && ac.coCoveredAcIds.length > 0)
+      ? '<p>This video also covers: ' + ac.coCoveredAcIds.map(_escapeHtml).join(', ') + '</p>'
+      : '';
+    var videoHtml = ac.videoPath
+      ? '<video controls preload="none" poster="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" width="480" height="270" style="display:block;margin-top:8px" src="' + baseUrl + '/video/' + encodeURIComponent(ac.acId) + '">' +
+          'Your browser does not support the video tag.' +
+        '</video>' + alsoCoversHtml
+      : '';
     // ppc-s2 (final-review fix, AC5): a clear, visible failure notice so a
     // just-failed AC is distinguishable from one never attempted. Placed
     // adjacent to captureFormHtml's retry button, not buried elsewhere.
@@ -241,6 +249,7 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
       captureFormHtml +
       failureHtml +
       screenshotHtml +
+      videoHtml +
     '</li>';
   }).join('');
   return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
@@ -314,6 +323,7 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   var acRows = await _getDodAcList(journey, req, pool);
   var captureTargets = journey.captureTargets || [];
   var screenshots = journey.captureScreenshots || {};
+  var videos = journey.captureVideos || {};
 
   var captureAllFailed = journey.captureAllFailed || {};
   var acs = acRows.map(function(ac) {
@@ -325,10 +335,19 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
       targetSet: targetSet,
       target: targetSet ? targetState : null,
       screenshotPath: screenshots[ac.acId] || null,
+      videoPath: videos[ac.acId] || null,
       // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
       // in the most recent capture-all run from one simply never attempted.
       lastCaptureFailure: captureAllFailed[ac.acId] || null
     };
+  });
+  // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own
+  // section to name the others -- computed here (not in the render
+  // function) since it needs the full acs list, which the render function
+  // only sees one row of at a time.
+  acs.forEach(function(ac) {
+    if (!ac.videoPath) { ac.coCoveredAcIds = []; return; }
+    ac.coCoveredAcIds = acs.filter(function(other) { return other.acId !== ac.acId && other.videoPath === ac.videoPath; }).map(function(other) { return other.acId; });
   });
 
   if (_wantsHtml(req)) {
