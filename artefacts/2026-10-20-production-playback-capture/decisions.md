@@ -213,3 +213,19 @@ Require stack:
 **Revisit trigger:** If a future container-runtime change (base image swap, fly.io platform change, running as root) makes this sandbox-disabling workaround unnecessary or insufficient, revisit this entry's own reasoning before assuming the fix still applies unchanged.
 
 ---
+
+**2026-10-26 | ARCHITECTURE | `ppc-s8` fast-follow #2: `chromiumSandbox: false` alone did not resolve the hang — `/dev/shm` is the next suspect**
+
+**Incident:** After the sandbox-disabling fix (previous entry) merged and was promoted to production, two further real capture attempts against `https://skills-framework.fly.dev` — including one from a freshly-created browser tab, specifically to rule out a client-side/stuck-tab cause — still hung indefinitely with the identical symptom: a matched CSRF guard check logged, then total silence, no error, no crash, no completion. The fresh-tab retest confirms this is a genuine server-side hang tied to the session/request, not a browser-side artifact.
+
+**Decision:** Add `args: ['--disable-dev-shm-usage']` to the same production-only `chromium.launch()` branch. `/dev/shm` is typically very small by default in containers (often 64MB), and Chromium is well known to hang or crash under exactly these conditions — this flag (makes Chromium use `/tmp` instead) is the standard companion to `--no-sandbox` in essentially every "run headless Chrome in Docker" guide; the two are almost always needed together, and omitting it was a real gap in the first fast-follow. The 512MB VM's own tight memory budget for a real *video* recording (not just a screenshot) makes this more likely here than in a typical container.
+
+**Rationale:** Same reasoning as the sandbox fix — narrowly scoped, well-precedented, no Dockerfile/base-image change needed. Full suite verified passing; genuine confirmation still requires a real deploy, since this failure mode is specific to fly.io's actual container/memory constraints that local testing structurally cannot reproduce (same limitation noted in both prior entries).
+
+**Also investigated and ruled out as the cause (not the fix itself, context for future debugging):** whether fly.io's own free/paid tier VM pricing offered an easy path to more memory as an alternative diagnostic — confirmed fly.io has no standing free compute tier; the current `shared-cpu-2x`/512MB machine costs $4.39/mo, and the next preset up (`shared-cpu-4x`/1GB) would cost $8.78/mo. Not pursued yet, per operator instruction to ship the cheaper code-level fix first and only consider a memory bump if this one doesn't resolve it either.
+
+**Made by:** Claude (session), discovered via a third live production validation attempt (Hamish King, Platform Owner, authorised this fast-follow fix and asked for the free-tab retest to rule out a client-side cause first), 2026-10-26.
+
+**Revisit trigger:** If this fix also fails to resolve the hang, the next step (per operator discussion) is bumping the VM's memory allocation (512MB → 1GB, `shared-cpu-4x`, +$4.39/mo) to test whether this is fundamentally a memory-pressure issue rather than a Chromium launch-flag issue.
+
+---
