@@ -43253,11 +43253,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T01:03:21.351Z",
+              "updatedAt": "2026-10-26T04:23:26.237Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 22,
-                "passing": 13
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 8,
               "acVerified": 0,
@@ -43312,7 +43312,7 @@
                 {
                   "id": "task-8",
                   "name": "E2E tests for AC6/AC7 (no console error, no eager download/layout shift)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s5-plan.md"
                 }
               ],
