@@ -302,7 +302,7 @@ queue.push(function() {
       },
       downloadCaptureArtifact: async function(url) {
         assert.strictEqual(url, 'https://example.invalid/archive.zip');
-        return { screenshotBuffer: screenshotBuffer, videoBuffer: videoBuffer };
+        return { screenshots: { AC1: screenshotBuffer }, videoBuffer: videoBuffer };
       }
     });
 
@@ -411,6 +411,71 @@ queue.push(function() {
 
     assert.ok(res._body.indexOf('Capture failed') !== -1, 'the EXISTING failure-render fragment must appear, reading from journey.captureAllFailed');
     assert.ok(res._body.indexOf('Capture in progress') === -1, 'must NOT still render the in-progress fragment once timed out');
+  });
+});
+
+queue.push(function() {
+  return test('AC6/spec-compliance fix: a found capture-all group with 2 ACs commits EACH AC its OWN distinct screenshot buffer from result.screenshots -- not the same buffer twice', async function() {
+    var store = getStore();
+    var slug = 'ppc-s9-finalise-distinct-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store.createJourney(slug);
+    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+
+    var dispatchedAt = new Date().toISOString();
+    store.setJourneyFields(j.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-group-distinct-1', dispatchedAt: dispatchedAt },
+        AC2: { correlationId: 'corr-group-distinct-1', dispatchedAt: dispatchedAt }
+      }
+    });
+
+    var bufferA = Buffer.from('fake-png-bytes-AC1');
+    var bufferB = Buffer.from('fake-png-bytes-AC2');
+    var videoBuf = Buffer.from('fake-webm-bytes-group');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: true, archiveDownloadUrl: 'https://example.invalid/group-archive.zip' }; },
+      downloadCaptureArtifact: async function() { return { screenshots: { AC1: bufferA, AC2: bufferB }, videoBuffer: videoBuf }; }
+    });
+
+    var commitCalls = [];
+    artefactCommitWriter.setArtefactCommitAdapter(async function(artefactPath, content, token, owner, repo, encoding) {
+      commitCalls.push({ artefactPath: artefactPath, content: content, token: token, owner: owner, repo: repo, encoding: encoding });
+      return { ok: true };
+    });
+
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
+    var res = makeRes();
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
+    var screenshotCalls = commitCalls.filter(function(c) { return c.artefactPath.indexOf('screenshots/') !== -1; });
+    assert.strictEqual(screenshotCalls.length, 2, 'one commitArtefact call per AC for the screenshot -- not one shared call');
+
+    var ac1Call = screenshotCalls.find(function(c) { return c.artefactPath.indexOf('AC1.png') !== -1; });
+    var ac2Call = screenshotCalls.find(function(c) { return c.artefactPath.indexOf('AC2.png') !== -1; });
+    assert.ok(ac1Call, 'AC1 must have its own commitArtefact call');
+    assert.ok(ac2Call, 'AC2 must have its own commitArtefact call');
+    assert.strictEqual(ac1Call.content, bufferA.toString('base64'), 'AC1 must be committed with its OWN buffer, not AC2\'s');
+    assert.strictEqual(ac2Call.content, bufferB.toString('base64'), 'AC2 must be committed with its OWN buffer, not AC1\'s');
+    assert.notStrictEqual(ac1Call.content, ac2Call.content, 'the two ACs must never receive the same committed content -- this is the exact bug this fix exists to prevent');
+
+    var videoCalls = commitCalls.filter(function(c) { return c.artefactPath.indexOf('/video/') !== -1; });
+    assert.strictEqual(videoCalls.length, 1, 'the video is still committed once per group, shared across ACs -- unchanged behaviour');
+    assert.strictEqual(videoCalls[0].content, videoBuf.toString('base64'));
+
+    var reloaded = store.getJourney(j.journeyId);
+    assert.strictEqual(reloaded.captureScreenshots.AC1, ac1Call.artefactPath);
+    assert.strictEqual(reloaded.captureScreenshots.AC2, ac2Call.artefactPath);
+    assert.strictEqual(reloaded.captureInProgress.AC1, undefined);
+    assert.strictEqual(reloaded.captureInProgress.AC2, undefined);
   });
 });
 

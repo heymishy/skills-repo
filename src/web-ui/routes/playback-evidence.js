@@ -438,17 +438,41 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
         downloaded = {};
       }
 
-      if ((downloaded.screenshotBuffer || downloaded.videoBuffer) && !ownerRepoFetched) {
+      if ((downloaded.screenshots || downloaded.videoBuffer) && !ownerRepoFetched) {
         ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
         ownerRepoFetched = true;
       }
 
       if (ownerRepo) {
-        if (downloaded.screenshotBuffer) {
+        // ppc-s9 (spec-compliance review fix, AC6): acIds that genuinely
+        // have no entry in downloaded.screenshots (e.g. that one AC's own
+        // capture failed upstream in the worker, while the rest of the
+        // group succeeded) are tracked here and excluded from the
+        // "finalise this group" sweep below -- they stay in captureInProgress
+        // so the next page load retries them, rather than being silently
+        // marked done with nothing committed. This mirrors this function's
+        // own existing defensive conventions (the try/catch around
+        // checkCaptureArtifact/downloadCaptureArtifact above, and the
+        // "ownerRepo === null: leave this group's entries as-is" comment
+        // below) -- a partial failure must not crash or silently
+        // mis-finalise the rest of the group.
+        var missingScreenshotAcIds = {};
+        if (downloaded.screenshots) {
           for (var s = 0; s < group.acIds.length; s++) {
             var shotAcId = group.acIds[s];
+            // Each AC commits its OWN buffer, keyed by its own acId --
+            // downloaded.screenshots is now {[acId]: Buffer}, not one shared
+            // buffer reused for every AC in the group (the bug this fix
+            // exists for -- every AC but one used to silently get the wrong
+            // screenshot committed as its own evidence).
+            var shotBuffer = downloaded.screenshots[shotAcId];
+            if (!shotBuffer) {
+              console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' -- leaving it in progress for retry');
+              missingScreenshotAcIds[shotAcId] = true;
+              continue;
+            }
             var shotPath = 'artefacts/' + journey.featureSlug + '/playback/ppc-s1/screenshots/' + shotAcId + '.png';
-            await commitArtefact(shotPath, downloaded.screenshotBuffer.toString('base64'), accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
+            await commitArtefact(shotPath, shotBuffer.toString('base64'), accessToken, ownerRepo.owner, ownerRepo.repo, 'base64');
             nextCaptureScreenshots[shotAcId] = shotPath;
           }
         }
@@ -462,6 +486,7 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
         }
 
         group.acIds.forEach(function(doneAcId) {
+          if (missingScreenshotAcIds[doneAcId]) return;
           delete nextCaptureInProgress[doneAcId];
           delete nextCaptureAllFailed[doneAcId];
         });

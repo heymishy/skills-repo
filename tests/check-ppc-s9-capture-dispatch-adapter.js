@@ -319,15 +319,19 @@ queue.push(function() {
 // in-memory zip (STORED + DEFLATE entries), exercised without needing a real
 // GitHub Actions artifact archive or live credentials. ---
 queue.push(function() {
-  return test('realDownloadCaptureArtifact: unzips a synthetic archive (STORED .png + DEFLATE .webm) into the matching buffers', function() {
+  return test('realDownloadCaptureArtifact: unzips a synthetic archive (STORED AC1.png + DEFLATE video.webm) into result.screenshots[acId] + the shared videoBuffer', function() {
     return withEnv(ALL_PLATFORM_ENV, function() {
       var mod = require(ADAPTER_PATH);
       var screenshotData = Buffer.from('FAKE-PNG-BYTES-' + 'X'.repeat(50));
       var videoData = Buffer.from('FAKE-WEBM-BYTES-' + 'Y'.repeat(500));
 
+      // Realistic Task 4 naming convention (ppc-capture-worker.js): per-AC
+      // screenshots are named '<acId>.png' (e.g. 'AC1.png'), so the key this
+      // test asserts against is a realistic acId, not an arbitrary fixture
+      // name -- see this story's Task 9 fix.
       var zipBuffer = buildTestZip([
-        { name: 'ac1-screenshot.png', data: screenshotData, method: 0 },
-        { name: 'ac1-video.webm', data: videoData, method: 8 }
+        { name: 'AC1.png', data: screenshotData, method: 0 },
+        { name: 'video.webm', data: videoData, method: 8 }
       ]);
 
       return withMockFetch(
@@ -336,10 +340,48 @@ queue.push(function() {
         },
         async function() {
           var result = await mod.realDownloadCaptureArtifact('https://example.test/archive.zip');
-          assert.ok(Buffer.isBuffer(result.screenshotBuffer), 'screenshotBuffer must be present and a Buffer');
-          assert.ok(result.screenshotBuffer.equals(screenshotData), 'STORED .png entry must round-trip byte-for-byte');
+          assert.ok(result.screenshots, 'result.screenshots must be present');
+          assert.ok(Buffer.isBuffer(result.screenshots.AC1), 'result.screenshots.AC1 must be present and a Buffer');
+          assert.ok(result.screenshots.AC1.equals(screenshotData), 'STORED AC1.png entry must round-trip byte-for-byte, keyed by its own acId');
           assert.ok(Buffer.isBuffer(result.videoBuffer), 'videoBuffer must be present and a Buffer');
-          assert.ok(result.videoBuffer.equals(videoData), 'DEFLATE .webm entry must inflate back to the original bytes');
+          assert.ok(result.videoBuffer.equals(videoData), 'DEFLATE video.webm entry must inflate back to the original bytes');
+        }
+      );
+    });
+  });
+});
+
+// --- downloadCaptureArtifact: the exact regression this fix exists for --
+// 2+ distinctly-named .png entries (a real capture-all group) must each map
+// to their OWN distinct buffer, never one shared/overwritten buffer. ---
+queue.push(function() {
+  return test('realDownloadCaptureArtifact: a capture-all archive with 2+ distinctly-named .png entries maps EACH to its own distinct buffer in result.screenshots, not one shared overwritten buffer', function() {
+    return withEnv(ALL_PLATFORM_ENV, function() {
+      var mod = require(ADAPTER_PATH);
+      var ac1Data = Buffer.from('FAKE-PNG-AC1-' + 'A'.repeat(40));
+      var ac2Data = Buffer.from('FAKE-PNG-AC2-' + 'B'.repeat(60));
+      var videoData = Buffer.from('FAKE-WEBM-GROUP-' + 'Z'.repeat(300));
+
+      var zipBuffer = buildTestZip([
+        { name: 'AC1.png', data: ac1Data, method: 0 },
+        { name: 'AC2.png', data: ac2Data, method: 8 },
+        { name: 'video.webm', data: videoData, method: 8 }
+      ]);
+
+      return withMockFetch(
+        async function() {
+          return { ok: true, status: 200, arrayBuffer: async function() { return zipBuffer; } };
+        },
+        async function() {
+          var result = await mod.realDownloadCaptureArtifact('https://example.test/archive.zip');
+          assert.ok(result.screenshots, 'result.screenshots must be present');
+          assert.ok(Buffer.isBuffer(result.screenshots.AC1), 'result.screenshots.AC1 must be present and a Buffer');
+          assert.ok(Buffer.isBuffer(result.screenshots.AC2), 'result.screenshots.AC2 must be present and a Buffer');
+          assert.ok(result.screenshots.AC1.equals(ac1Data), 'AC1 must map to its OWN distinct buffer');
+          assert.ok(result.screenshots.AC2.equals(ac2Data), 'AC2 must map to its OWN distinct buffer');
+          assert.ok(!result.screenshots.AC1.equals(result.screenshots.AC2), 'AC1 and AC2 buffers must be genuinely different -- this is the exact regression this test covers (previously the last .png entry silently overwrote every other one)');
+          assert.ok(Buffer.isBuffer(result.videoBuffer), 'the single shared videoBuffer must still be present');
+          assert.ok(result.videoBuffer.equals(videoData));
         }
       );
     });

@@ -85,7 +85,7 @@ async function checkCaptureArtifact(correlationId) {
 /**
  * Download and unzip a found capture-result artifact in-memory.
  * @param {string} archiveDownloadUrl
- * @returns {Promise<{screenshotBuffer?: Buffer, videoBuffer?: Buffer}>}
+ * @returns {Promise<{screenshots?: Object<string, Buffer>, videoBuffer?: Buffer}>}
  */
 async function downloadCaptureArtifact(archiveDownloadUrl) {
   return getCaptureDispatchAdapter().downloadCaptureArtifact(archiveDownloadUrl);
@@ -303,15 +303,28 @@ function _unzipEntries(zipBuffer) {
  * zip archive (following GitHub's redirect to blob storage; `fetch` follows
  * redirects by default, so a single call is sufficient for the documented
  * Actions artifact download flow) and unzips it in-memory via _unzipEntries.
- * Returns whichever of {screenshotBuffer, videoBuffer} are present, matched
- * by file extension (.png for the screenshot, .webm/.mp4 for the video) --
- * the same extensions capture-screenshots.js/capture-video.js already
- * produce. This has not been exercised against a real GitHub artifact
- * archive in this session (no live credentials available) -- flagged for
- * the orchestrator to verify empirically against a real workflow run before
+ *
+ * Screenshots are returned as `screenshots`, an object keyed by each .png
+ * entry's own acId (its filename minus the '.png' extension -- e.g.
+ * 'AC1.png' -> key 'AC1'), NOT a single shared screenshotBuffer. Task 4's
+ * own worker script (.github/scripts/ppc-capture-worker.js) writes one
+ * distinctly-named '<acId>.png' file per AC in a capture-all group
+ * (confirmed by reading its own screenshots.map(...) destName logic), so
+ * collapsing every .png entry into one overwritten buffer silently dropped
+ * every AC's screenshot but the last one found in the archive -- this is
+ * the exact bug this shape change exists to fix (spec-compliance review
+ * finding, AC6).
+ *
+ * Video stays a single shared `videoBuffer`: Task 4's own script always
+ * writes exactly one combined video file per group, named 'video.webm' (or
+ * .mp4), never a per-AC name -- so no per-AC keying is needed on this side.
+ *
+ * This has not been exercised against a real GitHub artifact archive in
+ * this session (no live credentials available) -- flagged for the
+ * orchestrator to verify empirically against a real workflow run before
  * this path is relied on in production, per the plan's own instruction.
  * @param {string} archiveDownloadUrl
- * @returns {Promise<{screenshotBuffer?: Buffer, videoBuffer?: Buffer}>}
+ * @returns {Promise<{screenshots?: Object<string, Buffer>, videoBuffer?: Buffer}>}
  * @throws {Error} if any PLATFORM_* env var is missing (fail-closed), or the download fails
  */
 async function realDownloadCaptureArtifact(archiveDownloadUrl) {
@@ -335,7 +348,13 @@ async function realDownloadCaptureArtifact(archiveDownloadUrl) {
   const result = {};
   entries.forEach(function(entry) {
     if (/\.png$/i.test(entry.name)) {
-      result.screenshotBuffer = entry.data;
+      // basename-minus-extension, not the raw entry.name -- robust to the
+      // (currently unused, but not guaranteed by the zip format itself) case
+      // of a nested path inside the archive, e.g. 'shots/AC1.png' -> 'AC1'.
+      const baseName = entry.name.split('/').pop();
+      const acId = baseName.replace(/\.png$/i, '');
+      if (!result.screenshots) result.screenshots = {};
+      result.screenshots[acId] = entry.data;
     } else if (/\.(webm|mp4)$/i.test(entry.name)) {
       result.videoBuffer = entry.data;
     }
