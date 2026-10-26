@@ -141,7 +141,7 @@ pe.setJourneyStoreModule(store);
 
 function getStore() { store._clearForTesting(); return store; }
 function makeRes() {
-  var res = { _status: null, _json: null, _body: null, json: function(b) { res._status = res._status || 200; res._json = b; }, writeHead: function(s) { res._status = s; }, end: function(b) { res._body = b; } };
+  var res = { _status: null, _json: null, _body: null, _headers: {}, json: function(b) { res._status = res._status || 200; res._json = b; }, writeHead: function(status, headers) { res._status = status; Object.assign(res._headers, headers || {}); }, end: function(b) { res._body = b; } };
   res.status = function(c) { res._status = c; return res; };
   return res;
 }
@@ -248,6 +248,7 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 200);
     assert.strictEqual(res._body.toString(), 'fake webm bytes');
+    assert.strictEqual(res._headers['Content-Type'], 'video/webm');
   });
 });
 
