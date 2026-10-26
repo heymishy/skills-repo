@@ -225,7 +225,18 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
       ? '<p>This video also covers: ' + ac.coCoveredAcIds.map(_escapeHtml).join(', ') + '</p>'
       : '';
     var videoHtml = ac.videoPath
-      ? '<video controls preload="none" poster="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" width="480" height="270" style="display:block;margin-top:8px" src="' + baseUrl + '/video/' + encodeURIComponent(ac.acId) + '">' +
+      // ppc-s5 (Task 8 E2E finding, AC7): the width/height attributes below
+      // still establish the intrinsic aspect ratio (needed for AC7's
+      // layout-shift-on-metadata-load clause) -- max-width:100%;height:auto
+      // is the missing responsive constraint, matching screenshotHtml's own
+      // sibling <img> (immediately above) which already uses max-width.
+      // Without it, a fixed 480px-wide video overflows any viewport
+      // narrower than 480px (confirmed empirically via a real Playwright
+      // E2E run: document.body.scrollWidth was genuinely 480 at a 375px
+      // viewport) -- a real regression introduced when this element was
+      // added, only caught once Task 8's own E2E test existed to exercise
+      // a real rendered page at a narrow viewport.
+      ? '<video controls preload="none" poster="' + baseUrl + '/screenshots/' + encodeURIComponent(ac.acId) + '" width="480" height="270" style="display:block;margin-top:8px;max-width:100%;height:auto" src="' + baseUrl + '/video/' + encodeURIComponent(ac.acId) + '">' +
           'Your browser does not support the video tag.' +
         '</video>' + alsoCoversHtml
       : '';
