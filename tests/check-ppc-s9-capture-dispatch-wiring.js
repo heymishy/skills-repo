@@ -417,20 +417,13 @@ queue.push(function() {
 queue.push(function() {
   return test('AC6/spec-compliance fix: a found capture-all group with 2 ACs commits EACH AC its OWN distinct screenshot buffer from result.screenshots -- not the same buffer twice', async function() {
     var store = getStore();
-    var slug = 'ppc-s9-finalise-distinct-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-    var j = store.createJourney(slug);
-    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
-    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
-    store.setPgAdapterForTesting({
-      saveJourney: async function() {},
-      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
-    });
-    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
-    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
-    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+    var setup = setupDodCompleteJourney(store, { featureSlug: 'ppc-s9-finalise-distinct-' + Date.now() + '-' + Math.random().toString(36).slice(2) });
+    var slug = setup.featureSlug;
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(setup.journeyId, 'AC2', 'http://y', '#b');
 
     var dispatchedAt = new Date().toISOString();
-    store.setJourneyFields(j.journeyId, {
+    store.setJourneyFields(setup.journeyId, {
       captureInProgress: {
         AC1: { correlationId: 'corr-group-distinct-1', dispatchedAt: dispatchedAt },
         AC2: { correlationId: 'corr-group-distinct-1', dispatchedAt: dispatchedAt }
@@ -471,7 +464,7 @@ queue.push(function() {
     assert.strictEqual(videoCalls.length, 1, 'the video is still committed once per group, shared across ACs -- unchanged behaviour');
     assert.strictEqual(videoCalls[0].content, videoBuf.toString('base64'));
 
-    var reloaded = store.getJourney(j.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.strictEqual(reloaded.captureScreenshots.AC1, ac1Call.artefactPath);
     assert.strictEqual(reloaded.captureScreenshots.AC2, ac2Call.artefactPath);
     assert.strictEqual(reloaded.captureInProgress.AC1, undefined);
@@ -482,20 +475,13 @@ queue.push(function() {
 queue.push(function() {
   return test('spec-compliance fix regression: a found group with ONE AC permanently missing from result.screenshots stays in-progress (not failed, not silently cleared) while still within the wait window', async function() {
     var store = getStore();
-    var slug = 'ppc-s9-finalise-missing-recent-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-    var j = store.createJourney(slug);
-    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
-    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
-    store.setPgAdapterForTesting({
-      saveJourney: async function() {},
-      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
-    });
-    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
-    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
-    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+    var setup = setupDodCompleteJourney(store, { featureSlug: 'ppc-s9-finalise-missing-recent-' + Date.now() + '-' + Math.random().toString(36).slice(2) });
+    var slug = setup.featureSlug;
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(setup.journeyId, 'AC2', 'http://y', '#b');
 
     var dispatchedAt = new Date().toISOString();
-    store.setJourneyFields(j.journeyId, {
+    store.setJourneyFields(setup.journeyId, {
       captureInProgress: {
         AC1: { correlationId: 'corr-missing-recent-1', dispatchedAt: dispatchedAt },
         AC2: { correlationId: 'corr-missing-recent-1', dispatchedAt: dispatchedAt }
@@ -525,7 +511,7 @@ queue.push(function() {
     assert.strictEqual(screenshotCalls.length, 1, 'only AC1 -- the AC that actually has a buffer -- gets committed');
     assert.ok(screenshotCalls[0].artefactPath.indexOf('AC1.png') !== -1);
 
-    var reloaded = store.getJourney(j.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'AC1 finalised normally');
     assert.ok(reloaded.captureInProgress.AC2, 'AC2 must stay in captureInProgress while still within the wait window -- not silently cleared, not failed yet');
     assert.strictEqual(reloaded.captureAllFailed.AC2, undefined, 'must not be marked failed yet -- still within the wait window');
@@ -537,28 +523,20 @@ queue.push(function() {
 queue.push(function() {
   return test('spec-compliance fix regression: a found group with ONE AC permanently missing from result.screenshots is bounded by CAPTURE_WAIT_WINDOW_MS, not retried forever', async function() {
     var store = getStore();
-    var slug = 'ppc-s9-finalise-missing-timeout-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-    var j = store.createJourney(slug);
-    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
-    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
-    store.setPgAdapterForTesting({
-      saveJourney: async function() {},
-      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
-    });
-    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
-    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
-    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+    var setup = setupDodCompleteJourney(store, { featureSlug: 'ppc-s9-finalise-missing-timeout-' + Date.now() + '-' + Math.random().toString(36).slice(2) });
+    var slug = setup.featureSlug;
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(setup.journeyId, 'AC2', 'http://y', '#b');
 
     // 6 minutes ago -- past the 5-minute CAPTURE_WAIT_WINDOW_MS. Even though
     // checkCaptureArtifact finds the group's own artifact (it will persist
     // for GitHub's own retention window, far longer than this), AC2's own
-    // missing screenshot must still time out -- this is the exact unbounded-
-    // retry regression this fix exists to prevent (without it, the
+    // missing screenshot must still time out -- without this bound, the
     // not-found/timeout branch is never reached again once the group's
     // artifact is found, so a permanently-missing per-AC screenshot would
-    // retry forever).
+    // retry forever.
     var dispatchedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
-    store.setJourneyFields(j.journeyId, {
+    store.setJourneyFields(setup.journeyId, {
       captureInProgress: {
         AC1: { correlationId: 'corr-missing-timeout-1', dispatchedAt: dispatchedAt },
         AC2: { correlationId: 'corr-missing-timeout-1', dispatchedAt: dispatchedAt }
@@ -578,7 +556,7 @@ queue.push(function() {
     var res = makeRes();
     await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    var reloaded = store.getJourney(j.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.strictEqual(reloaded.captureInProgress.AC1, undefined, 'AC1 finalised normally');
     assert.strictEqual(reloaded.captureInProgress.AC2, undefined, 'AC2 must be cleared from captureInProgress once the wait window elapses -- never left to retry forever');
     assert.deepStrictEqual(reloaded.captureAllFailed.AC2, { error: 'capture workflow did not complete within the expected window', retry: true }, 'must reuse the EXISTING captureAllFailed shape -- same as the not-found/timeout branch');
@@ -591,20 +569,13 @@ queue.push(function() {
 queue.push(function() {
   return test('AC6 grouping: a capture-all-shaped captureInProgress with 2 acIds sharing ONE correlationId calls checkCaptureArtifact exactly once for that correlationId, not once per acId', async function() {
     var store = getStore();
-    var slug = 'ppc-s9-finalise-group-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-    var j = store.createJourney(slug);
-    store.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
-    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
-    store.setPgAdapterForTesting({
-      saveJourney: async function() {},
-      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
-    });
-    store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
-    store.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#a');
-    store.setCaptureTarget(j.journeyId, 'AC2', 'http://y', '#b');
+    var setup = setupDodCompleteJourney(store, { featureSlug: 'ppc-s9-finalise-group-' + Date.now() + '-' + Math.random().toString(36).slice(2) });
+    var slug = setup.featureSlug;
+    store.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#a');
+    store.setCaptureTarget(setup.journeyId, 'AC2', 'http://y', '#b');
 
     var dispatchedAt = new Date().toISOString();
-    store.setJourneyFields(j.journeyId, {
+    store.setJourneyFields(setup.journeyId, {
       captureInProgress: {
         AC1: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt },
         AC2: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt }
@@ -629,7 +600,7 @@ queue.push(function() {
 
     assert.strictEqual(checkCallCount, 1, 'checkCaptureArtifact must be called exactly ONCE for the shared correlationId, not once per acId');
 
-    var reloaded = store.getJourney(j.journeyId);
+    var reloaded = store.getJourney(setup.journeyId);
     assert.deepStrictEqual(reloaded.captureInProgress, {
       AC1: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt },
       AC2: { correlationId: 'corr-group-1', dispatchedAt: dispatchedAt }

@@ -460,27 +460,21 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
       }
 
       if (ownerRepo) {
-        // ppc-s9 (spec-compliance review fix, AC6): acIds that genuinely
-        // have no entry in downloaded.screenshots (e.g. that one AC's own
-        // capture failed upstream in the worker, while the rest of the
-        // group succeeded) are tracked here and excluded from the
-        // "finalise this group" sweep below -- they stay in captureInProgress
-        // so the next page load retries them, rather than being silently
-        // marked done with nothing committed. This mirrors this function's
-        // own existing defensive conventions (the try/catch around
-        // checkCaptureArtifact/downloadCaptureArtifact above, and the
-        // "ownerRepo === null: leave this group's entries as-is" comment
-        // below) -- a partial failure must not crash or silently
-        // mis-finalise the rest of the group.
+        // A missing key in downloaded.screenshots means that one AC's own
+        // capture failed upstream in the worker while the rest of the group
+        // succeeded -- tracked here and excluded from the "finalise this
+        // group" sweep below so a partial failure can't crash or
+        // mis-finalise the rest of the group. Bounded by CAPTURE_WAIT_WINDOW_MS
+        // the same way the not-found branch below is, so a permanently-
+        // missing screenshot doesn't retry forever once the group's own
+        // artifact is found.
         var missingScreenshotAcIds = {};
         if (downloaded.screenshots) {
           for (var s = 0; s < group.acIds.length; s++) {
             var shotAcId = group.acIds[s];
             // Each AC commits its OWN buffer, keyed by its own acId --
-            // downloaded.screenshots is now {[acId]: Buffer}, not one shared
-            // buffer reused for every AC in the group (the bug this fix
-            // exists for -- every AC but one used to silently get the wrong
-            // screenshot committed as its own evidence).
+            // downloaded.screenshots is {[acId]: Buffer}, never one shared
+            // buffer reused for every AC in the group.
             var shotBuffer = downloaded.screenshots[shotAcId];
             if (!shotBuffer) {
               missingScreenshotAcIds[shotAcId] = true;
@@ -488,10 +482,6 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
                 console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' -- leaving it in progress for retry');
                 stillInProgress[shotAcId] = true;
               } else {
-                // Bounded, same as the not-found/timeout branch below -- the
-                // group's artifact exists, but THIS AC's own screenshot never
-                // appeared in it within the wait window (e.g. its own capture
-                // failed upstream in the worker). Never retry indefinitely.
                 console.error('_finaliseInProgressCaptures: no screenshot found for ' + shotAcId + ' in capture artifact for correlationId ' + group.correlationId + ' after the wait window elapsed -- marking failed');
                 nextCaptureAllFailed[shotAcId] = { error: 'capture workflow did not complete within the expected window', retry: true };
                 delete nextCaptureInProgress[shotAcId];
@@ -524,7 +514,6 @@ async function _finaliseInProgressCaptures(journey, req, pool) {
       // artifact-check (and, eventually, time out via the branch below if
       // the wait window elapses first).
     } else {
-      var elapsedMs = Date.now() - new Date(group.dispatchedAt).getTime();
       if (elapsedMs < CAPTURE_WAIT_WINDOW_MS) {
         group.acIds.forEach(function(waitingAcId) { stillInProgress[waitingAcId] = true; });
       } else {

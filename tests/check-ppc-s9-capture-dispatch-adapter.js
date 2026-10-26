@@ -328,7 +328,7 @@ queue.push(function() {
       // Realistic Task 4 naming convention (ppc-capture-worker.js): per-AC
       // screenshots are named '<acId>.png' (e.g. 'AC1.png'), so the key this
       // test asserts against is a realistic acId, not an arbitrary fixture
-      // name -- see this story's Task 9 fix.
+      // name -- see this story's Task 6 spec-compliance review fix.
       var zipBuffer = buildTestZip([
         { name: 'AC1.png', data: screenshotData, method: 0 },
         { name: 'video.webm', data: videoData, method: 8 }
