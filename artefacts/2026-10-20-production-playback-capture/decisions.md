@@ -248,3 +248,17 @@ Require stack:
 **Revisit trigger:** If GitHub Actions' own dispatch-to-completion latency (queue time + runner startup, typically 30s-2min) proves unacceptable for the product's own UX goals once real tenants are live, revisit option 2 from the original cost comparison (an on-demand Fly Machine via the Machines API) as a faster alternative with similar economics.
 
 ---
+
+**2026-10-27 | ARCHITECTURE | `captureAllLock`'s synchronous-completion assumption is now stale (known gap, RISK-ACCEPT, not blocking `ppc-s9` Task 5/6)**
+
+**Context:** `ppc-s9` Task 5 (wiring `handlePostCaptureTrigger`/`handlePostCaptureAll` to dispatch instead of launching Chromium in-process) surfaced that `capture-all-lock.js`'s own design explicitly assumes "the run completes synchronously within one request/response cycle" (its own doc comment, originally written for the `ppc-s2` in-process capture-all flow). That assumption no longer holds: `handlePostCaptureAll` now releases the lock as soon as the `dispatchCaptureWorkflow` call itself returns (sub-second), not when the real GitHub Actions run (30s-2min per this feature's own NFR) actually finishes. Nothing currently prevents a second `handlePostCaptureAll` call for the same journey from firing once that lock is released, while the first dispatched run is still executing in GitHub Actions.
+
+**Decision:** Accept this as a known, bounded gap for now rather than redesigning `capture-all-lock.js` as part of `ppc-s9` (out of this story's own file scope and not named in any of its 8 ACs). The practical failure mode is bounded, not corrupting: a duplicate GitHub Actions dispatch (wasted CI minutes), with the second dispatch's `correlationId` overwriting the first's `captureInProgress` entries — the orphaned first run is simply never looked up again, and AC5's existing timeout-to-failure path still recovers cleanly if the surviving dispatch itself fails. No data corruption, no security exposure. The per-session rate-limiter (`_captureRateLimiter`, 1/minute) provides partial, incomplete mitigation (it is per-session, not per-journey, and the dispatch-to-completion window can exceed its own 1-minute window).
+
+**Rationale:** Raised independently by both the Task 5 implementer and the Task 5 spec-compliance reviewer, who each judged it Important-but-non-blocking: it is a real design debt worth tracking, but redesigning the lock's own durability model (e.g. keying it off `correlationId`/dispatch-completion rather than request lifetime) is better scoped as its own follow-up than folded into an already-large architecture-correction story.
+
+**Made by:** Claude (session), surfaced during `ppc-s9` Task 5 implementation and its own spec-compliance review, 2026-10-27.
+
+**Revisit trigger:** If real tenant usage after launch shows duplicate capture-all dispatches happening in practice (visible as duplicate GitHub Actions runs for the same journey in close succession), redesign `capture-all-lock.js` to key its durability off the dispatch's own `correlationId`/completion state rather than request lifetime, before this becomes a recurring CI-minutes cost or user-visible confusion.
+
+---
