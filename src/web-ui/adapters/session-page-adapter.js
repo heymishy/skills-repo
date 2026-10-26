@@ -81,6 +81,19 @@ async function realGetAuthenticatedPage(sessionId, baseUrl, chromiumModule) {
   const launchOptions = {};
   if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
     launchOptions.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+    // ppc-s8 fast-follow: launching Chromium as a non-root container user
+    // (Dockerfile's USER node) commonly HANGS (not errors) rather than
+    // failing cleanly, because Chromium's own sandbox setup needs
+    // privileges an unprivileged container process doesn't have --
+    // confirmed live: two real production capture attempts against
+    // skills-framework.fly.dev hung indefinitely (no error, no crash,
+    // no completion) after the playwright-core/executablePath fix alone.
+    // chromiumSandbox: false is Playwright's own documented way to
+    // disable it (equivalent to passing --no-sandbox as a raw arg).
+    // Scoped to the same production-only branch as executablePath above --
+    // dev/CI's own browser launch already works without this and is left
+    // untouched.
+    launchOptions.chromiumSandbox = false;
   }
   const browser = await chromium.launch(launchOptions);
   const context = await browser.newContext();

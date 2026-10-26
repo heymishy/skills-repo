@@ -197,3 +197,19 @@ Require stack:
 **Revisit trigger:** If Alpine's native `chromium` package ever proves insufficiently compatible with Playwright's own automation protocol (version skew between Alpine's packaged Chromium and the `playwright` npm package's expected browser version is a known ongoing maintenance burden for this pattern), revisit the Debian-base-image alternative then, informed by this entry's own rejection rationale.
 
 ---
+
+**2026-10-26 | ARCHITECTURE | `ppc-s8` fast-follow: Chromium hangs (not errors) under fly.io's actual container sandbox restrictions, not caught by local Docker testing**
+
+**Incident:** After `ppc-s8`'s first fix (`playwright-core` + Alpine `chromium` + `executablePath`) merged and was promoted to production, two real capture attempts against `https://skills-framework.fly.dev` (same `feature-playback-demo`/AC1 target used throughout this story's own validation) both hung indefinitely — no error, no crash, no completion, confirmed via `flyctl logs` showing a matched CSRF guard check and then total silence for 7+ and 4+ minutes respectively, and `flyctl status` confirming the machine itself never restarted or crashed in that window.
+
+**Root cause:** launching Chromium as a non-root container user (the Dockerfile's own `USER node`, uid 1000) commonly hangs rather than failing cleanly, because Chromium's own internal sandbox setup needs privileges an unprivileged container process typically doesn't have. This is a well-documented pattern for headless Chromium in containers generally. The first fix's own local Docker verification (a real `docker build --target production` + `docker run`, confirming `chromium.launch()` succeeded) did not catch this, because Docker Desktop's own container runtime is more permissive than fly.io's actual machine runtime — the local test launched successfully without ever needing the sandbox disabled, masking a gap that only surfaced against the real target environment.
+
+**Decision:** Add `chromiumSandbox: false` (Playwright's own documented equivalent of the raw `--no-sandbox` Chromium flag) to `realGetAuthenticatedPage`'s `chromium.launch()` call, scoped to the same production-only branch as the existing `executablePath` override (gated on `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` being set) — dev/CI's own browser launch already works without it and is left unaffected.
+
+**Rationale:** This is the standard, narrowly-scoped fix for this exact failure mode, requiring no further Dockerfile/base-image change. Verified locally that `chromiumSandbox: false` is a valid, accepted launch option and the full suite passes unmodified; genuine confirmation against fly.io's own sandbox restrictions requires a real deploy, since local Docker testing structurally cannot reproduce the gap that caused this incident in the first place.
+
+**Made by:** Claude (session), discovered via a second live production validation attempt immediately after the first `ppc-s8` fix was promoted (Hamish King, Platform Owner, approved the `promote-to-prod` gate and authorised this fast-follow fix), 2026-10-26.
+
+**Revisit trigger:** If a future container-runtime change (base image swap, fly.io platform change, running as root) makes this sandbox-disabling workaround unnecessary or insufficient, revisit this entry's own reasoning before assuming the fix still applies unchanged.
+
+---
