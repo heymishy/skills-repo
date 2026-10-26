@@ -94,6 +94,18 @@ async function realGetAuthenticatedPage(sessionId, baseUrl, chromiumModule) {
     // dev/CI's own browser launch already works without this and is left
     // untouched.
     launchOptions.chromiumSandbox = false;
+    // ppc-s8 fast-follow #2: chromiumSandbox:false alone did not resolve
+    // the hang -- confirmed live, two further capture attempts after that
+    // fix was deployed still hung indefinitely with no error. /dev/shm is
+    // typically very small by default in containers (often 64MB), and
+    // Chromium is well known to hang or crash under exactly these
+    // conditions -- --disable-dev-shm-usage (makes Chromium use /tmp
+    // instead) is the standard companion flag to --no-sandbox in every
+    // "run headless Chrome in Docker" guide, almost always needed
+    // together. The 512MB VM's own tight memory budget (fly.toml) for a
+    // real video recording, not just a screenshot, makes this more likely
+    // here than in a typical container.
+    launchOptions.args = ['--disable-dev-shm-usage'];
   }
   const browser = await chromium.launch(launchOptions);
   const context = await browser.newContext();
