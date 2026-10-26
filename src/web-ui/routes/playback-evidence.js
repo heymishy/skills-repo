@@ -874,7 +874,7 @@ async function handlePostCaptureAll(req, res, _next, pool) {
     // would still show a stale "failed" badge.
     var captureAllFailed = Object.assign({}, journey.captureAllFailed || {});
     captured.forEach(function(c) { delete captureAllFailed[c.acId]; });
-    failed.forEach(function(f) { captureAllFailed[f.acId] = { error: f.error, retry: true }; });
+    failed.forEach(function(f) { captureAllFailed[f.acId] = Object.assign({ error: f.error, retry: true }, f.videoOnly ? { videoOnly: true } : null); });
     _journeyStore.setJourneyFields(journey.journeyId, {
       captureAllDuration: durationMs,
       captureAllCompletedAt: new Date().toISOString(),

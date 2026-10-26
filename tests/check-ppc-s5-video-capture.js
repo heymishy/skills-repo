@@ -389,11 +389,33 @@ queue.push(function() {
   });
 });
 
+// Both Task 7 tests below build their own 2-row DoD fixture inline (AC1 +
+// AC2) rather than using setupDodCompleteJourney() -- that shared helper's
+// fixture DoD content has only ONE AC row (AC1, see its own definition
+// above), so toCapture would only ever contain one AC and the actual
+// "combining" behaviour (one context covering MULTIPLE ACs) could never be
+// exercised -- a 1-AC fixture cannot distinguish "one context for the whole
+// group" from "one context per AC, called once because there's only one AC"
+// (code-quality review finding on the original 1-AC version of these tests).
+function setupTwoAcJourney(store, tenantId, productId) {
+  var slug = 'ppc-s5-all-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, { tenantId: tenantId, productId: productId });
+  var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+  store.setPgAdapterForTesting({
+    saveJourney: async function() {},
+    getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+  });
+  store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+  return { journeyId: j.journeyId, featureSlug: slug, tenantId: tenantId, productId: productId };
+}
+
 queue.push(function() {
   return test('handlePostCaptureAll_combinedVideo_coversEveryScreenshottedAc', async function() {
     var store7 = getStore();
-    var setup = setupDodCompleteJourney(store7, {});
+    var setup = setupTwoAcJourney(store7, 'tenant-a', 'product-a');
     store7.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
+    store7.setCaptureTarget(setup.journeyId, 'AC2', 'http://x2', '#y2');
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
     repoRootAdapter.setRepoRoot(tmpRoot);
@@ -433,18 +455,21 @@ queue.push(function() {
     var res = makeRes();
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(newContextCallCount, 1, 'exactly one combined recording context for the whole run, not one per AC');
-    assert.strictEqual(gotoUrls.length, 1, 'one AC in this fixture -- one navigation inside the combined recording');
+    assert.strictEqual(newContextCallCount, 1, 'exactly one combined recording context for the whole GROUP of 2 ACs, not one per AC');
+    assert.strictEqual(gotoUrls.length, 2, 'two ACs in this fixture -- one navigation per AC, inside that SAME combined recording');
     var reloaded = store7.getJourney(setup.journeyId);
     assert.ok(reloaded.captureVideos && reloaded.captureVideos.AC1, 'the combined video must be recorded against AC1');
+    assert.ok(reloaded.captureVideos && reloaded.captureVideos.AC2, 'the combined video must be recorded against AC2');
+    assert.strictEqual(reloaded.captureVideos.AC1, reloaded.captureVideos.AC2, 'this is the actual proof of "combining": both ACs must point at the exact SAME video path, not two independently-recorded ones');
   });
 });
 
 queue.push(function() {
   return test('handlePostCaptureAll_combinedVideoFailure_trackedForEveryAcInTheGroup_screenshotsUnaffected', async function() {
     var store7b = getStore();
-    var setup = setupDodCompleteJourney(store7b, {});
+    var setup = setupTwoAcJourney(store7b, 'tenant-a', 'product-a');
     store7b.setCaptureTarget(setup.journeyId, 'AC1', 'http://x1', '#y1');
+    store7b.setCaptureTarget(setup.journeyId, 'AC2', 'http://x2', '#y2');
     var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-all-fail-' + Date.now());
     fs.mkdirSync(tmpRoot, { recursive: true });
     repoRootAdapter.setRepoRoot(tmpRoot);
@@ -472,11 +497,24 @@ queue.push(function() {
     var res = makeRes();
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(res._json.captured.length, 1, 'the AC must still be reported captured (screenshot succeeded)');
+    // AC4, "all-or-nothing for the group, not partial": with BOTH ACs'
+    // screenshots succeeding and the single shared video recording failing,
+    // every AC in the group -- not just one -- must end up tracked as
+    // failed, each carrying videoOnly so a future UI/consolidation bug
+    // cannot silently drop the distinction between a screenshot failure and
+    // a video-only failure (this also directly covers the plan artefact's
+    // separate "isAllOrNothingForTheGroup_notPartial" scenario, since there
+    // is no AC here that ends up with a video while its sibling does not).
+    assert.strictEqual(res._json.captured.length, 2, 'both ACs must still be reported captured (both screenshots succeeded)');
     var reloaded = store7b.getJourney(setup.journeyId);
-    assert.ok(reloaded.captureScreenshots.AC1, 'screenshot must survive the combined video failure');
-    assert.ok(reloaded.captureAllFailed && reloaded.captureAllFailed.AC1, 'the video failure must be tracked via the existing captureAllFailed mechanism');
-    assert.strictEqual((reloaded.captureVideos || {}).AC1, undefined, 'no video must be recorded for the AC when the combined recording fails');
+    assert.ok(reloaded.captureScreenshots.AC1, 'AC1 screenshot must survive the combined video failure');
+    assert.ok(reloaded.captureScreenshots.AC2, 'AC2 screenshot must survive the combined video failure');
+    assert.ok(reloaded.captureAllFailed && reloaded.captureAllFailed.AC1, 'AC1 must be tracked via captureAllFailed (all-or-nothing -- not just one AC in the group)');
+    assert.ok(reloaded.captureAllFailed && reloaded.captureAllFailed.AC2, 'AC2 must ALSO be tracked via captureAllFailed -- proving the failure is NOT partial within the group');
+    assert.strictEqual(reloaded.captureAllFailed.AC1.videoOnly, true, 'AC1\'s captureAllFailed entry must survive consolidation carrying videoOnly, so a reload can distinguish this from a screenshot failure');
+    assert.strictEqual(reloaded.captureAllFailed.AC2.videoOnly, true, 'AC2\'s captureAllFailed entry must ALSO carry videoOnly through consolidation');
+    assert.strictEqual((reloaded.captureVideos || {}).AC1, undefined, 'no video must be recorded for AC1 when the combined recording fails');
+    assert.strictEqual((reloaded.captureVideos || {}).AC2, undefined, 'no video must be recorded for AC2 when the combined recording fails');
   });
 });
 
