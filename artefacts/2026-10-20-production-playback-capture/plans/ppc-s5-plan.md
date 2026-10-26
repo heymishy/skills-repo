@@ -770,15 +770,29 @@ queue.push(function() {
 
 queue.push(function() {
   return test('renderEvidencePage_combinedVideo_showsAlsoCoversNoteNamingOtherAcs', async function() {
+    // NOTE: does NOT use setupDodCompleteJourney() -- that helper's fixture
+    // DoD content has only ONE AC row (AC1), so acs[] would only ever have
+    // one entry and the "co-covered" computation (which filters acs[], not
+    // journey.captureVideos' own keys) could never find a second AC to
+    // name. This test needs its own 2-row DoD fixture set up inline.
     var store6b = getStore();
-    var setup = setupDodCompleteJourney(store6b, {});
-    store6b.setCaptureTarget(setup.journeyId, 'AC1', 'http://x', '#y');
-    var videoRel = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/combined.webm';
-    // All 3 ACs share the SAME video path -- this is what "combined" means
+    var slug = 'ppc-s5-combined-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var j = store6b.createJourney(slug);
+    store6b.setJourneyFields(j.journeyId, { tenantId: 'tenant-a', productId: 'product-a' });
+    var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|', '| AC1 — Shows the dashboard | Yes | screenshot |', '| AC2 — Saves a widget | Yes | screenshot |'].join('\n');
+    store6b.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function() { return [{ skill_name: 'definition-of-done', artefact_path: 'artefacts/' + slug + '/dod.md', content: dodContent }]; }
+    });
+    store6b.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+    store6b.setCaptureTarget(j.journeyId, 'AC1', 'http://x', '#y');
+    store6b.setCaptureTarget(j.journeyId, 'AC2', 'http://z', '#w');
+    var videoRel = 'artefacts/' + slug + '/playback/ppc-s1/video/combined.webm';
+    // Both ACs share the SAME video path -- this is what "combined" means
     // on disk: one path, multiple acId keys pointing at it.
-    store6b.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRel, AC2: videoRel, 'AC1 — Shows the dashboard': videoRel } });
+    store6b.setJourneyFields(j.journeyId, { captureVideos: { AC1: videoRel, AC2: videoRel } });
 
-    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
+    var req = makeReq('tenant-a', 'product-a', slug, { headers: { accept: 'text/html' } });
     var res = makeRes();
     await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
 
