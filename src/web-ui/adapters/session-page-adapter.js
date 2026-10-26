@@ -58,14 +58,31 @@ async function getAuthenticatedPage(sessionId, baseUrl) {
  * Real production implementation. chromiumModule defaults to Playwright's
  * own chromium launcher; tests inject a fake one to verify this function's
  * real cookie-seeding logic without launching a real browser (ADR-018).
+ *
+ * ppc-s8: uses 'playwright-core' (the automation API without a bundled
+ * browser download), not 'playwright' (the devDependency-only test-framework
+ * package @playwright/test pulls in transitively -- never actually shipped
+ * to production, see decisions.md 2026-10-26 ARCHITECTURE entry's RCA).
+ * playwright-core and playwright resolve browsers from the SAME default
+ * cache path (PLAYWRIGHT_BROWSERS_PATH, or ~/.cache/ms-playwright), so in
+ * local dev/CI -- where @playwright/test's own postinstall already
+ * downloaded a real Chromium into that shared cache -- chromium.launch()
+ * with no executablePath finds it automatically, unchanged from before this
+ * fix. Only production (no such download ever having run, Alpine base image
+ * installing its own native 'chromium' package instead) needs the explicit
+ * PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH override set below.
  * @param {string} sessionId
  * @param {string} baseUrl
- * @param {object} [chromiumModule] - defaults to require('playwright').chromium
+ * @param {object} [chromiumModule] - defaults to require('playwright-core').chromium
  * @returns {Promise<{page: object, browser: object}>}
  */
 async function realGetAuthenticatedPage(sessionId, baseUrl, chromiumModule) {
-  const chromium = chromiumModule || require('playwright').chromium;
-  const browser = await chromium.launch();
+  const chromium = chromiumModule || require('playwright-core').chromium;
+  const launchOptions = {};
+  if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  }
+  const browser = await chromium.launch(launchOptions);
   const context = await browser.newContext();
   const url = new URL(baseUrl);
   await context.addCookies([{
