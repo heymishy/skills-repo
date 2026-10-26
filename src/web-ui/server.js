@@ -2859,6 +2859,22 @@ async function router(req, res) {
       '| ' + acId + ' — ' + acDescription + ' | Yes | screenshot |'
     ].join('\n');
     _ppcS5DodContentByJourney.set(journeyId, [{ skill_name: 'definition-of-done', artefact_path: artefactPath, content: dodContent }]);
+    // NOTE (code-quality review, Task 8): this wires a module-level,
+    // process-lifetime PG adapter stub -- there is no matching
+    // setPgAdapterForTesting(null)/reset after this request, so it stays
+    // wired for every later request this E2E webServer process ever
+    // handles, including requests from OTHER spec files. Currently safe
+    // only because: (a) this stub's own getArtefactsForJourney looks up
+    // by journeyId and returns [] for any journey it didn't seed, so it
+    // never returns wrong data for another spec's journeys; and (b)
+    // server.js unconditionally wires a disk adapter in this
+    // NODE_ENV=test/no-DATABASE_URL environment, which journey-store.js's
+    // listJourneys() consults BEFORE this PG adapter, so this stub's
+    // reachable surface is narrower than it looks. If that disk-adapter
+    // precedence ever changes, or another spec later wires its own
+    // incompatible setPgAdapterForTesting() stub, this becomes a silent
+    // cross-spec contamination source -- whoever touches that precedence
+    // should grep for setPgAdapterForTesting across tests/e2e/ first.
     _journeyStoreForPpcS5.setPgAdapterForTesting({
       saveJourney: async function() {},
       getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
