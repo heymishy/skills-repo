@@ -723,11 +723,13 @@ git commit -m "feat(ppc-s5): add tenant-scoped GET route for serving captured vi
 
 ## Task 6: Render `<video>` inline with AC7 attributes; AC6 empty/no-video state; AC2 "also covers" note for shared videos
 
+> **✅ Complete.** Implementation: commit `b2b3e9a2`. Test-quality fix (strengthened the combined-video test's weak substring assertion into a scoped per-AC sibling-id check, per code-quality review finding): commit `5b00fdcb`. Spec-compliance review: PASS, no Critical/Important findings. Code-quality review: 1 Important finding (fixed in `5b00fdcb`, independently re-verified to catch the exact regression it targets) + 3 Minor findings accepted as non-blocking (unused `tmpRoot`/`setRepoRoot` call in the no-video test; `poster` attribute has no defensive check for a video-without-screenshot case that cannot currently occur; `coCoveredAcIds` now flows into the JSON API response as a side effect of where it's computed — noted as a conscious choice, not a bug). The one note for Task 6's own plan text (its "fall back to no `poster` attribute only if no screenshot exists" prose was never actually coded, in the plan or the implementation) is moot in practice since AC1/AC1-combined guarantee a screenshot always exists alongside any captured video.
+
 **Files:**
 - Modify: `src/web-ui/routes/playback-evidence.js`
 - Test: `tests/check-ppc-s5-video-capture.js` (append)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 queue.push(function() {
@@ -817,7 +819,7 @@ queue.push(function() {
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -825,7 +827,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `FAIL` on the second test (`res._body.indexOf('<video')` is `-1`) — `videoPath` is never threaded into `acs` and `_renderPlaybackEvidenceHtml` never renders a `<video>` tag
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `handleGetPlaybackEvidence`, in the `acs = acRows.map(...)` block, add `videos` lookup and a `videoPath` field:
 
@@ -882,7 +884,7 @@ And add `videoHtml` to the returned `<li>` string, after `screenshotHtml`:
     '</li>';
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-ppc-s5-video-capture.js
@@ -890,7 +892,7 @@ node tests/check-ppc-s5-video-capture.js
 
 Expected output: `PASS: renderEvidencePage_noVideoYet_showsScreenshotOnlyState_noVideoTagEmitted`, `PASS: videoElement_attributes_usePreloadNoneAndPosterAndExplicitDimensions`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -898,7 +900,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/playback-evidence.js tests/check-ppc-s5-video-capture.js
