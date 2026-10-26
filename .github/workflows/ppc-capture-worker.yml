@@ -1,0 +1,91 @@
+# .github/workflows/ppc-capture-worker.yml -- ppc-s9 Task 4. Dispatched by
+# src/web-ui/adapters/capture-dispatch-adapter.js's own realDispatchCaptureWorkflow
+# (Task 3) in place of the in-process Playwright launch
+# _captureOneAc/_captureVideoForAcIds (src/web-ui/routes/playback-evidence.js)
+# used before this story. Exchanges the single-use nonce it receives as its
+# own `nonce` input for the tenant's real sessionId
+# (capture-worker-auth.js's own POST /internal/capture/exchange, Task 2),
+# then runs the actual capture via .github/scripts/ppc-capture-worker.js
+# (this same task). Its own PLATFORM_CAPTURE_WORKFLOW_ID env var
+# (capture-dispatch-adapter.js) must match this file's own name exactly --
+# confirmed against tests/check-ppc-s9-capture-dispatch-adapter.js's own
+# 'ppc-capture-worker.yml' fixture value.
+#
+# Runs on a normal Ubuntu GitHub-hosted runner (not the production Alpine
+# image this platform repo deploys), so a full `npm ci` (no --omit=dev) is
+# fine here -- @playwright/test (an existing devDependency) carries the
+# full 'playwright' package as its own transitive dependency, and no new
+# package.json dependency is needed for the script's own
+# require('playwright') to resolve.
+
+name: PPC Capture Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      nonce:
+        description: 'Single-use nonce exchanged for the tenant sessionId (capture-nonce-store.js)'
+        required: true
+        type: string
+      baseUrl:
+        description: 'Base URL of the running app this capture targets'
+        required: true
+        type: string
+      featureSlug:
+        description: 'Feature slug the captured screenshots/video are filed under'
+        required: true
+        type: string
+      acIds:
+        description: 'JSON array string of acceptance-criterion ids in this capture group'
+        required: true
+        type: string
+      targetsJson:
+        description: 'JSON array string of {acId, url, selector} capture targets'
+        required: true
+        type: string
+      correlationId:
+        description: 'Correlation id this run''s result artifact is named after'
+        required: true
+        type: string
+
+jobs:
+  capture:
+    name: Run capture worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Full install (no --omit=dev) -- this runner is not the production
+      # Alpine image, and the full 'playwright' package the script's own
+      # require('playwright') needs only resolves via @playwright/test's
+      # own transitive dependency, which --omit=dev would skip.
+      - name: Install dependencies
+        run: npm ci --foreground-scripts
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run capture worker
+        run: node .github/scripts/ppc-capture-worker.js
+        env:
+          CAPTURE_NONCE: ${{ inputs.nonce }}
+          CAPTURE_BASE_URL: ${{ inputs.baseUrl }}
+          CAPTURE_FEATURE_SLUG: ${{ inputs.featureSlug }}
+          CAPTURE_AC_IDS: ${{ inputs.acIds }}
+          CAPTURE_TARGETS_JSON: ${{ inputs.targetsJson }}
+          CAPTURE_CORRELATION_ID: ${{ inputs.correlationId }}
+          CAPTURE_EXCHANGE_SECRET: ${{ secrets.CAPTURE_EXCHANGE_SECRET }}
+
+      - name: Upload capture result
+        uses: actions/upload-artifact@v4
+        with:
+          name: capture-result-${{ inputs.correlationId }}
+          path: capture-worker-output/
+          retention-days: 7
