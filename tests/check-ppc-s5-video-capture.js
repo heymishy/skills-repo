@@ -335,7 +335,41 @@ queue.push(function() {
     var res = makeRes();
     await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool([]));
 
-    assert.ok(res._body.indexOf('also covers') !== -1, 'a shared video must show a note naming the other ACs it also covers');
+    // Scoped per-AC check, not just a bare substring match: a substring
+    // check for 'also covers' alone would still pass if the self-reference
+    // guard in playback-evidence.js's coCoveredAcIds filter regressed and
+    // AC1's own row named itself ("This video also covers: AC1, AC2") --
+    // still contains "also covers", but wrong. Extract each AC's own <li>
+    // fragment by its heading, then pull out only the also-covers
+    // sentence's own text (not the rest of the fragment, which contains
+    // the AC's own id again in its heading/labels) and assert the sibling
+    // id is named while the AC's own id is not.
+    var body = res._body;
+    function fragmentFor(acId) {
+      var headingIdx = body.indexOf('>' + acId + ' — ');
+      assert.ok(headingIdx !== -1, 'expected a heading for ' + acId);
+      var liStart = body.lastIndexOf('<li', headingIdx);
+      var nextLiIdx = body.indexOf('<li', headingIdx + 1);
+      var liEnd = nextLiIdx === -1 ? body.indexOf('</ul>', headingIdx) : nextLiIdx;
+      return body.substring(liStart, liEnd);
+    }
+    function alsoCoversText(fragment) {
+      var m = fragment.match(/This video also covers: ([^<]*)</);
+      return m ? m[1] : null;
+    }
+
+    var ac1Fragment = fragmentFor('AC1');
+    var ac2Fragment = fragmentFor('AC2');
+    var ac1Also = alsoCoversText(ac1Fragment);
+    var ac2Also = alsoCoversText(ac2Fragment);
+
+    assert.ok(ac1Also !== null, 'AC1\'s fragment must contain an also-covers note');
+    assert.ok(ac1Also.indexOf('AC2') !== -1, 'AC1\'s also-covers note must name its sibling AC2');
+    assert.strictEqual(ac1Also.indexOf('AC1'), -1, 'AC1\'s also-covers note must not self-reference AC1');
+
+    assert.ok(ac2Also !== null, 'AC2\'s fragment must contain an also-covers note');
+    assert.ok(ac2Also.indexOf('AC1') !== -1, 'AC2\'s also-covers note must name its sibling AC1');
+    assert.strictEqual(ac2Also.indexOf('AC2'), -1, 'AC2\'s also-covers note must not self-reference AC2');
   });
 });
 
