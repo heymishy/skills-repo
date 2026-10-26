@@ -230,6 +230,44 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('handleGetCaptureVideo_servesVideo_tenantProductAcidGuarded', async function() {
+    var store3 = getStore();
+    var setup = setupDodCompleteJourney(store3, {});
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-serve-' + Date.now());
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var videoRelPath = 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/video/AC1.webm';
+    var videoAbs = path.join(tmpRoot, videoRelPath);
+    fs.mkdirSync(path.dirname(videoAbs), { recursive: true });
+    fs.writeFileSync(videoAbs, Buffer.from('fake webm bytes'));
+    store3.setJourneyFields(setup.journeyId, { captureVideos: { AC1: videoRelPath } });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' } });
+    var res = makeRes();
+    await pe.handleGetCaptureVideo(req, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._status, 200);
+    assert.strictEqual(res._body.toString(), 'fake webm bytes');
+  });
+});
+
+queue.push(function() {
+  return test('handleGetCaptureVideo_crossTenantRequest_isDenied', async function() {
+    var store4 = getStore();
+    var setupA = setupDodCompleteJourney(store4, { tenantId: 'tenant-a', productId: 'product-a' });
+    var tmpRoot = path.join(os.tmpdir(), 'ppc-s5-cross-' + Date.now());
+    repoRootAdapter.setRepoRoot(tmpRoot);
+    var videoRelPath = 'artefacts/' + setupA.featureSlug + '/playback/ppc-s1/video/AC1.webm';
+    store4.setJourneyFields(setupA.journeyId, { captureVideos: { AC1: videoRelPath } });
+
+    var reqB = makeReq('tenant-b', 'product-b', setupA.featureSlug, { params: { productId: 'product-b', featureSlug: setupA.featureSlug, acId: 'AC1' } });
+    var res = makeRes();
+    await pe.handleGetCaptureVideo(reqB, res, null, makeMockPool([]));
+
+    assert.strictEqual(res._status, 404, 'tenant B must never reach tenant A\'s video');
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s5-video-capture.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }

@@ -372,6 +372,32 @@ async function handleGetCaptureScreenshot(req, res, _next, pool) {
 }
 
 /**
+ * AC2 -- tenant-scoped video serving, mirroring handleGetCaptureScreenshot's
+ * own existing tenant+product+ACID_RE-guarded pattern exactly. Deliberately
+ * NOT a reuse of the existing untenanted /playback-media/ route.
+ */
+async function handleGetCaptureVideo(req, res, _next, pool) {
+  var journey = await _resolveJourney(req, pool);
+  if (!journey) { _notFound(res); return; }
+
+  var acId = req.params && req.params.acId;
+  if (!ACID_RE.test(acId || '')) { _notFound(res); return; }
+
+  var videos = journey.captureVideos || {};
+  var videoPath = videos[acId];
+  if (!videoPath) { _notFound(res); return; }
+
+  var repoRoot = getRepoRoot(req);
+  var resolvedVideoPath = _resolveSafeShotPath(repoRoot, videoPath);
+  if (!resolvedVideoPath) { _notFound(res); return; }
+  if (!fs.existsSync(resolvedVideoPath)) { _notFound(res); return; }
+
+  var videoBuffer = fs.readFileSync(resolvedVideoPath);
+  res.writeHead(200, { 'Content-Type': 'video/webm' });
+  res.end(videoBuffer);
+}
+
+/**
  * AC2 — one-time manual target entry per AC.
  */
 async function handlePostCaptureTarget(req, res, _next, pool) {
@@ -852,6 +878,7 @@ module.exports = {
   handlePostCaptureTarget,
   handlePostCaptureTrigger,
   handleGetCaptureScreenshot,
+  handleGetCaptureVideo,
   handlePostCaptureAll,
   setJourneyStoreModule,
   setFetcherModule,

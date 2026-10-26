@@ -24,7 +24,7 @@ const { checkModelRoutingDrift }                                     = require('
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
 const { handleGetPlaybackList, handleGetPlaybackReview, handleGetPlaybackMedia } = require('./routes/playback'); // fpd-s3, fpd-s4
-const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger, handleGetCaptureScreenshot, handlePostCaptureAll } = require('./routes/playback-evidence'); // ppc-s1, ppc-s2
+const { handleGetPlaybackEvidence, handlePostCaptureTarget, handlePostCaptureTrigger, handleGetCaptureScreenshot, handleGetCaptureVideo, handlePostCaptureAll } = require('./routes/playback-evidence'); // ppc-s1, ppc-s2, ppc-s5
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
@@ -3353,6 +3353,13 @@ async function router(req, res) {
     var _peScreenshotParts = pathname.split('/');
     req.params = { productId: _peScreenshotParts[2], featureSlug: decodeURIComponent(_peScreenshotParts[4]), acId: decodeURIComponent(_peScreenshotParts[6]) };
     authGuard(req, res, async () => { await handleGetCaptureScreenshot(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/playback-evidence\/[^/]+\/video\/[^/]+$/) && req.method === 'GET') {
+    // ppc-s5 (AC2) -- tenant-scoped video serving, mirroring the
+    // screenshots route immediately above.
+    var _peVideoParts = pathname.split('/');
+    req.params = { productId: _peVideoParts[2], featureSlug: decodeURIComponent(_peVideoParts[4]), acId: decodeURIComponent(_peVideoParts[6]) };
+    authGuard(req, res, async () => { await handleGetCaptureVideo(req, res, null, _pshPool); });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
     // vrne-s4 — viewer-role write-block gate (AC3)
