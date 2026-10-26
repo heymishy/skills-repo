@@ -43424,7 +43424,7 @@
                 {
                   "id": "task-1",
                   "name": "Nonce-store adapter (Redis-backed, D37)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
                 },
                 {
