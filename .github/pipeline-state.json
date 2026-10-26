@@ -43380,7 +43380,7 @@
               "health": "amber",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T06:40:23.262Z",
+              "updatedAt": "2026-10-26T06:41:22.315Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -43395,9 +43395,10 @@
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s8-dor.md",
               "tasks": [],
               "verifyStatus": "passed",
-              "prStatus": "none",
+              "prStatus": "draft",
               "dodStatus": "not-started",
-              "blocker": "AC3 (real capture succeeding against the actually-deployed production app) requires a real deploy -- pending merge"
+              "blocker": "AC3 (real capture succeeding against the actually-deployed production app) requires a real deploy -- pending merge",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1025"
             }
           ]
         }
