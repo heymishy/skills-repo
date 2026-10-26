@@ -43372,6 +43372,32 @@
               "verifyStatus": "not-started",
               "prStatus": "none",
               "dodStatus": "not-started"
+            },
+            {
+              "slug": "ppc-s8",
+              "name": "Production bug fix: playwright module missing from the deployed image",
+              "stage": "definition-of-ready",
+              "health": "amber",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "updatedAt": "2026-10-26T06:09:49.844Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "hasInfraTrack": true,
+              "e2eToolingRequired": "true",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s8-dor.md",
+              "tasks": [],
+              "verifyStatus": "not-started",
+              "prStatus": "none",
+              "dodStatus": "not-started",
+              "blocker": "Production self-service capture mechanism (ppc-s1 onward) has never functioned -- playwright module missing from deployed image (500 on every real capture attempt)"
             }
           ]
         }

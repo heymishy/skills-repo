@@ -166,3 +166,34 @@
 **Revisit trigger:** If per-AC timestamp seeking is ever prioritised, scope it as its own story — it needs timestamp capture during the combined recording (not yet built) and seek-to-time UI, neither of which this story's own ACs cover.
 
 ---
+
+**2026-10-26 | ARCHITECTURE | RCA: the entire self-service capture mechanism (`ppc-s1`–`ppc-s5`) has never actually worked in production — `playwright` is not installed in the deployed image**
+
+**Incident:** First-ever real production validation of `ppc-s5` (triggered manually against `https://skills-framework.fly.dev`, an AC1 single-capture request against the `2026-10-07-feature-playback-demo-with-video-and-or-screens-` feature) returned `500 Internal Server Error`. Production logs (`flyctl logs`) show the real cause:
+```
+[authGuard] unhandled error in protected route handler: Error: Cannot find module 'playwright'
+Require stack:
+- /app/src/web-ui/adapters/session-page-adapter.js
+- /app/src/web-ui/routes/playback-evidence.js
+- /app/src/web-ui/server.js
+    at realGetAuthenticatedPage (/app/src/web-ui/adapters/session-page-adapter.js:67:38)
+    at getAuthenticatedPage (/app/src/web-ui/adapters/session-page-adapter.js:54:33)
+    at handlePostCaptureTrigger (/app/src/web-ui/routes/playback-evidence.js:735:22)
+```
+
+**Root cause (two compounding gaps, confirmed by reading `package.json` and `Dockerfile` directly, not assumed):**
+1. `package.json` lists `@playwright/test` (the E2E test-runner CLI) as a `devDependency`, but never lists the underlying `playwright` automation library (the package `session-page-adapter.js`'s real production code actually does `require('playwright').chromium` against) as a dependency at all, anywhere. In local/CI dev installs, `playwright` is pulled in transitively as `@playwright/test`'s own dependency, which is why it has always worked in every dev/CI/unit-test context this feature was ever exercised in. The production `Dockerfile` stage runs `npm ci --omit=dev`, which never installs `@playwright/test` at all — so the transitive `playwright` package never lands in the production image either.
+2. Even once `playwright` is added as a real `dependency`, the production stage's `npm ci --omit=dev --ignore-scripts` explicitly skips npm lifecycle scripts — including Playwright's own `postinstall` hook, which is what normally downloads the actual Chromium browser binary. Without that step, `require('playwright')` would resolve but `chromium.launch()` would still fail (browser executable not found).
+3. A third, deeper complication: both Dockerfile stages use `node:20-alpine`. Playwright's own bundled Chromium download is built against glibc and is not officially supported running on Alpine's musl libc — the standard, well-documented workaround is to install Alpine's own native `chromium` package via `apk` (plus its runtime library dependencies: `nss freetype harfbuzz ca-certificates ttf-freetype` and similar) and point Playwright at that binary via `executablePath`, rather than trying to get Playwright's own downloaded build to run on musl.
+
+**Scope of impact:** This is not a `ppc-s5`-specific regression — it affects `handlePostCaptureTrigger` and `handlePostCaptureAll` identically, meaning the ENTIRE self-service capture mechanism (`ppc-s1` onward: screenshots too, not just `ppc-s5`'s own video addition) has never functioned against a real deployed instance. Every DoD from `ppc-s1` through `ppc-s5` recorded "no live staging/production verification yet" as a carried-forward Follow-up Action, attributing it to "no staging environment with a connected test repo" — that framing was correct as far as it went, but the deeper, concrete blocker (discovered only now, by this being the first session to actually attempt a real capture against the deployed app) is that the capture mechanism could never have worked regardless of test-repo availability, because the runtime dependency it needs was never shipped.
+
+**Decision:** Fix as its own short-track story (`ppc-s8`, same epic) rather than folding into `ppc-s6`/`ppc-s7`, both already in flight and unrelated in scope. Approach: add `playwright` (not `@playwright/test`, which stays devDependency-only — this correction does not reverse ADR-018's own "unit test chain must not invoke Playwright" intent, it only recognises that the underlying automation library is a genuine production runtime dependency distinct from the test-framework CLI) to `dependencies`; install Alpine's native `chromium` package (plus required native libs) in the production Dockerfile stage; wire `realGetAuthenticatedPage` to use that installed binary via `executablePath` (defaulting to Playwright's own bundled browser when the env var/path isn't set, so local dev and CI E2E runs — which use Debian-based GitHub Actions runners, not Alpine — are unaffected).
+
+**Rationale:** The alternative (switch the production base image away from Alpine to a Playwright-compatible Debian base) is a materially larger, riskier change — it touches every other already-working piece of the production image, not just this one feature, for a problem that has a well-precedented, narrower fix. Keeping the existing Alpine base and adding the native Chromium package is the standard, narrowly-scoped resolution.
+
+**Made by:** Claude (session), discovered via a live, authenticated production validation session (Hamish King, Platform Owner, provided prod access/session and authorised triggering a real capture), 2026-10-26.
+
+**Revisit trigger:** If Alpine's native `chromium` package ever proves insufficiently compatible with Playwright's own automation protocol (version skew between Alpine's packaged Chromium and the `playwright` npm package's expected browser version is a known ongoing maintenance burden for this pattern), revisit the Debian-base-image alternative then, informed by this entry's own rejection rationale.
+
+---

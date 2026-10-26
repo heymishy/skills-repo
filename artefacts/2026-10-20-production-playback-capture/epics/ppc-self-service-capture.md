@@ -13,7 +13,7 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 ## Out of Scope
 
 **Fast-follow (next iteration after MVP validates):**
-- ~~Video capture~~ — now in scope via `ppc-s5` (2026-10-25), screenshot-only capture proven and live in production
+- ~~Video capture~~ — now in scope via `ppc-s5` (2026-10-25). **Correction (2026-10-26):** "screenshot-only capture proven and live in production" was not actually true — see `decisions.md` 2026-10-26 ARCHITECTURE entry. The `playwright` module was never installed in the deployed production image, so the capture mechanism (screenshots and video alike) has never functioned against a real deployed instance; fixed via `ppc-s8`.
 - Captions/transcript for captured video — deferred further; `ppc-s5` ships video-only (see `decisions.md` 2026-10-25 DESIGN entry)
 - Presentation polish (ffmpeg zoom/annotation)
 - Automated redaction/PII handling (needs its own build-and-measure story with a human-verification gate)
@@ -38,9 +38,10 @@ A tenant's own Product Owner can open one of their own DoD-complete features wit
 - [x] Extend to full-feature capture loop with timing validation — `stories/ppc-s2.md`
 - [x] Rate-limit the capture-trigger endpoint per tenant/user — `stories/ppc-s3.md`
 - [x] Recognise pipeline-state.json DoD-complete features (CLI/web-UI parity fallback) — `stories/ppc-s4-pipeline-state-dod-fallback.md`
-- [ ] Self-service video capture per AC — `stories/ppc-s5-video-capture.md`
+- [x] Self-service video capture per AC — `stories/ppc-s5-video-capture.md`
 - [ ] Dashboard-shell UX/CX parity and scope/benefit summary — `stories/ppc-s6-dashboard-shell-parity.md`
 - [ ] Record an in-app sign-off decision on captured evidence — `stories/ppc-s7-sign-off-recording.md`
+- [ ] Production bug fix: `playwright` module missing from the deployed image, capture mechanism never actually worked in production — `stories/ppc-s8-playwright-production-dependency.md`
 
 ## Human Oversight Level
 
