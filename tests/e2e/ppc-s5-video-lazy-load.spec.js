@@ -104,29 +104,21 @@ test.describe('ppc-s5: video page-render performance', () => {
     expect(videoByteRequests.length, 'no video byte request before user interaction (preload=none)').toBe(0);
   });
 
-  // KNOWN FAILING, by design -- see Task 8 report (ppc-s5, 2026-10-26).
   // This assertion is the literal operationalization already written into
   // ppc-s5-test-plan.md's own AC7 row ("document.body.scrollWidth does not
   // exceed viewport width before/after"), not a looser check invented here.
-  // Confirmed empirically (getComputedStyle on the real rendered <video>):
-  // _renderPlaybackEvidenceHtml (src/web-ui/routes/playback-evidence.js)
-  // renders the video with HTML width="480" height="270" and an inline
-  // style of ONLY "display:block;margin-top:8px" -- no max-width/width:100%
-  // constraint. At a 375px viewport this makes document.body.scrollWidth
-  // genuinely 480, overflowing. The sibling screenshot <img> (same file,
-  // screenshotHtml) already uses style="max-width:480px..." (fluid), so
-  // this is a real, narrow asymmetry introduced when Task 6 added the
-  // <video> element, not a flaky test or a misreading of the AC.
-  // Task 8's own dispatch instructions explicitly forbid touching
-  // _renderPlaybackEvidenceHtml's rendering logic in this task -- so this
-  // test is intentionally left red, exactly matching AC7's own test-plan
-  // wording, rather than weakened to hide the gap. The fix (narrowly
-  // scoped, NOT applied here): add "max-width:100%;height:auto" (or
-  // equivalent) to the <video> element's inline style in
-  // _renderPlaybackEvidenceHtml's videoHtml branch, alongside its existing
-  // width/height attributes (those attributes still establish the
-  // intrinsic aspect ratio for layout-shift prevention per AC7's first
-  // clause -- untouched by this fix).
+  // It caught a real, narrow asymmetry introduced when Task 6 added the
+  // <video> element: _renderPlaybackEvidenceHtml rendered it with HTML
+  // width="480" height="270" and an inline style of ONLY
+  // "display:block;margin-top:8px" -- no max-width/width:100% constraint --
+  // while the sibling screenshot <img> (same file, screenshotHtml) already
+  // used style="max-width:480px..." (fluid). At a 375px viewport this made
+  // document.body.scrollWidth genuinely overflow to 480. Fixed in commit
+  // d753191d by adding "max-width:100%;height:auto" to the <video>
+  // element's inline style, alongside its existing width/height attributes
+  // (those attributes still establish the intrinsic aspect ratio for
+  // layout-shift prevention per AC7's first clause -- untouched by the fix).
+  // This test now passes for real against the fixed render output.
   test('viewport narrowed does not shift surrounding element positions', async ({ page }) => {
     var session = await isolatedSession(page, 'lazy2');
     var seeded = await seedJourneyWithVideo(page.request, session.tenantId, 'lazy2-' + Date.now());
