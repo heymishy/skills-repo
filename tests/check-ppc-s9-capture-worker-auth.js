@@ -140,6 +140,27 @@ queue.push(function() {
   });
 });
 
+queue.push(function() {
+  return test('handleCaptureExchange_correctSecretMissingNonce_400sWithoutConsultingStore', function() {
+    return withExchangeSecret('right-secret', async function() {
+      var exchangeCalled = false;
+      nonceStore.setNonceStoreAdapter({
+        set: async function() {},
+        get: async function() { exchangeCalled = true; return 'real-session-id'; },
+        del: async function() { exchangeCalled = true; }
+      });
+
+      var req = makeReq({});
+      req.headers['x-capture-exchange-secret'] = 'right-secret';
+      var res = makeRes();
+      await captureWorkerAuth.handleCaptureExchange(req, res);
+
+      assert.strictEqual(res._status, 400);
+      assert.strictEqual(exchangeCalled, false, 'the nonce store must never be consulted when nonce is missing from the body');
+    });
+  });
+});
+
 (async function() {
   console.log('\ncheck-ppc-s9-capture-worker-auth.js');
   for (var i = 0; i < queue.length; i++) { await queue[i](); }
