@@ -43382,25 +43382,50 @@
             {
               "slug": "ppc-s7",
               "name": "Record an in-app sign-off decision on captured evidence",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T19:13:41.126Z",
+              "updatedAt": "2026-10-27T19:29:00.758Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "false",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "false",
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s7-dor.md",
               "dorStatus": "signed-off",
-              "tasks": [],
-              "verifyStatus": "not-started",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Render sign-off area, no prior decision (AC1, AC6)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s7-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Handle the sign-off submission (AC2, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s7-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Render an existing (and possibly stale) decision (AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s7-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "NFR tests, design-token check, full suite",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s7-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
               "prStatus": "none",
               "dodStatus": "not-started"
             },
