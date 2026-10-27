@@ -414,6 +414,69 @@ function _coverageSummaryHtmlForAcs(acs) {
   return renderCoverageSummaryHtml(computeAcCoverageSummary(structure));
 }
 
+// ppc-s7 (AC2, AC3, AC4): the same "N of M" snapshot string is needed both
+// at write time (handlePostSignOff, stored verbatim on the decision) and at
+// render time (handleGetPlaybackEvidence, to detect staleness against a
+// stored snapshot) -- a single helper keeps both call sites byte-for-byte
+// consistent rather than risking two slightly different "N of M" formats.
+function _coverageSnapshotString(acs) {
+  var structure = { stories: [{ acRows: acs.map(function(ac) {
+    return { acId: ac.acId, media: { screenshotPath: ac.screenshotPath, videoPath: ac.videoPath } };
+  }) }] };
+  var summary = computeAcCoverageSummary(structure);
+  return summary.captured + ' of ' + summary.total;
+}
+
+// ppc-s7 (AC1, AC3, AC4, AC6): the sign-off area -- a PO's Approve/Needs
+// changes decision, tied to identity and the exact AC coverage they saw.
+// `--success`/`--danger`/`--danger-soft` tokens are already defined in
+// html-shell.js's shared :root block (DESIGN.md's own badge/button palette);
+// this function only adds small, LOCALLY SCOPED classes for the one button
+// variant (destructive) and the two badge variants that don't already exist
+// as shared .sw-btn--*/.sw-badge--* classes -- mirroring ppc-s6's own
+// .ppc-summary-grid precedent (a scoped <style> block in the render
+// function's own output, not a change to html-shell.js's shared CSS) rather
+// than expanding this story's DoR-confirmed touch points.
+function _renderSignOffHtml(journey, csrfToken, currentCoverageSnapshot) {
+  var baseUrl = _playbackEvidenceUrl(journey.productId, journey.featureSlug);
+  var style = '<style>' +
+    '.ppc-signoff-btn--destructive{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}' +
+    '.ppc-signoff-badge{font-family:"JetBrains Mono",monospace;font-size:12px;padding:2px 8px;border-radius:4px;display:inline-block}' +
+    '.ppc-signoff-badge--success{background:var(--success-soft);color:var(--success)}' +
+    '.ppc-signoff-badge--danger{background:var(--danger-soft);color:var(--danger)}' +
+    '</style>';
+
+  if (!journey.signOff) {
+    return style +
+      '<div class="sw-card ppc-signoff">' +
+        '<h2 class="sw-section-title">Sign-off</h2>' +
+        '<p>No decision recorded yet.</p>' +
+        '<form method="POST" action="' + baseUrl + '/sign-off">' +
+          _csrf.csrfField(csrfToken) +
+          '<label for="ppc-signoff-comment">Comment (optional)</label><br>' +
+          '<textarea id="ppc-signoff-comment" name="comment" rows="3"></textarea><br>' +
+          '<button type="submit" name="status" value="approved" class="sw-btn sw-btn--primary">Approve</button> ' +
+          '<button type="submit" name="status" value="needs-changes" class="sw-btn ppc-signoff-btn--destructive">Needs changes</button>' +
+        '</form>' +
+      '</div>';
+  }
+
+  var signOff = journey.signOff;
+  var badgeClass = signOff.status === 'approved' ? 'ppc-signoff-badge--success' : 'ppc-signoff-badge--danger';
+  var badgeText = signOff.status === 'approved' ? 'Approved' : 'Needs changes';
+  var isStale = signOff.coverageSnapshot !== currentCoverageSnapshot;
+  var staleNote = isStale
+    ? ' <span class="playback-ac__empty">(new evidence captured since this decision)</span>'
+    : '';
+  return style +
+    '<div class="sw-card ppc-signoff">' +
+      '<h2 class="sw-section-title">Sign-off</h2>' +
+      '<p><span class="ppc-signoff-badge ' + badgeClass + '">' + _escapeHtml(badgeText) + '</span> against ' + _escapeHtml(signOff.coverageSnapshot) + ' ACs' + staleNote + '</p>' +
+      '<p>By ' + _escapeHtml(signOff.by) + ' at ' + _escapeHtml(signOff.at) + '</p>' +
+      (signOff.comment ? '<p>' + _escapeHtml(signOff.comment) + '</p>' : '') +
+    '</div>';
+}
+
 /**
  * ppc-s9 (Task 6): checks every in-flight capture dispatch recorded against
  * this journey (journey.captureInProgress, written by handlePostCaptureTrigger
@@ -660,7 +723,10 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
     var summary = await _fetchSummaryContent(journey, req, pool);
     var summaryHtml = _renderSummaryHtml(summary);
     var coverageSummaryHtml = _coverageSummaryHtmlForAcs(acs);
-    var bodyContent = summaryHtml + coverageSummaryHtml + _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    // ppc-s7 (AC3): placed immediately after the coverage line, per this
+    // story's own wording ("renders near the existing coverage line").
+    var signOffHtml = _renderSignOffHtml(journey, csrfToken, _coverageSnapshotString(acs));
+    var bodyContent = summaryHtml + coverageSummaryHtml + signOffHtml + _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
     // ppc-s6 (AC1, AC5): wrap in the shared dashboard shell -- the page
     // previously returned a bare <!DOCTYPE html> fragment with no nav, no
     // product context, and no shared styling. renderShellWithNav fetches the
@@ -768,6 +834,54 @@ async function handlePostCaptureTarget(req, res, _next, pool) {
   }
 
   _journeyStore.setCaptureTarget(journey.journeyId, acId, url, selector);
+
+  if (_isFormSubmission(req)) {
+    _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
+    return;
+  }
+  _sendJson(res, 200, { ok: true });
+}
+
+// ppc-s7 (AC2, AC5): records a PO's Approve/Needs-changes decision.
+// _resolveJourney already scopes by BOTH tenant_id and product_id (same
+// guard every other ppc write reuses) -- this alone satisfies AC5, no new
+// access-control mechanism is introduced here.
+async function handlePostSignOff(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journey = await _resolveJourney(req, pool);
+  if (!journey) { _notFound(res); return; }
+
+  var body = req.body || {};
+  var status = body.status;
+  if (status !== 'approved' && status !== 'needs-changes') {
+    _sendJson(res, 400, { error: 'status must be "approved" or "needs-changes"' });
+    return;
+  }
+
+  // CLAUDE.md canonical-field rule: identity for an audit trail is always
+  // login-or-userId, never the GitHub credential field -- mirrors
+  // admin-credits.js's own adminId pattern exactly (Architecture Constraints).
+  var by = String((req.session && (req.session.login || req.session.userId)) || 'unknown');
+
+  var acRows = await _getDodAcList(journey, req, pool);
+  var screenshots = journey.captureScreenshots || {};
+  var videos = journey.captureVideos || {};
+  var coverageAcs = acRows.map(function(ac) {
+    return { acId: ac.acId, screenshotPath: screenshots[ac.acId] || null, videoPath: videos[ac.acId] || null };
+  });
+  var coverageSnapshot = _coverageSnapshotString(coverageAcs);
+
+  _journeyStore.setJourneyFields(journey.journeyId, {
+    signOff: {
+      status: status,
+      by: by,
+      at: new Date().toISOString(),
+      comment: typeof body.comment === 'string' ? body.comment : '',
+      coverageSnapshot: coverageSnapshot
+    }
+  });
 
   if (_isFormSubmission(req)) {
     _sendRedirect(res, _playbackEvidenceUrl(journey.productId, journey.featureSlug));
@@ -1125,6 +1239,7 @@ module.exports = {
   handleGetCaptureScreenshot,
   handleGetCaptureVideo,
   handlePostCaptureAll,
+  handlePostSignOff,
   setJourneyStoreModule,
   setFetcherModule,
   _resolveJourney,
@@ -1133,5 +1248,7 @@ module.exports = {
   _getDodAcList,
   _notFound,
   _sendJson,
-  _renderCaptureAllProgress
+  _renderCaptureAllProgress,
+  _renderSignOffHtml,
+  _coverageSnapshotString
 };
