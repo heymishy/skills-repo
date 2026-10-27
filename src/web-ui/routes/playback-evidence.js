@@ -14,6 +14,7 @@ const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 // commit left here unused for.
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
+const { ensureRepoFresh } = require('../adapters/repo-freshness');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -547,6 +548,12 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   var journey = await _resolveJourney(req, pool);
   if (!journey) { _notFound(res); return; }
 
+  // ppc-s10 (AC1): refresh the local checkout before reading committed
+  // capture evidence off disk -- mirrors journey.js's own _readPipelineFeatures
+  // call shape exactly (rclr-s1's ensureRepoFresh never throws, but wrapped
+  // here too so a refresh failure can never block the page render).
+  try { ensureRepoFresh(getRepoRoot(req)); } catch (_) {}
+
   var acRows = await _getDodAcList(journey, req, pool);
 
   // ppc-s9 (Task 6): must run BEFORE building the acs render array below, so
@@ -614,6 +621,11 @@ async function handleGetCaptureScreenshot(req, res, _next, pool) {
   var acId = req.params && req.params.acId;
   if (!ACID_RE.test(acId || '')) { _notFound(res); return; }
 
+  // ppc-s10 (AC2): same refresh as handleGetPlaybackEvidence -- a direct
+  // <img src> request must not 404 on a stale local checkout even when the
+  // HTML page itself wasn't what triggered the refresh.
+  try { ensureRepoFresh(getRepoRoot(req)); } catch (_) {}
+
   var screenshots = journey.captureScreenshots || {};
   var shotPath = screenshots[acId];
   if (!shotPath) { _notFound(res); return; }
@@ -639,6 +651,9 @@ async function handleGetCaptureVideo(req, res, _next, pool) {
 
   var acId = req.params && req.params.acId;
   if (!ACID_RE.test(acId || '')) { _notFound(res); return; }
+
+  // ppc-s10 (AC2): same refresh as handleGetCaptureScreenshot above.
+  try { ensureRepoFresh(getRepoRoot(req)); } catch (_) {}
 
   var videos = journey.captureVideos || {};
   var videoPath = videos[acId];

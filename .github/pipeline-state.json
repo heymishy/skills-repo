@@ -43483,7 +43483,7 @@
               "track": "short-track",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-10-27T08:03:06.306Z",
+              "updatedAt": "2026-10-27T08:07:37.585Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s10-test-plan.md",
@@ -43502,19 +43502,19 @@
                 {
                   "id": "task-1",
                   "name": "Wire ensureRepoFresh into handleGetPlaybackEvidence (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s10-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Wire ensureRepoFresh into handleGetCaptureScreenshot/Video (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s10-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Integration test: commit-to-serve handoff (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s10-plan.md"
                 },
                 {
