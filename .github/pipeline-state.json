@@ -43407,7 +43407,7 @@
               "health": "amber",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T04:56:04.444Z",
+              "updatedAt": "2026-10-27T07:45:01.218Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
@@ -43475,7 +43475,25 @@
               "dodStatus": "complete",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1028",
               "releaseReady": false,
-              "blocker": "AC3/AC8 both pending a real production trigger: no production deploy has happened since merge (staging-deploy.yml only), so the real-GitHub-Actions artifact upload (AC3) and the end-to-end production confirmation ppc-s8's own AC3 was waiting on (AC8) remain unverified"
+              "blocker": "AC3/AC8 confirmed live in production 2026-10-27 (real workflow_dispatch run 40467256540, real artifact uploaded, real commit to master); the UI-visibility gap found during that same validation is tracked separately as ppc-s10 (test-plan written)."
+            },
+            {
+              "slug": "ppc-s10",
+              "name": "Wire ensureRepoFresh into capture-evidence serving routes + add Playback Evidence nav link",
+              "track": "short-track",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-10-27T07:44:12.306Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s10-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
