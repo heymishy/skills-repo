@@ -109,6 +109,42 @@
           "health": "green"
         }
       ]
+    },
+    {
+      "slug": "epic-nested-feature",
+      "name": "Feature With Epic-Nested Stories",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "discoveryArtefact": "artefacts/epic-nested-feature/discovery.md",
+      "benefitMetricArtefact": "artefacts/epic-nested-feature/benefit-metric.md",
+      "metrics": [],
+      "stories": [],
+      "epics": [
+        {
+          "slug": "enf-epic-1",
+          "name": "Epic One",
+          "status": "complete",
+          "stories": [
+            {
+              "slug": "enf.1",
+              "name": "Epic-nested story",
+              "stage": "definition-of-done",
+              "dodStatus": "complete",
+              "reviewStatus": "passed",
+              "testPlanStatus": "complete",
+              "dorStatus": "signed-off",
+              "artefact": "artefacts/epic-nested-feature/stories/enf.1-story.md",
+              "testPlanArtefact": "artefacts/epic-nested-feature/test-plans/enf.1-test-plan.md",
+              "dorArtefact": "artefacts/epic-nested-feature/dor/enf.1-dor.md",
+              "dodArtefact": "artefacts/epic-nested-feature/dod/enf.1-dod.md",
+              "reviewArtefact": "artefacts/epic-nested-feature/review/enf.1-review.md",
+              "prUrl": "https://github.com/example/repo/pull/4",
+              "prStatus": "merged",
+              "health": "green"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
