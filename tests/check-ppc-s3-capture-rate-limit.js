@@ -22,11 +22,29 @@ var path = require('path');
 var os = require('os');
 var store = require('../src/web-ui/modules/journey-store');
 var pe = require('../src/web-ui/routes/playback-evidence');
-var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
+// ppc-s9 Task 8: session-page-adapter.js is retired as of Task 7 -- both
+// handlePostCaptureTrigger and handlePostCaptureAll now dispatch via
+// captureDispatchAdapter + a nonce (Task 5) instead of driving Playwright
+// in-process. Every test in this file is a pure rate-limit/rejection-path
+// test (never inspects captured screenshots/video), so the migration here
+// is purely mechanical -- swap the old mock for the new one inside
+// setupFakeCapture() below; no assertion changes needed.
+var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
+var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
 var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 var captureAllLock = require('../src/web-ui/modules/capture-all-lock');
 pe.setJourneyStoreModule(store);
+
+function installFakeNonceStore() {
+  var records = {};
+  nonceStore.setNonceStoreAdapter({
+    set: async function(key, value) { records[key] = value; },
+    get: async function(key) { return records[key] === undefined ? null : records[key]; },
+    del: async function(key) { delete records[key]; }
+  });
+  return records;
+}
 
 function getStore() {
   store._clearForTesting();
@@ -78,16 +96,11 @@ function setupFakeCapture(tmpPrefix) {
   var tmpRoot = path.join(os.tmpdir(), tmpPrefix + '-' + Date.now());
   fs.mkdirSync(tmpRoot, { recursive: true });
   repoRootAdapter.setRepoRoot(tmpRoot);
-  var fakePage = {
-    goto: async function() {},
-    screenshot: async function(opts) {
-      var abs = path.join(tmpRoot, opts.path);
-      fs.mkdirSync(path.dirname(abs), { recursive: true });
-      fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-    }
-  };
-  sessionPageAdapter.setSessionPageAdapter(async function() {
-    return { page: fakePage, browser: { close: async function() {} } };
+  installFakeNonceStore();
+  captureDispatchAdapter.setCaptureDispatchAdapter({
+    dispatchCaptureWorkflow: async function() {},
+    checkCaptureArtifact: async function() { return { found: false }; },
+    downloadCaptureArtifact: async function() { return {}; }
   });
   artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 }

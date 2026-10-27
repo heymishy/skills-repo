@@ -81,6 +81,9 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { handleJourneySyncResolve, handleJourneySyncUpdate }         = require('./routes/internal-sync');     // css-s1
+const { handleCaptureExchange }                                      = require('./routes/capture-worker-auth'); // ppc-s9 Task 2
+const { setNonceStoreAdapter, realNonceStoreAdapter }                = require('./adapters/capture-nonce-store'); // ppc-s9 Task 1
+const { setCaptureDispatchAdapter, realDispatchCaptureWorkflow, realCheckCaptureArtifact, realDownloadCaptureArtifact } = require('./adapters/capture-dispatch-adapter'); // ppc-s9 Task 3
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
@@ -98,7 +101,6 @@ const { setCreateRepoAdapter, realCreateRepo }                       = require('
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
-const { setSessionPageAdapter, realGetAuthenticatedPage }            = require('./adapters/session-page-adapter'); // ppc-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
@@ -368,15 +370,26 @@ if (process.env.NODE_ENV !== 'test') {
   console.log('[artefact-commit-writer] commitArtefact wired');
 }
 
-// ppc-s1 / D37 mandatory separate wiring task -- wire the real
-// session-to-Playwright adapter (a fifth, distinct adapter from the four
-// above -- setSessionPageAdapter/getSessionPageAdapter, so none of the five
-// stories' wiring calls collide). Never wired in NODE_ENV=test (tests call
-// setSessionPageAdapter() themselves with a mock); the throwing stub stays
-// active there.
-if (process.env.NODE_ENV !== 'test') {
-  setSessionPageAdapter(realGetAuthenticatedPage);
-  console.log('[session-page-adapter] getAuthenticatedPage wired');
+// ppc-s9 Tasks 1 & 3 (D37 rule 3 -- wiring is its own task, distinct from the
+// adapter/handler work itself): the two new D37 adapters this story
+// introduced (nonce-store, GitHub-dispatch) must be wired to their real
+// implementations the same way every other adapter in this file is -- never
+// under NODE_ENV=test (tests call set*Adapter() themselves with a mock); the
+// throwing stub stays active there. Without this block, every real capture
+// trigger in production hits the "Adapter not wired" stub and 502s.
+// Also active when WIRE_CAPTURE_ADAPTERS=true -- mirrors WIRE_SKILL_ADAPTERS
+// above, so a test can exercise the real wiring closure (proving it routes
+// to the real implementation, not the stub) without flipping NODE_ENV away
+// from 'test' and destabilising this file's other test-mode bootstrap paths.
+if (process.env.NODE_ENV !== 'test' || process.env.WIRE_CAPTURE_ADAPTERS === 'true') {
+  setNonceStoreAdapter(realNonceStoreAdapter);
+  setCaptureDispatchAdapter({
+    dispatchCaptureWorkflow: realDispatchCaptureWorkflow,
+    checkCaptureArtifact: realCheckCaptureArtifact,
+    downloadCaptureArtifact: realDownloadCaptureArtifact
+  });
+  console.log('[capture-nonce-store] nonceStoreAdapter wired');
+  console.log('[capture-dispatch-adapter] captureDispatchAdapter wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
@@ -3266,6 +3279,12 @@ async function router(req, res) {
   } else if (pathname === '/internal/journey-sync/update' && req.method === 'POST') {
     // css-s1: same gate as /internal/journey-sync/resolve above.
     await handleJourneySyncUpdate(req, res);
+
+  } else if (pathname === '/internal/capture/exchange' && req.method === 'POST') {
+    // ppc-s9 Task 2: machine-to-machine only, gated by CAPTURE_EXCHANGE_SECRET
+    // (reachable in production, unlike auth-stub.js's own staging-only
+    // convention -- see routes/capture-worker-auth.js for the full gate).
+    await handleCaptureExchange(req, res);
 
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));

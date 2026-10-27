@@ -43403,27 +43403,77 @@
             {
               "slug": "ppc-s9",
               "name": "Move capture execution to a GitHub Actions worker, retiring the in-process Chromium launch",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T18:42:06.277Z",
+              "updatedAt": "2026-10-27T03:39:59.732Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 11
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": "false",
               "hasInfraTrack": true,
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s9-dor.md",
-              "tasks": [],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
-              "dodStatus": "not-started"
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Nonce-store adapter (Redis-backed, D37)",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Nonce-exchange internal HTTP endpoint",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "GitHub-dispatch adapter (D37)",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "New GitHub Actions workflow + its own capture script",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire capture-trigger/capture-all to dispatch instead of launching in-process",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "handleGetPlaybackEvidence artifact-check + finalise logic",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Remove dead code (session-page-adapter.js, ppc-s8 Dockerfile changes)",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "Migrate 6 existing tests to the new dispatch-based mocking shape",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1028"
             }
           ]
         }
