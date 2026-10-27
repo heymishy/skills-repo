@@ -306,3 +306,17 @@ Require stack:
 **Revisit trigger:** If `/playback/:featureSlug`'s own matching gap is ever prioritised, reuse `ppc-s10`'s own fix shape (call `ensureRepoFresh` before the local-disk read) rather than re-diagnosing from scratch -- the root cause is identical. If a fourth page is ever added that reads committed capture evidence off the local checkout, wire it into `ensureRepoFresh` from the start rather than repeating this discovery a third time.
 
 ---
+
+**2026-10-27 | RISK-ACCEPT | `ppc-s10`'s Playback evidence link (AC3/AC4) verified via route-dispatch test, not a real-browser/Playwright visible-state check**
+
+**Risk:** `/verify-completion`'s "Live browser render check" requires a real browser check, Playwright visible-state evidence (computed style/viewport-visibility, not just DOM presence), or a logged RISK-ACCEPT for any diff that changes rendered UI output. `ppc-s10`'s AC3/AC4 change is covered by `check-ppc-s10-playback-link.js` (T7-T9), which dispatches real pathnames through `server.js`'s own router and asserts the exact `href` string is present in the response HTML -- a real route-level check, but DOM-presence-in-a-handler-level-test, not a rendered-pixel/visible-state confirmation.
+
+**Decision:** Accept the risk rather than build a new Playwright E2E spec for this one AC. The rendered element is a single, unstyled `<a>` tag with no new CSS, inheriting the existing shell's default link styling -- confirmed CSS-layout-independent at this story's own DoR (H-E2E: N/A, no drag-drop/`getBoundingClientRect`/CSS-position/pointer-coordinate behaviour in scope). A post-deployment smoke-test action item is added to `workspace/state.json`'s `pendingActions` instead (see that file).
+
+**Rationale:** The route-dispatch test already proves the exact `href` is correct and only renders under the right condition (AC3/AC4's own positive/negative cases) -- the residual risk this RISK-ACCEPT covers is narrowly "does the shell's default `<a>` styling render it visibly," which is extremely low risk for a plain text link with no custom CSS, no absolute positioning, and no conditional visibility logic beyond the server-side `if` already covered by T7-T9. Building a new Playwright spec purely to click-confirm a plain link's pixel visibility is disproportionate effort for this specific, bounded, low-risk case -- consistent with CLAUDE.md's B2 rule reserving the heavier real-check requirement for genuinely CSS-layout-dependent behaviour.
+
+**Made by:** Claude (session), via `/verify-completion`, 2026-10-27.
+
+**Revisit trigger:** If a future change makes this link CSS-positioned, conditionally hidden via client-side script, or otherwise layout-dependent, this RISK-ACCEPT no longer applies -- require a real check or Playwright visible-state assertion at that point.
+
+---

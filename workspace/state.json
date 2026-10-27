@@ -58,7 +58,8 @@
       "NEXT ACTION (thread, unchanged): live-verify jae-s4's AI-suggestion-RENDERS path on staging once the operator signs back in, then run jae-s4's own /definition-of-done.",
       "NEXT ACTION (thread, unchanged): run /test-plan and /definition-of-ready for jae-s5 (artefacts/2026-10-14-journey-authoring-experience/stories/jae-s5.md), then build it.",
       "NEXT ACTION (thread, unchanged): write a short-track story from spikes/canvas-node-styling-outcome.md (verdict FIX) -- CSS-only override of drawflow's vendor default node/port/connector colours onto the app's own tokens.",
-      "NEW CANDIDATE (from this session's D48 learning): scope a short-track story to add axe-core (or equivalent) to the test suite once, platform-wide -- multiple stories across multiple features have now independently re-discovered this repo has zero automated accessibility tooling."
+      "NEW CANDIDATE (from this session's D48 learning): scope a short-track story to add axe-core (or equivalent) to the test suite once, platform-wide -- multiple stories across multiple features have now independently re-discovered this repo has zero automated accessibility tooling.",
+      "NEW (2026-10-27, /verify-completion ppc-s10): smoke-test the new 'Playback evidence' link once ppc-s10 deploys -- open a DoD-complete, product-connected feature's DoD stage view (/journey/:journeyId/stage/definition-of-done) and confirm the link is visibly present and clickable, leading to /products/:productId/playback-evidence/:featureSlug. Verified at route-dispatch level (check-ppc-s10-playback-link.js) but not via a real rendered browser this session -- RISK-ACCEPT logged in artefacts/2026-10-20-production-playback-capture/decisions.md (2026-10-27)."
     ]
   },
   "estimate": {
