@@ -43403,18 +43403,18 @@
             {
               "slug": "ppc-s9",
               "name": "Move capture execution to a GitHub Actions worker, retiring the in-process Chromium launch",
-              "stage": "subagent-execution",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T18:58:50.883Z",
+              "updatedAt": "2026-10-27T03:38:11.400Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 11
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": "false",
               "hasInfraTrack": true,
               "e2eToolingRequired": "false",
@@ -43470,8 +43470,8 @@
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
                 }
               ],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
+              "verifyStatus": "passed",
+              "prStatus": "draft",
               "dodStatus": "not-started"
             }
           ]
