@@ -43460,13 +43460,13 @@
                 {
                   "id": "task-7",
                   "name": "Remove dead code (session-page-adapter.js, ppc-s8 Dockerfile changes)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
                 },
                 {
                   "id": "task-8",
                   "name": "Migrate 6 existing tests to the new dispatch-based mocking shape",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s9-plan.md"
                 }
               ],
