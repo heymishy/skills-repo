@@ -43326,11 +43326,11 @@
             {
               "slug": "ppc-s6",
               "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T04:00:00.000Z",
+              "updatedAt": "2026-10-27T09:08:42.934Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
