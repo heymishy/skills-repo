@@ -43382,11 +43382,11 @@
             {
               "slug": "ppc-s7",
               "name": "Record an in-app sign-off decision on captured evidence",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T04:00:00.000Z",
+              "updatedAt": "2026-10-27T19:13:41.126Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
