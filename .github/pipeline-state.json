@@ -43326,11 +43326,11 @@
             {
               "slug": "ppc-s6",
               "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T09:46:26.441Z",
+              "updatedAt": "2026-10-27T09:47:35.550Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -43347,31 +43347,32 @@
                 {
                   "id": "task-1",
                   "name": "Wrap page in dashboard shell (AC1, AC5)",
-                  "tddState": "done",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Scope/Benefit summary via fetchArtefact (AC2, AC4)",
-                  "tddState": "done",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "At-a-glance coverage line (AC3)",
-                  "tddState": "done",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Responsive single-column layout below 768px (AC6)",
-                  "tddState": "done",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "none",
-              "dodStatus": "not-started"
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1030"
             },
             {
               "slug": "ppc-s7",
