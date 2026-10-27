@@ -43326,18 +43326,18 @@
             {
               "slug": "ppc-s6",
               "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T09:43:13.309Z",
+              "updatedAt": "2026-10-27T09:46:26.441Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 7,
+                "passing": 7
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "true",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "true",
@@ -43369,7 +43369,7 @@
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 }
               ],
-              "verifyStatus": "not-started",
+              "verifyStatus": "passed",
               "prStatus": "none",
               "dodStatus": "not-started"
             },
