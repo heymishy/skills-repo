@@ -43330,7 +43330,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T09:33:12.675Z",
+              "updatedAt": "2026-10-27T09:34:24.599Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -43359,7 +43359,7 @@
                 {
                   "id": "task-3",
                   "name": "At-a-glance coverage line (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 },
                 {

@@ -659,7 +659,8 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
     var progress = captureAllLock.getLockState(journey.journeyId);
     var summary = await _fetchSummaryContent(journey, req, pool);
     var summaryHtml = _renderSummaryHtml(summary);
-    var bodyContent = summaryHtml + _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    var coverageSummaryHtml = _coverageSummaryHtmlForAcs(acs);
+    var bodyContent = summaryHtml + coverageSummaryHtml + _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
     // ppc-s6 (AC1, AC5): wrap in the shared dashboard shell -- the page
     // previously returned a bare <!DOCTYPE html> fragment with no nav, no
     // product context, and no shared styling. renderShellWithNav fetches the

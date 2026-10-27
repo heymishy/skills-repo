@@ -123,4 +123,32 @@ queue.push(function() {
   });
 });
 
+console.log('\n[ppc-s6] AC3: coverage summary line');
+
+queue.push(function() {
+  return test('T5 (AC3): coverage line shows "Full coverage" when every AC has evidence, reusing renderCoverageSummaryHtml as-is', function() {
+    var store3 = getStore();
+    var setup = setupDodCompleteJourney(store3, {});
+    store3.setJourneyFields(setup.journeyId, { captureScreenshots: { AC1: 'artefacts/' + setup.featureSlug + '/playback/ppc-s1/screenshots/AC1.png' } });
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      assert.ok(res._body.indexOf('Full coverage') !== -1, 'single AC, single screenshot captured -> full coverage, reusing the exact wording renderCoverageSummaryHtml already uses');
+      assert.ok(res._body.indexOf('playback-coverage-summary--full') !== -1, 'must reuse the existing text-distinct CSS class, not a new one');
+    });
+  });
+});
+
+queue.push(function() {
+  return test('T6 (AC3): coverage line shows "0 of N" when nothing is captured', function() {
+    var store3 = getStore();
+    var setup = setupDodCompleteJourney(store3, {});
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      assert.ok(res._body.indexOf('0 of 1 ACs have captured evidence yet') !== -1);
+    });
+  });
+});
+
 (async function() { for (var i = 0; i < queue.length; i++) { await queue[i](); } console.log('\n' + passed + ' passed, ' + failed + ' failed'); if (failed > 0) process.exitCode = 1; })();
