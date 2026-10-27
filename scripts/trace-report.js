@@ -108,7 +108,18 @@ function generateReport(opts) {
 
   const isArchived = archiveSlugs.has(feature.slug) && !(activeState.features || []).find(f => f.slug === feature.slug);
   const traces = loadTraces(rootDir);
-  const stories = feature.stories || [];
+  // rcfx-s2: a feature using feature.epics[].stories[] (rather than flat
+  // feature.stories[]) previously reported "Stories: 0" and every story
+  // section silently missing -- this function never looked inside epics at
+  // all. Mirrors the exact flattening pattern already used correctly
+  // elsewhere in this repo (scripts/playback-capture.js's checkDodGate).
+  const stories = [];
+  if (Array.isArray(feature.stories)) stories.push(...feature.stories);
+  if (Array.isArray(feature.epics)) {
+    for (const epic of feature.epics) {
+      if (Array.isArray(epic.stories)) stories.push(...epic.stories);
+    }
+  }
   const featureStageIdx = stageIndex(feature.stage);
 
   // Build report

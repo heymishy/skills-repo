@@ -83,8 +83,14 @@ function setupFixture(tmpDir, opts) {
       fs.mkdirSync(path.dirname(p), { recursive: true });
       fs.writeFileSync(p, '# Benefit Metric\n');
     }
-    // Story-level artefacts
-    for (const story of (feature.stories || [])) {
+    // Story-level artefacts. rcfx-s2: also flatten feature.epics[].stories[]
+    // -- an epic-nested feature's stories were previously silently skipped
+    // here too, so their artefact stubs never got created.
+    const allStoriesForStubs = [...(feature.stories || [])];
+    for (const epic of (feature.epics || [])) {
+      allStoriesForStubs.push(...(epic.stories || []));
+    }
+    for (const story of allStoriesForStubs) {
       const paths = ['artefact', 'testPlanArtefact', 'dorArtefact', 'dodArtefact', 'reviewArtefact'];
       for (const key of paths) {
         if (story[key]) {
@@ -446,6 +452,24 @@ test('T11: DoR stage story shows DoD as "not yet reached"', () => {
       }
     }
     assert.ok(dodNotYetReached, 'ef.2 section should show DoD as "not yet reached"');
+  } finally {
+    rmDir(tmpDir);
+  }
+});
+
+// ---------- T12: Epic-nested feature (feature.epics[].stories[]) is read, not reported as 0 stories ----------
+test('T12: epic-nested feature reports its real story count and chain links, not "Stories: 0"', () => {
+  const tmpDir = makeTmpDir();
+  try {
+    setupFixture(tmpDir, {
+      featuresFilter: ['epic-nested-feature'],
+      stubArtefacts: ['epic-nested-feature']
+    });
+    const { generateReport } = loadModule();
+    const report = generateReport({ feature: 'epic-nested-feature', rootDir: tmpDir });
+    assert.ok(!/\*\*Stories\*\*\s*\|\s*0\s*\|/.test(report), 'must not report 0 stories when the feature has epic-nested stories');
+    assert.ok(report.includes('enf.1') || report.includes('Epic-nested story'), 'report should contain the epic-nested story');
+    assert.ok(/dod.*✅|✅.*dod/i.test(report), 'the epic-nested story\'s DoD chain link should resolve to ✅ (artefact stub exists), proving story[key] paths are read correctly once flattened');
   } finally {
     rmDir(tmpDir);
   }
