@@ -43483,7 +43483,7 @@
               "track": "short-track",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-27T08:28:54.844Z",
+              "updatedAt": "2026-10-27T08:45:46.418Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s10-test-plan.md",
@@ -43531,7 +43531,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1029"
             }
           ]
