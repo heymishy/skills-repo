@@ -215,6 +215,20 @@ queue.push(function() {
     assert.ok(fake.tracking.screenshotCookies, 'the screenshot context must have had a session_id cookie seeded');
     assert.strictEqual(fake.tracking.screenshotCookies[0].value, 'exchanged-session-abc', 'the seeded cookie value must be the sessionId RETURNED by the exchange, not some other value');
     assert.strictEqual(fake.tracking.screenshotCookies[0].name, 'session_id');
+
+    // ppc-s9 Task 8 addition: the VIDEO recording context must be
+    // independently re-seeded with the SAME exchanged session id -- it is a
+    // separate Playwright context from the screenshot one (see
+    // makeFakeChromium's own makeVideoContext), so seeding the screenshot
+    // context's cookie proves nothing about the video context's own cookie.
+    // This was asserted by the OLD in-process test this migration retired
+    // (check-ppc-s5-video-capture.js's own
+    // handlePostCaptureTrigger_recordsVideoAlongsideScreenshot_forSingleAc,
+    // "the re-seeded cookie must carry the SAME session id, no second/new
+    // auth path") but had no equivalent here until now.
+    assert.ok(fake.tracking.videoCookies, 'the video-recording context must ALSO have had a session_id cookie seeded');
+    assert.strictEqual(fake.tracking.videoCookies[0].value, 'exchanged-session-abc', 'the video context\'s own re-seeded cookie must carry the SAME exchanged session id, no second/new auth path');
+    assert.strictEqual(fake.tracking.videoCookies[0].name, 'session_id');
   });
 });
 
@@ -326,6 +340,78 @@ queue.push(function() {
       try { fs.rmSync(outputDir, { recursive: true, force: true }); } catch (_) { /* best-effort cleanup */ }
       try { fs.rmSync('artefacts/' + fakeFeatureSlug, { recursive: true, force: true }); } catch (_) { /* best-effort cleanup */ }
     }
+  });
+});
+
+// --- captureWorkerScript_closesBrowserInFinally_evenOnMidRunFailure ---
+// ppc-s9 Task 8 addition: the OLD in-process tests this migration retired
+// (check-ppc-s1-playback-evidence-route.js's own "the Playwright browser
+// must be closed after a successful capture" / "...still closes the
+// browser" on a commit failure) asserted that the browser gets closed no
+// matter what. The worker script's own runCaptureWorker (.github/scripts/
+// ppc-capture-worker.js) closes the browser in a `finally` block, but no
+// test here asserted that before this task -- a genuine gap, not just a
+// relocation.
+queue.push(function() {
+  return test('captureWorkerScript_closesBrowserInFinally_afterASuccessfulRun', async function() {
+    delete require.cache[require.resolve(SCRIPT_MODULE_PATH)];
+    var worker = require(SCRIPT_MODULE_PATH);
+    var fake = makeFakeChromium();
+    var fetchImpl = makeFakeFetch(async function() {
+      return { ok: true, status: 200, json: async function() { return { sessionId: 'exchanged-session-close-success' }; } };
+    });
+
+    await worker.runCaptureWorker({
+      nonce: 'nonce-close-success',
+      baseUrl: 'https://capture.example.test',
+      featureSlug: 'fake-feature',
+      acIds: ['AC1'],
+      targets: [{ acId: 'AC1', url: 'https://capture.example.test/page1', selector: '#el1' }],
+      correlationId: 'corr-close-success'
+    }, fake.chromiumModule, fetchImpl);
+
+    assert.strictEqual(fake.tracking.browserClosed, true, 'the browser must be closed after a successful run');
+  });
+});
+
+queue.push(function() {
+  return test('captureWorkerScript_closesBrowserInFinally_evenOnMidRunFailure', async function() {
+    delete require.cache[require.resolve(SCRIPT_MODULE_PATH)];
+    var worker = require(SCRIPT_MODULE_PATH);
+    var fake = makeFakeChromium();
+    // Make the video-recording step (which runs AFTER the screenshot loop)
+    // throw, simulating a mid-run failure -- the browser must still be
+    // closed via runCaptureWorker's own `finally` block, not left open.
+    var originalNewContext = fake.chromiumModule.launch;
+    fake.chromiumModule.launch = async function() {
+      var browser = await originalNewContext();
+      var originalBrowserNewContext = browser.newContext;
+      browser.newContext = async function(opts) {
+        if (opts && opts.recordVideo) throw new Error('simulated mid-run video-context failure');
+        return originalBrowserNewContext(opts);
+      };
+      return browser;
+    };
+    var fetchImpl = makeFakeFetch(async function() {
+      return { ok: true, status: 200, json: async function() { return { sessionId: 'exchanged-session-close-fail' }; } };
+    });
+
+    var threw = false;
+    try {
+      await worker.runCaptureWorker({
+        nonce: 'nonce-close-fail',
+        baseUrl: 'https://capture.example.test',
+        featureSlug: 'fake-feature',
+        acIds: ['AC1'],
+        targets: [{ acId: 'AC1', url: 'https://capture.example.test/page1', selector: '#el1' }],
+        correlationId: 'corr-close-fail'
+      }, fake.chromiumModule, fetchImpl);
+    } catch (err) {
+      threw = true;
+    }
+
+    assert.ok(threw, 'the simulated mid-run failure must propagate, not be swallowed');
+    assert.strictEqual(fake.tracking.browserClosed, true, 'the browser must still be closed (via the finally block) even when a mid-run step fails');
   });
 });
 

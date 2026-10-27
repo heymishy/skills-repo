@@ -84,10 +84,32 @@ queue.push(function() {
 // store via setJourneyStoreModule() (journey-store.js code review fix).
 var store = require('../src/web-ui/modules/journey-store');
 var pe = require('../src/web-ui/routes/playback-evidence');
-var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
+// ppc-s9 Task 8: session-page-adapter.js (the old in-process Playwright
+// cookie-seed/navigate/screenshot mechanism) is retired as of Task 7 --
+// handlePostCaptureTrigger/handlePostCaptureAll now dispatch via
+// captureDispatchAdapter + capture-nonce-store instead (Task 5). See this
+// file's own per-test comments below for exactly which OLD assertion moved
+// to which new test file, and which stayed in place (migrated to the new
+// mocks) because it is still this file's own rejection-path responsibility
+// (check-ppc-s9-capture-dispatch-wiring.js's own header comment explicitly
+// defers that migration to this task, not duplication).
+var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
+var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
 var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 pe.setJourneyStoreModule(store);
+
+// Fake, in-memory nonce store -- mirrors
+// check-ppc-s9-capture-dispatch-wiring.js's own installFakeNonceStore().
+function installFakeNonceStore() {
+  var records = {};
+  nonceStore.setNonceStoreAdapter({
+    set: async function(key, value) { records[key] = value; },
+    get: async function(key) { return records[key] === undefined ? null : records[key]; },
+    del: async function(key) { delete records[key]; }
+  });
+  return records;
+}
 function getStore() {
   store._clearForTesting();
   return store;
@@ -265,55 +287,64 @@ function makeMockPool(rows) {
 }
 
 queue.push(function() {
-  return test('AC3: capture-trigger seeds the Playwright cookie from req.sessionId, navigates to the stored target, persists the screenshot', async function() {
+  // ppc-s9 Task 8 migration note: this test used to drive the whole
+  // in-process flow directly (cookie-seed -> navigate -> screenshot ->
+  // commit) through handlePostCaptureTrigger itself. As of Task 5, that
+  // handler only dispatches (issueNonce + dispatchCaptureWorkflow) and
+  // returns immediately -- the real browser work moved to
+  // .github/scripts/ppc-capture-worker.js, and the eventual commit happens
+  // later in handleGetPlaybackEvidence's own finalise step. So:
+  //  - "cookie seeded with req.sessionId" / "navigates to target" / "selector
+  //    passed through" -> now covered by
+  //    check-ppc-s9-capture-worker-script.js's own
+  //    captureWorkerScript_exchangesNonceBeforeLaunchingBrowser test (cookie
+  //    seeded with the EXCHANGED sessionId) and
+  //    captureWorkerScript_multipleAcIds_navigatesEachInSequenceInOneContext
+  //    (navigation).
+  //  - "commitArtefact called with base64 encoding + the user's own
+  //    accessToken" / "screenshot persisted on the journey" -> now covered by
+  //    check-ppc-s9-capture-dispatch-wiring.js's own AC4/AC5 finalise test
+  //    ("artifact found -- commits screenshot+video via the exact real
+  //    tenant token/owner/repo/base64 shape").
+  //  - "browser closed after a successful capture" -> no browser exists in
+  //    THIS handler any more; the worker script's own browser-close
+  //    behaviour is covered by the new
+  //    captureWorkerScript_closesBrowserInFinally_evenOnFailure test added to
+  //    check-ppc-s9-capture-worker-script.js as part of this same migration
+  //    task (no equivalent existed there before).
+  // What's left, still this file's own AC3 responsibility: the route itself
+  // dispatches via a nonce (never the raw session id) and marks the AC
+  // in-progress rather than completed. The nonce/dispatch-args shape itself
+  // is already asserted in detail by check-ppc-s9-capture-dispatch-wiring.js's
+  // own AC1 test -- deliberately not re-asserted in full here to avoid
+  // duplicating that coverage, per that file's own header comment.
+  return test('AC3 (migrated): capture-trigger dispatches via a nonce (never the raw session id) and marks the AC in-progress rather than completing synchronously', async function() {
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+    installFakeNonceStore();
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-capture-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var seenCookieSessionId = null;
-    var browserClosed = false;
-    var fakePage = {
-      goto: async function(url) { fakePage._gotoUrl = url; },
-      screenshot: async function(opts) {
-        fakePage._selector = opts.selector;
-        var abs = path.join(tmpRoot, opts.path);
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-      }
-    };
-    sessionPageAdapter.setSessionPageAdapter(async function(sessionId, baseUrl) {
-      seenCookieSessionId = sessionId;
-      return { page: fakePage, browser: { close: async function() { browserClosed = true; } } };
+    var capturedDispatchArgs = null;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function(args) { capturedDispatchArgs = args; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
     });
-
-    var capturedCommit = null;
-    artefactCommitWriter.setArtefactCommitAdapter(async function(artefactPath, content, token, owner, repo, encoding) {
-      capturedCommit = { artefactPath: artefactPath, token: token, owner: owner, repo: repo, encoding: encoding };
-      return { ok: true };
-    });
-
-    var mockPool = makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]);
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
       body: { _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
-    await pe.handlePostCaptureTrigger(req, res, null, mockPool);
+    await pe.handlePostCaptureTrigger(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(seenCookieSessionId, req.sessionId, 'the Playwright context cookie must be seeded with req.sessionId, never a service credential');
-    assert.strictEqual(fakePage._gotoUrl, 'http://localhost:3000/dashboard');
-    assert.strictEqual(fakePage._selector, '#widget-1');
-    assert.strictEqual(capturedCommit.encoding, 'base64');
-    assert.strictEqual(capturedCommit.token, req.session.accessToken, 'commitArtefact must use the user\'s own accessToken, never a service account');
+    assert.ok(capturedDispatchArgs, 'dispatchCaptureWorkflow must have been called');
+    assert.notStrictEqual(capturedDispatchArgs.nonce, req.sessionId, 'session reuse is now via an exchanged nonce, never the raw session id directly (ADR-018 still applies)');
     assert.strictEqual(res._json.ok, true);
-    assert.strictEqual(browserClosed, true, 'the Playwright browser must be closed after a successful capture');
 
     var reloaded = store.getJourney(setup.journeyId);
-    assert.ok(reloaded.captureScreenshots.AC1, 'the screenshot path must be persisted on the journey for AC5 inline display');
+    assert.ok(!reloaded.captureScreenshots || !reloaded.captureScreenshots.AC1, 'the screenshot is no longer persisted synchronously by this handler -- only handleGetPlaybackEvidence\'s own finalise step persists it, once the dispatched workflow completes');
+    assert.ok(reloaded.captureInProgress && reloaded.captureInProgress.AC1, 'the journey must be marked captureInProgress for AC1 while the dispatched workflow runs');
   });
 });
 
@@ -323,7 +354,11 @@ queue.push(function() {
     var setup = setupDodCompleteJourney(store, {});
 
     var adapterCalled = false;
-    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { adapterCalled = true; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
@@ -333,7 +368,7 @@ queue.push(function() {
     await pe.handlePostCaptureTrigger(req, res, null, makeMockPool([]));
 
     assert.strictEqual(res._status, 400);
-    assert.strictEqual(adapterCalled, false, 'must never reach the capture mechanism when no target is stored');
+    assert.strictEqual(adapterCalled, false, 'must never reach the capture-dispatch mechanism when no target is stored');
   });
 });
 
@@ -344,7 +379,11 @@ queue.push(function() {
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
 
     var adapterCalled = false;
-    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { adapterCalled = true; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
@@ -356,33 +395,33 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 400);
     assert.deepStrictEqual(res._json, { error: 'product has no connected repo' });
-    assert.strictEqual(adapterCalled, false, 'must never reach the capture mechanism when the product has no connected repo');
+    assert.strictEqual(adapterCalled, false, 'must never reach the capture-dispatch mechanism when the product has no connected repo');
   });
 });
 
 queue.push(function() {
-  return test('AC3: a commit failure returns a structured 502, not an uncaught exception, and still closes the browser', async function() {
+  // ppc-s9 Task 8 migration note: this handler no longer commits anything
+  // itself (that moved to handleGetPlaybackEvidence's own finalise step,
+  // which has its own dispatch-failure-is-impossible-there property since it
+  // never dispatches) -- the only failure THIS handler can hit is the
+  // dispatch call itself, which it already returns a structured 502 for
+  // (error: 'capture-dispatch-failed', not 'capture-failed'). The
+  // "browser closed" assertion no longer applies -- there is no browser in
+  // this handler. This scenario overlaps with
+  // check-ppc-s9-capture-dispatch-wiring.js's own "502 (never a bare 500)
+  // when dispatch itself fails" test by design (Task 5's own dispatch-failure
+  // behaviour is identical for both); kept here, migrated in place, as this
+  // file's own AC3 rejection-path responsibility.
+  return test('AC3 (migrated): a dispatch failure returns a structured 502, not an uncaught exception', async function() {
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/dashboard', '#widget-1');
+    installFakeNonceStore();
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-capture-fail-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var browserClosed = false;
-    var fakePage = {
-      goto: async function() {},
-      screenshot: async function(opts) {
-        var abs = path.join(tmpRoot, opts.path);
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-      }
-    };
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() { browserClosed = true; } } };
-    });
-    artefactCommitWriter.setArtefactCommitAdapter(async function() {
-      throw new Error('simulated GitHub API failure');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('simulated GitHub API failure'); },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
     });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
@@ -393,12 +432,12 @@ queue.push(function() {
     await pe.handlePostCaptureTrigger(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
     assert.strictEqual(res._status, 502);
-    assert.strictEqual(res._json.error, 'capture-failed');
+    assert.strictEqual(res._json.error, 'capture-dispatch-failed');
     assert.ok(res._json.detail && res._json.detail.includes('simulated GitHub API failure'));
-    assert.strictEqual(browserClosed, true, 'the browser must still be closed when the commit fails');
 
     var reloaded = store.getJourney(setup.journeyId);
-    assert.ok(!reloaded.captureScreenshots || !reloaded.captureScreenshots.AC1, 'nothing must be marked captured when the commit fails');
+    assert.ok(!reloaded.captureScreenshots || !reloaded.captureScreenshots.AC1, 'nothing must be marked captured when the dispatch fails');
+    assert.strictEqual(reloaded.captureInProgress, undefined, 'nothing must be marked in-progress when the dispatch itself failed');
   });
 });
 
@@ -547,23 +586,12 @@ queue.push(function() {
     assert.ok(!JSON.stringify(targetRes._json).includes(targetReq.sessionId), 'handlePostCaptureTarget\'s response must not leak session_id either -- this test\'s own name claims coverage of all 3 routes, not just 2');
 
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/x', '#y');
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-sec-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return {
-        page: {
-          goto: async function() {},
-          screenshot: async function(opts) {
-            var abs = path.join(tmpRoot, opts.path);
-            fs.mkdirSync(path.dirname(abs), { recursive: true });
-            fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-          }
-        },
-        browser: { close: async function() {} }
-      };
+    installFakeNonceStore();
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() {},
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
     });
-    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
     var triggerReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },
@@ -586,23 +614,12 @@ queue.push(function() {
       body: { _csrf: 'test-csrf-token' }
     });
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-nfr-adr018-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return {
-        page: {
-          goto: async function() {},
-          screenshot: async function(opts) {
-            var abs = path.join(tmpRoot, opts.path);
-            fs.mkdirSync(path.dirname(abs), { recursive: true });
-            fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-          }
-        },
-        browser: { close: async function() {} }
-      };
+    installFakeNonceStore();
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() {},
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
     });
-    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
     // Direct call-count spy on the actual bypass fixture (matching the test
     // plan's own measurement method), not a restatement of the AC3 test's
@@ -635,7 +652,11 @@ queue.push(function() {
     var setup = setupDodCompleteJourney(store, {});
 
     var adapterCalled = false;
-    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { adapterCalled = true; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
 
     var maliciousAcIds = ['../../../etc/passwd', 'AC1/../../../x', '..', 'AC1;rm -rf', ''];
     for (var i = 0; i < maliciousAcIds.length; i++) {

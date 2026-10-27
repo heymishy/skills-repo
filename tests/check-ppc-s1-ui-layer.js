@@ -207,30 +207,30 @@ queue.push(function() {
 });
 
 queue.push(function() {
+  // ppc-s9 Task 8 migration note: handlePostCaptureTrigger no longer drives
+  // a Playwright page/screenshot/commit itself (Task 5) -- it dispatches via
+  // captureDispatchAdapter + a nonce instead. The redirect-on-form-submission
+  // behaviour this test actually covers (AC3's own "a form POST redirects,
+  // not raw JSON" UI contract) is unchanged by that move, so only the mock
+  // setup needed updating, not the assertion itself.
   return test('AC3 (form submission): a form-encoded capture-trigger POST redirects (302) back to the GET page on success', async function() {
     var store = getStore();
     var setup = setupDodCompleteJourney(store, {});
     store.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/x', '#y');
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s1-ui-trigger-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
-    var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return {
-        page: {
-          goto: async function() {},
-          screenshot: async function(opts) {
-            var abs = path.join(tmpRoot, opts.path);
-            fs.mkdirSync(path.dirname(abs), { recursive: true });
-            fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-          }
-        },
-        browser: { close: async function() {} }
-      };
+    var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
+    var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
+    var nonceRecords = {};
+    nonceStore.setNonceStoreAdapter({
+      set: async function(key, value) { nonceRecords[key] = value; },
+      get: async function(key) { return nonceRecords[key] === undefined ? null : nonceRecords[key]; },
+      del: async function(key) { delete nonceRecords[key]; }
     });
-    artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() {},
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, {
       params: { productId: setup.productId, featureSlug: setup.featureSlug, acId: 'AC1' },

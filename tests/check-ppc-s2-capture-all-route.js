@@ -88,11 +88,32 @@ var path = require('path');
 var os = require('os');
 var store = require('../src/web-ui/modules/journey-store');
 var pe = require('../src/web-ui/routes/playback-evidence');
-var sessionPageAdapter = require('../src/web-ui/adapters/session-page-adapter');
+// ppc-s9 Task 8: session-page-adapter.js is retired as of Task 7 --
+// handlePostCaptureAll now dispatches via captureDispatchAdapter + a nonce
+// (Task 5) instead of looping Playwright captures in-process. See each
+// migrated test's own comment below for exactly which OLD assertion moved
+// to check-ppc-s9-capture-dispatch-wiring.js / check-ppc-s9-capture-worker-script.js,
+// which was rewritten in place, and which (AC3 real-duration-measurement,
+// AC4 decisions-log-threshold) describes a synchronous-measurement
+// capability Task 5's own scope note already removed from this handler
+// entirely -- flagged explicitly in those tests' own comments and in this
+// task's final report, not silently dropped.
+var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
+var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
 var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 var captureAllLock = require('../src/web-ui/modules/capture-all-lock');
 pe.setJourneyStoreModule(store);
+
+function installFakeNonceStore() {
+  var records = {};
+  nonceStore.setNonceStoreAdapter({
+    set: async function(key, value) { records[key] = value; },
+    get: async function(key) { return records[key] === undefined ? null : records[key]; },
+    del: async function(key) { delete records[key]; }
+  });
+  return records;
+}
 
 function getStore() {
   store._clearForTesting();
@@ -180,28 +201,43 @@ function _noOpVideoNewContext() {
     };
   };
 }
+// ppc-s9 Task 8 migration: used to seed a fake Playwright page/browser via
+// session-page-adapter.js so handlePostCaptureAll's old in-process capture
+// loop had something to drive. That loop is gone (Task 5) -- this now just
+// wires the dispatch-adapter + nonce-store mocks so the handler's dispatch
+// call succeeds without throwing. The real capture mechanics it used to
+// drive (navigate/screenshot/video) are covered by
+// check-ppc-s9-capture-worker-script.js now; the eventual
+// commit/persist-on-the-journey mechanics are covered by
+// check-ppc-s9-capture-dispatch-wiring.js's own finalise tests.
 function setupFakeCapture(tmpPrefix) {
   var tmpRoot = path.join(os.tmpdir(), tmpPrefix + '-' + Date.now());
   fs.mkdirSync(tmpRoot, { recursive: true });
   repoRootAdapter.setRepoRoot(tmpRoot);
-  var fakePage = {
-    goto: async function() {},
-    screenshot: async function(opts) {
-      var abs = path.join(tmpRoot, opts.path);
-      fs.mkdirSync(path.dirname(abs), { recursive: true });
-      fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-    }
-  };
-  var browserClosed = false;
-  sessionPageAdapter.setSessionPageAdapter(async function() {
-    return { page: fakePage, browser: { close: async function() { browserClosed = true; }, newContext: _noOpVideoNewContext() } };
+  installFakeNonceStore();
+  captureDispatchAdapter.setCaptureDispatchAdapter({
+    dispatchCaptureWorkflow: async function() {},
+    checkCaptureArtifact: async function() { return { found: false }; },
+    downloadCaptureArtifact: async function() { return {}; }
   });
   artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
-  return { tmpRoot: tmpRoot, isBrowserClosed: function() { return browserClosed; } };
+  return { tmpRoot: tmpRoot };
 }
 
 queue.push(function() {
-  return test('AC1/AC6: capture-all loops every targeted AC sequentially and skips the untargeted one with a named reason', async function() {
+  // ppc-s9 Task 8 migration note: "loops every targeted AC sequentially" no
+  // longer describes THIS handler -- it dispatches ONE workflow call
+  // covering the whole group and returns immediately (Task 5). The
+  // sequential-per-AC navigation this test used to prove now happens inside
+  // the GitHub Actions worker, covered by
+  // check-ppc-s9-capture-worker-script.js's own
+  // captureWorkerScript_multipleAcIds_navigatesEachInSequenceInOneContext
+  // test. What's unchanged and still this handler's own responsibility:
+  // buildCaptureAllList's skip-detection (AC6) runs before any dispatch, so
+  // that assertion is kept as-is; the old captured/failed response fields
+  // (which this handler no longer returns on the dispatch path) are
+  // replaced with the new dispatched/acIds response shape.
+  return test('AC1/AC6 (migrated): capture-all dispatches ONE workflow call covering every targeted AC, and skips the untargeted one with a named reason', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
@@ -212,11 +248,13 @@ queue.push(function() {
     var res = makeRes();
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(res._json.captured.length, 2, 'both targeted ACs must be captured');
-    assert.deepStrictEqual(res._json.captured.map(function(c) { return c.acId; }), ['AC1', 'AC2']);
+    assert.strictEqual(res._json.dispatched, true, 'both targeted ACs must be dispatched together');
+    assert.deepStrictEqual(res._json.acIds.slice().sort(), ['AC1', 'AC2']);
     assert.strictEqual(res._json.skipped.length, 1);
     assert.deepStrictEqual(res._json.skipped[0], { acId: 'AC3', reason: 'no capture target set' });
-    assert.strictEqual(res._json.failed.length, 0);
+
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureInProgress.AC1 && reloaded.captureInProgress.AC2, 'both targeted ACs must be marked in-progress');
   });
 });
 
@@ -256,7 +294,25 @@ queue.push(function() {
 });
 
 queue.push(function() {
-  return test('AC3: capture-all records real elapsed wall-clock time, not a hardcoded/default value', async function() {
+  // ppc-s9 Task 8 flag for the orchestrator (NOT a mechanical mock-swap --
+  // a genuine capability removal from an EARLIER task, Task 5, being made
+  // visible here for the first time): handlePostCaptureAll used to measure
+  // real synchronous wall-clock duration because it was the ONE process
+  // actually running the capture loop. Task 5's own source comment
+  // (src/web-ui/routes/playback-evidence.js, directly above this handler's
+  // response) states explicitly that durationMs/exceedsTimingThreshold are
+  // "now always 0/false rather than computed from a real synchronous
+  // measurement" and that a real async-duration metric is "out of this
+  // task's scope". There is no equivalent real-duration measurement
+  // anywhere in the new dispatch-based flow (not in this handler, not in
+  // the worker script, not in the finalise step) -- the capability is
+  // simply gone, not relocated. This test is rewritten to assert the NEW
+  // documented contract (always 0, nothing persisted) so a future
+  // regression of THAT contract is still caught, but the original AC3
+  // ("records real elapsed wall-clock time") is no longer true and could
+  // not be mechanically preserved. Flagged explicitly in this task's final
+  // report.
+  return test('AC3 (capability removed by ppc-s9 Task 5, not Task 8 -- see comment above): capture-all no longer measures real duration; durationMs is always 0 and nothing is persisted', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
@@ -266,25 +322,29 @@ queue.push(function() {
     var res = makeRes();
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(typeof res._json.durationMs, 'number');
-    assert.ok(res._json.durationMs >= 0, 'duration must be a real, non-negative measured value');
+    assert.strictEqual(res._json.durationMs, 0, 'durationMs is now always 0 -- no real synchronous measurement exists any more (Task 5\'s own documented scope cut)');
     var reloaded = store2.getJourney(setup.journeyId);
-    assert.strictEqual(typeof reloaded.captureAllDuration, 'number', 'duration must be persisted as DoD evidence');
-    assert.ok(reloaded.captureAllCompletedAt, 'completion timestamp must be persisted alongside the duration');
+    assert.strictEqual(reloaded.captureAllDuration, undefined, 'nothing is persisted for captureAllDuration any more -- this handler no longer measures it');
+    assert.strictEqual(reloaded.captureAllCompletedAt, undefined);
   });
 });
 
 queue.push(function() {
-  return test('AC4: a run whose measured duration exceeds 60s calls the decisions-log writer with a SCOPE payload, and still reports its successful ACs', async function() {
+  // ppc-s9 Task 8 flag for the orchestrator (same capability removal as the
+  // AC3 test immediately above, not a Task 8 mock-migration issue):
+  // measureCaptureDuration/checkTimingThreshold/decisionsLogWriter.appendScopeNote
+  // were all removed from handlePostCaptureAll by Task 5 -- there is no
+  // synchronous duration for this handler to check against a 60s threshold
+  // any more, so the decisions-log writer is never called from this path.
+  // Rewritten to assert the NEW contract (writer never called, threshold
+  // flag always false) rather than silently deleting this test.
+  return test('AC4 (capability removed by ppc-s9 Task 5, not Task 8 -- see comment above): capture-all never calls the decisions-log writer or reports exceedsTimingThreshold any more', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
     setupFakeCapture('ppc-s2-threshold');
 
     var decisionsLogWriter = require('../src/web-ui/adapters/decisions-log-writer');
-    var captureAllModule = require('../src/utils/capture-all');
-    var originalMeasure = captureAllModule.measureCaptureDuration;
-    captureAllModule.measureCaptureDuration = function() { return 65000; };
     var writerCalled = null;
     decisionsLogWriter.setDecisionsLogWriter(async function(journey, ownerRepo, token, payload) { writerCalled = payload; });
 
@@ -293,53 +353,60 @@ queue.push(function() {
       var res = makeRes();
       await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-      assert.ok(writerCalled, 'the decisions-log writer must be called when the threshold is exceeded');
-      assert.strictEqual(writerCalled.durationMs, 65000);
-      assert.strictEqual(res._status === null || res._status === 200, true, 'the run itself must still complete and report success, not fail because the threshold was exceeded');
-      assert.strictEqual(res._json.captured.length, 1);
-      assert.strictEqual(res._json.exceedsTimingThreshold, true);
+      assert.strictEqual(writerCalled, null, 'the decisions-log writer must never be called -- there is no synchronous duration left to check against a threshold');
+      assert.strictEqual(res._status === null || res._status === 200, true, 'the run itself must still complete and report success');
+      assert.strictEqual(res._json.dispatched, true);
+      assert.strictEqual(res._json.exceedsTimingThreshold, false, 'always false now -- no real measurement exists to compare against the threshold');
     } finally {
-      captureAllModule.measureCaptureDuration = originalMeasure;
       decisionsLogWriter._resetDecisionsLogWriter();
     }
   });
 });
 
 queue.push(function() {
-  return test('AC5: one AC\'s capture failure does not discard the others\' successful results', async function() {
+  // ppc-s9 Task 8 migration note: this handler no longer navigates/captures
+  // per-AC at all -- there is no longer a point in THIS handler where one
+  // AC's own navigation can throw while its siblings succeed (Task 5: one
+  // dispatch call covers the whole group, and it either succeeds or fails
+  // as a whole -- the whole-group dispatch-failure case is already covered
+  // by this file's own "AC2: handlePostCaptureAll releases the capture-all
+  // lock even on a dispatch failure" equivalent in
+  // check-ppc-s9-capture-dispatch-wiring.js). The REAL per-AC partial-failure
+  // concept this test used to prove ("one AC's failure doesn't discard the
+  // others' results") now lives entirely in handleGetPlaybackEvidence's own
+  // finalise step, once the dispatched workflow's artifact comes back with
+  // one AC's screenshot missing -- already covered by
+  // check-ppc-s9-capture-dispatch-wiring.js's own "a found group with ONE AC
+  // permanently missing from result.screenshots stays in-progress" and
+  // "...is bounded by CAPTURE_WAIT_WINDOW_MS" tests (AC1 finalises normally,
+  // AC2 does not, in the SAME group). What's left as this handler's own
+  // responsibility: proving the dispatch itself is a SINGLE call covering
+  // every targeted AC, never split per-AC (so a per-AC failure couldn't even
+  // be introduced at this layer).
+  return test('AC5 (migrated -- partial-failure coverage moved to check-ppc-s9-capture-dispatch-wiring.js\'s own finalise tests): capture-all dispatches all 3 targeted ACs in ONE call, never split per-AC', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
     store2.setCaptureTarget(setup.journeyId, 'AC2', 'http://localhost:3000/b', '#b');
     store2.setCaptureTarget(setup.journeyId, 'AC3', 'http://localhost:3000/c', '#c');
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s2-partial-fail-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var fakePage = {
-      goto: async function(url) {
-        if (url === 'http://localhost:3000/b') throw new Error('simulated navigation timeout');
-      },
-      screenshot: async function(opts) {
-        var abs = path.join(tmpRoot, opts.path);
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
-      }
-    };
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
+    installFakeNonceStore();
+    var dispatchCallCount = 0;
+    var capturedAcIds = null;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function(args) { dispatchCallCount++; capturedAcIds = args.acIds; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
     });
-    require('../src/web-ui/adapters/artefact-commit-writer').setArtefactCommitAdapter(async function() { return { ok: true }; });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
     var res = makeRes();
     await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
 
-    assert.strictEqual(res._json.captured.length, 2, 'AC1 and AC3 must still succeed');
-    assert.deepStrictEqual(res._json.captured.map(function(c) { return c.acId; }), ['AC1', 'AC3']);
-    assert.strictEqual(res._json.failed.length, 1);
-    assert.strictEqual(res._json.failed[0].acId, 'AC2');
-    assert.strictEqual(res._json.failed[0].retry, true, 'the failed AC must carry a retry flag');
+    assert.strictEqual(dispatchCallCount, 1, 'exactly one dispatch call for all 3 ACs -- there is no per-AC loop left in this handler for one AC to fail independently of the others');
+    assert.deepStrictEqual(capturedAcIds.slice().sort(), ['AC1', 'AC2', 'AC3']);
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureInProgress.AC1 && reloaded.captureInProgress.AC2 && reloaded.captureInProgress.AC3, 'all 3 ACs must be marked in-progress together');
   });
 });
 
@@ -348,7 +415,11 @@ queue.push(function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     var adapterCalled = false;
-    sessionPageAdapter.setSessionPageAdapter(async function() { adapterCalled = true; return { page: {}, browser: { close: async function() {} } }; });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { adapterCalled = true; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
     var res = makeRes();
@@ -464,97 +535,127 @@ queue.push(function() {
 });
 
 queue.push(function() {
-  return test('captureAllFailed: a failed AC persists a failure record that handleGetPlaybackEvidence renders as an escaped role="alert" notice, successful ACs unaffected', async function() {
+  // ppc-s9 Task 8 migration note: the OLD per-AC navigation failure (one
+  // AC's page.goto throws while its sibling succeeds, both inside this
+  // handler's own synchronous loop) no longer exists -- Task 5 removed that
+  // loop entirely. The equivalent failure mode under the dispatch-based flow
+  // is a downloaded capture-worker archive missing one AC's own screenshot
+  // once CAPTURE_WAIT_WINDOW_MS elapses (handleGetPlaybackEvidence's own
+  // finalise step, Task 6) -- already exercised at the JSON/state level by
+  // check-ppc-s9-capture-dispatch-wiring.js's own "bounded by
+  // CAPTURE_WAIT_WINDOW_MS, not retried forever" test. This test is rewritten
+  // to drive that SAME finalise path directly (rather than via
+  // handlePostCaptureAll, which no longer has anything to do with per-AC
+  // failure) and keeps its own distinguishing value: the HTML-rendering
+  // assertions (role="alert" markup, "Capture failed" text, exactly one
+  // notice for the one failed AC) that the wiring file's own test does not
+  // check. The error message is now always the fixed "capture workflow did
+  // not complete within the expected window" string (never
+  // attacker-controlled dynamic content, unlike the old thrown-Error
+  // message), so the original crafted-HTML-escaping scenario no longer
+  // applies as a distinct case -- _escapeHtml is still applied in the render
+  // function regardless (see src/web-ui/routes/playback-evidence.js).
+  return test('captureAllFailed (migrated): a per-AC screenshot that never arrives persists a failure record that handleGetPlaybackEvidence renders as a role="alert" notice, the finalised sibling AC unaffected', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
     store2.setCaptureTarget(setup.journeyId, 'AC2', 'http://localhost:3000/b', '#b');
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s2-failed-render-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var htmlErrorMessage = '<script>alert(1)</script>';
-    var fakePage = {
-      goto: async function(url) {
-        if (url === 'http://localhost:3000/b') throw new Error(htmlErrorMessage);
-      },
-      screenshot: async function(opts) {
-        var abs = path.join(tmpRoot, opts.path);
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    // 6 minutes ago -- past CAPTURE_WAIT_WINDOW_MS, same convention
+    // check-ppc-s9-capture-dispatch-wiring.js's own timeout tests use.
+    var dispatchedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+    store2.setJourneyFields(setup.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-ppc-s2-render-1', dispatchedAt: dispatchedAt },
+        AC2: { correlationId: 'corr-ppc-s2-render-1', dispatchedAt: dispatchedAt }
       }
-    };
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
+    });
+
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: true, archiveDownloadUrl: 'https://example.invalid/archive.zip' }; },
+      // AC2's own screenshot never made it into the archive.
+      downloadCaptureArtifact: async function() { return { screenshots: { AC1: Buffer.from('fake-png-bytes-AC1-render') }, videoBuffer: null }; }
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
-    var captureReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
-    var captureRes = makeRes();
-    await pe.handlePostCaptureAll(captureReq, captureRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
-    assert.strictEqual(captureRes._json.failed.length, 1, 'AC2 must fail in this run');
-    assert.strictEqual(captureRes._json.captured.length, 1, 'AC1 must still succeed in the same run');
-
     var htmlReq = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
     var htmlRes = makeRes();
-    await pe.handleGetPlaybackEvidence(htmlReq, htmlRes, null, null);
+    await pe.handleGetPlaybackEvidence(htmlReq, htmlRes, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
     var html = htmlRes._body;
 
     assert.ok(html.indexOf('role="alert"') !== -1, 'the failed AC must render a role="alert" notice');
     assert.ok(html.indexOf('Capture failed') !== -1, 'the failure notice must contain the exact "Capture failed" text');
-    assert.ok(html.indexOf('&lt;script&gt;') !== -1, 'the error message must be HTML-escaped');
-    assert.ok(html.indexOf('<script>alert(1)</script>') === -1, 'the raw, unescaped error message must never appear in the rendered HTML');
+    assert.ok(html.indexOf('capture workflow did not complete within the expected window') !== -1, 'the exact EXISTING captureAllFailed message must render');
     // Only AC2 failed -- exactly one notice must render, proving AC1's
-    // (successful) row does not also carry a failure notice.
+    // (successfully finalised) row does not also carry a failure notice.
     var alertCount = (html.match(/role="alert"/g) || []).length;
-    assert.strictEqual(alertCount, 1, 'only the one failed AC (AC2) must show a failure notice -- the successful AC (AC1) must show none');
+    assert.strictEqual(alertCount, 1, 'only the one failed AC (AC2) must show a failure notice -- the finalised AC (AC1) must show none');
+
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureScreenshots.AC1, 'AC1 must still be finalised normally');
+    assert.deepStrictEqual(reloaded.captureAllFailed.AC2, { error: 'capture workflow did not complete within the expected window', retry: true });
   });
 });
 
 queue.push(function() {
-  return test('captureAllFailed: a successful retry clears the stale failure entry, so the notice disappears on the next render', async function() {
+  // ppc-s9 Task 8 migration note: "a successful retry" used to mean
+  // handlePostCaptureAll's own in-process loop running a second time and
+  // succeeding. Under the dispatch-based flow, a retry is a fresh dispatch
+  // (new captureInProgress entry, new correlationId) whose LATER finalise
+  // check finds the screenshot that was missing the first time -- driven
+  // directly here via the same finalise path as the test immediately above,
+  // for the same reason (handlePostCaptureAll itself has nothing left to do
+  // with per-AC success/failure).
+  return test('captureAllFailed (migrated): a retry whose finalise check later finds the screenshot clears the stale failure entry, so the notice disappears on the next render', async function() {
     var store2 = getStore();
     var setup = setupDodCompleteJourney(store2, {});
     store2.setCaptureTarget(setup.journeyId, 'AC1', 'http://localhost:3000/a', '#a');
     store2.setCaptureTarget(setup.journeyId, 'AC2', 'http://localhost:3000/b', '#b');
 
-    var tmpRoot = path.join(os.tmpdir(), 'ppc-s2-clear-retry-' + Date.now());
-    fs.mkdirSync(tmpRoot, { recursive: true });
-    repoRootAdapter.setRepoRoot(tmpRoot);
-    var shouldThrow = true;
-    var fakePage = {
-      goto: async function(url) {
-        if (shouldThrow && url === 'http://localhost:3000/b') throw new Error('simulated navigation timeout');
-      },
-      screenshot: async function(opts) {
-        var abs = path.join(tmpRoot, opts.path);
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    var dispatchedAt1 = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+    store2.setJourneyFields(setup.journeyId, {
+      captureInProgress: {
+        AC1: { correlationId: 'corr-ppc-s2-retry-1', dispatchedAt: dispatchedAt1 },
+        AC2: { correlationId: 'corr-ppc-s2-retry-1', dispatchedAt: dispatchedAt1 }
       }
-    };
-    sessionPageAdapter.setSessionPageAdapter(async function() {
-      return { page: fakePage, browser: { close: async function() {}, newContext: _noOpVideoNewContext() } };
+    });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function() { return { found: true, archiveDownloadUrl: 'https://example.invalid/archive-1.zip' }; },
+      downloadCaptureArtifact: async function() { return { screenshots: { AC1: Buffer.from('ac1-bytes') }, videoBuffer: null }; }
     });
     artefactCommitWriter.setArtefactCommitAdapter(async function() { return { ok: true }; });
 
-    var req1 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
-    await pe.handlePostCaptureAll(req1, makeRes(), null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
-
     var htmlReqBefore = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
     var htmlResBefore = makeRes();
-    await pe.handleGetPlaybackEvidence(htmlReqBefore, htmlResBefore, null, null);
-    assert.ok(htmlResBefore._body.indexOf('role="alert"') !== -1, 'AC2 must show a failure notice after the first (failing) run');
+    await pe.handleGetPlaybackEvidence(htmlReqBefore, htmlResBefore, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    assert.ok(htmlResBefore._body.indexOf('role="alert"') !== -1, 'AC2 must show a failure notice after the first (timed-out) run');
 
-    shouldThrow = false;
-    var req2 = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
-    var res2 = makeRes();
-    await pe.handlePostCaptureAll(req2, res2, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
-    assert.strictEqual(res2._json.failed.length, 0, 'the retry must succeed for every AC');
+    // Retry: AC2 is re-dispatched (a fresh captureInProgress entry, as the
+    // real handlePostCaptureTrigger/handlePostCaptureAll would write), and
+    // this time the finalise check finds its screenshot.
+    var dispatchedAt2 = new Date().toISOString();
+    store2.setJourneyFields(setup.journeyId, {
+      captureInProgress: { AC2: { correlationId: 'corr-ppc-s2-retry-2', dispatchedAt: dispatchedAt2 } }
+    });
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { throw new Error('must not be called by the GET handler'); },
+      checkCaptureArtifact: async function(correlationId) {
+        assert.strictEqual(correlationId, 'corr-ppc-s2-retry-2');
+        return { found: true, archiveDownloadUrl: 'https://example.invalid/archive-2.zip' };
+      },
+      downloadCaptureArtifact: async function() { return { screenshots: { AC2: Buffer.from('ac2-bytes-retry') }, videoBuffer: null }; }
+    });
 
     var htmlReqAfter = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
     var htmlResAfter = makeRes();
-    await pe.handleGetPlaybackEvidence(htmlReqAfter, htmlResAfter, null, null);
+    await pe.handleGetPlaybackEvidence(htmlReqAfter, htmlResAfter, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+
     assert.ok(htmlResAfter._body.indexOf('role="alert"') === -1, 'the stale failure notice must be cleared once the retry succeeds');
+    var reloaded = store2.getJourney(setup.journeyId);
+    assert.ok(reloaded.captureScreenshots.AC2, 'AC2 must now be finalised');
+    assert.strictEqual(reloaded.captureAllFailed.AC2, undefined, 'the stale captureAllFailed entry for AC2 must be cleared');
   });
 });
 
