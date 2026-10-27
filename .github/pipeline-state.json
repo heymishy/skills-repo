@@ -43386,7 +43386,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T19:29:48.518Z",
+              "updatedAt": "2026-10-27T19:30:38.845Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -43427,7 +43427,8 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "draft",
-              "dodStatus": "not-started"
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1031"
             },
             {
               "slug": "ppc-s8",
