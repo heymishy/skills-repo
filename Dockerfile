@@ -24,19 +24,6 @@ COPY src/ ./src/
 # ────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS production
 
-# ppc-s8: self-service capture (session-page-adapter.js's realGetAuthenticatedPage)
-# needs a real, runnable headless browser in THIS image, not just in dev/CI.
-# Playwright's own bundled Chromium download is built against glibc and is
-# not officially supported on Alpine's musl libc -- the standard, documented
-# workaround is installing Alpine's own native 'chromium' package (apk
-# resolves its own required runtime libraries, e.g. nss/freetype/harfbuzz,
-# automatically as package dependencies) and pointing playwright-core at it
-# via executablePath, rather than trying to get Playwright's own glibc build
-# to run on musl. Must run as root (before USER node below) since apk add
-# requires root privileges.
-RUN apk add --no-cache chromium ca-certificates ttf-freefont
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 # Security: run as dedicated non-root user (ADR constraint: container non-root)
 # node:alpine already includes a 'node' user (uid 1000)
 USER node
@@ -48,19 +35,6 @@ COPY --chown=node:node package*.json ./
 
 # Install production dependencies only
 RUN npm ci --omit=dev --ignore-scripts
-
-# ppc-s8: playwright-core is deliberately NOT in package.json's own
-# dependencies -- this repo's package.json is also published as the
-# @heymishy/skills-repo CLI npm package (see "bin"/"publishConfig" above),
-# and tests/check-cli-outer-loop.js's own NFR3 explicitly guards that
-# package's dependency list against unrelated growth (src/web-ui/ is not
-# even in the published "files" list). playwright-core is a production-
-# Docker-image-only runtime need for the self-service capture feature, not
-# a CLI dependency, so it is installed here as an explicit extra step
-# instead -- pinned to the same version as @playwright/test's own
-# devDependency (package.json) to avoid browser-protocol version skew
-# between dev/CI's own Playwright and this image's.
-RUN npm install playwright-core@1.59.1 --no-save --ignore-scripts
 
 # Copy application source from builder
 COPY --chown=node:node --from=builder /app/src ./src/
