@@ -151,4 +151,20 @@ queue.push(function() {
   });
 });
 
+console.log('\n[ppc-s6] AC6: responsive Scope/Benefit layout');
+
+queue.push(function() {
+  return test('T7 (AC6): Scope/Benefit summary declares an explicit @media (max-width: 768px) single-column override', function() {
+    var store4 = getStore();
+    var setup = setupDodCompleteJourney(store4, {});
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      assert.ok(res._body.indexOf('@media (max-width: 768px)') !== -1,
+        'DESIGN.md requires an explicit breakpoint override when Scope/Benefit render as multi-column -- "not specified is not a valid shipped state"');
+      assert.ok(res._body.indexOf('grid-template-columns:1fr 1fr') !== -1, 'Scope/Benefit must render as an actual multi-column grid at desktop width, not already single-column (otherwise the override would be meaningless)');
+    });
+  });
+});
+
 (async function() { for (var i = 0; i < queue.length; i++) { await queue[i](); } console.log('\n' + passed + ' passed, ' + failed + ' failed'); if (failed > 0) process.exitCode = 1; })();
