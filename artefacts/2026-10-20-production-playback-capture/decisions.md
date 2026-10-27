@@ -320,3 +320,17 @@ Require stack:
 **Revisit trigger:** If a future change makes this link CSS-positioned, conditionally hidden via client-side script, or otherwise layout-dependent, this RISK-ACCEPT no longer applies -- require a real check or Playwright visible-state assertion at that point.
 
 ---
+
+**2026-10-27 | RISK-ACCEPT | `ppc-s6` shipped with narrower automated regression coverage than `ppc-s6-test-plan.md` specified -- found retroactively at `/definition-of-done`, not caught before merge**
+
+**Risk:** Comparing the merged `tests/check-ppc-s6-dashboard-shell-parity.js` (7 tests, T1-T7) against the 14 test cases named in `test-plans/ppc-s6-test-plan.md` at /definition-of-done surfaced four concrete gaps: (1) `handleGetPlaybackEvidence_doesNotCallRenderShellDirectly` -- the structural regression guard against a future accidental direct `renderShell()` call (the exact `/review` finding `1-H1` this story exists to fix) -- was never implemented; (2) `handleGetPlaybackEvidence_summaryContent_neverReadFromLocalDisk` -- the ADR-025 regression guard (fs.readFileSync spy asserting it's never called) -- was never implemented; (3) AC4's "missing artefact" case is tested only for `discovery.md` (T4) -- the symmetric `benefit-metric.md`-missing case named explicitly in the test plan has no dedicated test; (4) AC6's two planned Playwright E2E tests (`tests/e2e/ppc-s6-responsive-summary.spec.js`) were never written -- AC6 was instead verified once, manually, via a live Chrome session's parsed CSSOM during `/verify-completion`, with no automated check protecting the 768px breakpoint behaviour going forward.
+
+**Decision:** Accept the gap rather than reopen the merged PR. All 6 ACs are independently confirmed true right now: AC1/AC2 (not calling `renderShell` directly, not reading local disk) are true by direct source inspection of the merged `playback-evidence.js` -- the implementation only imports and calls `renderShellWithNav`/`_fetchArtefact`, there is no `fs.readFileSync` call site for summary content -- just not protected by a test that would catch a future regression. AC4's `benefit-metric.md` path is structurally identical to the tested `discovery.md` path (same `_fetchSummaryContent` helper, each artefact type independently try/caught). AC6 passed a genuine real-browser check, just a one-time one. None of the four gaps represents a currently-failing AC; all four represent reduced regression protection going forward.
+
+**Rationale:** Reopening a merged, CI-green PR to add four tests is disproportionate to the actual risk -- none of the four code paths is complex, frequently-touched, or has shown signs of regressing historically. A small fast-follow (same PR-weight as `ppc-s10`'s own bookkeeping-only commits) is the right-sized fix, not a new story. Logged here rather than silently absorbed, consistent with this feature's own established practice of recording test-plan-vs-actual deviations even when the underlying AC is not in question (mirrors `ppc-s10`'s AC1/AC2 evidence-class gap, logged the same way two days earlier).
+
+**Made by:** Claude (session), via `/definition-of-done`, 2026-10-27.
+
+**Revisit trigger:** If `playback-evidence.js`'s render path is touched again before the fast-follow lands, add the four missing tests as part of that change rather than letting the gap compound further.
+
+---
