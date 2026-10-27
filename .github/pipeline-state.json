@@ -42988,7 +42988,7 @@
         {
           "slug": "ppc-self-service-capture",
           "name": "Tenants can self-serve playback evidence for their own DoD-complete features",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ppc-s1",
@@ -43382,11 +43382,11 @@
             {
               "slug": "ppc-s7",
               "name": "Record an in-app sign-off decision on captured evidence",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T20:42:38.482Z",
+              "updatedAt": "2026-10-27T20:44:35.698Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -43427,8 +43427,11 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "dodStatus": "not-started",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1031"
+              "dodStatus": "complete",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1031",
+              "dodArtefact": "artefacts/2026-10-20-production-playback-capture/dod/ppc-s7-dod.md",
+              "releaseReady": false,
+              "blocker": "DoD COMPLETE WITH DEVIATIONS: AC4 not independently re-confirmed live (unit-tested only); nfr-profile.md Status line needs a follow-up edit to reflect ppc-s5/ppc-s6/ppc-s7 all now verified"
             },
             {
               "slug": "ppc-s8",
@@ -43611,12 +43614,14 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against. ppc-s5 adds richer (video, not just static-screenshot) evidence, structurally supporting adoption trust, but no real tenant usage exists yet to measure against.",
+          "evidence": "ppc-s1 ships the single-AC mechanism; ppc-s2 makes it meaningful at feature scale (capture-all loop). wuce has no live paying tenants yet -- real pilot-tenant adoption data does not exist to measure against. ppc-s5 adds richer (video, not just static-screenshot) evidence, structurally supporting adoption trust, but no real tenant usage exists yet to measure against. ppc-s6 removes the UX/discoverability friction named in Metric 3 own feedback loop; ppc-s7 adds a recorded sign-off decision, itself evidence the self-service loop was used end-to-end, not just opened -- but still no live tenants exist yet to measure real adoption against.",
           "contributingStories": [
             "ppc-s1",
             "ppc-s2",
             "ppc-s3",
-            "ppc-s5"
+            "ppc-s5",
+            "ppc-s6",
+            "ppc-s7"
           ]
         },
         {
@@ -43626,9 +43631,10 @@
           "baseline": "not yet established -- no self-service mechanism existed before this feature",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "ppc-s2 delivers the full-feature, single-sitting capture loop this metric measures, but wuce has no live paying tenants yet (pre-launch beta) -- no real sign-off cycle has run to measure against.",
+          "evidence": "ppc-s2 delivers the full-feature, single-sitting capture loop this metric measures, but wuce has no live paying tenants yet (pre-launch beta) -- no real sign-off cycle has run to measure against. ppc-s7 makes \"recording a sign-off decision\" literally true (journeys.data.signOff, timestamped) instead of the page-view proxy previously used -- but wuce still has no live paying tenants yet, so no real sign-off cycle has run to measure a median time against.",
           "contributingStories": [
-            "ppc-s2"
+            "ppc-s2",
+            "ppc-s7"
           ]
         },
         {
