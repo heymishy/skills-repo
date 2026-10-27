@@ -72,6 +72,21 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
+      # rcfx-s1: --with-deps below also apt-get installs ~15 Ubuntu system
+      # packages (libnss3, xvfb, fonts, etc.) -- the browser-binary cache
+      # above does NOT cover this, so every run re-downloaded them from
+      # azure.archive.ubuntu.com, which has been slow enough recently to
+      # exceed this job's 10-minute timeout outright (confirmed from 3
+      # separate timed-out runs, all stuck in this exact apt-get step, not
+      # the actual E2E tests). Caching the downloaded .deb files lets apt
+      # skip the network fetch on a cache hit and install from disk instead.
+      - name: Cache apt packages for Playwright browser deps
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives/*.deb
+          key: ${{ runner.os }}-apt-playwright-deps-v1
+
       - name: Install Playwright browsers (Chromium only)
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
         run: npx playwright install --with-deps chromium
@@ -183,6 +198,15 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      # rcfx-s1: see the e2e_enabled job's own comment on this same step --
+      # identical root cause (uncached apt-get for --with-deps), identical fix.
+      - name: Cache apt packages for Playwright browser deps
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives/*.deb
+          key: ${{ runner.os }}-apt-playwright-deps-v1
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
@@ -411,6 +435,15 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      # rcfx-s1: see the e2e_enabled job's own comment on this same step --
+      # identical root cause (uncached apt-get for --with-deps), identical fix.
+      - name: Cache apt packages for Playwright browser deps
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives/*.deb
+          key: ${{ runner.os }}-apt-playwright-deps-v1
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
