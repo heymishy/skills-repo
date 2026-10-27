@@ -90,7 +90,12 @@ function _sanitise(journey) {
     // must be listed explicitly or it silently vanishes after a
     // Postgres-backed restart. Mirrors captureScreenshots exactly -- keyed
     // by acId, value is the committed video's repo-relative path.
-    captureVideos: journey.captureVideos || {}
+    captureVideos: journey.captureVideos || {},
+    // ppc-s7: added to the allowlist per this file's own fdn-s1 rule --
+    // must be listed explicitly or it silently vanishes after a
+    // Postgres-backed restart. The recorded sign-off decision ({ status,
+    // by, at, comment, coverageSnapshot }), or null if none recorded yet.
+    signOff: journey.signOff || null
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
