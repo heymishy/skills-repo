@@ -43481,9 +43481,9 @@
               "slug": "ppc-s10",
               "name": "Wire ensureRepoFresh into capture-evidence serving routes + add Playback Evidence nav link",
               "track": "short-track",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-27T07:44:12.306Z",
+              "updatedAt": "2026-10-27T07:48:01.786Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s10-test-plan.md",
@@ -43493,7 +43493,11 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "hasDesignSystemTrack": "true",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s10-dor.md",
+              "humanOversight": "low"
             }
           ]
         }
