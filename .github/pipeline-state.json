@@ -43376,18 +43376,18 @@
             {
               "slug": "ppc-s8",
               "name": "Production bug fix: playwright module missing from the deployed image",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "amber",
               "reviewStatus": "not-started",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T18:42:11.354Z",
+              "updatedAt": "2026-10-27T08:55:49.458Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 4
+                "totalTests": 2,
+                "passing": 2
               },
               "acTotal": 5,
-              "acVerified": 4,
+              "acVerified": 3,
               "hasLayoutDependentGaps": "false",
               "hasInfraTrack": true,
               "e2eToolingRequired": "true",
@@ -43395,10 +43395,11 @@
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s8-dor.md",
               "tasks": [],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "dodStatus": "not-started",
-              "blocker": "Superseded by ppc-s9 -- in-process Chromium launch retired entirely after 2 further fast-follow fixes (sandbox, dev-shm) still failed live; AC3 considered satisfied via ppc-s9 instead",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1025"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "blocker": "AC3 never achieved by this story's own in-process approach (3 failed production attempts); resolved instead by ppc-s9's superseding GitHub Actions worker architecture -- see dod/ppc-s8-dod.md",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1025",
+              "releaseReady": false
             },
             {
               "slug": "ppc-s9",
