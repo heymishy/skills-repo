@@ -79,4 +79,48 @@ queue.push(function() {
 });
 
 console.log('\n[ppc-s6] Results');
+console.log('\n[ppc-s6] AC2/AC4: Scope/Benefit summary');
+
+var fetcher = require('../src/web-ui/adapters/artefact-fetcher');
+
+queue.push(function() {
+  return test('T3 (AC2): Scope and Benefit sections render from discovery.md/benefit-metric.md via fetchArtefact, escaped', function() {
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      if (artefactType === 'discovery') return '## Problem statement\n\nTenants cannot <see> their own evidence.';
+      if (artefactType === 'benefit-metric') return '## Metrics\n\n- Adoption: 50%';
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, { query: async function() { return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] }; } }).then(function() {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      assert.ok(res._body.indexOf('Tenants cannot') !== -1, 'Scope section must show the fetched Problem statement content');
+      assert.ok(res._body.indexOf('&lt;see&gt;') !== -1, 'fetched content must be HTML-escaped (XSS guard)');
+      assert.ok(res._body.indexOf('<see>') === -1, 'must never render unescaped tenant-authored content as literal HTML');
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T4 (AC4): a missing discovery.md shows a "not available" state naming the specific artefact, rest of page unaffected', function() {
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      if (artefactType === 'discovery') throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+      if (artefactType === 'benefit-metric') return '## Metrics\n\n- Adoption: 50%';
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    var store2 = getStore();
+    var setup = setupDodCompleteJourney(store2, {});
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, { query: async function() { return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] }; } }).then(function() {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      assert.strictEqual(res._status, 200, 'page must still render fully, not 404/500');
+      assert.ok(res._body.indexOf('discovery.md') !== -1 && res._body.indexOf('not found') !== -1, 'must name the specific missing artefact (discovery.md), not a generic message');
+      assert.ok(res._body.indexOf('<form') !== -1, 'AC list / capture forms must still render unaffected');
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); throw err; });
+  });
+});
+
 (async function() { for (var i = 0; i < queue.length; i++) { await queue[i](); } console.log('\n' + passed + ' passed, ' + failed + ' failed'); if (failed > 0) process.exitCode = 1; })();
