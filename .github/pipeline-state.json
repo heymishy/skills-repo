@@ -43326,27 +43326,53 @@
             {
               "slug": "ppc-s6",
               "name": "Dashboard-shell UX/CX parity and scope/benefit summary",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-26T04:00:00.000Z",
+              "updatedAt": "2026-10-27T09:47:35.550Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 7,
+                "passing": 7
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "true",
               "hasDesignSystemTrack": true,
               "e2eToolingRequired": "true",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-10-20-production-playback-capture/dor/ppc-s6-dor.md",
-              "tasks": [],
-              "verifyStatus": "not-started",
-              "prStatus": "none",
-              "dodStatus": "not-started"
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Wrap page in dashboard shell (AC1, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Scope/Benefit summary via fetchArtefact (AC2, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "At-a-glance coverage line (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Responsive single-column layout below 768px (AC6)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "dodStatus": "not-started",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1030"
             },
             {
               "slug": "ppc-s7",

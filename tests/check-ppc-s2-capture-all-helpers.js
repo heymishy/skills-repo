@@ -116,6 +116,10 @@ function makeReq(tenantId, productId, featureSlug, extra) {
     headers: { accept: 'text/html' }
   }, extra || {});
 }
+// ppc-s6: handleGetPlaybackEvidence's HTML branch now wraps the page in the
+// dashboard shell (renderShellWithNav), which queries pool for the Products
+// nav -- a null pool (this file's own pre-ppc-s6 convention) now throws.
+function makeMockPool() { return { query: async function() { return { rows: [] }; } }; }
 function setupDodCompleteJourneyForProgressTest(opts) {
   opts = opts || {};
   var slug = opts.featureSlug || ('ppc-s2-progress-' + Date.now() + '-' + Math.random().toString(36).slice(2));
@@ -139,7 +143,7 @@ queue.push(function() {
     var setup = setupDodCompleteJourneyForProgressTest({});
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
     var res = makeRes();
-    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool());
     var html = res._body;
     assert.ok(html.indexOf('Capture all evidence') !== -1, 'button must render when no run is in progress');
     assert.ok(html.indexOf('aria-live="polite"') === -1, 'progress markup must NOT render when no run is in progress');
@@ -156,7 +160,7 @@ queue.push(function() {
     lock.updateProgress(setup.journeyId, 2);
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug);
     var res = makeRes();
-    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool());
     var html = res._body;
     assert.ok(html.indexOf('aria-live="polite"') !== -1, 'progress markup must render when a run is in progress');
     assert.ok(html.indexOf('Capturing AC 2 of 5') !== -1, 'must show the real current/total counts from the lock state');

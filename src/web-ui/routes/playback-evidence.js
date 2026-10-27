@@ -7,7 +7,7 @@
 // journey-store.js's getJourneyByTenantProductSlug, scoped by BOTH
 // tenant_id and product_id (AC1, AC6, AC7).
 
-const { parseDodAcCoverage } = require('../../utils/dod-parsing');
+const { parseDodAcCoverage, parseBenefitMetricTargets } = require('../../utils/dod-parsing');
 // ppc-s9 (Task 6): re-wired into handleGetPlaybackEvidence's own finalise
 // step below (_finaliseInProgressCaptures), fed from a downloaded artifact
 // buffer instead of a local fs.readFileSync -- same call shape Task 5's own
@@ -15,6 +15,9 @@ const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const { ensureRepoFresh } = require('../adapters/repo-freshness');
+const { renderShellWithNav } = require('./products');
+const { extractMarkdownSection, renderCoverageSummaryHtml, computeAcCoverageSummary } = require('./playback');
+const { ArtefactNotFoundError } = require('../adapters/artefact-fetcher');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -294,12 +297,14 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
       videoHtml +
     '</li>';
   }).join('');
-  return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
-    '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
+  // ppc-s6 (AC1): body-fragment only now -- the dashboard shell (renderShellWithNav,
+  // handleGetPlaybackEvidence's own caller) supplies the <!DOCTYPE html>/<head>/<body>
+  // wrapper, title, nav, and shared styling. This function's own title is passed
+  // separately to renderShellWithNav rather than embedded here.
+  return '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
     progressHtml +
     captureAllFormHtml +
-    '<ul style="list-style:none;padding:0">' + rows + '</ul>' +
-  '</body></html>';
+    '<ul style="list-style:none;padding:0">' + rows + '</ul>';
 }
 
 function _notFound(res) {
@@ -353,6 +358,60 @@ async function _getDodAcList(journey, req, pool) {
     }
   }
   return acs;
+}
+
+// ppc-s6 (AC2, AC4): fetches discovery.md/benefit-metric.md tenant-scoped via
+// the same _fetchArtefact/_resolveOwnerRepo path ppc-s4 already uses for DoD
+// content -- each fetch is independent so one missing artefact doesn't blank
+// the other (AC4's own "rest of the page is unaffected" requirement).
+async function _fetchSummaryContent(journey, req, pool) {
+  var accessToken = req.session && req.session.accessToken;
+  var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
+  var result = { problemStatement: null, metricTargets: {}, missing: [] };
+  if (!ownerRepo || !accessToken) { result.missing.push('discovery.md', 'benefit-metric.md'); return result; }
+  try {
+    var discoveryContent = await _fetchArtefact(journey.featureSlug, 'discovery', accessToken, ownerRepo);
+    result.problemStatement = extractMarkdownSection(discoveryContent, 'Problem statement');
+  } catch (e) {
+    if (e instanceof ArtefactNotFoundError) result.missing.push('discovery.md');
+  }
+  try {
+    var benefitContent = await _fetchArtefact(journey.featureSlug, 'benefit-metric', accessToken, ownerRepo);
+    result.metricTargets = parseBenefitMetricTargets(benefitContent);
+  } catch (e) {
+    if (e instanceof ArtefactNotFoundError) result.missing.push('benefit-metric.md');
+  }
+  return result;
+}
+
+// ppc-s6 (AC2, AC6): Scope/Benefit rendered as a 2-column grid at desktop
+// width with an explicit single-column override below 768px (DESIGN.md's own
+// "not specified is not a valid shipped state" rule for multi-column content).
+function _renderSummaryHtml(summary) {
+  var scopeHtml = summary.missing.indexOf('discovery.md') !== -1
+    ? '<p class="playback-ac__empty">discovery.md not found in the connected repo.</p>'
+    : '<p>' + _escapeHtml(summary.problemStatement || 'No problem statement on file.') + '</p>';
+  var benefitHtml = summary.missing.indexOf('benefit-metric.md') !== -1
+    ? '<p class="playback-ac__empty">benefit-metric.md not found in the connected repo.</p>'
+    : '<ul class="sw-list">' + Object.keys(summary.metricTargets || {}).map(function(name) {
+        return '<li>' + _escapeHtml(name) + ': ' + _escapeHtml(summary.metricTargets[name]) + '</li>';
+      }).join('') + '</ul>';
+  return '<style>.ppc-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}' +
+    '@media (max-width: 768px){.ppc-summary-grid{grid-template-columns:1fr}}</style>' +
+    '<div class="ppc-summary-grid">' +
+      '<div class="sw-card playback-summary"><h2 class="sw-section-title">Scope</h2>' + scopeHtml + '</div>' +
+      '<div class="sw-card playback-summary"><h2 class="sw-section-title">Benefit</h2>' + benefitHtml + '</div>' +
+    '</div>';
+}
+
+// ppc-s6 (AC3): adapts ppc's own flat acs array to /playback's own
+// {stories:[{acRows}]} shape so computeAcCoverageSummary/renderCoverageSummaryHtml
+// are reused exactly as-is, per AC3's own wording -- no change to either function.
+function _coverageSummaryHtmlForAcs(acs) {
+  var structure = { stories: [{ acRows: acs.map(function(ac) {
+    return { acId: ac.acId, media: { screenshotPath: ac.screenshotPath, videoPath: ac.videoPath } };
+  }) }] };
+  return renderCoverageSummaryHtml(computeAcCoverageSummary(structure));
 }
 
 /**
@@ -598,7 +657,23 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   if (_wantsHtml(req)) {
     var csrfToken = await _csrf.generateCsrfToken(req);
     var progress = captureAllLock.getLockState(journey.journeyId);
-    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    var summary = await _fetchSummaryContent(journey, req, pool);
+    var summaryHtml = _renderSummaryHtml(summary);
+    var coverageSummaryHtml = _coverageSummaryHtmlForAcs(acs);
+    var bodyContent = summaryHtml + coverageSummaryHtml + _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    // ppc-s6 (AC1, AC5): wrap in the shared dashboard shell -- the page
+    // previously returned a bare <!DOCTYPE html> fragment with no nav, no
+    // product context, and no shared styling. renderShellWithNav fetches the
+    // Products-nav sidebar itself; the existing plain <form> elements inside
+    // bodyContent are untouched, so AC5's keyboard-operable submission still
+    // works unchanged.
+    var html = await renderShellWithNav(pool, req.session.tenantId, {
+      title: 'Playback evidence — ' + journey.featureSlug,
+      bodyContent: bodyContent,
+      user: { login: req.session.login || '' },
+      active: 'journey',
+      activeProductId: journey.productId
+    });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;
