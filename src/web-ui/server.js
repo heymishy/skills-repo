@@ -82,6 +82,8 @@ const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: se
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { handleJourneySyncResolve, handleJourneySyncUpdate }         = require('./routes/internal-sync');     // css-s1
 const { handleCaptureExchange }                                      = require('./routes/capture-worker-auth'); // ppc-s9 Task 2
+const { setNonceStoreAdapter, realNonceStoreAdapter }                = require('./adapters/capture-nonce-store'); // ppc-s9 Task 1
+const { setCaptureDispatchAdapter, realDispatchCaptureWorkflow, realCheckCaptureArtifact, realDownloadCaptureArtifact } = require('./adapters/capture-dispatch-adapter'); // ppc-s9 Task 3
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
@@ -366,6 +368,28 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setArtefactCommitAdapter(realCommitArtefact);
   console.log('[artefact-commit-writer] commitArtefact wired');
+}
+
+// ppc-s9 Tasks 1 & 3 (D37 rule 3 -- wiring is its own task, distinct from the
+// adapter/handler work itself): the two new D37 adapters this story
+// introduced (nonce-store, GitHub-dispatch) must be wired to their real
+// implementations the same way every other adapter in this file is -- never
+// under NODE_ENV=test (tests call set*Adapter() themselves with a mock); the
+// throwing stub stays active there. Without this block, every real capture
+// trigger in production hits the "Adapter not wired" stub and 502s.
+// Also active when WIRE_CAPTURE_ADAPTERS=true -- mirrors WIRE_SKILL_ADAPTERS
+// above, so a test can exercise the real wiring closure (proving it routes
+// to the real implementation, not the stub) without flipping NODE_ENV away
+// from 'test' and destabilising this file's other test-mode bootstrap paths.
+if (process.env.NODE_ENV !== 'test' || process.env.WIRE_CAPTURE_ADAPTERS === 'true') {
+  setNonceStoreAdapter(realNonceStoreAdapter);
+  setCaptureDispatchAdapter({
+    dispatchCaptureWorkflow: realDispatchCaptureWorkflow,
+    checkCaptureArtifact: realCheckCaptureArtifact,
+    downloadCaptureArtifact: realDownloadCaptureArtifact
+  });
+  console.log('[capture-nonce-store] nonceStoreAdapter wired');
+  console.log('[capture-dispatch-adapter] captureDispatchAdapter wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
