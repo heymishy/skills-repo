@@ -40,6 +40,13 @@ function getStore() {
   return store;
 }
 
+// ppc-s6: handleGetPlaybackEvidence's HTML branch now wraps the page in the
+// dashboard shell (renderShellWithNav), which queries pool for the Products
+// nav -- a null pool (this file's own pre-ppc-s6 convention) now throws.
+// A minimal mock pool with empty rows is sufficient for every assertion
+// these tests make, none of which depend on real nav content.
+function makeMockPool() { return { query: async function() { return { rows: [] }; } }; }
+
 function makeRes() {
   var res = {
     _status: null, _json: null, _body: null, _headers: {},
@@ -93,7 +100,7 @@ queue.push(function() {
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html,application/xhtml+xml' } });
     var res = makeRes();
-    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool());
 
     assert.strictEqual(res._status, 200);
     assert.ok(res._headers['Content-Type'] && res._headers['Content-Type'].indexOf('text/html') !== -1, 'must respond with an HTML content type, not JSON');
@@ -131,7 +138,7 @@ queue.push(function() {
 
     var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { headers: { accept: 'text/html' } });
     var res = makeRes();
-    await pe.handleGetPlaybackEvidence(req, res, null, null);
+    await pe.handleGetPlaybackEvidence(req, res, null, makeMockPool());
 
     var html = res._body;
     assert.ok(html.indexOf('<img') !== -1, 'AC5: captured evidence must display inline, not as a download link');

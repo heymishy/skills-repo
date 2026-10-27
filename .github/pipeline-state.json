@@ -43330,7 +43330,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-27T09:12:11.738Z",
+              "updatedAt": "2026-10-27T09:30:54.065Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -43347,7 +43347,7 @@
                 {
                   "id": "task-1",
                   "name": "Wrap page in dashboard shell (AC1, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "done",
                   "file": "artefacts/2026-10-20-production-playback-capture/plans/ppc-s6-plan.md"
                 },
                 {

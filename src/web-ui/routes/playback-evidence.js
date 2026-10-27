@@ -15,6 +15,7 @@ const { parseDodAcCoverage } = require('../../utils/dod-parsing');
 const { commitArtefact } = require('../adapters/artefact-commit-writer');
 const { getRepoRoot } = require('../adapters/repo-root');
 const { ensureRepoFresh } = require('../adapters/repo-freshness');
+const { renderShellWithNav } = require('./products');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -294,12 +295,14 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
       videoHtml +
     '</li>';
   }).join('');
-  return '<!DOCTYPE html><html><head><title>Playback evidence — ' + _escapeHtml(journey.featureSlug) + '</title></head><body>' +
-    '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
+  // ppc-s6 (AC1): body-fragment only now -- the dashboard shell (renderShellWithNav,
+  // handleGetPlaybackEvidence's own caller) supplies the <!DOCTYPE html>/<head>/<body>
+  // wrapper, title, nav, and shared styling. This function's own title is passed
+  // separately to renderShellWithNav rather than embedded here.
+  return '<h1>' + _escapeHtml(journey.featureSlug) + '</h1>' +
     progressHtml +
     captureAllFormHtml +
-    '<ul style="list-style:none;padding:0">' + rows + '</ul>' +
-  '</body></html>';
+    '<ul style="list-style:none;padding:0">' + rows + '</ul>';
 }
 
 function _notFound(res) {
@@ -598,7 +601,20 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   if (_wantsHtml(req)) {
     var csrfToken = await _csrf.generateCsrfToken(req);
     var progress = captureAllLock.getLockState(journey.journeyId);
-    var html = _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    var bodyContent = _renderPlaybackEvidenceHtml(journey, acs, csrfToken, progress);
+    // ppc-s6 (AC1, AC5): wrap in the shared dashboard shell -- the page
+    // previously returned a bare <!DOCTYPE html> fragment with no nav, no
+    // product context, and no shared styling. renderShellWithNav fetches the
+    // Products-nav sidebar itself; the existing plain <form> elements inside
+    // bodyContent are untouched, so AC5's keyboard-operable submission still
+    // works unchanged.
+    var html = await renderShellWithNav(pool, req.session.tenantId, {
+      title: 'Playback evidence — ' + journey.featureSlug,
+      bodyContent: bodyContent,
+      user: { login: req.session.login || '' },
+      active: 'journey',
+      activeProductId: journey.productId
+    });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;
