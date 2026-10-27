@@ -1494,6 +1494,13 @@ async function handleGetJourneyStageView(req, res, pool) {
       '<h1 class="sv-title">' + featureName + '</h1>',
       (_stageCostUsd != null ? '<p class="sv-cost-meta"><span class="sv-cost-badge">$' + _stageCostUsd.toFixed(4) + '</span>' + (_stageModelShort ? '<span class="sv-cost-model">' + escHtml(_stageModelShort) + '</span>' : '') + '</p>' : ''),
       '<p class="sv-sub">Viewing completed stage document. ' + (isEdit ? 'Edit below and save.' : 'Click <strong>Edit</strong> to make changes.') + '</p>',
+      // ppc-s10 (AC3, AC4): link to this feature's Playback Evidence page when
+      // one is reachable -- only when a product is connected (playback-evidence.js's
+      // own AC7 tenant-isolation gate would otherwise 403/404 a dead link), and
+      // only on the DoD stage view, where an operator is most likely to want it.
+      (stageName === 'definition-of-done' && journey.productId)
+        ? '<p class="sv-sub"><a href="/products/' + encodeURIComponent(journey.productId) + '/playback-evidence/' + encodeURIComponent(journey.featureSlug) + '">Playback evidence</a></p>'
+        : '',
       mainPanel,
     '</div>',
     !isEdit ? [
