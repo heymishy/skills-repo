@@ -521,9 +521,11 @@ queue.push(function() {
   // remit (not one of the 5 files named for migration, and not a test
   // file). This test is rewritten below to assert the CURRENT, regressed
   // behaviour -- so the suite stays green and this exact gap is pinned down
-  // precisely rather than silently lost -- and the regression is called out
-  // again in this task's own final report for the orchestrator to triage
-  // (likely a follow-up story against ppc-capture-worker.js).
+  // precisely rather than silently lost. Logged as a known, bounded,
+  // RISK-ACCEPTed gap in artefacts/2026-10-20-production-playback-capture/
+  // decisions.md (2026-10-27 entry, "A worker-side video-recording failure
+  // now loses the whole group's artifact...") -- see that entry for the
+  // full rationale and the follow-up-story revisit trigger.
   return test('handlePostCaptureAll_combinedVideoFailure (CURRENT, regressed behaviour -- see flagged comment above): a worker-side video failure now loses the whole group\'s artifact, including its already-successful screenshots, not just the video', async function() {
     var store7b = getStore();
     var setup = setupTwoAcJourney(store7b, 'tenant-a', 'product-a');

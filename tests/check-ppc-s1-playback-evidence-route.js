@@ -2,7 +2,6 @@
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
-var os = require('os');
 var passed = 0; var failed = 0; var failures = [];
 function test(name, fn) {
   try {
@@ -95,8 +94,6 @@ var pe = require('../src/web-ui/routes/playback-evidence');
 // defers that migration to this task, not duplication).
 var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
 var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
-var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
-var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 pe.setJourneyStoreModule(store);
 
 // Fake, in-memory nonce store -- mirrors

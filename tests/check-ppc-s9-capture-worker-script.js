@@ -343,7 +343,8 @@ queue.push(function() {
   });
 });
 
-// --- captureWorkerScript_closesBrowserInFinally_evenOnMidRunFailure ---
+// --- captureWorkerScript_closesBrowserInFinally_afterASuccessfulRun /
+//     captureWorkerScript_closesBrowserInFinally_evenOnMidRunFailure ---
 // ppc-s9 Task 8 addition: the OLD in-process tests this migration retired
 // (check-ppc-s1-playback-evidence-route.js's own "the Playwright browser
 // must be closed after a successful capture" / "...still closes the
@@ -382,9 +383,9 @@ queue.push(function() {
     // Make the video-recording step (which runs AFTER the screenshot loop)
     // throw, simulating a mid-run failure -- the browser must still be
     // closed via runCaptureWorker's own `finally` block, not left open.
-    var originalNewContext = fake.chromiumModule.launch;
+    var originalLaunch = fake.chromiumModule.launch;
     fake.chromiumModule.launch = async function() {
-      var browser = await originalNewContext();
+      var browser = await originalLaunch();
       var originalBrowserNewContext = browser.newContext;
       browser.newContext = async function(opts) {
         if (opts && opts.recordVideo) throw new Error('simulated mid-run video-context failure');
