@@ -27,6 +27,36 @@ function _firstGotoIn(textAfterTag) {
 }
 
 /**
+ * actr-s1 (AC3): a spec-derived URL is only ever trusted if it is a
+ * same-origin relative path -- never absolute (https://...) or
+ * protocol-relative (//...), both of which would change the host a later,
+ * session-authenticated Playwright page.goto() call actually navigates to.
+ * See decisions.md's 2026-10-28 SECURITY entry.
+ *
+ * Normalizes the string into the same shape a real WHATWG-URL-spec
+ * navigator (including Playwright's Chromium) will actually parse it as,
+ * BEFORE checking -- two confirmed bypasses were found and fixed this way:
+ * (1) ASCII tab/newline/carriage-return, which a real navigator strips
+ * before parsing (so "/\t/evil.com" is really "//evil.com"); (2) backslash,
+ * which for "special" schemes (http/https/etc.) a real navigator treats
+ * identically to forward slash (so "/\evil.com" is really "//evil.com").
+ * Without BOTH normalizations, a naive startsWith('//') check judges
+ * different bytes than what the actual downstream page.goto() call will
+ * interpret -- a validator that doesn't match the real parser it's
+ * protecting against isn't actually validating anything. See decisions.md's
+ * 2026-10-28 SECURITY FINDING entries (both bypasses logged there).
+ * @param {string|null} rawUrl
+ * @returns {string|null}
+ */
+function _validateRelativeUrl(rawUrl) {
+  if (!rawUrl) return null;
+  const sanitized = rawUrl.replace(/[\t\n\r]/g, '').replace(/\\/g, '/');
+  if (sanitized.startsWith('//')) return null;
+  if (!sanitized.startsWith('/')) return null;
+  return rawUrl;
+}
+
+/**
  * Derives a capture target {acId, url, selector} from a single E2E spec
  * file's own text. Pure, synchronous, no I/O.
  *
@@ -44,6 +74,11 @@ function _firstGotoIn(textAfterTag) {
  * the next AC's own tag (if any) found anywhere later in the file, so a
  * different AC's goto/locator can never be picked up for this one. Applies
  * uniformly to both the selector and url scans.
+ *
+ * AC3: the derived url is validated as a same-origin relative path before
+ * being returned -- an absolute (https://...) or protocol-relative (//...)
+ * value is rejected (url: null) rather than passed through, via
+ * _validateRelativeUrl.
  *
  * @param {string} specFileContent
  * @param {string} acId
@@ -71,7 +106,7 @@ function deriveCaptureTargetFromSpec(specFileContent, acId) {
 
   const rawUrl = _firstGotoIn(section);
 
-  return { acId, url: rawUrl, selector };
+  return { acId, url: _validateRelativeUrl(rawUrl), selector };
 }
 
 module.exports = { deriveCaptureTargetFromSpec };

@@ -130,6 +130,60 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2b (unit, selector mirror): bounds the scan so a later AC\'s locator never leaks into an earlier AC that has none of its own', e); }
 })();
 
+// AC3 (unit): an absolute URL found by the scan is never returned.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('https://evil.example.com/x');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'an absolute URL must never be returned');
+    pass('AC3 (unit): rejects an absolute goto URL');
+  } catch (e) { fail('AC3 (unit): rejects an absolute goto URL', e); }
+})();
+
+// AC3 (unit, edge case): protocol-relative is not "relative" for this guard.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('//evil.example.com/x');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a protocol-relative URL must never be returned -- it still changes host');
+    pass('AC3 (unit): rejects a protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit): rejects a protocol-relative goto URL', e); }
+})();
+
+// AC3 (unit, security regression -- spec-compliance review finding 2026-10-28):
+// an embedded tab between the leading "/" and a second "/" must not bypass
+// the protocol-relative guard via a naive startsWith('//') check -- any
+// real URL-spec-compliant navigator strips embedded tab/newline/CR before
+// parsing, so this string is STILL effectively protocol-relative.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('/\t/evil.com');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a tab-obscured protocol-relative URL must still be rejected -- a real navigator strips the tab and treats this as host-changing');
+    pass('AC3 (unit, security regression): rejects a tab-obscured protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit, security regression): rejects a tab-obscured protocol-relative goto URL', e); }
+})();
+
+// AC3 (unit, security regression -- 2nd spec-compliance finding, 2026-10-28):
+// a single backslash right after the leading slash must not bypass the
+// protocol-relative guard -- per the WHATWG URL spec, backslash is treated
+// identically to forward slash for special schemes (http/https/etc.) by
+// any real navigator (including Playwright's Chromium), so "/\evil.com" is
+// structurally equivalent to "//evil.com" and changes host, exactly like
+// the already-fixed tab-obscured case above.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('/\\evil.com');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a backslash-obscured protocol-relative URL must be rejected -- a real navigator treats backslash as forward slash for this purpose');
+    pass('AC3 (unit, security regression): rejects a backslash-obscured protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit, security regression): rejects a backslash-obscured protocol-relative goto URL', e); }
+})();
+
 console.log(`\n[actr-s1-capture-target-derivation] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
