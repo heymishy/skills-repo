@@ -102,6 +102,7 @@ var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
 var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 var artefactCommitWriter = require('../src/web-ui/adapters/artefact-commit-writer');
 var repoRootAdapter = require('../src/web-ui/adapters/repo-root');
+var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher'); // actr-s3 Task 2
 var captureAllLock = require('../src/web-ui/modules/capture-all-lock');
 pe.setJourneyStoreModule(store);
 
@@ -632,6 +633,153 @@ queue.push(function() {
     var reloaded = store2.getJourney(setup.journeyId);
     assert.ok(reloaded.captureScreenshots.AC2, 'AC2 must now be finalised');
     assert.strictEqual(reloaded.captureAllFailed.AC2, undefined, 'the stale captureAllFailed entry for AC2 must be cleared');
+  });
+});
+
+// actr-s3 Task 2: _resolveAutoCaptureTarget (reused directly from actr-s2,
+// per this story's own Architecture Constraint) requires acRow.storySlug --
+// only _getDodAcList's storySlugs-loop branch attaches that, and that
+// branch is never reached at all when a Postgres dodRow exists (early
+// return, confirmed by reading _getDodAcList directly) -- setupDodCompleteJourney
+// above always sets a Postgres dodRow, so it cannot be reused for these
+// tests. This helper instead drives the storySlugs-loop branch exclusively:
+// no Postgres dodRow (getArtefactsForJourney returns []), a real
+// pipelineStateStorySlugs entry, and pe.setFetcherModule mocking the
+// per-story DoD fetch (_fetchArtefact) that branch calls. All ACs in a
+// test's own scenario come from the SAME one story so they share one
+// storySlug and one DoD fixture.
+function setupStorySlugJourney(store, storySlug, dodAcRows) {
+  var slug = 'actr-s3-feature-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  var dodContent = ['## AC Coverage', '', '| AC | Satisfied? | Evidence |', '|----|------------|----------|']
+    .concat(dodAcRows.map(function(row) { return '| ' + row.acId + ' — ' + row.description + ' | Yes | x |'; }))
+    .join('\n');
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, {
+    tenantId: 'tenant-a', productId: 'product-a',
+    pipelineStateStorySlugs: [storySlug]
+  });
+  store.setPgAdapterForTesting({
+    saveJourney: async function() {},
+    getArtefactsForJourney: async function() { return []; } // forces the storySlugs-loop branch
+  });
+  store.completeStage(j.journeyId, 'definition-of-done', 'artefacts/' + slug + '/dod.md', null);
+  pe.setFetcherModule(async function(featureSlug, artefactType) {
+    if (artefactType === 'dod/' + storySlug + '-dod') return dodContent;
+    throw new Error('ArtefactNotFoundError: ' + artefactType);
+  });
+  return { journeyId: j.journeyId, featureSlug: slug, tenantId: 'tenant-a', productId: 'product-a' };
+}
+function restoreRealFetcher() { pe.setFetcherModule(artefactFetcher.fetchArtefact); }
+
+function writeAutoResolutionFixture(tmpRoot, featureSlug, storySlug, acId, specRelPath, specContent) {
+  var testPlanDir = path.join(tmpRoot, 'artefacts', featureSlug, 'test-plans');
+  fs.mkdirSync(testPlanDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(testPlanDir, storySlug + '-test-plan.md'),
+    ['## E2E Tests', '', '### t', '- **Verifies:** ' + acId, '- **File:** `' + specRelPath + '`', ''].join('\n')
+  );
+  var specDir = path.join(tmpRoot, path.dirname(specRelPath));
+  fs.mkdirSync(specDir, { recursive: true });
+  fs.writeFileSync(path.join(tmpRoot, specRelPath), specContent);
+}
+
+queue.push(function() {
+  return test('actr-s3 AC3: handlePostCaptureAll dispatches a targets array with correct per-AC values for both a manual and an auto-resolved AC', async function() {
+    var store2 = getStore();
+    var setup = setupStorySlugJourney(store2, 'actr-s3-story', [
+      { acId: 'AC1', description: 'First' },
+      { acId: 'AC2', description: 'Second' },
+      { acId: 'AC3', description: 'Third' }
+    ]);
+    store2.setCaptureTarget(setup.journeyId, 'AC1', '/manual-page', '.manual-sel');
+    var fake = setupFakeCapture('actr-s3-dispatch');
+    writeAutoResolutionFixture(fake.tmpRoot, setup.featureSlug, 'actr-s3-story', 'AC2',
+      'tests/e2e/actr-s3-fixture.spec.js',
+      '// (AC2)\nwithAuth(\'x\', async ({ page }) => {\n  await page.goto(\'/auto-page\');\n  const el = page.locator(\'.auto-sel\');\n});\n');
+    // AC3 deliberately gets no E2E entry in the test-plan.md above -- stays
+    // unresolvable, lands in skipped (exercised directly by the next test;
+    // this test only asserts the 2 INCLUDED ACs' dispatched values).
+
+    var dispatchedTargets = null;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function(args) { dispatchedTargets = args.targets; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
+
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    try {
+      await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    } finally {
+      restoreRealFetcher();
+    }
+
+    assert.ok(dispatchedTargets, 'dispatchCaptureWorkflow must have been called');
+    var byAcId = {};
+    dispatchedTargets.forEach(function(t) { byAcId[t.acId] = t; });
+    assert.deepStrictEqual(byAcId.AC1, { acId: 'AC1', url: '/manual-page', selector: '.manual-sel' });
+    assert.deepStrictEqual(byAcId.AC2, { acId: 'AC2', url: '/auto-page', selector: '.auto-sel' });
+    assert.strictEqual(byAcId.AC3, undefined, 'AC3 (unresolvable) must not be dispatched');
+  });
+});
+
+queue.push(function() {
+  return test('actr-s3 AC4: an AC whose auto-resolution fails lands in skipped, request still succeeds', async function() {
+    var store2 = getStore();
+    var setup = setupStorySlugJourney(store2, 'actr-s3-story', [{ acId: 'AC1', description: 'First' }]);
+    setupFakeCapture('actr-s3-fail'); // empty tmpRoot -- no test-plan.md for AC1 -> auto-resolution returns null
+    // No manual target either -- AC1 must land in skipped, no manual, no auto.
+    var dispatchCalled = false;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() { dispatchCalled = true; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' }, headers: { accept: 'application/json' } });
+    var res = makeRes();
+    try {
+      await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    } finally {
+      restoreRealFetcher();
+    }
+    assert.strictEqual(res._status, 200, 'must not 500 when an AC has no resolvable target of any kind');
+    assert.strictEqual(dispatchCalled, false, 'nothing to dispatch when the only AC is unresolvable');
+    assert.strictEqual(res._json.skipped[0].acId, 'AC1');
+  });
+});
+
+queue.push(function() {
+  return test('actr-s3 AC5: captureAllLock.setTotal reflects the merged manual+auto-resolved count, not just manual', async function() {
+    var store2 = getStore();
+    var setup = setupStorySlugJourney(store2, 'actr-s3-story', [
+      { acId: 'AC1', description: 'First' },
+      { acId: 'AC2', description: 'Second' },
+      { acId: 'AC3', description: 'Third' }
+    ]);
+    store2.setCaptureTarget(setup.journeyId, 'AC1', '/m1', '#m1');
+    store2.setCaptureTarget(setup.journeyId, 'AC2', '/m2', '#m2');
+    var fake = setupFakeCapture('actr-s3-total');
+    writeAutoResolutionFixture(fake.tmpRoot, setup.featureSlug, 'actr-s3-story', 'AC3',
+      'tests/e2e/actr-s3-fixture3.spec.js',
+      '// (AC3)\nwithAuth(\'x\', async ({ page }) => {\n  await page.goto(\'/auto3\');\n  const el = page.locator(\'.auto3\');\n});\n');
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function() {},
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
+    var capturedTotal = null;
+    var realSetTotal = captureAllLock.setTotal;
+    captureAllLock.setTotal = function(journeyId, total) { capturedTotal = total; return realSetTotal(journeyId, total); };
+    var req = makeReq(setup.tenantId, setup.productId, setup.featureSlug, { body: { _csrf: 'test-csrf-token' } });
+    var res = makeRes();
+    try {
+      await pe.handlePostCaptureAll(req, res, null, makeMockPool([{ repo_owner: 'acme', repo_name: 'widgets' }]));
+    } finally {
+      captureAllLock.setTotal = realSetTotal;
+      restoreRealFetcher();
+    }
+    assert.strictEqual(capturedTotal, 3, 'setTotal must reflect all 3 included ACs (2 manual + 1 auto-resolved), not just the 2 manual ones');
   });
 });
 

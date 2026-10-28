@@ -1305,7 +1305,23 @@ async function handlePostCaptureAll(req, res, _next, pool) {
 
   try {
     var acRows = await _getDodAcList(journey, req, pool);
-    var listResult = buildCaptureAllList({ acs: acRows, captureTargets: journey.captureTargets || [] });
+    var manualTargets = journey.captureTargets || [];
+    // actr-s3 (AC3, AC4): reuses actr-s2's own _resolveAutoCaptureTarget
+    // directly -- one call per AC in the group, same as the single-AC
+    // render path already does. Skips the call entirely for an AC that
+    // already has a manual target (actr-s2's own NFR-Performance pattern,
+    // AC3 there): buildCaptureAllList's manual-wins priority would discard
+    // the auto-resolved value anyway, so resolving it would be wasted work.
+    var autoResolvedTargets = [];
+    acRows.forEach(function(acRow) {
+      var hasManual = manualTargets.some(function(t) { return t.acId === acRow.acId; });
+      if (hasManual) return;
+      var resolved = _resolveAutoCaptureTarget(req, journey, acRow);
+      if (resolved) {
+        autoResolvedTargets.push({ acId: acRow.acId, url: resolved.url, selector: resolved.selector });
+      }
+    });
+    var listResult = buildCaptureAllList({ acs: acRows, captureTargets: manualTargets, autoResolvedTargets: autoResolvedTargets });
     captureAllLock.setTotal(journey.journeyId, listResult.toCapture.length);
 
     if (listResult.toCapture.length === 0) {

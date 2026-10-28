@@ -43834,25 +43834,42 @@
           "id": "actr-s3",
           "slug": "actr-s3",
           "name": "Extend bulk Capture all to include auto-resolved targets",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0,
+            "passing": 7,
             "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s3-auto-resolve-bulk-capture-targets-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "hasDesignSystemTrack": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s3-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T01:11:56.766Z"
+          "updatedAt": "2026-10-28T23:02:45.040Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Extend buildCaptureAllList to merge manual + auto-resolved targets (AC1, AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Wire handlePostCaptureAll to compute per-AC auto-resolution before buildCaptureAllList (AC3, AC4, AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s3-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1036"
         }
       ],
       "metrics": [],
