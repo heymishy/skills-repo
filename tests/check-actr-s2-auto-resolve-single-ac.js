@@ -136,6 +136,137 @@ queue.push(function() {
   });
 });
 
+console.log('\n[actr-s2] Task 3: _resolveAutoCaptureTarget (AC4, AC5)');
+
+function makeFakeJourney(featureSlug) {
+  return { featureSlug: featureSlug, productId: 'product-a', tenantId: 'tenant-a' };
+}
+
+queue.push(function() {
+  return test('T3a (AC resolution, happy path): resolves url+selector via test-plan.md + spec file', function() {
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      if (artefactType === 'test-plans/story-one-test-plan') {
+        return ['## E2E Tests', '', '### t', '- **Verifies:** AC1', '- **File:** `tests/e2e/actr-s2-fixture.spec.js`', ''].join('\n');
+      }
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    pe.setRepoPathFetcherModule(async function(owner, repo, path) {
+      if (path === 'tests/e2e/actr-s2-fixture.spec.js') {
+        return '// fixture.spec.js (story-one AC1)\nwithAuth(\'x\', async ({ page }) => {\n  await page.goto(\'/actr-s2-fixture\');\n  const el = page.locator(\'.actr-s2-target\');\n});\n';
+      }
+      throw new fetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+    });
+    var journey = makeFakeJourney('actr-s2-t3a-feature');
+    var acRow = { acId: 'AC1', storySlug: 'story-one' };
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, acRow).then(function(result) {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      pe.setRepoPathFetcherModule(fetcher.fetchRepoPath);
+      assert.deepStrictEqual(result, { url: '/actr-s2-fixture', selector: '.actr-s2-target', specFile: 'tests/e2e/actr-s2-fixture.spec.js' });
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); pe.setRepoPathFetcherModule(fetcher.fetchRepoPath); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T3b (AC4): no storySlug on the AC row -- returns null without attempting any fetch', function() {
+    var fetchAttempted = false;
+    pe.setFetcherModule(async function() { fetchAttempted = true; throw new Error('should never be called'); });
+    var journey = makeFakeJourney('actr-s2-t3b-feature');
+    var acRow = { acId: 'AC1' }; // no storySlug -- the Postgres single-row-branch case
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, acRow).then(function(result) {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      assert.strictEqual(result, null);
+      assert.strictEqual(fetchAttempted, false, 'must not attempt any fetch when storySlug is unknown');
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T3c (AC4): test-plan exists but names no E2E spec for this AC -- returns null, no spec fetch attempted', function() {
+    var specFetchAttempted = false;
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      if (artefactType === 'test-plans/story-one-test-plan') return '## Unit Tests\n\nAC1 is unit-only.\n';
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    pe.setRepoPathFetcherModule(async function() { specFetchAttempted = true; throw new Error('should never be called'); });
+    var journey = makeFakeJourney('actr-s2-t3c-feature');
+    var acRow = { acId: 'AC1', storySlug: 'story-one' };
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, acRow).then(function(result) {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      pe.setRepoPathFetcherModule(fetcher.fetchRepoPath);
+      assert.strictEqual(result, null);
+      assert.strictEqual(specFetchAttempted, false);
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); pe.setRepoPathFetcherModule(fetcher.fetchRepoPath); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T3d (AC5): test-plan.md fetch 404s -- returns null, never throws', function() {
+    pe.setFetcherModule(async function(featureSlug, artefactType) { throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType); });
+    var journey = makeFakeJourney('actr-s2-t3d-feature');
+    var acRow = { acId: 'AC1', storySlug: 'story-one' };
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, acRow).then(function(result) {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      assert.strictEqual(result, null);
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T3e (AC5): spec file fetch fails -- returns null, never throws', function() {
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      if (artefactType === 'test-plans/story-one-test-plan') {
+        return ['## E2E Tests', '', '### t', '- **Verifies:** AC1', '- **File:** `tests/e2e/missing.spec.js`', ''].join('\n');
+      }
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    pe.setRepoPathFetcherModule(async function(owner, repo, path) { throw new fetcher.ArtefactNotFoundError(owner + '/' + repo, path); });
+    var journey = makeFakeJourney('actr-s2-t3e-feature');
+    var acRow = { acId: 'AC1', storySlug: 'story-one' };
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, acRow).then(function(result) {
+      pe.setFetcherModule(fetcher.fetchArtefact);
+      pe.setRepoPathFetcherModule(fetcher.fetchRepoPath);
+      assert.strictEqual(result, null);
+    }, function(err) { pe.setFetcherModule(fetcher.fetchArtefact); pe.setRepoPathFetcherModule(fetcher.fetchRepoPath); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T3f (AC5): no connected repo (ownerRepo null) -- returns null, never throws', function() {
+    var journey = makeFakeJourney('actr-s2-t3f-feature');
+    var acRow = { acId: 'AC1', storySlug: 'story-one' };
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    var poolWithNoRepo = { query: async function() { return { rows: [] }; } };
+    return pe._resolveAutoCaptureTarget(req, poolWithNoRepo, journey, acRow).then(function(result) {
+      assert.strictEqual(result, null);
+    });
+  });
+});
+
+queue.push(function() {
+  return test('T3g (AC5, review finding): acRow is null -- returns null, never an unhandled rejection', function() {
+    var journey = makeFakeJourney('actr-s2-t3g-feature');
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, null).then(function(result) {
+      assert.strictEqual(result, null, 'acRow: null must resolve to null, not reject');
+    });
+  });
+});
+
+queue.push(function() {
+  return test('T3h (AC5, review finding): acRow is undefined -- returns null, never an unhandled rejection', function() {
+    var journey = makeFakeJourney('actr-s2-t3h-feature');
+    var req = makeReq('tenant-a', 'product-a', journey.featureSlug);
+    return pe._resolveAutoCaptureTarget(req, makeMockPool(), journey, undefined).then(function(result) {
+      assert.strictEqual(result, null, 'acRow: undefined must resolve to null, not reject');
+    });
+  });
+});
+
 // Driver: runs every queued test in order and prints the final summary.
 // Added HERE, in Task 1, not at the end of the file -- every later task's
 // own RED/GREEN step depends on this actually executing and printing

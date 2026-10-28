@@ -18,6 +18,7 @@ const { ensureRepoFresh } = require('../adapters/repo-freshness');
 const { renderShellWithNav } = require('./products');
 const { extractMarkdownSection, renderCoverageSummaryHtml, computeAcCoverageSummary } = require('./playback');
 const { ArtefactNotFoundError } = require('../adapters/artefact-fetcher');
+const { deriveCaptureTargetFromSpec } = require('../../utils/capture-target-derivation');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -47,6 +48,14 @@ var CAPTURE_WAIT_WINDOW_MS = 5 * 60 * 1000;
 // fetch through the real fetchArtefact/GitHub-Contents-API call chain.
 var _fetchArtefact = require('../adapters/artefact-fetcher').fetchArtefact;
 function setFetcherModule(fn) { _fetchArtefact = fn; }
+
+// actr-s2 (Task 3): same test-seam-wrapper convention as _fetchArtefact/
+// setFetcherModule immediately above -- fetchRepoPath already has its own
+// full D37 adapter in artefact-fetcher.js (already wired to a real
+// implementation in server.js:252), this is just this file's own
+// injectable reference to it, not a new adapter.
+var _fetchRepoPath = require('../adapters/artefact-fetcher').fetchRepoPath;
+function setRepoPathFetcherModule(fn) { _fetchRepoPath = fn; }
 
 // ppc-s4: css-parity fallback. _resolveJourney's fast path requires a
 // Postgres journeys row whose completedStages already has a
@@ -375,6 +384,47 @@ function _findE2eSpecFileForAc(testPlanContent, acId) {
     }
   }
   return null;
+}
+
+/**
+ * actr-s2 (Task 3, AC4/AC5): attempts to auto-resolve a capture target for
+ * one AC from its own story's test-plan.md + the E2E spec file it names.
+ * Returns {url, selector, specFile} on success, or null for EVERY failure
+ * mode below -- never throws, per AC5's "an auto-resolution failure must
+ * never surface as a page error" requirement:
+ *  - acRow is missing, or present but has no storySlug (Postgres single-row-branch journeys -- see
+ *    this plan's own Design notes #2)
+ *  - no connected repo / no access token
+ *  - the test-plan.md fetch 404s or fails for any other reason
+ *  - the test-plan names no E2E spec for this AC (_findE2eSpecFileForAc
+ *    returns null) -- the normal, expected case for a manual-only AC
+ *  - the spec-file fetch fails
+ *  - deriveCaptureTargetFromSpec resolves neither a url nor a selector
+ * @param {object} req
+ * @param {object} pool
+ * @param {object} journey
+ * @param {{acId: string, storySlug?: string}} acRow
+ * @returns {Promise<{url: string, selector: string, specFile: string}|null>}
+ */
+async function _resolveAutoCaptureTarget(req, pool, journey, acRow) {
+  try {
+    if (!acRow || !acRow.storySlug) return null;
+    var accessToken = req.session && req.session.accessToken;
+    var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
+    if (!ownerRepo || !accessToken) return null;
+
+    var testPlanContent = await _fetchArtefact(journey.featureSlug, 'test-plans/' + acRow.storySlug + '-test-plan', accessToken, ownerRepo);
+    var specFile = _findE2eSpecFileForAc(testPlanContent, acRow.acId);
+    if (!specFile) return null;
+
+    var specContent = await _fetchRepoPath(ownerRepo.owner, ownerRepo.repo, specFile, accessToken);
+    var derived = deriveCaptureTargetFromSpec(specContent, acRow.acId);
+    if (!derived || !derived.url || !derived.selector) return null;
+
+    return { url: derived.url, selector: derived.selector, specFile: specFile };
+  } catch (_) {
+    return null;
+  }
 }
 
 async function _getDodAcList(journey, req, pool) {
@@ -1299,11 +1349,13 @@ module.exports = {
   handlePostSignOff,
   setJourneyStoreModule,
   setFetcherModule,
+  setRepoPathFetcherModule,
   _resolveJourney,
   _resolveViaPipelineState,
   _featureDodStatus,
   _getDodAcList,
   _findE2eSpecFileForAc,
+  _resolveAutoCaptureTarget,
   _notFound,
   _sendJson,
   _renderCaptureAllProgress,
