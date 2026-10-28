@@ -1,7 +1,9 @@
 # AC Verification Script: Auto-resolve the single-AC capture target (actr-s2)
 
 **Audience:** Product owner / domain expert — pre-code sign-off, post-merge smoke test, delivery review.
-**Setup:** Open the Playback evidence page for a story that already has merged E2E test coverage (e.g. `ppc-s6`, whose test plan names `tests/e2e/ppc-s6-responsive-summary.spec.js`). You will need a product owner login for a tenant connected to this repo.
+**Setup:** Open the Playback evidence page for a story whose own `test-plan.md` names a real, existing E2E spec file covering the AC you're checking. You will need a product owner login for a tenant connected to this repo.
+
+**Updated at /verify-completion (2026-10-29):** `ppc-s6`'s own named spec file (`tests/e2e/ppc-s6-responsive-summary.spec.js`) was never actually created (confirmed during the 2026-10-27 trace run) — it is not a usable live example for Scenarios 1/2/3/6 below. No real journey anywhere in this environment currently has a qualifying fixture; this gap is logged as a RISK-ACCEPT in `decisions.md` (2026-10-29) with a follow-up action, not fixed as part of this story. All scenarios below are fully confirmed by this story's own automated route-level test suite (`tests/check-actr-s2-auto-resolve-single-ac.js`, 21/21 passing — real handler code producing real HTML, not a browser simulation); use this script for a real walkthrough once a genuinely qualifying journey exists.
 
 ## Scenario 1 (AC1) — The capture target fills itself in
 

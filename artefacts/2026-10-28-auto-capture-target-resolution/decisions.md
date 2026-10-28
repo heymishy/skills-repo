@@ -1,6 +1,14 @@
 # Decisions: Auto Capture Target Resolution
 
-## 2026-10-28 — ARCHITECTURE: reuse existing selector-derivation logic and existing adapter, no new adapter
+## 2026-10-29 — RISK-ACCEPT: live browser check deferred for actr-s2's rendered-UI change
+
+**Context:** `actr-s2` changes real rendered HTML on the playback-evidence page (conditionally suppresses the manual capture-target form, adds a new "Auto-detected from `<spec file>`" block with an Override link). `/verify-completion`'s own gate requires a real browser check, Playwright evidence, or a documented RISK-ACCEPT for any diff that changes rendered UI output.
+
+Constructing a genuine live demonstration of the new auto-resolution happy path requires a real GitHub-connected journey whose DoD-complete story has a `test-plan.md` naming a real, existing E2E spec file with a resolvable `(storySlug ACn)` tag + `page.goto`/`page.locator` pair. No such fixture currently exists anywhere in this environment: `ppc-s6`'s own named spec file (`tests/e2e/ppc-s6-responsive-summary.spec.js`) was never actually created (confirmed during the 2026-10-27 trace run), and no other DoD-complete story in any connected product currently points at a real, matching spec file. Building one artificially (e.g. retroactively adding a fake E2E spec to an already-shipped story) was judged out of scope and riskier than the gap it would close.
+
+**Decision:** RISK-ACCEPT the live-browser tier for this change. Relying instead on: (1) route-level tests that call the real handler functions and assert on the real, literal HTML strings they produce (`handleGetPlaybackEvidence`/`_renderPlaybackEvidenceHtml`, not a jsdom simulation) — these were read and traced by hand multiple times across this story's review cycle, including the exact suppression condition and the exact Override query-param wiring; (2) the fact that this change introduces no new CSS/layout, only conditional presence/absence of plain text and form elements using markup patterns already established and previously live-verified elsewhere on this same page (`ppc-s6`'s own dashboard-shell work).
+
+**Follow-up action:** Once a real DoD-complete story anywhere exists with a genuinely resolvable E2E spec reference, do a real-browser spot-check of the "Auto-detected from..." block and the Override link on that journey's playback-evidence page. Not blocking this story's own completion.
 
 **Context:** Operator flagged that `playback-evidence.js`'s capture-target entry requires a manually typed URL and CSS selector for every AC. A selector-derivation mechanism (`deriveSelectorFromSpec`/`buildCaptureList`, `scripts/playback-capture.js`, story `rpca-s2`) already exists and is unit-tested, but is dead code — never called from any real path (`runCaptureForFeature` still hardcodes its target; the only caller of `buildCaptureList` anywhere in the repo is its own test file).
 
