@@ -43692,6 +43692,89 @@
       "name": "PPC Capture Live Test",
       "health": "green",
       "track": "short"
+    },
+    {
+      "slug": "2026-10-28-auto-capture-target-resolution",
+      "name": "Auto Capture Target Resolution",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "actr-s1",
+          "slug": "actr-s1",
+          "name": "Derive capture target (URL + selector) from a story's own E2E spec",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0,
+            "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s1-derive-capture-target-from-e2e-spec-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s1-dor.md",
+          "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
+          "updatedAt": "2026-10-28T01:11:56.766Z"
+        },
+        {
+          "id": "actr-s2",
+          "slug": "actr-s2",
+          "name": "Auto-resolve the single-AC capture target before falling back to manual entry",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0,
+            "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s2-auto-resolve-single-ac-capture-target-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "hasDesignSystemTrack": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s2-dor.md",
+          "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
+          "updatedAt": "2026-10-28T01:11:56.766Z"
+        },
+        {
+          "id": "actr-s3",
+          "slug": "actr-s3",
+          "name": "Extend bulk Capture all to include auto-resolved targets",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0,
+            "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s3-auto-resolve-bulk-capture-targets-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "hasDesignSystemTrack": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s3-dor.md",
+          "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
+          "updatedAt": "2026-10-28T01:11:56.766Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-10-28T01:11:56.766Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
