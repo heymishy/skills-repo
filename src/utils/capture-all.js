@@ -5,19 +5,29 @@
 
 /**
  * ppc-s2 (AC1, AC6) -- splits a feature's DoD AC list into captureable
- * (has a stored target) and skipped (no target, named reason) groups.
- * @param {{acs: Array<{acId:string}>, captureTargets: Array<{acId:string,url:string,selector:string}>}} feature
+ * (has a stored or auto-resolved target) and skipped (neither, named reason)
+ * groups. actr-s3 (AC1, AC2): also accepts autoResolvedTargets, the same
+ * shape as captureTargets -- a manual target always wins when both exist
+ * for the same AC.
+ * @param {{acs: Array<{acId:string}>, captureTargets: Array<{acId:string,url:string,selector:string}>, autoResolvedTargets?: Array<{acId:string,url:string,selector:string}>}} feature
  * @returns {{toCapture: Array<{acId:string, target:{url:string,selector:string}}>, skipped: Array<{acId:string, reason:string}>}}
  */
 function buildCaptureAllList(feature) {
   var acs = (feature && feature.acs) || [];
   var targets = (feature && feature.captureTargets) || [];
+  var autoTargets = (feature && feature.autoResolvedTargets) || [];
   var toCapture = [];
   var skipped = [];
   acs.forEach(function(ac) {
-    var target = targets.find(function(t) { return t.acId === ac.acId; });
-    if (target) {
-      toCapture.push({ acId: ac.acId, target: { url: target.url, selector: target.selector } });
+    // Code-quality review (Task 1): first match wins when an acId is
+    // duplicated within either array -- duplicates are not expected or
+    // validated here, consistent with this module's existing pure-merge
+    // contract (no validation of its own inputs).
+    var manual = targets.find(function(t) { return t.acId === ac.acId; });
+    var auto = autoTargets.find(function(t) { return t.acId === ac.acId; });
+    var source = manual || auto;
+    if (source) {
+      toCapture.push({ acId: ac.acId, target: { url: source.url, selector: source.selector } });
     } else {
       skipped.push({ acId: ac.acId, reason: 'no capture target set' });
     }

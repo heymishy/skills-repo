@@ -39,6 +39,59 @@ queue.push(function() {
 });
 
 queue.push(function() {
+  return test('buildCaptureAllList (actr-s3 AC1): an AC with no manual target but a resolvable auto-target is included; an AC with neither is skipped', function() {
+    var feature = {
+      acs: [{ acId: 'AC1' }, { acId: 'AC2' }, { acId: 'AC3' }],
+      captureTargets: [{ acId: 'AC1', url: '/manual', selector: '#m' }],
+      autoResolvedTargets: [{ acId: 'AC2', url: '/auto', selector: '#a' }]
+    };
+    var result = ca.buildCaptureAllList(feature);
+    assert.strictEqual(result.toCapture.length, 2);
+    assert.deepStrictEqual(result.toCapture.map(function(t) { return t.acId; }), ['AC1', 'AC2']);
+    assert.strictEqual(result.skipped.length, 1);
+    assert.strictEqual(result.skipped[0].acId, 'AC3');
+  });
+});
+
+queue.push(function() {
+  return test('buildCaptureAllList (actr-s3 AC2): a manual target takes priority over a resolvable auto-target for the same AC', function() {
+    var feature = {
+      acs: [{ acId: 'AC1' }],
+      captureTargets: [{ acId: 'AC1', url: '/manual', selector: '#m' }],
+      autoResolvedTargets: [{ acId: 'AC1', url: '/auto', selector: '#a' }]
+    };
+    var result = ca.buildCaptureAllList(feature);
+    assert.deepStrictEqual(result.toCapture[0].target, { url: '/manual', selector: '#m' });
+  });
+});
+
+queue.push(function() {
+  return test('buildCaptureAllList (actr-s3 AC1, edge case): an auto-resolved-only AC is included even when captureTargets is empty', function() {
+    var feature = {
+      acs: [{ acId: 'AC1' }],
+      captureTargets: [],
+      autoResolvedTargets: [{ acId: 'AC1', url: '/auto', selector: '#a' }]
+    };
+    var result = ca.buildCaptureAllList(feature);
+    assert.strictEqual(result.toCapture.length, 1);
+    assert.deepStrictEqual(result.toCapture[0].target, { url: '/auto', selector: '#a' });
+  });
+});
+
+queue.push(function() {
+  return test('buildCaptureAllList (actr-s3 AC4, regression guard): an AC absent from BOTH captureTargets and autoResolvedTargets stays skipped, same as pre-actr-s3 behaviour', function() {
+    var feature = {
+      acs: [{ acId: 'AC1' }],
+      captureTargets: [],
+      autoResolvedTargets: []
+    };
+    var result = ca.buildCaptureAllList(feature);
+    assert.strictEqual(result.toCapture.length, 0);
+    assert.deepStrictEqual(result.skipped[0], { acId: 'AC1', reason: 'no capture target set' });
+  });
+});
+
+queue.push(function() {
   return test('measureCaptureDuration: returns the exact elapsed milliseconds between two timestamps', function() {
     assert.strictEqual(ca.measureCaptureDuration(1000, 4500), 3500);
   });
