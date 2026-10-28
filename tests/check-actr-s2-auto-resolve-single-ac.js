@@ -17,6 +17,12 @@ var queue = [];
 var store = require('../src/web-ui/modules/journey-store');
 var pe = require('../src/web-ui/routes/playback-evidence');
 var fetcher = require('../src/web-ui/adapters/artefact-fetcher');
+// Task 5: same adapters check-ppc-s3-capture-rate-limit.js and
+// check-ppc-s9-capture-dispatch-wiring.js already mock for
+// handlePostCaptureTrigger -- copied here rather than guessed, per this
+// repo's own CLAUDE.md "Mock-shape verification" rule.
+var nonceStore = require('../src/web-ui/adapters/capture-nonce-store');
+var captureDispatchAdapter = require('../src/web-ui/adapters/capture-dispatch-adapter');
 pe.setJourneyStoreModule(store);
 
 function getStore() { store._clearForTesting(); return store; }
@@ -341,6 +347,92 @@ queue.push(function() {
       assert.ok(res._body.indexOf('/manually-set-url') !== -1, 'the manual value must be shown');
       assert.ok(res._body.indexOf('/actr-s2-render-fixture') === -1, 'the auto-resolved value must NEVER be shown when a manual target already exists');
       assert.ok(res._body.indexOf('Auto-detected from') === -1, 'the auto-detected label must not appear when a manual target wins');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
+console.log('\n[actr-s2] Task 5: dispatch wiring (AC2)');
+
+// Same {set, get, del} fake-nonce-store convention as
+// check-ppc-s3-capture-rate-limit.js's installFakeNonceStore and
+// check-ppc-s9-capture-dispatch-wiring.js's installFakeNonceStore -- copied
+// exactly, not reinvented.
+function installFakeNonceStore() {
+  var records = {};
+  nonceStore.setNonceStoreAdapter({
+    set: async function(key, value) { records[key] = value; },
+    get: async function(key) { return records[key] === undefined ? null : records[key]; },
+    del: async function(key) { delete records[key]; }
+  });
+  return records;
+}
+
+queue.push(function() {
+  return test('T5 (AC2): triggering capture with no manual entry dispatches the auto-resolved target', function() {
+    installHappyPathFetchers();
+    installFakeNonceStore();
+    var dispatched = null;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function(args) { dispatched = args; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
+    var store5 = getStore();
+    var setup = setupSingleAcJourney(store5);
+    // this file's own makeReq (unlike check-ppc-s3/s9's) does not seed
+    // session.csrfToken in its base object -- set it explicitly here so
+    // csrfGuard's submitted-vs-expected comparison matches.
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug, {
+      params: { productId: 'product-a', featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' },
+      headers: { accept: 'application/json', host: 'localhost' }
+    });
+    req.session.csrfToken = 'test-csrf-token';
+    var res = makeRes();
+    return pe.handlePostCaptureTrigger(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.ok(dispatched, 'dispatchCaptureWorkflow must have been called');
+      assert.deepStrictEqual(dispatched.targets, [{ acId: 'AC1', url: '/actr-s2-render-fixture', selector: '.actr-s2-render-target' }]);
+      assert.strictEqual(res._status, 200, 'must succeed once the auto-resolved target is used, not 400');
+      var body = JSON.parse(res._body);
+      assert.strictEqual(body.ok, true);
+      assert.strictEqual(body.dispatched, true);
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T5 (AC2, regression guard): an AC with genuinely no target at all (no manual, not auto-resolvable either) still 400s exactly as before', function() {
+    // Only the artefact fetcher is mocked to throw ArtefactNotFoundError
+    // (simulating a missing test-plan.md) -- the repo-path fetcher is left
+    // at its real, unmocked implementation deliberately, since
+    // _resolveAutoCaptureTarget's try/catch returns null at this first
+    // failed fetch and never reaches the repo-path fetch at all.
+    pe.setFetcherModule(async function(featureSlug, artefactType) {
+      throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+    });
+    installFakeNonceStore();
+    var dispatched = null;
+    captureDispatchAdapter.setCaptureDispatchAdapter({
+      dispatchCaptureWorkflow: async function(args) { dispatched = args; },
+      checkCaptureArtifact: async function() { return { found: false }; },
+      downloadCaptureArtifact: async function() { return {}; }
+    });
+    var store5b = getStore();
+    var setup = setupSingleAcJourney(store5b);
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug, {
+      params: { productId: 'product-a', featureSlug: setup.featureSlug, acId: 'AC1' },
+      body: { _csrf: 'test-csrf-token' },
+      headers: { accept: 'application/json', host: 'localhost' }
+    });
+    req.session.csrfToken = 'test-csrf-token';
+    var res = makeRes();
+    return pe.handlePostCaptureTrigger(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.strictEqual(dispatched, null, 'must never dispatch when no target -- manual or auto -- is resolvable');
+      assert.strictEqual(res._status, 400);
+      var body = JSON.parse(res._body);
+      assert.strictEqual(body.error, 'no capture target set for this AC');
     }, function(err) { restoreRealFetchers(); throw err; });
   });
 });

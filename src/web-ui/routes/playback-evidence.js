@@ -1191,8 +1191,18 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   var captureTargets = journey.captureTargets || [];
   var target = _journeyStore.getCaptureTargetState(captureTargets, acId);
   if (target === _journeyStore.CAPTURE_TARGET_NOT_SET) {
-    _sendJson(res, 400, { error: 'no capture target set for this AC' });
-    return;
+    // actr-s2 (AC2): no manual target -- attempt the same auto-resolution
+    // the render path already uses, before giving up. Needs this AC's own
+    // storySlug, which isn't known from acId alone here -- resolve the DoD
+    // AC list the same way the render path does.
+    var acRows = await _getDodAcList(journey, req, pool);
+    var acRow = acRows.find(function(row) { return row.acId === acId; });
+    var autoResolved = acRow ? await _resolveAutoCaptureTarget(req, pool, journey, acRow) : null;
+    if (!autoResolved) {
+      _sendJson(res, 400, { error: 'no capture target set for this AC' });
+      return;
+    }
+    target = { acId: acId, url: autoResolved.url, selector: autoResolved.selector };
   }
 
   var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
