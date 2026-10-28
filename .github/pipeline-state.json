@@ -43766,7 +43766,7 @@
           "id": "actr-s2",
           "slug": "actr-s2",
           "name": "Auto-resolve the single-AC capture target before falling back to manual entry",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -43784,7 +43784,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s2-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T11:06:46.150Z",
+          "updatedAt": "2026-10-28T19:47:23.879Z",
           "tasks": [
             {
               "id": "task-1",
@@ -43824,8 +43824,11 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1035"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1035",
+          "releaseReady": true,
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dod/actr-s2-dod.md"
         },
         {
           "id": "actr-s3",
