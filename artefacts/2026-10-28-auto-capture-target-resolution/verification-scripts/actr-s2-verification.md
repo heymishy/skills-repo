@@ -1,7 +1,9 @@
 # AC Verification Script: Auto-resolve the single-AC capture target (actr-s2)
 
 **Audience:** Product owner / domain expert — pre-code sign-off, post-merge smoke test, delivery review.
-**Setup:** Open the Playback evidence page for a story that already has merged E2E test coverage (e.g. `ppc-s6`, whose test plan names `tests/e2e/ppc-s6-responsive-summary.spec.js`). You will need a product owner login for a tenant connected to this repo.
+**Setup:** Open the Playback evidence page for a story whose own `test-plan.md` names a real, existing E2E spec file covering the AC you're checking. You will need a product owner login for a tenant connected to this repo.
+
+**Updated 2026-10-29 (post-redesign):** `ppc-s6`'s own named spec file (`tests/e2e/ppc-s6-responsive-summary.spec.js`) was never actually created, so it still isn't a usable live example here — but that gap no longer blocks a real walkthrough. A genuinely qualifying fixture now exists and is exercised automatically on every run: `tests/e2e/actr-s2-auto-resolve-live.spec.js` seeds a real journey via `/test/seed-actr-s2-journey` (server.js, `NODE_ENV=test` only) pointing at the real `tests/e2e/actr-s2-capture-target-fixture.spec.js`, and asserts the real "Auto-detected from" block renders against the actual running server — closing the live-browser-render-check gate the earlier RISK-ACCEPT (now superseded, see `decisions.md`) had deferred. All scenarios below are confirmed both by that real Playwright spec and by this story's own route-level unit suite (`tests/check-actr-s2-auto-resolve-single-ac.js`, 21/21 passing). To walk through this by hand against that same fixture: `POST /test/seed-actr-s2-journey` (any running `NODE_ENV=test` server) and open the `productId`/`featureSlug` it returns at `/products/:productId/playback-evidence/:featureSlug`.
 
 ## Scenario 1 (AC1) — The capture target fills itself in
 

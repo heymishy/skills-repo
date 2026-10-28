@@ -18,6 +18,7 @@ const { ensureRepoFresh } = require('../adapters/repo-freshness');
 const { renderShellWithNav } = require('./products');
 const { extractMarkdownSection, renderCoverageSummaryHtml, computeAcCoverageSummary } = require('./playback');
 const { ArtefactNotFoundError } = require('../adapters/artefact-fetcher');
+const { deriveCaptureTargetFromSpec } = require('../../utils/capture-target-derivation');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -232,9 +233,19 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
         '<button type="submit">Capture all evidence</button>' +
       '</form>';
   var rows = acs.map(function(ac) {
-    var statusHtml = ac.targetSet
-      ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
-      : '<p role="status">Capture target not set</p>';
+    // actr-s2 (AC1, AC6): an auto-resolved target gets its own distinct
+    // label + an Override link (query-param driven, no client JS -- matches
+    // this page's own established no-JS convention) instead of the generic
+    // "Target: ..." line a manually-set target still uses unchanged.
+    var statusHtml;
+    if (ac.isAutoResolved) {
+      statusHtml = '<p>Auto-detected from <code>' + _escapeHtml(ac.autoResolvedSpecFile) + '</code>: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code> ' +
+        '— <a href="' + baseUrl + '?override=' + encodeURIComponent(ac.acId) + '">Override</a></p>';
+    } else if (ac.targetSet) {
+      statusHtml = '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>';
+    } else {
+      statusHtml = '<p role="status">Capture target not set</p>';
+    }
     // ppc-s9 (Task 6): re-triggering a capture that's already dispatched and
     // awaiting its artifact doesn't make sense -- suppress the normal
     // capture form while ac.captureInProgress is true, same as the
@@ -279,17 +290,26 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var failureHtml = ac.lastCaptureFailure
       ? '<p role="alert">Capture failed: ' + _escapeHtml(ac.lastCaptureFailure.error || 'unknown error') + ' -- use the button above to retry.</p>'
       : '';
-    return '<li style="margin-bottom:24px;border-bottom:1px solid #E4E7EB;padding-bottom:16px">' +
-      '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
-      statusHtml +
+    // actr-s2 (AC1, AC4, AC6): hidden ONLY when this AC's target is
+    // auto-resolved and no override has been requested for it -- every
+    // other case (not auto-resolved at all, AC4's manual-only case,
+    // override requested) renders this exact unchanged form, so AC4's
+    // "no behavioural regression" requirement holds by construction, not
+    // by a separate code path.
+    var targetForForm = (ac.target && !ac.isAutoResolved) ? ac.target : null;
+    var manualFormHtml = (ac.isAutoResolved && !ac.overrideRequested) ? '' :
       '<form method="POST" action="' + baseUrl + '/targets/' + encodeURIComponent(ac.acId) + '">' +
         _csrf.csrfField(csrfToken) +
         '<label for="url-' + _escapeHtml(ac.acId) + '">Page URL</label><br>' +
-        '<input id="url-' + _escapeHtml(ac.acId) + '" name="url" type="url" required value="' + (ac.target ? _escapeHtml(ac.target.url) : '') + '"><br>' +
+        '<input id="url-' + _escapeHtml(ac.acId) + '" name="url" type="url" required value="' + (targetForForm ? _escapeHtml(targetForForm.url) : '') + '"><br>' +
         '<label for="selector-' + _escapeHtml(ac.acId) + '">CSS selector</label><br>' +
-        '<input id="selector-' + _escapeHtml(ac.acId) + '" name="selector" type="text" required value="' + (ac.target ? _escapeHtml(ac.target.selector) : '') + '"><br>' +
+        '<input id="selector-' + _escapeHtml(ac.acId) + '" name="selector" type="text" required value="' + (targetForForm ? _escapeHtml(targetForForm.selector) : '') + '"><br>' +
         '<button type="submit">Set capture target</button>' +
-      '</form>' +
+      '</form>';
+    return '<li style="margin-bottom:24px;border-bottom:1px solid #E4E7EB;padding-bottom:16px">' +
+      '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
+      statusHtml +
+      manualFormHtml +
       captureFormHtml +
       inProgressHtml +
       failureHtml +
@@ -330,6 +350,116 @@ async function _resolveJourney(req, pool) {
   return await _resolveViaPipelineState(req, pool, tenantId, productId, featureSlug);
 }
 
+/**
+ * actr-s2 (Task 2): finds the E2E spec file path covering a given AC in a
+ * story's own test-plan.md content, by scanning its "## E2E Tests" section
+ * for a "### <test name>" block whose "**Verifies:** AC_n..." line names
+ * the AC, then reading that block's "**File:**" line. If that block's own
+ * File: line has no real path (e.g. "Same spec file, second test" --
+ * confirmed real shape, artefacts/2026-10-20-production-playback-capture/
+ * test-plans/ppc-s6-test-plan.md lines 154-157), falls back to the nearest
+ * PRECEDING block's real path within the same section.
+ * Pure, synchronous, no I/O. Never throws -- returns null for any shape it
+ * doesn't recognise (no E2E Tests section, AC not named, etc.), per AC4's
+ * "manual-only AC" case and AC5's "never surface an error" requirement.
+ * @param {string} testPlanContent
+ * @param {string} acId
+ * @returns {string|null}
+ */
+function _findE2eSpecFileForAc(testPlanContent, acId) {
+  var sectionMatch = /^## E2E Tests\s*$/m.exec(testPlanContent || '');
+  if (!sectionMatch) return null;
+
+  var afterHeading = testPlanContent.slice(sectionMatch.index + sectionMatch[0].length);
+  var nextHeadingMatch = /^## /m.exec(afterHeading);
+  var sectionText = nextHeadingMatch ? afterHeading.slice(0, nextHeadingMatch.index) : afterHeading;
+
+  var blocks = sectionText.split(/^### /m).slice(1);
+  var lastRealFile = null;
+  var acRe = new RegExp('\\b' + acId + '\\b');
+
+  for (var i = 0; i < blocks.length; i++) {
+    var block = blocks[i];
+    var fileMatch = /\*\*File:\*\*\s*(.+)/.exec(block);
+    var realPath = null;
+    if (fileMatch) {
+      var pathMatch = /`?([\w-./]+\.spec\.js)`?/.exec(fileMatch[1]);
+      if (pathMatch) {
+        realPath = pathMatch[1];
+        lastRealFile = realPath;
+      }
+    }
+    var verifiesMatch = /\*\*Verifies:\*\*\s*(.+)/.exec(block);
+    if (verifiesMatch && acRe.test(verifiesMatch[1])) {
+      return realPath || lastRealFile;
+    }
+  }
+  return null;
+}
+
+/**
+ * actr-s2 (Task 3, AC4/AC5 -- REDESIGNED post-review, see decisions.md
+ * 2026-10-29): attempts to auto-resolve a capture target for one AC from
+ * its own story's test-plan.md + the E2E spec file it names. Returns
+ * {url, selector, specFile} on success, or null for EVERY failure mode
+ * below -- never throws, per AC5's "an auto-resolution failure must never
+ * surface as a page error" requirement:
+ *  - acRow is missing, or present but has no storySlug (Postgres single-row-branch journeys)
+ *  - the test-plan.md does not exist on disk (or path traversal is attempted)
+ *  - the test-plan names no E2E spec for this AC (_findE2eSpecFileForAc
+ *    returns null) -- the normal, expected case for a manual-only AC
+ *  - the named spec file does not exist on disk (or path traversal is attempted)
+ *  - deriveCaptureTargetFromSpec resolves neither a url nor a selector
+ *
+ * Reads via the connected repo's LOCAL CLONE (getRepoRoot/ensureRepoFresh),
+ * not the GitHub Contents API -- matching this file's own already-
+ * established pattern for reading committed evidence (screenshots/videos)
+ * elsewhere in handleGetPlaybackEvidence, rather than the GitHub-API pattern
+ * _fetchSummaryContent/_getDodAcList use for discovery.md/benefit-metric.md/
+ * dod/*.md. The original design used fetchArtefact/fetchRepoPath (GitHub
+ * API) instead; this was corrected before merge after it was found to make
+ * the happy path untestable by any automated E2E spec (it required a real
+ * OAuth-authenticated session with a real GitHub token, which cannot be
+ * materialized in an automated test run). The local-clone path is fully
+ * deterministic and requires no network/auth, enabling a real Playwright
+ * E2E test (Task 7) instead of a RISK-ACCEPT.
+ * @param {object} req
+ * @param {object} journey
+ * @param {{acId: string, storySlug?: string}} acRow
+ * @returns {{url: string, selector: string, specFile: string}|null}
+ */
+function _resolveAutoCaptureTarget(req, journey, acRow) {
+  try {
+    if (!acRow || !acRow.storySlug) return null;
+
+    var repoRoot = getRepoRoot(req);
+    try { ensureRepoFresh(repoRoot); } catch (_) {}
+
+    var testPlanRelPath = 'artefacts/' + journey.featureSlug + '/test-plans/' + acRow.storySlug + '-test-plan.md';
+    var testPlanPath = _resolveSafeShotPath(repoRoot, testPlanRelPath);
+    if (!testPlanPath || !fs.existsSync(testPlanPath)) return null;
+    var testPlanContent = fs.readFileSync(testPlanPath, 'utf8');
+
+    var specFile = _findE2eSpecFileForAc(testPlanContent, acRow.acId);
+    if (!specFile) return null;
+
+    // specFile came from regex-parsed, tenant-repo-authored content -- never
+    // trust it as a safe relative path without the same traversal guard
+    // _resolveSafeShotPath already applies to every other disk read in this
+    // file (screenshot/video serving).
+    var specPath = _resolveSafeShotPath(repoRoot, specFile);
+    if (!specPath || !fs.existsSync(specPath)) return null;
+    var specContent = fs.readFileSync(specPath, 'utf8');
+
+    var derived = deriveCaptureTargetFromSpec(specContent, acRow.acId);
+    if (!derived || !derived.url || !derived.selector) return null;
+
+    return { url: derived.url, selector: derived.selector, specFile: specFile };
+  } catch (_) {
+    return null;
+  }
+}
+
 async function _getDodAcList(journey, req, pool) {
   var artefacts = await _journeyStore.getArtefactsForJourney(journey.journeyId);
   var dodRow = (artefacts || []).find(function(a) { return a.skill_name === 'definition-of-done'; });
@@ -351,7 +481,17 @@ async function _getDodAcList(journey, req, pool) {
   for (var i = 0; i < storySlugs.length; i++) {
     try {
       var content = await _fetchArtefact(journey.featureSlug, 'dod/' + storySlugs[i] + '-dod', accessToken, ownerRepo);
-      acs = acs.concat(parseDodAcCoverage(content));
+      var storySlug = storySlugs[i];
+      var storyAcs = parseDodAcCoverage(content).map(function(ac) {
+        // actr-s2 (prerequisite for AC1-AC6): tags each AC row with the
+        // story it came from -- an AC id (e.g. "AC1") is only unique WITHIN
+        // one story, not across a whole feature, so auto-resolution
+        // (Task 3) needs this to know which story's own test-plan.md to
+        // fetch. The Postgres single-row branch above (dodRow) does NOT
+        // get this treatment.
+        return Object.assign({}, ac, { storySlug: storySlug });
+      });
+      acs = acs.concat(storyAcs);
     } catch (_) {
       // One story's DoD content missing/unfetchable must not blank the
       // whole list -- the other stories' ACs are still real evidence.
@@ -688,26 +828,48 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   var videos = journey.captureVideos || {};
 
   var captureAllFailed = journey.captureAllFailed || {};
-  var acs = acRows.map(function(ac) {
-    var targetState = _journeyStore.getCaptureTargetState(captureTargets, ac.acId);
-    var targetSet = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
-    return {
-      acId: ac.acId,
-      description: ac.description,
+  var acs = [];
+  for (var acIdx = 0; acIdx < acRows.length; acIdx++) {
+    var acRow = acRows[acIdx];
+    var targetState = _journeyStore.getCaptureTargetState(captureTargets, acRow.acId);
+    var hasManualTarget = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
+    // actr-s2 (AC3, NFR-Performance): only attempt auto-resolution when no
+    // manual target already exists -- a manual target always wins, and
+    // skipping the fetch entirely when it's not even needed keeps this
+    // bounded to "one extra fetch pair per AC lacking a manual target",
+    // not "one extra fetch pair per AC unconditionally".
+    var autoResolved = hasManualTarget ? null : _resolveAutoCaptureTarget(req, journey, acRow);
+    var activeTarget = hasManualTarget ? targetState : autoResolved;
+    var targetSet = !!activeTarget;
+    acs.push({
+      acId: acRow.acId,
+      description: acRow.description,
       targetSet: targetSet,
-      target: targetSet ? targetState : null,
-      screenshotPath: screenshots[ac.acId] || null,
-      videoPath: videos[ac.acId] || null,
+      target: targetSet ? activeTarget : null,
+      // actr-s2 (AC1, AC3): true only when no manual target exists AND
+      // auto-resolution actually succeeded -- a manual target always wins
+      // (see hasManualTarget above), so this can never be true alongside a
+      // manually-set target.
+      isAutoResolved: !hasManualTarget && !!autoResolved,
+      autoResolvedSpecFile: (!hasManualTarget && autoResolved) ? autoResolved.specFile : null,
+      // actr-s2 (AC6): query-param-driven override request for this AC,
+      // read here so the render function (Task 4) can decide whether to
+      // show the manual form even though a target auto-resolved. The
+      // override round-trip itself (AC6 persistence) is Task 6 -- this is
+      // just the read side needed for the render condition below.
+      overrideRequested: !!(req.query && req.query.override === acRow.acId),
+      screenshotPath: screenshots[acRow.acId] || null,
+      videoPath: videos[acRow.acId] || null,
       // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
       // in the most recent capture-all run from one simply never attempted.
-      lastCaptureFailure: captureAllFailed[ac.acId] || null,
+      lastCaptureFailure: captureAllFailed[acRow.acId] || null,
       // ppc-s9 (Task 6): an AC whose dispatched capture hasn't resolved yet
       // (found or timed-out) -- re-triggering a capture already in flight
       // doesn't make sense, so this also suppresses the normal capture form
       // in _renderPlaybackEvidenceHtml below.
-      captureInProgress: !!inProgressAcIds[ac.acId]
-    };
-  });
+      captureInProgress: !!inProgressAcIds[acRow.acId]
+    });
+  }
   // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own
   // section to name the others -- computed here (not in the render
   // function) since it needs the full acs list, which the render function
@@ -1043,8 +1205,18 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
   var captureTargets = journey.captureTargets || [];
   var target = _journeyStore.getCaptureTargetState(captureTargets, acId);
   if (target === _journeyStore.CAPTURE_TARGET_NOT_SET) {
-    _sendJson(res, 400, { error: 'no capture target set for this AC' });
-    return;
+    // actr-s2 (AC2): no manual target -- attempt the same auto-resolution
+    // the render path already uses, before giving up. Needs this AC's own
+    // storySlug, which isn't known from acId alone here -- resolve the DoD
+    // AC list the same way the render path does.
+    var acRows = await _getDodAcList(journey, req, pool);
+    var acRow = acRows.find(function(row) { return row.acId === acId; });
+    var autoResolved = acRow ? _resolveAutoCaptureTarget(req, journey, acRow) : null;
+    if (!autoResolved) {
+      _sendJson(res, 400, { error: 'no capture target set for this AC' });
+      return;
+    }
+    target = { acId: acId, url: autoResolved.url, selector: autoResolved.selector };
   }
 
   var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
@@ -1246,6 +1418,8 @@ module.exports = {
   _resolveViaPipelineState,
   _featureDodStatus,
   _getDodAcList,
+  _findE2eSpecFileForAc,
+  _resolveAutoCaptureTarget,
   _notFound,
   _sendJson,
   _renderCaptureAllProgress,
