@@ -11,12 +11,14 @@
 /**
  * Finds the nearest page.goto('<path>') call within `textAfterTag` -- same
  * scan direction as the existing selector logic (deriveSelectorFromSpec's
- * own "nearest FOLLOWING locator" rule). `textAfterTag` is sliced to start
- * at the AC's own tag match, but is NOT YET bounded to stop before the next
- * AC's own section in a multi-AC file -- that bounding lands in a later
- * task. Returns the raw matched string (not yet validated against the
- * relative-path guard, also a later task) or null if no goto appears.
- * @param {string} textAfterTag - spec text sliced to start at the AC's own tag match
+ * own "nearest FOLLOWING locator" rule). `textAfterTag` is expected to
+ * already be bounded to the AC's own section by the caller (see
+ * deriveCaptureTargetFromSpec's `section` computation) -- this helper
+ * itself does no bounding, it only finds the first goto in whatever text
+ * it's given. Returns the raw matched string (not yet validated against
+ * the relative-path guard -- that's a later task) or null if no goto
+ * appears.
+ * @param {string} textAfterTag - spec text already bounded to one AC's own section
  * @returns {string|null}
  */
 function _firstGotoIn(textAfterTag) {
@@ -38,6 +40,11 @@ function _firstGotoIn(textAfterTag) {
  * picked up. See decisions.md's 2026-10-28 CORRECTION entry for why this
  * scans forward rather than backward.
  *
+ * AC2b: the scan above is bounded to this AC's own section -- it stops at
+ * the next AC's own tag (if any) found anywhere later in the file, so a
+ * different AC's goto/locator can never be picked up for this one. Applies
+ * uniformly to both the selector and url scans.
+ *
  * @param {string} specFileContent
  * @param {string} acId
  * @returns {{acId: string, url: string|null, selector: string|null}|null}
@@ -47,11 +54,22 @@ function deriveCaptureTargetFromSpec(specFileContent, acId) {
   const acMatch = acRe.exec(specFileContent);
   if (!acMatch) return null;
 
-  const rest = specFileContent.slice(acMatch.index);
-  const locatorMatch = rest.match(/page\.locator\(['"]([^'"]+)['"]\)/);
+  // AC2b: bound the section to the next AC tag found anywhere in the file
+  // (if any) -- generic \bAC\d+\) pattern, not this acId specifically, so a
+  // later, DIFFERENT AC's own goto/locator can never be picked up for this
+  // one. Mirrors rpca-s2-hotfix1's own per-AC-section isolation for the
+  // selector scan, now applied uniformly to both fields.
+  const afterTag = specFileContent.slice(acMatch.index + acMatch[0].length);
+  const nextAcMatch = afterTag.match(/\bAC\d+\)/);
+  const sectionEnd = nextAcMatch
+    ? acMatch.index + acMatch[0].length + nextAcMatch.index
+    : specFileContent.length;
+  const section = specFileContent.slice(acMatch.index, sectionEnd);
+
+  const locatorMatch = section.match(/page\.locator\(['"]([^'"]+)['"]\)/);
   const selector = locatorMatch ? locatorMatch[1] : null;
 
-  const rawUrl = _firstGotoIn(rest);
+  const rawUrl = _firstGotoIn(section);
 
   return { acId, url: rawUrl, selector };
 }

@@ -80,6 +80,56 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js', e); }
 })();
 
+// AC2b (unit): a later AC's own goto in the same file must never be
+// attributed to an earlier AC -- the same class of bug rpca-s2-hotfix1
+// already fixed for the selector side of this scan. AC1's OWN section
+// deliberately has NO literal goto (its real-world equivalent: a dynamic or
+// helper-wrapped navigation, like jcx-s3-emotion-curve.spec.js's own
+// openCustomerExperienceView helper) so an unbounded forward scan falls
+// through into AC2's section and finds AC2's goto instead -- that fall-
+// through is the actual bug this AC exists to prevent. If AC1's own section
+// already had a literal goto, Task 2's unbounded "first match in rest" scan
+// would already return the right answer by coincidence (nearest-wins), and
+// this test would not actually exercise the bug.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec =
+      `// fixture.spec.js (actr-fixture AC1)\n` +
+      `withAuth('ac1 test', async ({ page }) => {\n  const el = page.locator('.ac1-target');\n});\n` +
+      `// fixture.spec.js (actr-fixture AC2)\n` +
+      `withAuth('ac2 test', async ({ page }) => {\n  await page.goto('/ac2-page');\n  const el = page.locator('.ac2-target');\n});\n`;
+    const ac1Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    const ac2Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC2');
+    assert.deepStrictEqual(ac1Result, { acId: 'AC1', url: null, selector: '.ac1-target' }, 'AC1 has no goto of its own and must not borrow AC2\'s');
+    assert.deepStrictEqual(ac2Result, { acId: 'AC2', url: '/ac2-page', selector: '.ac2-target' }, 'AC2 must still resolve its own url/selector correctly');
+    pass('AC2b (unit): bounds the scan so a later AC\'s goto never leaks into an earlier AC that has none of its own');
+  } catch (e) { fail('AC2b (unit): bounds the scan so a later AC\'s goto never leaks into an earlier AC that has none of its own', e); }
+})();
+
+// AC2b (unit, selector-leak mirror case): the mirror image of the url-leak
+// test above -- AC1 has its OWN goto but no locator; AC2 has both. A later
+// AC's own locator must never be attributed to an earlier AC either,
+// mirroring rpca-s2-hotfix1's own precedent for the selector field
+// specifically (this story's own Architecture Constraints name that
+// precedent explicitly). The url-leak test above (AC1: locator but no
+// goto) does not exercise this -- selector bounding needs its own proof.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec =
+      `// fixture.spec.js (actr-fixture AC1)\n` +
+      `withAuth('ac1 test', async ({ page }) => {\n  await page.goto('/ac1-page');\n});\n` +
+      `// fixture.spec.js (actr-fixture AC2)\n` +
+      `withAuth('ac2 test', async ({ page }) => {\n  await page.goto('/ac2-page');\n  const el = page.locator('.ac2-target');\n});\n`;
+    const ac1Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    const ac2Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC2');
+    assert.deepStrictEqual(ac1Result, { acId: 'AC1', url: '/ac1-page', selector: null }, 'AC1 has no locator of its own and must not borrow AC2\'s');
+    assert.deepStrictEqual(ac2Result, { acId: 'AC2', url: '/ac2-page', selector: '.ac2-target' }, 'AC2 must still resolve its own url/selector correctly');
+    pass('AC2b (unit, selector mirror): bounds the scan so a later AC\'s locator never leaks into an earlier AC that has none of its own');
+  } catch (e) { fail('AC2b (unit, selector mirror): bounds the scan so a later AC\'s locator never leaks into an earlier AC that has none of its own', e); }
+})();
+
 console.log(`\n[actr-s1-capture-target-derivation] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
