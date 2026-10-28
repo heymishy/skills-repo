@@ -68,6 +68,74 @@ queue.push(function() {
   });
 });
 
+console.log('\n[actr-s2] Task 2: E2E spec-file finder');
+
+queue.push(function() {
+  return test('T2a: finds the File: path for the AC named in a Verifies: line', function() {
+    var content = require('fs').readFileSync('artefacts/2026-10-20-production-playback-capture/test-plans/ppc-s6-test-plan.md', 'utf8');
+    var result = pe._findE2eSpecFileForAc(content, 'AC6');
+    assert.strictEqual(result, 'tests/e2e/ppc-s6-responsive-summary.spec.js', 'must resolve the real backtick-wrapped File: path from the real ppc-s6 test-plan.md');
+  });
+});
+
+queue.push(function() {
+  return test('T2b: when two blocks both verify the same AC, the FIRST matching block\'s own File: path wins (early return, not nearest-preceding fallback)', function() {
+    var content = [
+      '## E2E Tests', '',
+      '### firstTest',
+      '- **Verifies:** AC1',
+      '- **File:** `tests/e2e/fixture.spec.js`',
+      '',
+      '### secondTest',
+      '- **Verifies:** AC1',
+      '- **File:** Same spec file, second test',
+      ''
+    ].join('\n');
+    var result = pe._findE2eSpecFileForAc(content, 'AC1');
+    assert.strictEqual(result, 'tests/e2e/fixture.spec.js', 'the FIRST matching block already has the real path -- confirms the loop returns on first match, not last');
+  });
+});
+
+queue.push(function() {
+  return test('T2c: returns null when the AC is not named in any Verifies: line (manual-only AC, AC4\'s own case)', function() {
+    var content = [
+      '## E2E Tests', '',
+      '### someTest',
+      '- **Verifies:** AC9',
+      '- **File:** `tests/e2e/fixture.spec.js`',
+      ''
+    ].join('\n');
+    var result = pe._findE2eSpecFileForAc(content, 'AC1');
+    assert.strictEqual(result, null);
+  });
+});
+
+queue.push(function() {
+  return test('T2d: returns null (never throws) when the test-plan has no E2E Tests section at all', function() {
+    var content = '## Unit Tests\n\nAC1 is covered by a unit test only.\n';
+    var result = pe._findE2eSpecFileForAc(content, 'AC1');
+    assert.strictEqual(result, null);
+  });
+});
+
+queue.push(function() {
+  return test('T2e: fallback actually returns the PRECEDING block\'s path when the matching block itself has none (not just "first block already has it")', function() {
+    var content = [
+      '## E2E Tests', '',
+      '### otherAcTest',
+      '- **Verifies:** AC2',
+      '- **File:** `tests/e2e/other-ac-fixture.spec.js`',
+      '',
+      '### targetAcTest',
+      '- **Verifies:** AC1',
+      '- **File:** Same spec file, second test',
+      ''
+    ].join('\n');
+    var result = pe._findE2eSpecFileForAc(content, 'AC1');
+    assert.strictEqual(result, 'tests/e2e/other-ac-fixture.spec.js', 'AC1\'s own matching block has no real path -- must fall back to the nearest PRECEDING block\'s real path, not return null or the wrong value');
+  });
+});
+
 // Driver: runs every queued test in order and prints the final summary.
 // Added HERE, in Task 1, not at the end of the file -- every later task's
 // own RED/GREEN step depends on this actually executing and printing

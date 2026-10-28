@@ -330,6 +330,53 @@ async function _resolveJourney(req, pool) {
   return await _resolveViaPipelineState(req, pool, tenantId, productId, featureSlug);
 }
 
+/**
+ * actr-s2 (Task 2): finds the E2E spec file path covering a given AC in a
+ * story's own test-plan.md content, by scanning its "## E2E Tests" section
+ * for a "### <test name>" block whose "**Verifies:** AC_n..." line names
+ * the AC, then reading that block's "**File:**" line. If that block's own
+ * File: line has no real path (e.g. "Same spec file, second test" --
+ * confirmed real shape, artefacts/2026-10-20-production-playback-capture/
+ * test-plans/ppc-s6-test-plan.md lines 154-157), falls back to the nearest
+ * PRECEDING block's real path within the same section.
+ * Pure, synchronous, no I/O. Never throws -- returns null for any shape it
+ * doesn't recognise (no E2E Tests section, AC not named, etc.), per AC4's
+ * "manual-only AC" case and AC5's "never surface an error" requirement.
+ * @param {string} testPlanContent
+ * @param {string} acId
+ * @returns {string|null}
+ */
+function _findE2eSpecFileForAc(testPlanContent, acId) {
+  var sectionMatch = /^## E2E Tests\s*$/m.exec(testPlanContent || '');
+  if (!sectionMatch) return null;
+
+  var afterHeading = testPlanContent.slice(sectionMatch.index + sectionMatch[0].length);
+  var nextHeadingMatch = /^## /m.exec(afterHeading);
+  var sectionText = nextHeadingMatch ? afterHeading.slice(0, nextHeadingMatch.index) : afterHeading;
+
+  var blocks = sectionText.split(/^### /m).slice(1);
+  var lastRealFile = null;
+  var acRe = new RegExp('\\b' + acId + '\\b');
+
+  for (var i = 0; i < blocks.length; i++) {
+    var block = blocks[i];
+    var fileMatch = /\*\*File:\*\*\s*(.+)/.exec(block);
+    var realPath = null;
+    if (fileMatch) {
+      var pathMatch = /`?([\w-./]+\.spec\.js)`?/.exec(fileMatch[1]);
+      if (pathMatch) {
+        realPath = pathMatch[1];
+        lastRealFile = realPath;
+      }
+    }
+    var verifiesMatch = /\*\*Verifies:\*\*\s*(.+)/.exec(block);
+    if (verifiesMatch && acRe.test(verifiesMatch[1])) {
+      return realPath || lastRealFile;
+    }
+  }
+  return null;
+}
+
 async function _getDodAcList(journey, req, pool) {
   var artefacts = await _journeyStore.getArtefactsForJourney(journey.journeyId);
   var dodRow = (artefacts || []).find(function(a) { return a.skill_name === 'definition-of-done'; });
@@ -1256,6 +1303,7 @@ module.exports = {
   _resolveViaPipelineState,
   _featureDodStatus,
   _getDodAcList,
+  _findE2eSpecFileForAc,
   _notFound,
   _sendJson,
   _renderCaptureAllProgress,
