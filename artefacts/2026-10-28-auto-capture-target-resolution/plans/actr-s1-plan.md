@@ -30,7 +30,7 @@ No other files change. `tests/check-rpca-s2-selector-derivation-from-e2e-specs.j
 - Create: `src/utils/capture-target-derivation.js`
 - Create: `tests/check-actr-s1-capture-target-derivation.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```javascript
 'use strict';
@@ -45,14 +45,16 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 
 (function () {
 
-// AC1 (unit): selector parity -- same fixture shape as a real resolvable spec
-// (tag, then goto, then locator -- matching fpd-s4-caption-sync.spec.js's own order)
+// AC1 (unit): selector parity. Deliberately NO page.goto(...) in this
+// fixture -- Task 2 adds real goto-scanning, and a fixture that happens to
+// contain a goto would stop asserting url:null once that capability lands,
+// coupling this test's correctness to a later task's scope.
 (function () {
   const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
   try {
-    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('does the thing', async ({ page }) => {\n  await page.goto('/playback/actr-fixture');\n  const el = page.locator('.actr-target');\n});\n`;
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('does the thing', async ({ page }) => {\n  const el = page.locator('.actr-target');\n});\n`;
     const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
-    assert.strictEqual(result.selector, '.actr-target', 'expected the same selector deriveSelectorFromSpec would find');
+    assert.deepStrictEqual(result, { acId: 'AC1', url: null, selector: '.actr-target' }, 'expected the full capture target shape with the AC id preserved and url null since this fixture has no goto at all');
     pass('AC1 (unit): derives the selector correctly');
   } catch (e) { fail('AC1 (unit): derives the selector correctly', e); }
 })();
@@ -74,7 +76,7 @@ process.exit(failed > 0 ? 1 : 0);
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -82,7 +84,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `Error: Cannot find module '../src/utils/capture-target-derivation'` (module does not exist yet)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```javascript
 'use strict';
@@ -116,13 +118,13 @@ function deriveCaptureTargetFromSpec(specFileContent, acId) {
   const locatorMatch = rest.match(/page\.locator\(['"]([^'"]+)['"]\)/);
   const selector = locatorMatch ? locatorMatch[1] : null;
 
-  return { acId: acId, url: null, selector: selector };
+  return { acId, url: null, selector };
 }
 
 module.exports = { deriveCaptureTargetFromSpec };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -130,7 +132,9 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `[actr-s1-capture-target-derivation] Results: 2 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+**Post-hoc correction (recorded for an accurate plan record):** the committed version of this task went through one round of code-quality review (Important: the AC1 test originally only asserted `result.selector`, weakened against `acId`/`url` drift — fixed to `assert.deepStrictEqual` on the full object; Minor: property shorthand). A further correction was caught by the orchestrator before Task 2 started: the original AC1 fixture contained a `page.goto(...)` call, which would have broken this test's own `url: null` assertion once Task 2's goto-scanning landed — the fixture above has been corrected to omit the `goto` entirely, decoupling it from Task 2's scope. The code shown above and in the actual committed file (`git log` — final SHA for this task: `5103479f`) now match.
+
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -138,7 +142,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing (808 files — the 807 baseline plus this new file; this new file is not yet wired into `run-all-tests.js`'s own discovery until it is saved under `tests/check-*.js`, which it already is by this naming convention, so it is picked up automatically)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-target-derivation.js tests/check-actr-s1-capture-target-derivation.js
@@ -153,7 +157,7 @@ git commit -m "feat(actr-s1): add deriveCaptureTargetFromSpec core (selector par
 - Modify: `src/utils/capture-target-derivation.js`
 - Modify: `tests/check-actr-s1-capture-target-derivation.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `tests/check-actr-s1-capture-target-derivation.js`, immediately before the `console.log` summary line at the end:
 
@@ -203,7 +207,7 @@ Add to `tests/check-actr-s1-capture-target-derivation.js`, immediately before th
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -211,22 +215,24 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: the 2 new primary-case assertions fail (`result.url` is still always `null` from Task 1's implementation); the "precedes the tag" guard test currently passes by coincidence (nothing is implemented yet, so url is already null) — that is expected and fine, it becomes a real guard once Step 3 below is in place.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Replace `deriveCaptureTargetFromSpec`'s body in `src/utils/capture-target-derivation.js` with:
 
 ```javascript
 /**
- * Finds the nearest page.goto('<path>') call AFTER `anchorIndex` -- same
+ * Finds the nearest page.goto('<path>') call within `textAfterTag` -- same
  * scan direction as the existing selector logic (deriveSelectorFromSpec's
- * own "nearest FOLLOWING locator" rule). Returns the raw matched string
- * (not yet validated) or null if no goto appears after the anchor within
- * `boundedText`.
- * @param {string} boundedText - text to search (already sliced/bounded by the caller)
+ * own "nearest FOLLOWING locator" rule). `textAfterTag` is sliced to start
+ * at the AC's own tag match, but is NOT YET bounded to stop before the next
+ * AC's own section in a multi-AC file -- that bounding lands in Task 3.
+ * Returns the raw matched string (not yet validated against the
+ * relative-path guard, also a later task) or null if no goto appears.
+ * @param {string} textAfterTag - spec text sliced to start at the AC's own tag match
  * @returns {string|null}
  */
-function _firstGotoIn(boundedText) {
-  const gotoMatch = boundedText.match(/page\.goto\(['"]([^'"]+)['"]\)/);
+function _firstGotoIn(textAfterTag) {
+  const gotoMatch = textAfterTag.match(/page\.goto\(['"]([^'"]+)['"]\)/);
   return gotoMatch ? gotoMatch[1] : null;
 }
 
@@ -241,13 +247,15 @@ function deriveCaptureTargetFromSpec(specFileContent, acId) {
 
   const rawUrl = _firstGotoIn(rest);
 
-  return { acId: acId, url: rawUrl, selector: selector };
+  return { acId, url: rawUrl, selector };
 }
 ```
 
 (AC2b's section-boundary and AC3's relative-path guard are not yet applied to `rawUrl` -- Task 3 and Task 4 add those. Keep `_firstGotoIn` as a named, separately testable helper.)
 
-- [ ] **Step 4: Run test — must pass**
+**Post-hoc correction (recorded for an accurate plan record):** a code-quality review caught that the first-drafted version of `_firstGotoIn`'s doc comment referenced a non-existent `anchorIndex` parameter (stale text from an earlier backward-scan draft) and its original parameter name `boundedText` falsely implied section-bounding that doesn't land until Task 3. Renamed to `textAfterTag` with an accurate doc comment — reflected above and in the actual committed file (final SHA for this task: `f8c7a486`).
+
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -255,7 +263,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `[actr-s1-capture-target-derivation] Results: 5 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -263,7 +271,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-target-derivation.js tests/check-actr-s1-capture-target-derivation.js
@@ -278,7 +286,7 @@ git commit -m "feat(actr-s1): derive url from the nearest goto call after the AC
 - Modify: `src/utils/capture-target-derivation.js`
 - Modify: `tests/check-actr-s1-capture-target-derivation.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to the test file:
 
@@ -311,7 +319,7 @@ Add to the test file:
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -319,7 +327,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: the `AC1 has no goto of its own and must not borrow AC2's` assertion fails — Task 2's implementation scans `rest = specFileContent.slice(acMatch.index)` (AC1's tag to end of file, unbounded), so when AC1's own section has no literal `goto`, the scan falls through into AC2's section and incorrectly returns `url: '/ac2-page'` for AC1.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Replace `deriveCaptureTargetFromSpec`'s body with:
 
@@ -346,11 +354,11 @@ function deriveCaptureTargetFromSpec(specFileContent, acId) {
 
   const rawUrl = _firstGotoIn(section);
 
-  return { acId: acId, url: rawUrl, selector: selector };
+  return { acId, url: rawUrl, selector };
 }
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -358,7 +366,9 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `[actr-s1-capture-target-derivation] Results: 6 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+**Post-hoc correction (recorded for an accurate plan record):** spec-compliance review found a test-coverage gap — the one AC2b test only exercised a `url` leaking across an AC boundary, with no equivalent test proving `selector` gets the same bounding. A mirror test was added (AC1 has its own `goto` but no `locator`; AC2 has both) — final test count for this task became 7, not 6. A code-quality review then found `_firstGotoIn`'s own doc comment (written in Task 2) had gone stale again — it still claimed its input was "NOT YET bounded," which Task 3 itself made false — fixed to accurately describe the now-bounded input, and `deriveCaptureTargetFromSpec`'s doc comment gained an `AC2b:` bullet. Final SHA for this task: `89f4aadd`.
+
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -366,7 +376,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing — pay particular attention to the existing `rpca-s2-hotfix1` shared-multi-AC-header test in `tests/check-rpca-s2-selector-derivation-from-e2e-specs.js` (not yet wired to this module, but conceptually the same scenario); this task's own Task 6 will confirm it directly once the delegation lands.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-target-derivation.js tests/check-actr-s1-capture-target-derivation.js
@@ -381,7 +391,7 @@ git commit -m "feat(actr-s1): bound the url/selector scan to the AC's own sectio
 - Modify: `src/utils/capture-target-derivation.js`
 - Modify: `tests/check-actr-s1-capture-target-derivation.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to the test file:
 
@@ -409,7 +419,7 @@ Add to the test file:
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -417,7 +427,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: both new assertions fail (`result.url` is currently the unvalidated raw string, e.g. `'https://evil.example.com/x'`, not `null`)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add this function and apply it in `deriveCaptureTargetFromSpec`:
 
@@ -445,7 +455,7 @@ In `deriveCaptureTargetFromSpec`, change the final return to:
   return { acId: acId, url: _validateRelativeUrl(rawUrl), selector: selector };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -453,7 +463,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `[actr-s1-capture-target-derivation] Results: 8 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -461,7 +471,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utils/capture-target-derivation.js tests/check-actr-s1-capture-target-derivation.js
@@ -475,7 +485,7 @@ git commit -m "feat(actr-s1): reject non-relative goto URLs (absolute and protoc
 **Files:**
 - Modify: `scripts/playback-capture.js`
 
-- [ ] **Step 1: Confirm the regression baseline first (no new test file — this task's test IS the existing suite)**
+- [x] **Step 1: Confirm the regression baseline first (no new test file — this task's test IS the existing suite)**
 
 ```bash
 node tests/check-rpca-s2-selector-derivation-from-e2e-specs.js
@@ -483,7 +493,7 @@ node tests/check-rpca-s2-selector-derivation-from-e2e-specs.js
 
 Expected output (BEFORE this task's change): `[rpca-s2-selector-derivation-from-e2e-specs] Results: 8 passed, 0 failed` (confirms the starting baseline so any later failure is attributable to this task's own change, not a pre-existing issue)
 
-- [ ] **Step 2: Replace `deriveSelectorFromSpec`'s body in `scripts/playback-capture.js`**
+- [x] **Step 2: Replace `deriveSelectorFromSpec`'s body in `scripts/playback-capture.js`**
 
 Find the existing `deriveSelectorFromSpec` function (originally defined around line 333, per the story's own Background reference — read the file directly to confirm the current exact line before editing, do not assume the line number is still exact after Tasks 1-4 touched other files). Add this import near the top of the file, alongside the other `require` statements:
 
@@ -516,7 +526,7 @@ Keep the doc comment, updated:
 // when it is found but no locator follows it in that AC's own section.
 ```
 
-- [ ] **Step 3: Run the existing suite — must still pass unchanged**
+- [x] **Step 3: Run the existing suite — must still pass unchanged**
 
 ```bash
 node tests/check-rpca-s2-selector-derivation-from-e2e-specs.js
@@ -524,7 +534,7 @@ node tests/check-rpca-s2-selector-derivation-from-e2e-specs.js
 
 Expected output: `[rpca-s2-selector-derivation-from-e2e-specs] Results: 8 passed, 0 failed` — identical to Step 1's baseline
 
-- [ ] **Step 4: Run the new module's own suite too — still passing**
+- [x] **Step 4: Run the new module's own suite too — still passing**
 
 ```bash
 node tests/check-actr-s1-capture-target-derivation.js
@@ -532,7 +542,7 @@ node tests/check-actr-s1-capture-target-derivation.js
 
 Expected output: `[actr-s1-capture-target-derivation] Results: 8 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 node scripts/run-all-tests.js
@@ -540,7 +550,7 @@ node scripts/run-all-tests.js
 
 Expected output: all tests passing, 809 files run, 0 failed (807 baseline + the 2 new/modified check files)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/playback-capture.js
