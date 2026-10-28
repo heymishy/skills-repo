@@ -29,6 +29,7 @@ const { captureAcScreenshots } = require('../src/utils/capture-screenshots');
 // deployed Docker image. Re-exported here unchanged so every existing caller
 // of this module keeps working with no change required on their part.
 const { captureVideoRecording } = require('../src/utils/capture-video');
+const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
 
 // rpca-s5: evaluates every story's own dodStatus evidence field directly
 // (ADR-002 -- gates must use evidence fields, not a stage/field proxy), instead
@@ -316,28 +317,18 @@ function buildScreenshotPath(featureSlug, storySlug, acId) {
   return relPath;
 }
 
-// rpca-s2: scans a spec file's own text for a comment naming acId (matching the
-// existing convention, e.g. tests/e2e/fpd-s4-caption-sync.spec.js's own header
-// "(fpd-s4 AC3)"), then finds the NEAREST FOLLOWING page.locator(...) call --
-// not just the first one in the file, since a spec file can cover several ACs.
-// Returns null (never throws) when the AC isn't named at all -- a spec file
-// simply not covering a given AC is a normal, expected case, not an error.
-// rpca-s2-hotfix1: anchors on `<acId>)` specifically, not any bare mention of
-// acId. Both real per-AC inline conventions sampled place the AC id directly
-// before a closing paren ("(fpd-s4 AC3)", "(AC1)") -- only a SHARED header
-// comment naming several ACs together (tests/e2e/jcx-s3-emotion-curve.spec.js:
-// "AC1, AC2, AC3 of story") lacks the trailing ")". The bare \b-only anchor
-// matched that shared header for every AC equally and returned the SAME
-// (wrong) selector for AC2/AC3 -- confirmed directly against that real file
-// at /definition-of-done for rpca-s2.
+// rpca-s2: thin wrapper preserving this function's own exact, long-standing
+// {acId, selector}-or-null contract (assert.deepStrictEqual in
+// tests/check-rpca-s2-selector-derivation-from-e2e-specs.js depends on this
+// exact shape -- no extra `url` key). Core matching logic now lives in
+// src/utils/capture-target-derivation.js (actr-s1), shared with the web-ui
+// route (actr-s2). `result.selector == null` (not `!result`) preserves the
+// old behaviour precisely: null both when the AC tag isn't found at all AND
+// when it is found but no locator follows it in that AC's own section.
 function deriveSelectorFromSpec(specFileContent, acId) {
-  const acRe = new RegExp(`\\b${acId}\\)`);
-  const acMatch = acRe.exec(specFileContent);
-  if (!acMatch) return null;
-  const rest = specFileContent.slice(acMatch.index);
-  const locatorMatch = rest.match(/page\.locator\(['"]([^'"]+)['"]\)/);
-  if (!locatorMatch) return null;
-  return { acId, selector: locatorMatch[1] };
+  const result = deriveCaptureTargetFromSpec(specFileContent, acId);
+  if (!result || result.selector == null) return null;
+  return { acId: result.acId, selector: result.selector };
 }
 
 // rpca-s2: reads the manually-authored fallback file for one AC when no E2E

@@ -10,7 +10,7 @@
 | # | Check | Status |
 |---|-------|--------|
 | H1 | As/Want/So with named persona | ✅ |
-| H2 | 3+ ACs in Given/When/Then | ✅ 5 ACs |
+| H2 | 3+ ACs in Given/When/Then | ✅ 6 ACs (AC1, AC2, AC2b, AC3, AC4, AC5) |
 | H3 | Every AC has a test | ✅ |
 | H4 | Out-of-scope populated | ✅ (names CLI wiring, manual-fallback format, capture worker explicitly) |
 | H5 | Benefit linkage names a real metric | ✅ `m1` |
@@ -53,14 +53,21 @@ existing, tested logic, not a rewrite. Confirm your relocation does not change
 deriveSelectorFromSpec's existing behaviour (AC1, AC5) -- that test suite must
 still pass unchanged against the relocated code.
 
-New capability: find the nearest PRECEDING page.goto('...') call relative to
-the AC's own tagged locator match (scanning backwards from the match point,
-mirroring deriveSelectorFromSpec's own "nearest" pattern but in the opposite
-direction) and return it as `url`. If the found value is not a same-origin
-relative path (does not start with a single '/' -- reject both absolute
-https://... URLs and protocol-relative //... values), return url: null instead
-of the found string (AC3) -- this is a security-relevant guard, not optional
-polish; see decisions.md's 2026-10-28 SECURITY entry for why.
+New capability: find the nearest page.goto('...') call scanning FORWARD from
+the AC's own tagged match -- same direction as the existing selector scan,
+confirmed against 3 real spec files (tests/e2e/fpd-s4-caption-sync.spec.js,
+tests/e2e/jcx-s3-emotion-curve.spec.js, tests/e2e/ppc-s5-video-lazy-load.spec.js)
+before this plan was written; an earlier draft of this story assumed the
+opposite direction and was wrong -- do not reintroduce a backward scan.
+Bound the forward scan so it stops at the next AC-tag match (if any) in the
+same file (AC2b) -- otherwise a later AC's own goto in a multi-AC file would
+be misattributed to an earlier AC, the same class of bug rpca-s2-hotfix1
+already fixed for the selector side of this scan. If the found value is not
+a same-origin relative path (does not start with a single '/' -- reject both
+absolute https://... URLs and protocol-relative //... values), return
+url: null instead of the found string (AC3) -- this is a security-relevant
+guard, not optional polish; see decisions.md's 2026-10-28 SECURITY entry for
+why.
 
 Do not wire this function into any real call path yet -- that is actr-s2's
 job. Do not touch .github/scripts/ppc-capture-worker.js or

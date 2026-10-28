@@ -1,0 +1,190 @@
+'use strict';
+// check-actr-s1-capture-target-derivation.js -- TDD tests for actr-s1
+// (2026-10-28-auto-capture-target-resolution).
+// Story: artefacts/2026-10-28-auto-capture-target-resolution/stories/actr-s1-derive-capture-target-from-e2e-spec.md
+const assert = require('assert');
+
+let passed = 0; let failed = 0;
+function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
+function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err}`); failed++; }
+
+(function () {
+
+// AC1 (unit): selector parity. Deliberately NO page.goto(...) in this
+// fixture -- Task 2 of this story adds real goto-scanning, and a fixture
+// that happens to contain a goto would stop asserting url:null once that
+// capability lands, coupling this test's correctness to a later task's
+// scope. This fixture asserts the selector-only case on its own terms.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('does the thing', async ({ page }) => {\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.deepStrictEqual(result, { acId: 'AC1', url: null, selector: '.actr-target' }, 'expected the full capture target shape with the AC id preserved and url null since this fixture has no goto at all');
+    pass('AC1 (unit): derives the selector correctly');
+  } catch (e) { fail('AC1 (unit): derives the selector correctly', e); }
+})();
+
+// AC4 (unit): no AC tag match anywhere -> null, never a throw
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC9)\nconst el = page.locator('.unrelated');\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result, null, 'expected null when the AC id is not named in the spec file at all');
+    pass('AC4 (unit): returns null when the spec file does not name the AC at all');
+  } catch (e) { fail('AC4 (unit): returns null when the spec file does not name the AC at all', e); }
+})();
+
+// AC2 (unit): url derived from a goto call appearing AFTER the AC tag --
+// confirmed against the real fpd-s4-caption-sync.spec.js shape (tag, then
+// goto, then locator) before this was written. See decisions.md's
+// 2026-10-28 CORRECTION entry.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('does the thing', async ({ page }) => {\n  await page.goto('/playback/actr-fixture');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, '/playback/actr-fixture', 'expected the goto path found after the tag');
+    pass('AC2 (unit): derives url from a goto call appearing after the AC tag');
+  } catch (e) { fail('AC2 (unit): derives url from a goto call appearing after the AC tag', e); }
+})();
+
+// AC2 (unit, regression guard for the corrected design): a goto call
+// appearing BEFORE the AC tag must never be picked up -- this is the
+// direction the first draft of this story got wrong; see decisions.md.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `await page.goto('/should-not-be-used');\n// fixture.spec.js (actr-fixture AC1)\nconst el = page.locator('.actr-target');\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a goto call preceding the AC tag must never be returned as this AC\'s url');
+    pass('AC2 (unit): does not find a url when the only goto call precedes the tag');
+  } catch (e) { fail('AC2 (unit): does not find a url when the only goto call precedes the tag', e); }
+})();
+
+// AC2 (real-file confirmation): the design's own motivating real-world case.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  const fs = require('fs');
+  const path = require('path');
+  try {
+    const content = fs.readFileSync(path.join(__dirname, 'e2e', 'fpd-s4-caption-sync.spec.js'), 'utf8');
+    const result = deriveCaptureTargetFromSpec(content, 'AC3');
+    assert.deepStrictEqual(
+      result,
+      { acId: 'AC3', url: '/playback/some-dod-complete-feature-with-a-real-package', selector: '.playback-ac__video' },
+      'expected both url and selector resolved from the real fpd-s4 file'
+    );
+    pass('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js');
+  } catch (e) { fail('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js', e); }
+})();
+
+// AC2b (unit): a later AC's own goto in the same file must never be
+// attributed to an earlier AC -- the same class of bug rpca-s2-hotfix1
+// already fixed for the selector side of this scan. AC1's OWN section
+// deliberately has NO literal goto (its real-world equivalent: a dynamic or
+// helper-wrapped navigation, like jcx-s3-emotion-curve.spec.js's own
+// openCustomerExperienceView helper) so an unbounded forward scan falls
+// through into AC2's section and finds AC2's goto instead -- that fall-
+// through is the actual bug this AC exists to prevent. If AC1's own section
+// already had a literal goto, Task 2's unbounded "first match in rest" scan
+// would already return the right answer by coincidence (nearest-wins), and
+// this test would not actually exercise the bug.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec =
+      `// fixture.spec.js (actr-fixture AC1)\n` +
+      `withAuth('ac1 test', async ({ page }) => {\n  const el = page.locator('.ac1-target');\n});\n` +
+      `// fixture.spec.js (actr-fixture AC2)\n` +
+      `withAuth('ac2 test', async ({ page }) => {\n  await page.goto('/ac2-page');\n  const el = page.locator('.ac2-target');\n});\n`;
+    const ac1Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    const ac2Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC2');
+    assert.deepStrictEqual(ac1Result, { acId: 'AC1', url: null, selector: '.ac1-target' }, 'AC1 has no goto of its own and must not borrow AC2\'s');
+    assert.deepStrictEqual(ac2Result, { acId: 'AC2', url: '/ac2-page', selector: '.ac2-target' }, 'AC2 must still resolve its own url/selector correctly');
+    pass('AC2b (unit): bounds the scan so a later AC\'s goto never leaks into an earlier AC that has none of its own');
+  } catch (e) { fail('AC2b (unit): bounds the scan so a later AC\'s goto never leaks into an earlier AC that has none of its own', e); }
+})();
+
+// AC2b (unit, selector-leak mirror case): the mirror image of the url-leak
+// test above -- AC1 has its OWN goto but no locator; AC2 has both. A later
+// AC's own locator must never be attributed to an earlier AC either,
+// mirroring rpca-s2-hotfix1's own precedent for the selector field
+// specifically (this story's own Architecture Constraints name that
+// precedent explicitly). The url-leak test above (AC1: locator but no
+// goto) does not exercise this -- selector bounding needs its own proof.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec =
+      `// fixture.spec.js (actr-fixture AC1)\n` +
+      `withAuth('ac1 test', async ({ page }) => {\n  await page.goto('/ac1-page');\n});\n` +
+      `// fixture.spec.js (actr-fixture AC2)\n` +
+      `withAuth('ac2 test', async ({ page }) => {\n  await page.goto('/ac2-page');\n  const el = page.locator('.ac2-target');\n});\n`;
+    const ac1Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    const ac2Result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC2');
+    assert.deepStrictEqual(ac1Result, { acId: 'AC1', url: '/ac1-page', selector: null }, 'AC1 has no locator of its own and must not borrow AC2\'s');
+    assert.deepStrictEqual(ac2Result, { acId: 'AC2', url: '/ac2-page', selector: '.ac2-target' }, 'AC2 must still resolve its own url/selector correctly');
+    pass('AC2b (unit, selector mirror): bounds the scan so a later AC\'s locator never leaks into an earlier AC that has none of its own');
+  } catch (e) { fail('AC2b (unit, selector mirror): bounds the scan so a later AC\'s locator never leaks into an earlier AC that has none of its own', e); }
+})();
+
+// AC3 (unit): an absolute URL found by the scan is never returned.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('https://evil.example.com/x');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'an absolute URL must never be returned');
+    pass('AC3 (unit): rejects an absolute goto URL');
+  } catch (e) { fail('AC3 (unit): rejects an absolute goto URL', e); }
+})();
+
+// AC3 (unit, edge case): protocol-relative is not "relative" for this guard.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('//evil.example.com/x');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a protocol-relative URL must never be returned -- it still changes host');
+    pass('AC3 (unit): rejects a protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit): rejects a protocol-relative goto URL', e); }
+})();
+
+// AC3 (unit, security regression -- spec-compliance review finding 2026-10-28):
+// an embedded tab between the leading "/" and a second "/" must not bypass
+// the protocol-relative guard via a naive startsWith('//') check -- any
+// real URL-spec-compliant navigator strips embedded tab/newline/CR before
+// parsing, so this string is STILL effectively protocol-relative.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('/\t/evil.com');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a tab-obscured protocol-relative URL must still be rejected -- a real navigator strips the tab and treats this as host-changing');
+    pass('AC3 (unit, security regression): rejects a tab-obscured protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit, security regression): rejects a tab-obscured protocol-relative goto URL', e); }
+})();
+
+// AC3 (unit, security regression -- 2nd spec-compliance finding, 2026-10-28):
+// a single backslash right after the leading slash must not bypass the
+// protocol-relative guard -- per the WHATWG URL spec, backslash is treated
+// identically to forward slash for special schemes (http/https/etc.) by
+// any real navigator (including Playwright's Chromium), so "/\evil.com" is
+// structurally equivalent to "//evil.com" and changes host, exactly like
+// the already-fixed tab-obscured case above.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('x', async ({ page }) => {\n  await page.goto('/\\evil.com');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a backslash-obscured protocol-relative URL must be rejected -- a real navigator treats backslash as forward slash for this purpose');
+    pass('AC3 (unit, security regression): rejects a backslash-obscured protocol-relative goto URL');
+  } catch (e) { fail('AC3 (unit, security regression): rejects a backslash-obscured protocol-relative goto URL', e); }
+})();
+
+console.log(`\n[actr-s1-capture-target-derivation] Results: ${passed} passed, ${failed} failed`);
+process.exit(failed > 0 ? 1 : 0);
+
+})();

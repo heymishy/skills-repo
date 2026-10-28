@@ -10,6 +10,8 @@ A selector-derivation mechanism already exists and is unit-tested — `deriveSel
 
 This story extends that dormant logic to also derive the **URL**, and relocates it to a shared, pure, adapter-agnostic module so both the CLI script and the web-ui route (`actr-s2`, `actr-s3`) can reuse it without duplicating the regex-based parsing.
 
+**Design correction (2026-10-28, before implementation):** the original draft of this story assumed `page.goto(...)` precedes the AC's own tag (e.g. via a shared `beforeEach`). Checking 3 real spec files before writing the implementation plan disproved this: `tests/e2e/fpd-s4-caption-sync.spec.js` has its tag in a header comment (line 3) with `page.goto(...)` on line 11 and `page.locator(...)` on line 12 — both **following** the tag, matching the existing selector-derivation's own "nearest following" direction. `tests/e2e/jcx-s3-emotion-curve.spec.js` has no literal, resolvable `page.goto(...)` at all (it is wrapped in a helper function with a dynamic argument) — correctly expected to resolve to no match. AC2/AC3 below and the Architecture Constraints are written against the corrected forward-scan design. See `decisions.md`.
+
 ## User Story
 
 As a **product owner capturing DoD evidence for a merged story**,
@@ -25,6 +27,7 @@ So that **I don't have to hand-type values that already exist in the codebase be
 
 - Pure parsing logic only — no I/O, no adapter, no network/file access in this story. Reads come from `actr-s2`/`actr-s3`.
 - Must not weaken the existing manual-fallback path (`loadManualFallback`/`selectors-manual.json`) — this story adds a new, higher-priority source in front of it, never removes it.
+- `url` is derived the same direction as the existing selector logic: the nearest `page.goto('<path>')` call found scanning **forward** from the AC's own tag match, bounded so the scan never crosses into the *next* AC-tagged section of a multi-AC file (prevents misattributing a later AC's own `goto` to this one — the same class of bug `rpca-s2-hotfix1` already fixed for the selector side of this same scan).
 - The derived `url` must be validated as a same-origin relative path (starting with `/`) before being returned — never pass an absolute external URL straight through from spec text, since that string later feeds a real Playwright `page.goto()` call (via `dispatchCaptureWorkflow`/`.github/scripts/ppc-capture-worker.js`) authenticated with the tenant's own real session. Treat this the same as any other untrusted-content boundary in this feature (ADR-018's "real session only" constraint makes an attacker-controlled off-site `goto` target under an authenticated session a real risk, not a hypothetical one).
 - Module must be reusable from both `scripts/playback-capture.js` (Node `fs` CLI context) and `src/web-ui/routes/playback-evidence.js` (adapter-fed string content) — the function signature takes raw spec text as a string, never a file path, so both callers can supply content from whichever source they have.
 
@@ -37,9 +40,11 @@ So that **I don't have to hand-type values that already exist in the codebase be
 
 **AC1:** Given spec text containing an AC-tagged comment (`(storySlug AC_n)`) followed by a `page.locator('<sel>')` call, When the new function runs, Then it returns the same `selector` value `deriveSelectorFromSpec` already returns today (no regression).
 
-**AC2:** Given spec text containing a `page.goto('/relative/path')` call that precedes the AC's own tagged locator anywhere earlier in the file (not necessarily immediately before it — matching how `beforeEach`/shared setup actually places `goto`), When the function runs, Then it returns that `goto` path as `url`.
+**AC2:** Given spec text containing a `page.goto('/relative/path')` call that appears after the AC's own tag (anywhere later in that AC's own section — not necessarily the line immediately after), When the function runs, Then it returns that `goto` path as `url`.
 
-**AC3:** Given spec text where the nearest preceding `goto` call is an absolute URL (`https://...`) or any other non-relative value, When the function runs, Then it returns `url: null` for that AC rather than passing the value through — the attempted derivation is skipped, not silently trusted.
+**AC2b:** Given spec text with two AC-tagged sections in the same file, each with its own `page.goto(...)` call, When the function runs for the first AC, Then it returns the first AC's own `goto` value, never the second AC's — the scan must not cross the boundary into the next AC's section.
+
+**AC3:** Given spec text where the nearest (bounded) `goto` call found for an AC is an absolute URL (`https://...`) or any other non-relative value, When the function runs, Then it returns `url: null` for that AC rather than passing the value through — the attempted derivation is skipped, not silently trusted.
 
 **AC4:** Given spec text with no AC tag match at all (AC not covered by any spec), When the function runs, Then it returns `null` (unchanged behaviour from today's `deriveSelectorFromSpec`), not a thrown error.
 
@@ -60,5 +65,5 @@ So that **I don't have to hand-type values that already exist in the codebase be
 
 ## Complexity Rating
 
-**Rating:** 1 — the selector-half logic already exists and is tested; the only new work is the symmetric `goto`-scan, the relocation, and the relative-path guard.
+**Rating:** 1 — the selector-half logic already exists and is tested; the only new work is the bounded, forward `goto`-scan, the relocation, and the relative-path guard.
 **Scope stability:** Stable.

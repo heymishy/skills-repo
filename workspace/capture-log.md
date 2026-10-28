@@ -2841,3 +2841,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: scripts/playback-capture.js own rpca-s2 selector-derivation logic (deriveSelectorFromSpec/buildCaptureList) is fully built and unit-tested but is dead code -- never called from any real path. runCaptureForFeature still uses a hardcoded URL/selector pair, and the only caller of buildCaptureList anywhere in the repo is its own test file. Scoped as actr-s1/s2/s3 (2026-10-28-auto-capture-target-resolution) to extend it with URL derivation and actually wire it into the web-ui capture-target flow, removing the manual-entry friction the operator flagged.
   source: agent-auto
+
+- date: 2026-10-28
+  session-phase: actr-s1 implementation-plan (pipeline-state write safety step)
+  signal-type: gap
+  signal-text: On this Windows Git-Bash setup, bare `git show origin/master:<path>` (as /implementation-plan and /subagent-execution own SKILL.md write-safety sections prescribe) silently returns EMPTY output -- not an error -- because MSYS mangles the slash-containing remote-ref-plus-colon-path argument. git show HEAD:<path> and git show master:<path> (no slash before the colon) are unaffected; git cat-file -p <blob-sha> is unaffected. Fix: prefix with MSYS_NO_PATHCONV=1, e.g. MSYS_NO_PATHCONV=1 git show origin/master:.github/pipeline-state.json. The skills own JSON.parse(empty-string) throws and is caught by the documented try/catch fallback-to-local-copy path, so no data was lost this time, but the fallback silently fires on EVERY such call on this machine, defeating the fetch-from-master safety the skill exists to provide (merge conflicts between concurrent worktrees would not actually be caught). Worth fixing at the skill-instruction level (add MSYS_NO_PATHCONV=1 to the prescribed command) or noting as a known Windows Git-Bash caveat.
+  source: agent-auto
