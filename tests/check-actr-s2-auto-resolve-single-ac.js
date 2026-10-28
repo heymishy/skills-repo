@@ -267,6 +267,84 @@ queue.push(function() {
   });
 });
 
+console.log('\n[actr-s2] Task 4: render wiring (AC1, AC3)');
+
+function setupSingleAcJourney(store) {
+  var slug = 'actr-s2-render-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  var j = store.createJourney(slug);
+  store.setJourneyFields(j.journeyId, {
+    tenantId: 'tenant-a', productId: 'product-a',
+    completedStages: [{ skillName: 'definition-of-done', artefactPath: null, completedAt: new Date().toISOString() }],
+    pipelineStateStorySlugs: ['story-one']
+  });
+  return { journeyId: j.journeyId, featureSlug: slug };
+}
+function installHappyPathFetchers() {
+  pe.setFetcherModule(async function(featureSlug, artefactType) {
+    if (artefactType === 'dod/story-one-dod') return '## AC Coverage\n\n| AC | Satisfied? | Evidence |\n|----|----|----|\n| AC1 — Shows the thing | Yes | x |\n';
+    if (artefactType === 'test-plans/story-one-test-plan') {
+      return ['## E2E Tests', '', '### t', '- **Verifies:** AC1', '- **File:** `tests/e2e/actr-s2-render-fixture.spec.js`', ''].join('\n');
+    }
+    throw new fetcher.ArtefactNotFoundError(featureSlug, artefactType);
+  });
+  pe.setRepoPathFetcherModule(async function(owner, repo, path) {
+    if (path === 'tests/e2e/actr-s2-render-fixture.spec.js') {
+      return '// fixture.spec.js (story-one AC1)\nwithAuth(\'x\', async ({ page }) => {\n  await page.goto(\'/actr-s2-render-fixture\');\n  const el = page.locator(\'.actr-s2-render-target\');\n});\n';
+    }
+    throw new fetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  });
+}
+function restoreRealFetchers() { pe.setFetcherModule(fetcher.fetchArtefact); pe.setRepoPathFetcherModule(fetcher.fetchRepoPath); }
+
+queue.push(function() {
+  return test('T4a (AC1): no manual target, resolvable auto-target -- renders auto-detected block, no manual form for that AC', function() {
+    installHappyPathFetchers();
+    var store4 = getStore();
+    var setup = setupSingleAcJourney(store4);
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.strictEqual(res._status, 200);
+      assert.ok(res._body.indexOf('Auto-detected from') !== -1, 'must show the auto-detected block');
+      assert.ok(res._body.indexOf('/actr-s2-render-fixture') !== -1, 'must show the resolved url');
+      assert.ok(res._body.indexOf('.actr-s2-render-target') !== -1, 'must show the resolved selector');
+      assert.ok(res._body.indexOf('name="url"') === -1, 'the manual entry form must NOT be present for this AC when auto-resolved and not overridden');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T4b (AC1): the capture button is available immediately (no manual entry required first)', function() {
+    installHappyPathFetchers();
+    var store4 = getStore();
+    var setup = setupSingleAcJourney(store4);
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.ok(res._body.indexOf('Capture evidence') !== -1, 'capture button must render for an auto-resolved target, same as a manually-set one');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T4c (AC3): a manually-set target takes priority over a resolvable auto-target', function() {
+    installHappyPathFetchers();
+    var store4 = getStore();
+    var setup = setupSingleAcJourney(store4);
+    store4.setCaptureTarget(setup.journeyId, 'AC1', '/manually-set-url', '.manually-set-selector');
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.ok(res._body.indexOf('/manually-set-url') !== -1, 'the manual value must be shown');
+      assert.ok(res._body.indexOf('/actr-s2-render-fixture') === -1, 'the auto-resolved value must NEVER be shown when a manual target already exists');
+      assert.ok(res._body.indexOf('Auto-detected from') === -1, 'the auto-detected label must not appear when a manual target wins');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
 // Driver: runs every queued test in order and prints the final summary.
 // Added HERE, in Task 1, not at the end of the file -- every later task's
 // own RED/GREEN step depends on this actually executing and printing

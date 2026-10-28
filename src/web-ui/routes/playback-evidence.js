@@ -241,9 +241,19 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
         '<button type="submit">Capture all evidence</button>' +
       '</form>';
   var rows = acs.map(function(ac) {
-    var statusHtml = ac.targetSet
-      ? '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>'
-      : '<p role="status">Capture target not set</p>';
+    // actr-s2 (AC1, AC6): an auto-resolved target gets its own distinct
+    // label + an Override link (query-param driven, no client JS -- matches
+    // this page's own established no-JS convention) instead of the generic
+    // "Target: ..." line a manually-set target still uses unchanged.
+    var statusHtml;
+    if (ac.isAutoResolved) {
+      statusHtml = '<p>Auto-detected from <code>' + _escapeHtml(ac.autoResolvedSpecFile) + '</code>: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code> ' +
+        '— <a href="' + baseUrl + '?override=' + encodeURIComponent(ac.acId) + '">Override</a></p>';
+    } else if (ac.targetSet) {
+      statusHtml = '<p>Target: <code>' + _escapeHtml(ac.target.url) + '</code> / <code>' + _escapeHtml(ac.target.selector) + '</code></p>';
+    } else {
+      statusHtml = '<p role="status">Capture target not set</p>';
+    }
     // ppc-s9 (Task 6): re-triggering a capture that's already dispatched and
     // awaiting its artifact doesn't make sense -- suppress the normal
     // capture form while ac.captureInProgress is true, same as the
@@ -288,17 +298,26 @@ function _renderPlaybackEvidenceHtml(journey, acs, csrfToken, captureAllProgress
     var failureHtml = ac.lastCaptureFailure
       ? '<p role="alert">Capture failed: ' + _escapeHtml(ac.lastCaptureFailure.error || 'unknown error') + ' -- use the button above to retry.</p>'
       : '';
-    return '<li style="margin-bottom:24px;border-bottom:1px solid #E4E7EB;padding-bottom:16px">' +
-      '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
-      statusHtml +
+    // actr-s2 (AC1, AC4, AC6): hidden ONLY when this AC's target is
+    // auto-resolved and no override has been requested for it -- every
+    // other case (not auto-resolved at all, AC4's manual-only case,
+    // override requested) renders this exact unchanged form, so AC4's
+    // "no behavioural regression" requirement holds by construction, not
+    // by a separate code path.
+    var targetForForm = (ac.target && !ac.isAutoResolved) ? ac.target : null;
+    var manualFormHtml = (ac.isAutoResolved && !ac.overrideRequested) ? '' :
       '<form method="POST" action="' + baseUrl + '/targets/' + encodeURIComponent(ac.acId) + '">' +
         _csrf.csrfField(csrfToken) +
         '<label for="url-' + _escapeHtml(ac.acId) + '">Page URL</label><br>' +
-        '<input id="url-' + _escapeHtml(ac.acId) + '" name="url" type="url" required value="' + (ac.target ? _escapeHtml(ac.target.url) : '') + '"><br>' +
+        '<input id="url-' + _escapeHtml(ac.acId) + '" name="url" type="url" required value="' + (targetForForm ? _escapeHtml(targetForForm.url) : '') + '"><br>' +
         '<label for="selector-' + _escapeHtml(ac.acId) + '">CSS selector</label><br>' +
-        '<input id="selector-' + _escapeHtml(ac.acId) + '" name="selector" type="text" required value="' + (ac.target ? _escapeHtml(ac.target.selector) : '') + '"><br>' +
+        '<input id="selector-' + _escapeHtml(ac.acId) + '" name="selector" type="text" required value="' + (targetForForm ? _escapeHtml(targetForForm.selector) : '') + '"><br>' +
         '<button type="submit">Set capture target</button>' +
-      '</form>' +
+      '</form>';
+    return '<li style="margin-bottom:24px;border-bottom:1px solid #E4E7EB;padding-bottom:16px">' +
+      '<h2 style="font-size:16px">' + _escapeHtml(ac.acId) + ' — ' + _escapeHtml(ac.description) + '</h2>' +
+      statusHtml +
+      manualFormHtml +
       captureFormHtml +
       inProgressHtml +
       failureHtml +
@@ -795,26 +814,48 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
   var videos = journey.captureVideos || {};
 
   var captureAllFailed = journey.captureAllFailed || {};
-  var acs = acRows.map(function(ac) {
-    var targetState = _journeyStore.getCaptureTargetState(captureTargets, ac.acId);
-    var targetSet = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
-    return {
-      acId: ac.acId,
-      description: ac.description,
+  var acs = [];
+  for (var acIdx = 0; acIdx < acRows.length; acIdx++) {
+    var acRow = acRows[acIdx];
+    var targetState = _journeyStore.getCaptureTargetState(captureTargets, acRow.acId);
+    var hasManualTarget = targetState !== _journeyStore.CAPTURE_TARGET_NOT_SET;
+    // actr-s2 (AC3, NFR-Performance): only attempt auto-resolution when no
+    // manual target already exists -- a manual target always wins, and
+    // skipping the fetch entirely when it's not even needed keeps this
+    // bounded to "one extra fetch pair per AC lacking a manual target",
+    // not "one extra fetch pair per AC unconditionally".
+    var autoResolved = hasManualTarget ? null : await _resolveAutoCaptureTarget(req, pool, journey, acRow);
+    var activeTarget = hasManualTarget ? targetState : autoResolved;
+    var targetSet = !!activeTarget;
+    acs.push({
+      acId: acRow.acId,
+      description: acRow.description,
       targetSet: targetSet,
-      target: targetSet ? targetState : null,
-      screenshotPath: screenshots[ac.acId] || null,
-      videoPath: videos[ac.acId] || null,
+      target: targetSet ? activeTarget : null,
+      // actr-s2 (AC1, AC3): true only when no manual target exists AND
+      // auto-resolution actually succeeded -- a manual target always wins
+      // (see hasManualTarget above), so this can never be true alongside a
+      // manually-set target.
+      isAutoResolved: !hasManualTarget && !!autoResolved,
+      autoResolvedSpecFile: (!hasManualTarget && autoResolved) ? autoResolved.specFile : null,
+      // actr-s2 (AC6): query-param-driven override request for this AC,
+      // read here so the render function (Task 4) can decide whether to
+      // show the manual form even though a target auto-resolved. The
+      // override round-trip itself (AC6 persistence) is Task 6 -- this is
+      // just the read side needed for the render condition below.
+      overrideRequested: !!(req.query && req.query.override === acRow.acId),
+      screenshotPath: screenshots[acRow.acId] || null,
+      videoPath: videos[acRow.acId] || null,
       // ppc-s2 (final-review fix, AC5): distinguishes an AC that just failed
       // in the most recent capture-all run from one simply never attempted.
-      lastCaptureFailure: captureAllFailed[ac.acId] || null,
+      lastCaptureFailure: captureAllFailed[acRow.acId] || null,
       // ppc-s9 (Task 6): an AC whose dispatched capture hasn't resolved yet
       // (found or timed-out) -- re-triggering a capture already in flight
       // doesn't make sense, so this also suppresses the normal capture form
       // in _renderPlaybackEvidenceHtml below.
-      captureInProgress: !!inProgressAcIds[ac.acId]
-    };
-  });
+      captureInProgress: !!inProgressAcIds[acRow.acId]
+    });
+  }
   // ppc-s5 (AC2): a video shared across multiple ACs needs each AC's own
   // section to name the others -- computed here (not in the render
   // function) since it needs the full acs list, which the render function
