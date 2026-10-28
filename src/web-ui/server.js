@@ -139,6 +139,13 @@ let _pshPool = null;
 // called out on /test/seed-pending-action's action-queue overrides above.
 let _ppcS5DodContentByJourney = new Map();
 
+// actr-s2 (live-browser-render-check E2E fixture, /test/seed-actr-s2-journey
+// below): per-featureSlug DoD "AC Coverage" content, mirroring
+// _ppcS5DodContentByJourney immediately above -- keyed by featureSlug rather
+// than journeyId since playback-evidence.js's own _fetchArtefact call site
+// (_getDodAcList) only has featureSlug + artefactType in scope, not journeyId.
+let _actrS2DodContentByFeatureSlug = new Map();
+
 // tir-s2: module-level handler references for /settings/link-account (assigned
 // inside the DATABASE_URL block, same pattern as _pshPool above — this route is
 // real-Postgres-only, matching tir-s1's own migrateTeamSchema/getRoleForTenant
@@ -2927,6 +2934,165 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ journeyId: journeyId, featureSlug: featureSlug, tenantId: tenantId, productId: productId, acId: acId }));
+    return;
+  }
+
+  // actr-s2: seed a REAL journey (via journey-store.js) for the live-browser
+  // render check on the auto-resolved capture target feature
+  // (tests/e2e/actr-s2-auto-resolve-live.spec.js). Mirrors
+  // /test/seed-ppc-s5-journey immediately above: isDodComplete is satisfied
+  // directly via completedStages (no real Postgres row needed), and
+  // pipelineStateStorySlugs drives _getDodAcList's storySlugs-loop branch so
+  // the returned AC row carries a storySlug (the field
+  // _resolveAutoCaptureTarget's own guard requires -- see that function's
+  // header comment and decisions.md's 2026-10-29 entry).
+  //
+  // _getDodAcList's own DoD-list read still goes through _fetchArtefact
+  // (the GitHub Contents API, unchanged by actr-s2's redesign -- only the
+  // test-plan.md/spec-file read moved off it) -- there is no real GitHub
+  // token for the synthetic E2E session (tests/e2e/fixtures/auth.js), so
+  // playback-evidence.js's own setFetcherModule test seam is wired here,
+  // scoped by featureSlug via _actrS2DodContentByFeatureSlug, delegating to
+  // the real fetchArtefact for any artefactType this route didn't seed so
+  // other E2E specs relying on the real fetcher are unaffected (safer than
+  // throwing by default, since this is the first caller of this particular
+  // seam from server.js and there is no other wiring to collide with).
+  //
+  // The feature actually under test -- _resolveAutoCaptureTarget's own
+  // test-plan.md + spec-file read -- is deliberately NOT stubbed: it reads
+  // for real via getRepoRoot(req), which resolves to this server process's
+  // own cwd (no WUCE_TENANT_ROOT_BASE/CLAUDE_REPO_PATH/COPILOT_REPO_PATH set
+  // in playwright.config.js's webServer.env -- same resolution ep2-s3's own
+  // spec already relies on and documents), so this route writes a real
+  // test-plan.md fixture directly onto this checkout's own artefacts/ tree,
+  // exactly as /test/seed-ppc-s5-journey writes a real video fixture file
+  // above. Body: { featureSlug?, tenantId?, productId?, storySlug?, acId?,
+  // acDescription?, specFile? }.
+  if (pathname === '/test/seed-actr-s2-journey' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _journeyStoreForActrS2 = require('./modules/journey-store');
+    const _repoRootForActrS2 = require('./adapters/repo-root');
+    const _fsForActrS2 = require('fs');
+    const _peForActrS2 = require('./routes/playback-evidence');
+    const _fetcherForActrS2 = require('./adapters/artefact-fetcher');
+
+    const featureSlug = body.featureSlug || ('actr-s2-e2e-feature-' + Date.now());
+    const tenantId = body.tenantId || (req.session && req.session.tenantId) || 'e2e-tester';
+    const storySlug = body.storySlug || 'actr-s2-e2e-story';
+    const acId = body.acId || 'AC1';
+    const acDescription = body.acDescription || 'Shows the auto-detected capture target';
+    const specFile = body.specFile || 'tests/e2e/actr-s2-capture-target-fixture.spec.js';
+    const noE2eSection = !!body.noE2eSection;
+
+    // _getDodAcList's storySlugs-loop branch (playback-evidence.js) only
+    // runs once _resolveOwnerRepo(productId, tenantId, pool) resolves a
+    // truthy {owner, repo} AND req.session.accessToken is truthy -- neither
+    // is real here (no real GitHub token for the synthetic E2E session;
+    // see tests/e2e/fixtures/auth.js), but _resolveOwnerRepo's own query
+    // only needs a real products row with repo_owner/repo_name set to
+    // resolve to a (fake, fine) owner/repo pair, and the setFetcherModule
+    // stub below ignores the accessToken value entirely -- so a fake
+    // non-empty token string is sufficient. fake-test-db.js's own
+    // INSERT INTO products ignores any caller-supplied id and always
+    // returns a freshly generated one (confirmed by reading it), so this
+    // route creates its own product row rather than accepting a
+    // caller-chosen productId.
+    req.session.accessToken = req.session.accessToken || 'e2e-fake-token-for-actr-s2-fixture';
+    const productRow = await _pshPool.query(
+      `INSERT INTO products (tenant_id, name, description, mission, tech_stack, constraints, roadmap, architecture_guardrails, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING product_id`,
+      [tenantId, 'actr-s2 E2E fixture product', '', '', '', '', '', '', tenantId]
+    );
+    const productId = productRow.rows[0].product_id;
+    await _pshPool.query(
+      'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
+      ['github', 'e2e-actr-s2-owner', 'e2e-actr-s2-repo', productId]
+    );
+
+    // Pre-existing gap found while building this route (unrelated to
+    // actr-s2's own redesign): the s1.1-era setPgAdapter({saveJourney})
+    // stub wired unconditionally above (NODE_ENV=test, no DATABASE_URL)
+    // implements ONLY saveJourney -- _getDodAcList's own Postgres-row fast
+    // path (getArtefactsForJourney, journey-store.js line ~159) calls
+    // adapter.getArtefactsForJourney(journeyId) unconditionally whenever
+    // _activePgAdapter() is truthy, so EVERY journey in this exact test
+    // config throws TypeError unless some OTHER spec's own
+    // setPgAdapterForTesting() stub (which takes precedence) happened to
+    // run first in this process and mask it -- confirmed by reproducing it
+    // with no other spec run first. Not fixed at its source (out of scope
+    // for actr-s2, same call ep2-s3-approval.spec.js made for its own
+    // unrelated pre-existing bug -- see that file's header comment); routed
+    // around here the same way ppc-s5's own seed route already does, via
+    // setPgAdapterForTesting's precedence. Logged in decisions.md.
+    //
+    // Both this route and /test/seed-ppc-s5-journey (above) wire the same
+    // process-lifetime setPgAdapterForTesting global -- the same risk
+    // ppc-s5's own code-quality comment already flags ("whoever touches
+    // this precedence should grep for setPgAdapterForTesting across
+    // tests/e2e/ first"). Delegating getArtefactsForJourney to
+    // _ppcS5DodContentByJourney first means this route's own stub can
+    // never clobber ppc-s5's seeded journeys even if the two specs run
+    // concurrently against this shared webServer process; falling through
+    // to [] for anything _ppcS5DodContentByJourney doesn't know about
+    // (including this route's own journeys, which deliberately want []
+    // here so _getDodAcList falls through to the storySlugs-loop branch).
+    _journeyStoreForActrS2.setPgAdapterForTesting({
+      saveJourney: async function() {},
+      getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
+    });
+
+    const journeyObj = _journeyStoreForActrS2.createJourney(featureSlug);
+    const journeyId = journeyObj.journeyId;
+    _journeyStoreForActrS2.setJourneyFields(journeyId, {
+      tenantId: tenantId,
+      productId: productId,
+      completedStages: [{ skillName: 'definition-of-done', artefactPath: null, completedAt: new Date().toISOString() }],
+      pipelineStateStorySlugs: [storySlug]
+    });
+
+    const dodArtefactType = 'dod/' + storySlug + '-dod';
+    const dodContent = [
+      '## AC Coverage',
+      '',
+      '| AC | Satisfied? | Evidence |',
+      '|----|------------|----------|',
+      '| ' + acId + ' — ' + acDescription + ' | Yes | x |'
+    ].join('\n');
+    _actrS2DodContentByFeatureSlug.set(featureSlug, { artefactType: dodArtefactType, content: dodContent });
+    _peForActrS2.setFetcherModule(async function(fs2, artefactType, token, repoOverride) {
+      const seeded = _actrS2DodContentByFeatureSlug.get(fs2);
+      if (seeded && artefactType === seeded.artefactType) return seeded.content;
+      return _fetcherForActrS2.fetchArtefact(fs2, artefactType, token, repoOverride);
+    });
+
+    const repoRootForSeed = _repoRootForActrS2.getRepoRoot(req);
+    const testPlanRelPath = 'artefacts/' + featureSlug + '/test-plans/' + storySlug + '-test-plan.md';
+    const testPlanAbsPath = _path.join(repoRootForSeed, testPlanRelPath);
+    _fsForActrS2.mkdirSync(_path.dirname(testPlanAbsPath), { recursive: true });
+    // noE2eSection (AC4 fixture): a test-plan.md with no "## E2E Tests"
+    // section at all -- _findE2eSpecFileForAc's own documented null-return
+    // case -- reproduces the manual-only-AC path over a real HTTP request.
+    _fsForActrS2.writeFileSync(testPlanAbsPath, noE2eSection ? (
+      '## Unit Tests\n\n' + acId + ' is unit-only.\n'
+    ) : [
+      '## E2E Tests',
+      '',
+      '### Auto-resolves the capture target',
+      '- **Verifies:** ' + acId,
+      '- **File:** `' + specFile + '`',
+      ''
+    ].join('\n'));
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      journeyId: journeyId, featureSlug: featureSlug, tenantId: tenantId, productId: productId,
+      acId: acId, storySlug: storySlug, testPlanRelPath: testPlanRelPath
+    }));
     return;
   }
 

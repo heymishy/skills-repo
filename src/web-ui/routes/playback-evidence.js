@@ -49,14 +49,6 @@ var CAPTURE_WAIT_WINDOW_MS = 5 * 60 * 1000;
 var _fetchArtefact = require('../adapters/artefact-fetcher').fetchArtefact;
 function setFetcherModule(fn) { _fetchArtefact = fn; }
 
-// actr-s2 (Task 3): same test-seam-wrapper convention as _fetchArtefact/
-// setFetcherModule immediately above -- fetchRepoPath already has its own
-// full D37 adapter in artefact-fetcher.js (already wired to a real
-// implementation in server.js:252), this is just this file's own
-// injectable reference to it, not a new adapter.
-var _fetchRepoPath = require('../adapters/artefact-fetcher').fetchRepoPath;
-function setRepoPathFetcherModule(fn) { _fetchRepoPath = fn; }
-
 // ppc-s4: css-parity fallback. _resolveJourney's fast path requires a
 // Postgres journeys row whose completedStages already has a
 // 'definition-of-done' entry -- a signal only ever created by a real web
@@ -406,37 +398,59 @@ function _findE2eSpecFileForAc(testPlanContent, acId) {
 }
 
 /**
- * actr-s2 (Task 3, AC4/AC5): attempts to auto-resolve a capture target for
- * one AC from its own story's test-plan.md + the E2E spec file it names.
- * Returns {url, selector, specFile} on success, or null for EVERY failure
- * mode below -- never throws, per AC5's "an auto-resolution failure must
- * never surface as a page error" requirement:
- *  - acRow is missing, or present but has no storySlug (Postgres single-row-branch journeys -- see
- *    this plan's own Design notes #2)
- *  - no connected repo / no access token
- *  - the test-plan.md fetch 404s or fails for any other reason
+ * actr-s2 (Task 3, AC4/AC5 -- REDESIGNED post-review, see decisions.md
+ * 2026-10-29): attempts to auto-resolve a capture target for one AC from
+ * its own story's test-plan.md + the E2E spec file it names. Returns
+ * {url, selector, specFile} on success, or null for EVERY failure mode
+ * below -- never throws, per AC5's "an auto-resolution failure must never
+ * surface as a page error" requirement:
+ *  - acRow is missing, or present but has no storySlug (Postgres single-row-branch journeys)
+ *  - the test-plan.md does not exist on disk (or path traversal is attempted)
  *  - the test-plan names no E2E spec for this AC (_findE2eSpecFileForAc
  *    returns null) -- the normal, expected case for a manual-only AC
- *  - the spec-file fetch fails
+ *  - the named spec file does not exist on disk (or path traversal is attempted)
  *  - deriveCaptureTargetFromSpec resolves neither a url nor a selector
+ *
+ * Reads via the connected repo's LOCAL CLONE (getRepoRoot/ensureRepoFresh),
+ * not the GitHub Contents API -- matching this file's own already-
+ * established pattern for reading committed evidence (screenshots/videos)
+ * elsewhere in handleGetPlaybackEvidence, rather than the GitHub-API pattern
+ * _fetchSummaryContent/_getDodAcList use for discovery.md/benefit-metric.md/
+ * dod/*.md. The original design used fetchArtefact/fetchRepoPath (GitHub
+ * API) instead; this was corrected before merge after it was found to make
+ * the happy path untestable by any automated E2E spec (it required a real
+ * OAuth-authenticated session with a real GitHub token, which cannot be
+ * materialized in an automated test run). The local-clone path is fully
+ * deterministic and requires no network/auth, enabling a real Playwright
+ * E2E test (Task 7) instead of a RISK-ACCEPT.
  * @param {object} req
- * @param {object} pool
  * @param {object} journey
  * @param {{acId: string, storySlug?: string}} acRow
- * @returns {Promise<{url: string, selector: string, specFile: string}|null>}
+ * @returns {{url: string, selector: string, specFile: string}|null}
  */
-async function _resolveAutoCaptureTarget(req, pool, journey, acRow) {
+function _resolveAutoCaptureTarget(req, journey, acRow) {
   try {
     if (!acRow || !acRow.storySlug) return null;
-    var accessToken = req.session && req.session.accessToken;
-    var ownerRepo = await _resolveOwnerRepo(journey.productId, journey.tenantId, pool);
-    if (!ownerRepo || !accessToken) return null;
 
-    var testPlanContent = await _fetchArtefact(journey.featureSlug, 'test-plans/' + acRow.storySlug + '-test-plan', accessToken, ownerRepo);
+    var repoRoot = getRepoRoot(req);
+    try { ensureRepoFresh(repoRoot); } catch (_) {}
+
+    var testPlanRelPath = 'artefacts/' + journey.featureSlug + '/test-plans/' + acRow.storySlug + '-test-plan.md';
+    var testPlanPath = _resolveSafeShotPath(repoRoot, testPlanRelPath);
+    if (!testPlanPath || !fs.existsSync(testPlanPath)) return null;
+    var testPlanContent = fs.readFileSync(testPlanPath, 'utf8');
+
     var specFile = _findE2eSpecFileForAc(testPlanContent, acRow.acId);
     if (!specFile) return null;
 
-    var specContent = await _fetchRepoPath(ownerRepo.owner, ownerRepo.repo, specFile, accessToken);
+    // specFile came from regex-parsed, tenant-repo-authored content -- never
+    // trust it as a safe relative path without the same traversal guard
+    // _resolveSafeShotPath already applies to every other disk read in this
+    // file (screenshot/video serving).
+    var specPath = _resolveSafeShotPath(repoRoot, specFile);
+    if (!specPath || !fs.existsSync(specPath)) return null;
+    var specContent = fs.readFileSync(specPath, 'utf8');
+
     var derived = deriveCaptureTargetFromSpec(specContent, acRow.acId);
     if (!derived || !derived.url || !derived.selector) return null;
 
@@ -824,7 +838,7 @@ async function handleGetPlaybackEvidence(req, res, _next, pool) {
     // skipping the fetch entirely when it's not even needed keeps this
     // bounded to "one extra fetch pair per AC lacking a manual target",
     // not "one extra fetch pair per AC unconditionally".
-    var autoResolved = hasManualTarget ? null : await _resolveAutoCaptureTarget(req, pool, journey, acRow);
+    var autoResolved = hasManualTarget ? null : _resolveAutoCaptureTarget(req, journey, acRow);
     var activeTarget = hasManualTarget ? targetState : autoResolved;
     var targetSet = !!activeTarget;
     acs.push({
@@ -1197,7 +1211,7 @@ async function handlePostCaptureTrigger(req, res, _next, pool) {
     // AC list the same way the render path does.
     var acRows = await _getDodAcList(journey, req, pool);
     var acRow = acRows.find(function(row) { return row.acId === acId; });
-    var autoResolved = acRow ? await _resolveAutoCaptureTarget(req, pool, journey, acRow) : null;
+    var autoResolved = acRow ? _resolveAutoCaptureTarget(req, journey, acRow) : null;
     if (!autoResolved) {
       _sendJson(res, 400, { error: 'no capture target set for this AC' });
       return;
@@ -1400,7 +1414,6 @@ module.exports = {
   handlePostSignOff,
   setJourneyStoreModule,
   setFetcherModule,
-  setRepoPathFetcherModule,
   _resolveJourney,
   _resolveViaPipelineState,
   _featureDodStatus,
