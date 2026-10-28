@@ -36,6 +36,50 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch (e) { fail('AC4 (unit): returns null when the spec file does not name the AC at all', e); }
 })();
 
+// AC2 (unit): url derived from a goto call appearing AFTER the AC tag --
+// confirmed against the real fpd-s4-caption-sync.spec.js shape (tag, then
+// goto, then locator) before this was written. See decisions.md's
+// 2026-10-28 CORRECTION entry.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `// fixture.spec.js (actr-fixture AC1)\nwithAuth('does the thing', async ({ page }) => {\n  await page.goto('/playback/actr-fixture');\n  const el = page.locator('.actr-target');\n});\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, '/playback/actr-fixture', 'expected the goto path found after the tag');
+    pass('AC2 (unit): derives url from a goto call appearing after the AC tag');
+  } catch (e) { fail('AC2 (unit): derives url from a goto call appearing after the AC tag', e); }
+})();
+
+// AC2 (unit, regression guard for the corrected design): a goto call
+// appearing BEFORE the AC tag must never be picked up -- this is the
+// direction the first draft of this story got wrong; see decisions.md.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  try {
+    const fixtureSpec = `await page.goto('/should-not-be-used');\n// fixture.spec.js (actr-fixture AC1)\nconst el = page.locator('.actr-target');\n`;
+    const result = deriveCaptureTargetFromSpec(fixtureSpec, 'AC1');
+    assert.strictEqual(result.url, null, 'a goto call preceding the AC tag must never be returned as this AC\'s url');
+    pass('AC2 (unit): does not find a url when the only goto call precedes the tag');
+  } catch (e) { fail('AC2 (unit): does not find a url when the only goto call precedes the tag', e); }
+})();
+
+// AC2 (real-file confirmation): the design's own motivating real-world case.
+(function () {
+  const { deriveCaptureTargetFromSpec } = require('../src/utils/capture-target-derivation');
+  const fs = require('fs');
+  const path = require('path');
+  try {
+    const content = fs.readFileSync(path.join(__dirname, 'e2e', 'fpd-s4-caption-sync.spec.js'), 'utf8');
+    const result = deriveCaptureTargetFromSpec(content, 'AC3');
+    assert.deepStrictEqual(
+      result,
+      { acId: 'AC3', url: '/playback/some-dod-complete-feature-with-a-real-package', selector: '.playback-ac__video' },
+      'expected both url and selector resolved from the real fpd-s4 file'
+    );
+    pass('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js');
+  } catch (e) { fail('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js', e); }
+})();
+
 console.log(`\n[actr-s1-capture-target-derivation] Results: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
 
