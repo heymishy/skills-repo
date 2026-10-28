@@ -351,7 +351,17 @@ async function _getDodAcList(journey, req, pool) {
   for (var i = 0; i < storySlugs.length; i++) {
     try {
       var content = await _fetchArtefact(journey.featureSlug, 'dod/' + storySlugs[i] + '-dod', accessToken, ownerRepo);
-      acs = acs.concat(parseDodAcCoverage(content));
+      var storySlug = storySlugs[i];
+      var storyAcs = parseDodAcCoverage(content).map(function(ac) {
+        // actr-s2 (prerequisite for AC1-AC6): tags each AC row with the
+        // story it came from -- an AC id (e.g. "AC1") is only unique WITHIN
+        // one story, not across a whole feature, so auto-resolution
+        // (Task 3) needs this to know which story's own test-plan.md to
+        // fetch. The Postgres single-row branch above (dodRow) does NOT
+        // get this treatment.
+        return Object.assign({}, ac, { storySlug: storySlug });
+      });
+      acs = acs.concat(storyAcs);
     } catch (_) {
       // One story's DoD content missing/unfetchable must not blank the
       // whole list -- the other stories' ACs are still real evidence.
