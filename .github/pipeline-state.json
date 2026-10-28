@@ -43705,7 +43705,7 @@
           "id": "actr-s1",
           "slug": "actr-s1",
           "name": "Derive capture target (URL + selector) from a story's own E2E spec",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -43722,7 +43722,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s1-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T06:20:25.649Z",
+          "updatedAt": "2026-10-28T06:45:07.513Z",
           "tasks": [
             {
               "id": "task-1",
@@ -43756,8 +43756,11 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1034"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1034",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dod/actr-s1-dod.md"
         },
         {
           "id": "actr-s2",
