@@ -43766,14 +43766,14 @@
           "id": "actr-s2",
           "slug": "actr-s2",
           "name": "Auto-resolve the single-AC capture target before falling back to manual entry",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 11,
-            "passing": 0,
+            "totalTests": 21,
+            "passing": 21,
             "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s2-auto-resolve-single-ac-capture-target-test-plan.md"
           },
           "acTotal": 6,
@@ -43784,42 +43784,42 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s2-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T07:16:01.887Z",
+          "updatedAt": "2026-10-28T10:50:16.116Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "Attach storySlug to DoD AC rows (prerequisite)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             },
             {
               "id": "task-2",
               "name": "E2E spec-file finder (pure logic)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             },
             {
               "id": "task-3",
               "name": "Auto-resolution function (AC4, AC5 fail-safe wiring)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             },
             {
               "id": "task-4",
               "name": "Render wiring (AC1, AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             },
             {
               "id": "task-5",
               "name": "Dispatch wiring (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             },
             {
               "id": "task-6",
               "name": "Override round-trip confirmation (AC6)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s2-plan.md"
             }
           ]
