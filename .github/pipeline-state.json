@@ -43697,7 +43697,7 @@
       "slug": "2026-10-28-auto-capture-target-resolution",
       "name": "Auto Capture Target Resolution",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "epics": [],
       "stories": [
@@ -43705,24 +43705,56 @@
           "id": "actr-s1",
           "slug": "actr-s1",
           "name": "Derive capture target (URL + selector) from a story's own E2E spec",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 7,
+            "totalTests": 9,
             "passing": 0,
             "artefact": "artefacts/2026-10-28-auto-capture-target-resolution/test-plans/actr-s1-derive-capture-target-from-e2e-spec-test-plan.md"
           },
-          "acTotal": 5,
+          "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s1-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T01:11:56.766Z"
+          "updatedAt": "2026-10-28T01:55:57.832Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Core shared function -- selector parity + no-match behaviour (AC1, AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Forward goto-scan for URL derivation (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Bound the scan to the AC's own section (AC2b)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Relative-path guard on the derived URL (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Relocate deriveSelectorFromSpec to delegate to the shared module (AC5)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s1-plan.md"
+            }
+          ]
         },
         {
           "id": "actr-s2",
@@ -43774,7 +43806,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-10-28T01:11:56.766Z"
+      "updatedAt": "2026-10-28T01:47:32.421Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

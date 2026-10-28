@@ -16,6 +16,14 @@
 
 **Rationale:** Matches this feature's own existing ADR-018 "real session only" constraint — an authenticated session navigating to an attacker-controlled host under this feature's existing trust model is a real risk, not a hypothetical one, so the derivation layer must fail closed.
 
+## 2026-10-28 — CORRECTION: goto-scan direction was wrong in the first draft of actr-s1, caught before implementation
+
+**Context:** `actr-s1`'s original AC2 ("derive the URL") was drafted assuming a story's E2E spec places `page.goto(...)` *before* the AC's own tag comment (e.g. via a shared `beforeEach`), so the derivation function would scan backward from the tag to find it. Before writing the implementation plan, 3 real spec files were read to confirm this (`tests/e2e/fpd-s4-caption-sync.spec.js`, `tests/e2e/jcx-s3-emotion-curve.spec.js`, `tests/e2e/ppc-s5-video-lazy-load.spec.js`). All 3 disproved the assumption: `fpd-s4`'s tag is in a header comment, with `goto` and `locator` both appearing *after* it, in that order — the same direction the existing (already-shipped) selector-derivation logic already scans.
+
+**Decision:** Corrected AC2 to scan forward from the tag (same direction as the existing selector logic), added AC2b (bound the forward scan to the AC's own section, so a later AC's `goto` in a multi-AC file is never misattributed — the same class of bug `rpca-s2-hotfix1` already fixed for the selector side of this exact scan), and added a dedicated regression test (`doesNotFindUrlWhenGotoPrecedesTag`) asserting the old, wrong direction is never used. Story, test plan, review, and DoR artefacts were all updated to match before `/implementation-plan` was written.
+
+**Rationale:** This is exactly the class of mistake CLAUDE.md's "Mock-shape verification" rule warns about for mocks — here applied to fixture/design assumptions instead: a plausible-sounding design detail that was never checked against real repo content would have produced a feature whose unit tests pass but that never actually resolves anything against real spec files in production. Caught at zero cost (pre-implementation, artefact-only edit) by reading real fixtures before locking in the algorithm.
+
 ## 2026-10-28 — GAP: no discovery/governance-approval chain exists for this short-track feature
 
 **Context:** Per `CLAUDE.md`'s short-track definition, this feature skips `/discovery` through `/review` (steps 1-4) and starts directly at `/test-plan`. There is therefore no `discovery.md` artefact and no `## Approved By` section for `/definition-of-ready`'s H-GOV check to read.

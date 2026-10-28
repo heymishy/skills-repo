@@ -10,20 +10,23 @@
 | AC | Description | Verification method |
 |----|-------------|---------------------|
 | AC1 | Selector-half parity with existing `deriveSelectorFromSpec` | Unit test: run the new function and the existing `deriveSelectorFromSpec` against the same fixture, assert identical `selector` |
-| AC2 | URL derived from nearest preceding `page.goto('/relative/path')` | Unit test: fixture with `goto` in a `beforeEach`-shaped block above the AC-tagged locator, assert `url` matches |
-| AC3 | Absolute/non-relative `goto` value rejected | Unit test: fixture with `page.goto('https://evil.example.com/x')` preceding the AC tag, assert `url: null` |
+| AC2 | URL derived from a `page.goto('/relative/path')` call appearing after the AC's own tag | Unit test: fixture matching the real `fpd-s4-caption-sync.spec.js` shape (tag, then `goto`, then `locator`, in that order), assert `url` matches |
+| AC2b | Scan is bounded — a later AC's own `goto` is never attributed to an earlier AC in the same file | Unit test: fixture with two AC-tagged sections, each with its own `goto`; assert the first AC's result carries only its own `goto` value |
+| AC3 | Absolute/non-relative `goto` value rejected | Unit test: fixture with `page.goto('https://evil.example.com/x')` after the AC tag, assert `url: null` |
 | AC4 | No AC tag match returns `null`, never throws | Unit test: fixture with no matching AC tag, assert return value is `null` and no exception is thrown |
 | AC5 | No regression in existing `rpca-s2` suite after relocation | Run `tests/check-rpca-s2-selector-derivation-from-e2e-specs.js` unchanged against the relocated module, assert all existing assertions still pass |
 
 ## Unit Tests
 
-1. **`derivesSelectorMatchingExistingBehaviour`** (AC1) — Precondition: fixture spec text with `// (actr-fixture AC1)` followed by `page.locator('.actr-target')`. Action: call `deriveCaptureTargetFromSpec(fixture, 'AC1')`. Expected: `{ acId: 'AC1', url: null, selector: '.actr-target' }` when no `goto` is present (selector-only case, matching today's behaviour exactly).
-2. **`derivesUrlFromPrecedingGoto`** (AC2) — Precondition: fixture with `test.beforeEach(async ({ page }) => { await page.goto('/playback/actr-fixture'); });` followed later by the AC1 tag + locator. Action: same call. Expected: `url: '/playback/actr-fixture'`, `selector` unchanged from test 1.
-3. **`derivesUrlFromNearestGotoWhenMultiplePresent`** (AC2, edge case) — Precondition: fixture with two `goto` calls for two different tests, each preceding its own AC tag. Action: call for each `acId`. Expected: each AC gets the `goto` nearest to (preceding) its own tag, not the first `goto` in the file.
-4. **`rejectsAbsoluteGotoUrl`** (AC3) — Precondition: fixture with `page.goto('https://evil.example.com/x')` preceding the AC1 tag. Action: same call. Expected: `url: null` — the absolute value is never returned.
-5. **`rejectsProtocolRelativeGotoUrl`** (AC3, edge case) — Precondition: fixture with `page.goto('//evil.example.com/x')`. Action: same call. Expected: `url: null` — protocol-relative is not "relative" for this guard's purposes (it still changes host).
-6. **`returnsNullForUnmatchedAc`** (AC4) — Precondition: fixture with no `(actr-fixture AC9)` tag anywhere. Action: call with `acId: 'AC9'`. Expected: `null`, no exception.
-7. **`relocatedModuleMatchesExistingSuite`** (AC5) — Action: re-point `tests/check-rpca-s2-selector-derivation-from-e2e-specs.js`'s import at the new shared module's exported selector-only path (or confirm `scripts/playback-capture.js` re-exports the relocated function under its old name for that suite). Expected: all existing assertions in that file still pass unchanged.
+1. **`derivesSelectorMatchingExistingBehaviour`** (AC1) — Precondition: fixture spec text with `// (actr-fixture AC1)` followed by `page.goto('/playback/actr-fixture')` then `page.locator('.actr-target')` (matching the real `fpd-s4-caption-sync.spec.js` ordering: tag, then goto, then locator). Action: call `deriveCaptureTargetFromSpec(fixture, 'AC1')`. Expected: `selector: '.actr-target'` — identical to what `deriveSelectorFromSpec` returns against the same fixture.
+2. **`derivesUrlFromGotoAfterTag`** (AC2) — Precondition: same fixture as test 1. Action: same call. Expected: `url: '/playback/actr-fixture'`.
+3. **`doesNotFindUrlWhenGotoPrecedesTag`** (AC2, regression guard for the corrected design) — Precondition: fixture with a `page.goto('/should-not-be-used')` call placed BEFORE the AC1 tag (the originally-assumed, now-disproven direction), and no `goto` after the tag. Action: same call. Expected: `url: null` — a preceding `goto` must never be picked up; this is the direction correction itself, made explicit as a test rather than left implicit.
+4. **`boundsScanToThisAcsOwnSection`** (AC2b) — Precondition: fixture with two AC-tagged sections in one file, each with its own tag, `goto`, and `locator` (mirroring `jcx-s3-emotion-curve.spec.js`'s multi-test shape but with literal, resolvable `goto` calls in both sections). Action: call for `AC1` and separately for `AC2`. Expected: `AC1`'s result carries AC1's own `goto`/`locator` values only; `AC2`'s result carries AC2's own values only — neither leaks into the other.
+5. **`rejectsAbsoluteGotoUrl`** (AC3) — Precondition: fixture with `page.goto('https://evil.example.com/x')` after the AC1 tag. Action: same call. Expected: `url: null` — the absolute value is never returned.
+6. **`rejectsProtocolRelativeGotoUrl`** (AC3, edge case) — Precondition: fixture with `page.goto('//evil.example.com/x')` after the tag. Action: same call. Expected: `url: null` — protocol-relative is not "relative" for this guard's purposes (it still changes host).
+7. **`returnsNullForUnmatchedAc`** (AC4) — Precondition: fixture with no `(actr-fixture AC9)` tag anywhere. Action: call with `acId: 'AC9'`. Expected: `null`, no exception.
+8. **`realFpdS4FixtureResolvesBothUrlAndSelector`** (AC2, real-file confirmation) — Precondition: read the real `tests/e2e/fpd-s4-caption-sync.spec.js` file content. Action: call `deriveCaptureTargetFromSpec(content, 'AC3')`. Expected: `{ acId: 'AC3', url: '/playback/some-dod-complete-feature-with-a-real-package', selector: '.playback-ac__video' }` — the design's own motivating real-world case, not just synthetic fixtures.
+9. **`relocatedModuleMatchesExistingSuite`** (AC5) — Action: re-point `tests/check-rpca-s2-selector-derivation-from-e2e-specs.js`'s import at the new shared module's exported selector-only path (or confirm `scripts/playback-capture.js` re-exports the relocated function under its old name for that suite). Expected: all existing assertions in that file still pass unchanged.
 
 ## Integration Tests
 
@@ -36,4 +39,4 @@ None — this story is pure parsing logic with no seam to another component. Int
 
 ## Gap Table
 
-No gaps. All 5 ACs have at least one test; AC2 and AC3 each have an edge-case test beyond their primary case.
+No gaps. All 6 ACs (including AC2b) have at least one test; AC2 has 3 tests (primary case, the explicit direction-correction regression guard, and a real-file confirmation against `fpd-s4-caption-sync.spec.js`), AC3 has 2 edge-case tests.
