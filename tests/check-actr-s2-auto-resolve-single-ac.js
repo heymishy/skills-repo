@@ -437,6 +437,39 @@ queue.push(function() {
   });
 });
 
+console.log('\n[actr-s2] Task 6: Override round-trip (AC6)');
+
+queue.push(function() {
+  return test('T6a: ?override=<acId> reveals the manual form even though the target is auto-resolved', function() {
+    installHappyPathFetchers();
+    var store6 = getStore();
+    var setup = setupSingleAcJourney(store6);
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug, { query: { override: 'AC1' } });
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.ok(res._body.indexOf('Auto-detected from') !== -1, 'the auto-detected info line should still show for context');
+      assert.ok(res._body.indexOf('name="url"') !== -1, 'the manual form must now be present because override was requested');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
+queue.push(function() {
+  return test('T6b: submitting the override form, then reloading without ?override, shows the overridden value and hides the auto-detected block', function() {
+    installHappyPathFetchers();
+    var store6 = getStore();
+    var setup = setupSingleAcJourney(store6);
+    store6.setCaptureTarget(setup.journeyId, 'AC1', '/overridden-url', '.overridden-selector');
+    var req = makeReq('tenant-a', 'product-a', setup.featureSlug);
+    var res = makeRes();
+    return pe.handleGetPlaybackEvidence(req, res, null, makeMockPool()).then(function() {
+      restoreRealFetchers();
+      assert.ok(res._body.indexOf('/overridden-url') !== -1, 'the overridden value must now be the active target');
+      assert.ok(res._body.indexOf('Auto-detected from') === -1, 'the auto-detected label must be gone -- manual now wins, per AC3\'s own priority rule');
+    }, function(err) { restoreRealFetchers(); throw err; });
+  });
+});
+
 // Driver: runs every queued test in order and prints the final summary.
 // Added HERE, in Task 1, not at the end of the file -- every later task's
 // own RED/GREEN step depends on this actually executing and printing
