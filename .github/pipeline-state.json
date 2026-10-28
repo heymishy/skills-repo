@@ -43852,7 +43852,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s3-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T20:08:01.844Z",
+          "updatedAt": "2026-10-28T22:44:07.766Z",
           "tasks": [
             {
               "id": "task-1",
@@ -43863,7 +43863,7 @@
             {
               "id": "task-2",
               "name": "Wire handlePostCaptureAll to compute per-AC auto-resolution before buildCaptureAllList (AC3, AC4, AC5)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-10-28-auto-capture-target-resolution/plans/actr-s3-plan.md"
             }
           ]
