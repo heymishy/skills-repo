@@ -43939,27 +43939,36 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-10-29T07:53:12.499Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-10-29T07:52:10.057Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-10-29T07:53:12.500Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
       ],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T07:49:40.380Z",
+      "updatedAt": "2026-10-29T07:53:12.500Z",
       "metrics": [
         {
           "id": "m1",

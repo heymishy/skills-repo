@@ -27,7 +27,9 @@ None identified — checked against `.github/architecture-guardrails.md`. `domai
 
 ## Acceptance Criteria
 
-**AC1:** Given no shared fixture module exists today, When a developer requires the new `tests/helpers/journey-fixture.js` module, Then it exports a factory function returning a `mockReq` object whose default shape (`session.tenantId`, and every other field journey.js's route handlers read from `req.session`) matches what existing hand-rolled mocks in `journey.js`'s test files currently construct.
+**AC1:** Given no shared fixture module exists today, When a developer requires the new `tests/helpers/journey-fixture.js` module, Then it exports a factory function returning a `mockReq` object whose default shape is grounded in `journey.js`'s real `req.session` reads (every field the route handlers actually read, cross-checked against the route code itself) — not copied from whichever of the 17 existing divergent hand-rolled mocks happens to be consulted, since those are exactly what disagree with each other today.
+
+<!-- Fixed via /review 1-M1 (2026-10-29): original wording grounded the canonical shape in "what existing tests currently construct," which is ambiguous when those tests are the very things that diverge. -->
 
 **AC2:** Given the shared fixture module, When an existing `journey.js` test file (`tests/check-ep1-s1-journey-feature-merge.js`) is migrated to import and use it instead of its own hand-rolled `mockReq`, Then all of that file's existing assertions continue to pass unchanged.
 

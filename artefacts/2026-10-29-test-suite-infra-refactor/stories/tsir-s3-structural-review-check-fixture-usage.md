@@ -20,6 +20,8 @@ So that **I get a structural signal to use the shared fixture instead of remembe
 
 `product/constraints.md` #13 ("Structural governance preferred over instructional") — this check must be a CI/review-gate-verifiable mechanism, not an advisory checklist line, per the `/clarify` decision logged in `decisions.md` (DESIGN entry, 2026-10-29). `domain: [testing]` injects `.github/standards/testing/test-design-patterns.md` — AC4 below applies its mutation-test discipline.
 
+CLAUDE.md "Platform change policy (Phase 2+)" — AC3's edit to `skills/review/SKILL.md` is a platform-infrastructure change and must go through a feature-branch PR with platform-team review, not a direct commit to master, same as any other `SKILL.md` edit. (Added via /review 1-M2, 2026-10-29.)
+
 ## Dependencies
 
 - **Upstream:** Story 1 (`tsir-s1`) — the check needs the shared fixture module's real export shape to know what "using it" looks like.
