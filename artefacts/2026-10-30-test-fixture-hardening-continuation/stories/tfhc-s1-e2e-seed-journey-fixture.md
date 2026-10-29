@@ -18,7 +18,7 @@ So that **I don't have to hand-roll a new inline payload each time, and don't ri
 
 ## Architecture Constraints
 
-None identified — checked against `.github/architecture-guardrails.md`. `domain: [testing]` injects `.github/standards/testing/test-design-patterns.md`.
+`ADR-018` (Architecture Decision Record 18 — Playwright is the E2E testing framework; specs live in `tests/e2e/`; Playwright is a devDependency only) applies directly: this story adds a new fixture file under `tests/e2e/fixtures/`, consumed only by Playwright specs, with no invocation from the unit-test chain. Checked against `.github/architecture-guardrails.md`. `domain: [testing]` injects `.github/standards/testing/test-design-patterns.md`.
 
 ## Dependencies
 
@@ -33,7 +33,7 @@ None identified — checked against `.github/architecture-guardrails.md`. `domai
 
 **AC3:** Given 2 of the 4 real callers of `/test/seed-approval-journey` (e.g. `ep3-s1-regression.spec.js` and one other), When they are migrated to import and use the shared fixture instead of their own inline payload, Then all of their existing assertions continue to pass unchanged.
 
-**AC4:** Given the migrated specs, When the full E2E suite's seed-related specs are run, Then no new flakiness or timing regression is introduced — same pass/fail outcome as before migration.
+**AC4:** Given the migrated specs, When the full E2E suite's seed-related specs are run, Then each migrated spec produces the same pass/fail outcome as it did before migration (deterministic, testable within a single run). Flakiness is not asserted by this AC — it is monitored observationally post-merge rather than verified by a single test run, consistent with the approach `tsir-s2`'s NFR tests took for the `pcr-s1` precedent.
 
 ## Out of Scope
 
