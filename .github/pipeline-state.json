@@ -44222,38 +44222,68 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T20:08:28.349Z"
+              "updatedAt": "2026-10-29T22:33:17.816Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tfhc-s2",
               "name": "Migrate a bounded batch of hand-rolled journey.js test files to the shared fixture",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T20:08:44.519Z"
+              "updatedAt": "2026-10-29T22:34:13.903Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0
             },
             {
               "slug": "tfhc-s3",
               "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T20:09:01.835Z"
+              "updatedAt": "2026-10-29T22:34:19.329Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0
             },
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T20:09:18.820Z"
+              "updatedAt": "2026-10-29T22:34:25.056Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0
             },
             {
               "slug": "tfhc-s5",
@@ -44298,7 +44328,8 @@
           "assessedBy": "/review",
           "assessedAt": "2026-10-29T20:09:18.822Z"
         }
-      ]
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
