@@ -43979,9 +43979,9 @@
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-10-29T08:27:08.725Z",
+              "updatedAt": "2026-10-29T09:43:25.952Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {

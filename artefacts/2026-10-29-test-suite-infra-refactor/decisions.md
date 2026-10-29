@@ -56,6 +56,14 @@
 **Revisit trigger:** If pcr-s1-test-runner.js fails even when run standalone (not just under full-suite load), treat as a real regression, not this flake.
 ---
 
+**2026-10-29 | RISK-ACCEPT | /branch-setup (tsir-s2)**
+**Decision:** Proceed past the baseline test run despite tests/check-pcr-s1-test-runner.js failing once (752.4ms/file vs a 749.8ms threshold, 0.3% over) rather than treating it as blocking.
+**Alternatives considered:** Pause and investigate before creating the worktree.
+**Rationale:** Same already-documented pcr-s1 timing-sensitive NFR flake as tsir-s1's branch-setup (RISK-ACCEPT logged there too). Confirmed via immediate retry (passed cleanly, 14/14) that this is machine-load noise, not a regression -- the margin (0.3% over a hardcoded wall-clock threshold) is consistent with the flake's known signature, not a real slowdown.
+**Made by:** Copilot (baseline check), consistent with established precedent for this exact flake signature.
+**Revisit trigger:** If pcr-s1-test-runner.js fails consistently across multiple standalone retries (not just once under load), treat as a real regression.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature — both decisions above are lightweight log entries, not structural/irreversible enough to warrant a full ADR. -->
