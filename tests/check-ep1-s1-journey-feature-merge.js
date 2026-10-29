@@ -10,6 +10,8 @@ var assert = require('assert');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var journeyFixture = require('./helpers/journey-fixture').journeyFixture;
+var journeyFixtureRes = require('./helpers/journey-fixture').journeyFixtureRes;
 
 var passed = 0;
 var failed = 0;
@@ -46,26 +48,6 @@ function writeState(features) {
   var dir = path.join(_scratchRoot, '.github');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'pipeline-state.json'), JSON.stringify({ features: features }), 'utf8');
-}
-
-function mockReq(overrides) {
-  return Object.assign({
-    session: { accessToken: 'tok-alice', userId: '1', login: 'alice', tenantId: 't1' },
-    params: {},
-    query: {},
-    body: {},
-    url: '/'
-  }, overrides || {});
-}
-
-function mockRes() {
-  var _statusCode = null;
-  var _body = '';
-  return {
-    writeHead: function (code) { _statusCode = code; return this; },
-    end: function (body) { if (body != null) _body = body; },
-    _get: function () { return { statusCode: _statusCode, body: _body }; }
-  };
 }
 
 (async () => {
@@ -144,8 +126,8 @@ await checkAsync('integration: handleGetJourney renders a merged-in CLI-only fea
   var _originalPlatformTenantId = process.env.PLATFORM_TENANT_ID;
   process.env.PLATFORM_TENANT_ID = 't1';
   try {
-    var req = mockReq({ params: {} });
-    var res = mockRes();
+    var req = journeyFixture({ params: {} });
+    var res = journeyFixtureRes();
     await journeyRoutes.handleGetJourney(req, res, null, null);
     var result = res._get();
 
@@ -184,8 +166,8 @@ await checkAsync('ctpl-s1 AC1: mismatched tenantId -- journey page has no merged
   }), 'utf8');
   try {
     await withPlatformTenantId('platform-tenant-x', async () => {
-      var req = mockReq({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'some-other-tenant' } });
-      var res = mockRes();
+      var req = journeyFixture({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'some-other-tenant' } });
+      var res = journeyFixtureRes();
       await journeyRoutes.handleGetJourney(req, res, null, null);
       var body = res._get().body;
       assert.ok(body.indexOf('ctpl-leak-fixture-1') === -1, 'must not show a feature belonging to a different tenant');
@@ -205,8 +187,8 @@ await checkAsync('ctpl-s1 AC2: matching tenantId -- journey page still shows mer
   }), 'utf8');
   try {
     await withPlatformTenantId('platform-tenant-x', async () => {
-      var req = mockReq({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'platform-tenant-x' } });
-      var res = mockRes();
+      var req = journeyFixture({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'platform-tenant-x' } });
+      var res = journeyFixtureRes();
       await journeyRoutes.handleGetJourney(req, res, null, null);
       var body = res._get().body;
       assert.ok(body.indexOf('ctpl-leak-fixture-2') !== -1, 'the one legitimate (self-hosted) case must be unaffected by this fix');
@@ -226,8 +208,8 @@ await checkAsync('ctpl-s1 AC3: PLATFORM_TENANT_ID unset -- no merged features fo
   }), 'utf8');
   try {
     await withPlatformTenantId(undefined, async () => {
-      var req = mockReq({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: '' } });
-      var res = mockRes();
+      var req = journeyFixture({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: '' } });
+      var res = journeyFixtureRes();
       await journeyRoutes.handleGetJourney(req, res, null, null);
       var body = res._get().body;
       assert.ok(body.indexOf('ctpl-leak-fixture-3') === -1, 'an unset PLATFORM_TENANT_ID must never wildcard-match, including against an empty-string tenantId');
@@ -256,8 +238,8 @@ await checkAsync('ctpl-s1 AC3 (code-quality follow-up): PLATFORM_TENANT_ID set t
   }), 'utf8');
   try {
     await withPlatformTenantId('', async () => {
-      var req = mockReq({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: '' } });
-      var res = mockRes();
+      var req = journeyFixture({ params: {}, session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: '' } });
+      var res = journeyFixtureRes();
       await journeyRoutes.handleGetJourney(req, res, null, null);
       var body = res._get().body;
       assert.ok(body.indexOf('ctpl-leak-fixture-3b') === -1, 'an empty-string PLATFORM_TENANT_ID must never match an empty-string tenantId, even though "" === "" is true -- this is exactly what the !! guards in _isPlatformSelfTenant exist to prevent');
