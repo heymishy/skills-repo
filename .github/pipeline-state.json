@@ -43891,11 +43891,11 @@
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "acTotal": 4,
+          "acTotal": 3,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-29T04:44:02.380Z"
+          "updatedAt": "2026-10-29T04:46:45.174Z"
         }
       ]
     }

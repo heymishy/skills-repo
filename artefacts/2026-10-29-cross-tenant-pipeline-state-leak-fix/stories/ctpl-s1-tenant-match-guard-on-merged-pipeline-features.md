@@ -4,32 +4,34 @@
 
 ## Background
 
-`_mergeStateFeaturesIntoJourneyList` (`src/web-ui/routes/journey.js`) merges every non-terminal-stage feature from `getRepoRoot(req)`'s own `.github/pipeline-state.json` into the `/journey` page's feature list for the CURRENT tenant/product, with no check that the content actually belongs to them.
+`_mergeStateFeaturesIntoJourneyList` (`src/web-ui/routes/journey.js`, called from `handleGetJourney`, the plain `GET /journey` handler) merges every non-terminal-stage feature from `getRepoRoot(req)`'s own `.github/pipeline-state.json` into the response, with no check that the content actually belongs to the requesting tenant.
 
-`getRepoRoot(req)` never consults a product's own connected-repo configuration (`repo_owner`/`repo_name`). It only checks `WUCE_TENANT_ROOT_BASE` + session `tenantId` (an env var confirmed unset on both `wuce-staging` and `skills-framework` production, via direct inspection — see `artefacts/2026-10-28-auto-capture-target-resolution/decisions.md`-adjacent session notes); when unset, it falls back to `path.resolve('.')`, i.e. the deployed app's own source directory, for every tenant unconditionally.
+**Correction made during review of this story's own first draft:** `GET /journey` is explicitly documented in its own code as the "no product" bucket (`journeys = journeys.filter(function(j) { return j.productId == null; });`, pan-s1 AC4) — a `?productId=` query string on this URL has no effect on this handler at all (confirmed by reading `server.js`'s route dispatch: `/journey` always calls `handleGetJourney` regardless of query params). So the leak is not "per product" — it is **every authenticated session of every tenant that loads plain `/journey`**, full stop. This ruled out an earlier draft of this story's own fix design (comparing a *product's* `repo_owner`/`repo_name` against `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`) — there is no product in scope at this call site to compare at all.
 
-**Confirmed live on staging, 2026-10-29:** `productId=6eee4b07-...` (`mtrr-s2 live-verify probe`, a product with **no repo connected at all** — "Not yet synced", 0 epics, 0 stories on its own product page) showed 344 features on its `/journey` page. Every one of them was `heymishy/skills-repo`'s own internal pipeline-state.json content (including this very feature's own sibling stories). The leak is fully independent of what — if anything — a product has connected; it affects every tenant on the deployment identically.
+The correct comparison is tenant-level, using the exact same identity check `registerSelfAsProduct` (`server.js`, pr-s1) already uses to decide "is this the platform's own self-hosted tenant": `process.env.PLATFORM_TENANT_ID`. That env var, together with `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`, is what the self-hosted `skills-framework` product's own registration already depends on — reusing it here is consistent with an already-established pattern, not a new concept.
+
+`getRepoRoot(req)` never consults any tenant or product configuration when `WUCE_TENANT_ROOT_BASE` is unset (confirmed unset on both `wuce-staging` and `skills-framework` production, via `flyctl secrets list` and the committed `fly.toml`'s `[env]` block). It falls back to `path.resolve('.')` — the deployed app's own source directory — for every tenant unconditionally.
+
+**Confirmed live on staging, 2026-10-29:** loading `/journey` under a session whose active tenant was `mtrr-s2 live-verify probe` (a product with **no repo connected at all** — "Not yet synced", 0 epics, 0 stories on its own product page) showed 344 features. Every one of them was `heymishy/skills-repo`'s own internal pipeline-state.json content (including this very feature's own sibling stories).
 
 ## User Story
 
-As a **tenant product owner on a shared skills-platform deployment**,
-I want **my `/journey` page to only ever show features that genuinely belong to my own product**,
-So that **another tenant's (or the platform's own) internal delivery backlog is never exposed to me, and I never mistake someone else's work item for my own**.
+As a **tenant on a shared skills-platform deployment**,
+I want **my `/journey` page to never show another tenant's (or the platform's own) internal delivery backlog**,
+So that **I never see or mistake someone else's work item for my own, and the platform's own internal roadmap is never exposed to a customer**.
 
 ## Acceptance Criteria
 
-**AC1:** Given a product with no repo connected, When its `/journey` page renders, Then zero pipeline-state.json-derived features appear — only real journey-store entries (if any) are shown.
+**AC1:** Given a tenant whose session `tenantId` does not equal `process.env.PLATFORM_TENANT_ID`, When that session loads `GET /journey`, Then zero pipeline-state.json-derived (merged) features appear in the response — only that tenant's own real journey-store entries (if any) are shown.
 
-**AC2:** Given a product connected to a repo that is NOT the repo this server process was itself deployed from (`GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`), When its `/journey` page renders, Then zero pipeline-state.json-derived features from `getRepoRoot()`'s content appear — same outcome as AC1, since there is currently no real per-tenant clone for `getRepoRoot()` to resolve to.
+**AC2:** Given a session whose `tenantId` genuinely equals a non-empty `process.env.PLATFORM_TENANT_ID` (the one legitimate self-hosted case), When that session loads `GET /journey`, Then its own real pipeline-state.json features continue to appear exactly as before — no regression.
 
-**AC3:** Given the self-hosted platform product (the one product whose connected `repo_owner`/`repo_name` genuinely matches `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`), When its `/journey` page renders, Then its own real pipeline-state.json features continue to appear exactly as before — no regression for the one legitimate case.
-
-**AC4:** Given `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` are unset (no self-hosted product configured at all, e.g. a fresh install), When any product's `/journey` page renders, Then zero pipeline-state.json-derived features appear for anyone — the guard must fail closed, never open, when the comparison has nothing to compare against.
+**AC3:** Given `process.env.PLATFORM_TENANT_ID` is unset or empty (no self-hosted tenant configured at all, e.g. a fresh install), When any session loads `GET /journey`, Then zero pipeline-state.json-derived features appear for anyone — the guard fails closed, never open, when there is nothing valid to compare against (an unset env var must never be treated as a wildcard match against an unset/missing session `tenantId`).
 
 ## Architecture Constraints
 
-- Fix is scoped to `_mergeStateFeaturesIntoJourneyList`'s own call site(s) in `journey.js` only. A broader audit of the other 9 files calling `getRepoRoot()` (`artefact.js`, `as-built-diagrams.js`, `as-built-system-architecture.js`, `features.js`, `journeys.js`, `playback-evidence.js`, `playback.js`, `product-repo.js`, `products.js`) for the same class of unguarded-merge risk is explicitly Out of Scope here — logged as a required follow-up (see below), not silently deferred.
-- The guard compares the CURRENT product's own `repo_owner`/`repo_name` (read from the `products` table via `pool`) against `process.env.GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME`. Case-insensitive compare (GitHub owner/repo names are case-insensitive in practice). Both sides must be non-empty for a match — an empty/unset value on either side is never treated as a wildcard match (AC4).
+- Fix is scoped to `_mergeStateFeaturesIntoJourneyList`'s own call site in `journey.js` (`handleGetJourney`) only. A broader audit of the other 9 files calling `getRepoRoot()` (`artefact.js`, `as-built-diagrams.js`, `as-built-system-architecture.js`, `features.js`, `journeys.js`, `playback-evidence.js`, `playback.js`, `product-repo.js`, `products.js`) for the same class of unguarded-merge risk is explicitly Out of Scope here — logged as a required follow-up (see below), not silently deferred.
+- The guard compares `req.session.tenantId` against `process.env.PLATFORM_TENANT_ID` — exact string match, both sides must be non-empty (AC3). No new env var or config concept introduced; reuses `PLATFORM_TENANT_ID`, which already exists for exactly this "is this the self-hosted tenant" purpose (`registerSelfAsProduct`, `server.js`).
 - No change to `getRepoRoot()` itself, `_readPipelineFeatures()` itself, or the real tenant-clone infrastructure gap (`WUCE_TENANT_ROOT_BASE`) — that is a separate, larger initiative requiring its own `/discovery` pass, not in scope for this bug fix.
 
 ## Out of Scope
