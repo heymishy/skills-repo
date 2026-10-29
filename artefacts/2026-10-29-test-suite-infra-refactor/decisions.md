@@ -38,6 +38,14 @@
 **Revisit trigger:** If the next slice's adoption metric shows the `/review` finding alone isn't sufficient (e.g. findings are routinely overridden without a logged RISK-ACCEPT), promote to a `/definition-of-ready` hard block.
 ---
 
+**2026-10-29 | RISK-ACCEPT | /definition-of-ready**
+**Decision:** Proceed to the inner coding loop for `tsir-s1`/`tsir-s2`/`tsir-s3` without a pre-code domain-expert review of the 3 AC verification scripts (DoR Warning W4).
+**Alternatives considered:** Pause DoR sign-off until the 3 verification scripts (`artefacts/2026-10-29-test-suite-infra-refactor/verification-scripts/`) are read and confirmed correct before coding starts.
+**Rationale:** Solo-operator posture — same reasoning applies identically to all 3 stories, so one RISK-ACCEPT covers the set rather than three separate entries. The scripts remain available to read at `/verify-completion` or as a post-merge smoke test; nothing about reviewing them pre-code vs. post-code changes what they check.
+**Made by:** Hamish King, Platform Owner
+**Revisit trigger:** If a `/verify-completion` run finds a verification scenario doesn't actually match the real behaviour (a sign the pre-code review would have caught something), revert to requiring pre-code review for future stories in this repo.
+---
+
 ---
 
 ## Architecture Decision Records

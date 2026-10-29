@@ -43939,9 +43939,9 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T07:59:02.478Z",
+              "updatedAt": "2026-10-29T08:06:36.357Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43952,14 +43952,16 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s1-dor.md"
             },
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T07:59:02.478Z",
+              "updatedAt": "2026-10-29T08:06:36.357Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43970,14 +43972,16 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s2-dor.md"
             },
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T07:59:02.478Z",
+              "updatedAt": "2026-10-29T08:06:36.357Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43988,14 +43992,16 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s3-dor.md"
             }
           ]
         }
       ],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T07:59:02.478Z",
+      "updatedAt": "2026-10-29T08:06:36.357Z",
       "metrics": [
         {
           "id": "m1",
@@ -44028,7 +44034,33 @@
           "contributingStories": []
         }
       ],
-      "slicingStrategy": "walking-skeleton"
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": [
+        {
+          "id": "NFR-tsir-self-test-perf",
+          "category": "nfr",
+          "label": "Self-test execution time < 1 second",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-29T08:06:36.357Z"
+        },
+        {
+          "id": "NFR-tsir-check-perf",
+          "category": "nfr",
+          "label": "Structural check execution time < 1 second per file",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-29T08:06:36.357Z"
+        },
+        {
+          "id": "NFR-tsir-no-prod-path",
+          "category": "nfr",
+          "label": "No new production code path (tests/scripts only)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-29T08:06:36.357Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
