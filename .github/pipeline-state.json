@@ -43979,23 +43979,34 @@
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T08:27:08.725Z",
+              "updatedAt": "2026-10-29T10:11:54.147Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0,
+                "passing": 3,
                 "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s2-fixture-module-self-test-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s2-dor.md"
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s2-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Build the self-test for the shared fixture module (AC1, AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1039"
             },
             {
               "slug": "tsir-s3",
