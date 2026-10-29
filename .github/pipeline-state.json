@@ -43874,6 +43874,30 @@
       ],
       "metrics": [],
       "updatedAt": "2026-10-28T01:47:32.421Z"
+    },
+    {
+      "slug": "2026-10-29-cross-tenant-pipeline-state-leak-fix",
+      "name": "Tenant-match guard on pipeline-state-derived journey features",
+      "track": "short",
+      "stage": "review",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "ctpl-s1",
+          "slug": "ctpl-s1",
+          "name": "Tenant-match guard on pipeline-state-derived journey features",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-10-29T04:44:02.380Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
