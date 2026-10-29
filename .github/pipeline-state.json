@@ -43931,7 +43931,9 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": [],
-      "stories": []
+      "stories": [],
+      "discoveryStatus": "clarified",
+      "updatedAt": "2026-10-29T07:39:01.515Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

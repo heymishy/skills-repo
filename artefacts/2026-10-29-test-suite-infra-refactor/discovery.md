@@ -1,6 +1,6 @@
 # Discovery: Test Suite Infrastructure Refactor
 
-**Status:** Draft — awaiting approval
+**Status:** Clarified — awaiting approval
 **Created:** 2026-10-29
 **Approved by:** [Name + date — filled in after human review]
 **Author:** Copilot
@@ -25,6 +25,10 @@ Accumulated pain reaching a tipping point, directly observed in a single session
 
 A shared test-fixture/helper module (a `mockReq`/`mockRes` factory) for `journey.js` specifically — the one file a real session incident (`ctpl-s1`) proved causes correctness risk from fixture divergence, not just inconvenience. Success for the MVP = the next story that touches `journey.js` uses the shared fixture instead of hand-rolling a new one, and no new fixture-divergence bug like `ctpl-s1`'s reaches review.
 
+Two items added via `/clarify` (see Clarification log):
+- **A dedicated self-test for the shared fixture module itself**, asserting its own shape/defaults are correct — consistent with this repo's existing convention of testing shared test-infrastructure directly rather than relying on downstream consumers to surface a regression indirectly (precedent: `tests/check-wuce17-e2e-infra.js` for the E2E fixture layer, `tests/check-pcr-s1-test-runner.js` for the test runner itself). Bounds the "a bug in the shared module ripples across all 42 consumers at once" blast-radius risk named below.
+- **One small structural check** (`check-journey-fixture-usage.js`, same shape as the existing `check-design-tokens.js` / `H-DESIGN` gate) that greps any file touching `journey.js` tests for a hand-rolled `mockReq`-shaped object instead of the shared fixture, wired into `/review` as a new finding category (not yet a `/definition-of-ready` hard block — promoting it to one is a next-slice decision once the pattern's proven). Chosen over an advisory `/review` checklist line per `product/constraints.md` #13 ("structural governance preferred over instructional") — the platform's own stated rule for exactly this kind of choice.
+
 Deliberately not runner parallelization or the full 780-file cleanup in this first slice — see Out of Scope. The platform owner has confirmed bigger scope is wanted for the next slice(s) after this one; this MVP is the first of several planned slices, not a standalone effort.
 
 ## Out of Scope
@@ -36,18 +40,23 @@ Deliberately not runner parallelization or the full 780-file cleanup in this fir
 
 ## Assumptions and Risks
 
-[ASSUMPTION] The real-git-commit-collision risk (prior session finding: `skills.js` fires a real git commit during tests) is confined to a small, identifiable subset of the 64 subprocess-spawning files, not pervasive across the suite — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] No CI workflow file changes are needed for the journey.js-fixture MVP itself — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] A shared fixture module reduces the *frequency* of divergence bugs but not necessarily the *blast radius* when one does occur — a bug in the shared module itself could ripple across all 42 consumers at once instead of being isolated to one file — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] The 42 existing journey.js-touching files can be migrated to the shared fixture incrementally, one file at a time, without a forced "big bang" cutover — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] journey.js is representative enough of the duplication problem that proving the pattern there transfers cleanly to skills.js/products.js/journeys.js later — unconfirmed, requires /clarify before scope is locked.
-[ASSUMPTION] Existing journey.js-touching stories will actually adopt the shared fixture without a bundled migration pass or an enforcement mechanism (e.g. a review checklist item) — unconfirmed; if adoption doesn't happen organically, this MVP ships infrastructure nobody uses and the duplication problem persists, requires /clarify before scope is locked.
+**Resolved via /clarify:**
+
+- **Git-commit-collision risk — resolved, narrower than originally stated.** The root cause (`src/web-ui/routes/skills.js`'s real `git commit` call in the skill-turn-stream handler) is already behind a D37 injectable adapter (`setSkillTurnGitCommitAdapter`, story `stis-s1`, already merged), defaulting to real behaviour in production and stubbed by exactly 12 known test files today. The risk is confined to the skill-turn artefact-completion code path, not spread pervasively across all 64 subprocess-spawning files. Does not block this MVP; still relevant context for the deferred `scripts/run-all-tests.js` parallelization slice.
+- **No CI workflow file changes needed for the journey.js-fixture MVP — confirmed.** A shared `mockReq`/`mockRes` module is purely an application/test-file-level change; no `.github/workflows/*.yml` edits are required.
+- **Blast-radius risk — resolved by adding scope, not left as a risk.** See MVP Scope: a dedicated self-test for the shared fixture module itself is now in scope, bounding this risk rather than accepting it unmitigated.
+- **Adoption-without-enforcement risk — resolved by adding scope, not left as a risk.** See MVP Scope: a structural `/review` check (`check-journey-fixture-usage.js`) is now in scope, giving the Success Indicators' adoption target a real enforcement mechanism rather than relying on organic adoption alone.
+
+**Deferred — relevant to next slices, not blocking this MVP:**
+
+- Whether the 42 existing `journey.js`-touching files can be migrated to the shared fixture incrementally (one file at a time) without a forced "big bang" cutover — this MVP doesn't retrofit the existing 42 (see Out of Scope), so the question only matters once a retrofit slice is actually proposed. Carry forward to that slice's own discovery.
+- Whether `journey.js` is representative enough of the duplication problem that the pattern proven here transfers cleanly to `skills.js`/`products.js`/`journeys.js` later — carry forward to whichever of those is scoped as the next slice; validate against that file's own consumer set rather than assuming transfer.
 
 ## Directional Success Indicators
 
 1. **Fixture duplication:** Baseline 17/42 `journey.js`-touching files hand-roll their own `mockReq` (audit-confirmed). Target: 0 new hand-rolled fixtures going forward. Measured via: grep count at each future `journey.js`-touching story's review.
 2. **Divergence-bug incidence:** Baseline ≥1 confirmed occurrence (`ctpl-s1`). Target: 0 further occurrences. Measured via: capture-log entries tagged to this bug class.
-3. **Adoption:** Baseline 0/42 files use a shared fixture today. Target: 100% of NEW `journey.js`-touching stories use it (retrofitting the existing 42 is explicitly out of scope). Measured via: same grep-count method as #1.
+3. **Adoption:** Baseline 0/42 files use a shared fixture today. Target: 100% of NEW `journey.js`-touching stories use it (retrofitting the existing 42 is explicitly out of scope). Measured via: `check-journey-fixture-usage.js`'s structural `/review` finding (added via /clarify, see MVP Scope), backed by the same grep-count method as #1 for independent confirmation.
 
 ## Constraints
 
@@ -64,6 +73,13 @@ None identified.
 ## Approved By
 
 [Name — Role — Date]
+
+## Clarification log
+
+[2026-10-29] Clarified via /clarify:
+- Q: Is the real-git-commit-collision risk confined to a small subset, and are CI workflow changes needed for this MVP? A: Resolved by investigation (no user input needed) — commit risk is already mitigated via `stis-s1`'s D37 adapter and confined to known call sites; no CI workflow changes required.
+- Q: Should the shared fixture module ship with a dedicated self-test to bound the blast-radius risk? A: Yes — added to MVP scope, matching this repo's existing precedent for shared test-infrastructure (`check-wuce17-e2e-infra.js`, `check-pcr-s1-test-runner.js`).
+- Q: Should the MVP bundle an adoption-enforcement mechanism, or accept organic adoption as the bet? A: Add one structural check (`check-journey-fixture-usage.js`, same shape as `check-design-tokens.js`/H-DESIGN), wired into `/review` as a new finding category — chosen over an advisory checklist line per `product/constraints.md` #13 ("structural governance preferred over instructional").
 
 ---
 
