@@ -44127,6 +44127,19 @@
         }
       ],
       "traceStatus": "has-findings"
+    },
+    {
+      "slug": "2026-10-30-test-fixture-hardening-continuation",
+      "name": "Test Fixture Hardening - Continuation",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-10-29T19:23:22.761Z",
+      "discoveryStatus": "draft",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
