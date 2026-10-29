@@ -70,6 +70,21 @@ function getRepoRoot(req) {
   return _repoRootAdapter.getRepoRoot(req || { session: {} });
 }
 
+// ctpl-s1 (AC1, AC2, AC3): only the platform's own self-hosted tenant may
+// see pipeline-state.json features merged from getRepoRoot()'s content --
+// getRepoRoot() has no real per-tenant repo clone to resolve to today (no
+// WUCE_TENANT_ROOT_BASE configured on any known deployment), so for every
+// OTHER tenant, getRepoRoot()'s content is never genuinely theirs. Reuses
+// the exact identity check registerSelfAsProduct (server.js, pr-s1) already
+// uses for "is this the self-hosted tenant" -- not a new concept.
+// Fail-closed: both sides must be non-empty AND equal; '' === '' must never
+// be treated as a match.
+function _isPlatformSelfTenant(req) {
+  var tenantId = req && req.session && req.session.tenantId;
+  var platformTenantId = process.env.PLATFORM_TENANT_ID;
+  return !!tenantId && !!platformTenantId && tenantId === platformTenantId;
+}
+
 // owle.6: injectable pipeline-state writer
 var _pipelineStateWriter = function() {
   throw new Error('Adapter not wired: pipelineStateWriter. Call setPipelineStateWriter() before use.');
@@ -447,7 +462,9 @@ async function handleGetJourney(req, res, _next, pool) {
   // without a product remain a fully supported, non-error case (e.g.
   // solo/personal-project use), not disallowed by this filter.
   journeys = journeys.filter(function(j) { return j.productId == null; });
-  journeys = _mergeStateFeaturesIntoJourneyListFn(journeys, repoRoot); // ep1-s1
+  if (_isPlatformSelfTenant(req)) {
+    journeys = _mergeStateFeaturesIntoJourneyListFn(journeys, repoRoot); // ep1-s1
+  }
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   // mgss-s1: optional ?mockScenario=<name> query param, threaded through as a

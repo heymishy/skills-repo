@@ -43887,7 +43887,7 @@
           "id": "ctpl-s1",
           "slug": "ctpl-s1",
           "name": "Tenant-match guard on pipeline-state-derived journey features",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -43895,7 +43895,7 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-29T04:48:43.136Z",
+          "updatedAt": "2026-10-29T05:40:28.985Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -43905,7 +43905,15 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-29-cross-tenant-pipeline-state-leak-fix/dor/ctpl-s1-dor.md",
           "dorSignedOffAt": "2026-10-29T04:48:43.135Z",
-          "hasDesignSystemTrack": false
+          "hasDesignSystemTrack": false,
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add tenant-match guard before _mergeStateFeaturesIntoJourneyList call (AC1, AC2, AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-10-29-cross-tenant-pipeline-state-leak-fix/plans/ctpl-s1-plan.md"
+            }
+          ]
         }
       ]
     }
