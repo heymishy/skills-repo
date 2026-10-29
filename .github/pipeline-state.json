@@ -43979,9 +43979,9 @@
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-29T17:46:11.366Z",
+              "updatedAt": "2026-10-29T17:48:23.568Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44006,7 +44006,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1039"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1039",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "tsir-s3",
@@ -44073,7 +44075,7 @@
           "baseline": "1 confirmed occurrence (ctpl-s1)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "No new journey.js-touching story has shipped yet -- 3-story measurement window not started.",
+          "evidence": "tsir-s2 and tsir-s3 both merged, but neither is itself a journey.js-touching consumer story -- the 3-story measurement window named in benefit-metric.md has not started yet.",
           "contributingStories": [
             "tsir-s1",
             "tsir-s2"
