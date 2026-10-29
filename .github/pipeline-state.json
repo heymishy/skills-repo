@@ -43908,6 +43908,19 @@
           "hasDesignSystemTrack": false
         }
       ]
+    },
+    {
+      "slug": "2026-10-29-test-suite-infra-refactor",
+      "name": "Test Suite Infrastructure Refactor",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
