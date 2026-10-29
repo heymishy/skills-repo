@@ -38,8 +38,8 @@ test('step1SelectionPromptRemovedAndDirectStatementPresent', function() {
     'expected the old "Review all stories, or a specific one?" prompt to be removed'
   );
   assert.ok(
-    /Reviewing all .*stories, all 5 categories/i.test(content),
-    'expected a direct statement naming "all stories" and "all 5 categories" together'
+    /Reviewing all .*stories, all \d+ categories/i.test(content),
+    'expected a direct statement naming "all stories" and "all N categories" together'
   );
 });
 

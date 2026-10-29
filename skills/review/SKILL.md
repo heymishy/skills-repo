@@ -61,9 +61,9 @@ State what was found first:
 > This is a re-run for [n] stories. I'll produce a diff against the previous
 > report showing what changed.
 >
-> Reviewing all [n] stories, all 5 categories (A–E).
+> Reviewing all [n] stories, all 6 categories (A–F).
 
-**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 5 categories (A–E) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
+**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 6 categories (A–F) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
 
 Before Step 2, read `.github/context.yml` and apply policy overlays:
 
@@ -186,6 +186,18 @@ For each story:
 HIGH: story ACs require implementation that explicitly violates a named guardrail, mandatory constraint, or Active ADR
 MEDIUM: an applicable ADR exists but isn't referenced in Architecture Constraints field; or the field is blank
 LOW: pattern library or style guide component preferred but not specified in Architecture Constraints
+
+### Category F: Journey.js fixture hygiene
+
+Applies only when a story's touched files include a test file that requires `src/web-ui/routes/journey` (directly or transitively via a fixture). If no touched file matches, state "Category F: N/A — no journey.js-touching file in scope" and skip.
+
+For each journey.js-touching test file in the story's scope, run: `node scripts/check-journey-fixture-usage.js <file>`.
+
+HIGH: none — this check never blocks /test-plan on its own
+MEDIUM: the check reports a hand-rolled `mockReq` instead of the shared fixture (`tests/helpers/journey-fixture.js`) — name the file and recommend the fix
+LOW: none
+
+**Journey.js fixture hygiene score (1–5):** [score] — [one-line justification. 5 if no finding or N/A; 3 if a MEDIUM finding is present but acknowledged.]
 
 ---
 
