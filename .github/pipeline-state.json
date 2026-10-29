@@ -43887,7 +43887,7 @@
           "id": "ctpl-s1",
           "slug": "ctpl-s1",
           "name": "Tenant-match guard on pipeline-state-derived journey features",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -43895,7 +43895,7 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-29T06:01:33.117Z",
+          "updatedAt": "2026-10-29T06:02:56.427Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -43914,7 +43914,9 @@
               "file": "artefacts/2026-10-29-cross-tenant-pipeline-state-leak-fix/plans/ctpl-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1037"
         }
       ]
     }
