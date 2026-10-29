@@ -43981,7 +43981,7 @@
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T10:11:54.147Z",
+              "updatedAt": "2026-10-29T17:46:11.366Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44005,7 +44005,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1039"
             },
             {
@@ -44013,7 +44013,7 @@
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T11:12:19.102Z",
+              "updatedAt": "2026-10-29T17:46:11.521Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44043,7 +44043,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1040"
             }
           ]
