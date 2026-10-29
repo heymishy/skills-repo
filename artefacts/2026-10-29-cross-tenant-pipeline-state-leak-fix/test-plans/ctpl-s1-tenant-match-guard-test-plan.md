@@ -35,3 +35,7 @@ No gaps. All three ACs are directly observable at the unit level (the guard's ow
 ## Gap Table
 
 No gaps.
+
+## Implementation note (added post-implementation)
+
+The final test shape differs slightly from the plan above, for the better: the guard proved simple enough that the planned "Unit Test 1" (table-driven match logic) and "Unit Test 2" (merge-skip proof) were folded directly into the 3 integration tests (AC1/AC2/AC3), which exercise the real `handleGetJourney` response body rather than the guard function in isolation — a stronger, more direct proof of the fix. Code-quality review then found that the original AC3 test didn't actually exercise the specific `'' === ''` danger named in the production code's own comment (it compared `undefined` vs `''`, which would pass even without the fail-closed `!!` guards) — a 4th test was added (`ctpl-s1 AC3 (code-quality follow-up)`) with `PLATFORM_TENANT_ID` set to the literal empty string, confirmed to genuinely fail if the `!!` guards are removed. Final count: 4 new tests (not the originally planned 5), plus 2 pre-existing tests (`check-ep1-s1-journey-feature-merge.js`'s own integration test, `check-sob-s2-journey-dashboard-integration.js`'s own call-count test) updated to set `PLATFORM_TENANT_ID` matching their own mock tenant, since the guard made that a required precondition for scenarios those tests already relied on.

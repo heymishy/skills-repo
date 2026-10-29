@@ -43887,19 +43887,19 @@
           "id": "ctpl-s1",
           "slug": "ctpl-s1",
           "name": "Tenant-match guard on pipeline-state-derived journey features",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-10-29T05:40:28.985Z",
+          "updatedAt": "2026-10-29T06:01:33.117Z",
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 0,
+            "totalTests": 4,
+            "passing": 4,
             "artefact": "artefacts/2026-10-29-cross-tenant-pipeline-state-leak-fix/test-plans/ctpl-s1-tenant-match-guard-test-plan.md"
           },
           "dorStatus": "signed-off",
@@ -43913,7 +43913,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-10-29-cross-tenant-pipeline-state-leak-fix/plans/ctpl-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ]
     }
