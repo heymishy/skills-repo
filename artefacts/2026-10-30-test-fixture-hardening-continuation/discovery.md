@@ -1,8 +1,8 @@
 # Discovery: Test Fixture Hardening — Continuation
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-10-30
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-10-30
 **Author:** Claude Sonnet 5
 
 ---
@@ -79,7 +79,7 @@ Success for this MVP = mechanisms 1–3 exist and are structurally enforced; ite
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-10-30
 
 ---
 
