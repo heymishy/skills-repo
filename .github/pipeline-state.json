@@ -44011,23 +44011,40 @@
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T08:27:08.725Z",
+              "updatedAt": "2026-10-29T11:12:19.102Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s3-structural-review-check-fixture-usage-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s3-dor.md"
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s3-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Build the detection script, its fixtures, and its own tests (AC1, AC2, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire the check into /review as Category F (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1040"
             }
           ]
         }
