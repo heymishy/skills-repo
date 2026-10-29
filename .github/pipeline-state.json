@@ -43939,9 +43939,9 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T09:03:34.688Z",
+              "updatedAt": "2026-10-29T09:12:57.396Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43970,7 +43970,9 @@
                   "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1038"
             },
             {
               "slug": "tsir-s2",
