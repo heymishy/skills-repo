@@ -44055,7 +44055,7 @@
       ],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T08:06:36.357Z",
+      "updatedAt": "2026-10-29T18:13:33.303Z",
       "metrics": [
         {
           "id": "m1",
@@ -44103,26 +44103,30 @@
           "category": "nfr",
           "label": "Self-test execution time < 1 second",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-29T08:06:36.357Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-29T18:09:45.278Z",
+          "evidence": "Re-verified at tsir-s2 DoD: structural proxy test passing, no wall-clock flakiness (3/3 tests, near-instant standalone run)."
         },
         {
           "id": "NFR-tsir-check-perf",
           "category": "nfr",
           "label": "Structural check execution time < 1 second per file",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-29T08:06:36.357Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-29T18:09:45.278Z",
+          "evidence": "Re-verified at tsir-s3 DoD: script source inspected directly -- synchronous fs.readFileSync + regex only, no network/DB."
         },
         {
           "id": "NFR-tsir-no-prod-path",
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-29T08:06:36.357Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-29T18:09:45.278Z",
+          "evidence": "Re-verified across all 3 DoDs: PR file lists for #1038/#1039/#1040 touch only tests/, scripts/, skills/, and artefacts/.github bookkeeping -- no src/ change in any of them."
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
