@@ -1,8 +1,8 @@
 # Discovery: Test Suite Infrastructure Refactor
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-10-29
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King, Platform Owner — 2026-10-29
 **Author:** Copilot
 
 ---
@@ -72,7 +72,7 @@ None identified.
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-10-29
 
 ## Clarification log
 
@@ -83,4 +83,4 @@ None identified.
 
 ---
 
-**Next step:** Human review and approval → /benefit-metric
+**Next step:** /benefit-metric

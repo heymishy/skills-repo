@@ -43932,8 +43932,8 @@
       "sensitiveDataCategories": [],
       "epics": [],
       "stories": [],
-      "discoveryStatus": "clarified",
-      "updatedAt": "2026-10-29T07:39:01.515Z"
+      "discoveryStatus": "approved",
+      "updatedAt": "2026-10-29T07:42:48.460Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
