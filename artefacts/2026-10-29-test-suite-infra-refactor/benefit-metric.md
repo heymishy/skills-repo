@@ -64,9 +64,9 @@ Not applicable — see Tier Classification above (META-BENEFIT FLAG: No).
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Fixture duplication | *(populated at /definition)* | Gap |
-| Divergence-bug incidence | *(populated at /definition)* | Gap |
-| Adoption | *(populated at /definition)* | Gap |
+| Fixture duplication | tsir-s1, tsir-s3 | Covered |
+| Divergence-bug incidence | tsir-s1, tsir-s2 | Covered |
+| Adoption | tsir-s3 | Covered |
 
 ---
 

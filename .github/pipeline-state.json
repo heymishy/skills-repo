@@ -43924,16 +43924,42 @@
       "slug": "2026-10-29-test-suite-infra-refactor",
       "name": "Test Suite Infrastructure Refactor",
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "epics": [],
+      "epics": [
+        {
+          "slug": "journey-js-shared-test-fixture",
+          "name": "journey.js tests stop silently diverging on their own mock request shape",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "tsir-s1",
+              "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tsir-s2",
+              "name": "Add a dedicated self-test for the shared journey.js fixture module",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tsir-s3",
+              "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T07:44:33.346Z",
+      "updatedAt": "2026-10-29T07:49:40.380Z",
       "metrics": [
         {
           "id": "m1",
@@ -43965,7 +43991,8 @@
           "evidence": null,
           "contributingStories": []
         }
-      ]
+      ],
+      "slicingStrategy": "walking-skeleton"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

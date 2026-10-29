@@ -2877,3 +2877,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "Staging Deploy run 40828839698 (ctpl-s1's merge-to-master, PR #1037) failed on the 'Staging smoke test (@mocked)' job: bri-s3.3-multi-user-tenant-journey.spec.js AC1 got a 502 on GET /admin/credits, a route entirely unrelated to ctpl-s1's own diff (journey.js tenant-match guard). This is now confirmed at least 5 times total (ep2-s3, ic-s2, fpd-s2-adjacent, ctpl-s1 -- all logged previously in this file) as the same transient Fly.io gateway blip, never a real regression -- same job name, same spec, same route, same 502 shape every time. Re-ran via gh run rerun --failed with zero code changes per the established precedent; also saved as a standing memory entry (feedback_bri_s3_3_admin_credits_flake) to skip re-deriving causation on future occurrences."
   source: agent-auto
+
+- date: 2026-10-29
+  session-phase: /definition (2026-10-29-test-suite-infra-refactor)
+  signal-type: pattern
+  signal-text: "Decomposed the journey.js-fixture MVP into 1 epic / 3 stories (tsir-s1/s2/s3) using Walking Skeleton slicing -- foundation (shared fixture module) -> harden (dedicated self-test) -> enforce (structural /review check) -- chosen because the three items have a genuine build-order dependency, not because it was the default. Both the self-test (tsir-s2 AC2) and the structural check (tsir-s3 AC4) ACs explicitly require the mutation-test discipline from .github/standards/testing/test-design-patterns.md (temporarily break the thing under test, confirm the test/check actually fails, then restore) rather than just asserting the happy path -- applying that cross-cutting standard at AC-definition time, before any code exists, rather than discovering the gap at code-quality review as res-s2/res-s4 did."
+  source: agent-auto
