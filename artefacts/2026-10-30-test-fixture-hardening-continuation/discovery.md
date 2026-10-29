@@ -1,6 +1,6 @@
 # Discovery: Test Fixture Hardening — Continuation
 
-**Status:** Draft — awaiting approval
+**Status:** Clarified
 **Created:** 2026-10-30
 **Approved by:** Pending
 **Author:** Claude Sonnet 5
@@ -46,9 +46,9 @@ Success for this MVP = mechanisms 1–3 exist and are structurally enforced; ite
 
 ## Assumptions and Risks
 
-- [ASSUMPTION] The remaining `journey.js` files can be migrated to the shared fixture incrementally, one at a time, without a forced "big-bang" cutover — unconfirmed, requires `/clarify` before scope is locked. (This is the exact question the original discovery deferred; this MVP's batch migration is partly meant to answer it, but we don't yet know going in.)
-- [ASSUMPTION] `skills.js`'s real `req.session` shape is groundable into one canonical fixture shape the same clean way `journey.js`'s was — unconfirmed, requires `/clarify` before scope is locked. (Risk: if different `skills.js` handlers read meaningfully different session subsets, a single canonical shape may not transfer as cleanly as it did for `journey.js`.)
-- [ASSUMPTION] The E2E `/test/seed-approval-journey` endpoint's payload contract is stable and uniform enough across its 4 callers to extract one shared fixture from — unconfirmed, requires `/clarify` before scope is locked. (Risk: some callers may be seeding genuinely different scenarios — e.g. different stages — not just duplicating the same shape; the existing `journeyFixture(overrides)` pattern from `tsir-s1` likely covers this, but it hasn't been confirmed against the E2E endpoint's own statefulness.)
+- **[RESOLVED via /clarify, 2026-10-30]** The remaining `journey.js` files can be migrated to the shared fixture incrementally, one at a time, without a forced "big-bang" cutover. Already empirically proven: `tsir-s1` migrated exactly 1 of the original 17 hand-rolled files to the shared fixture, left the other 16 untouched, and the full 812-file suite ran clean both before and after (re-confirmed 2026-10-30). No big-bang cutover needed — incremental migration already works in production.
+- **[RESOLVED via /clarify, 2026-10-30]** `skills.js`'s real `req.session` shape is groundable into one canonical fixture shape the same clean way `journey.js`'s was. Grepped `skills.js`'s real `req.session` reads directly: every handler consistently reads the same 5 fields `journey.js`'s canonical fixture already covers — `login`, `tenantId`, `accessToken`, `userId`, `role`. One canonical shape transfers cleanly; no divergent-subset risk found.
+- **[RESOLVED via /clarify, 2026-10-30]** The E2E `/test/seed-approval-journey` endpoint's payload contract is stable and uniform enough across its 4 callers to extract one shared fixture from. Read the real handler (`server.js:2663`): it takes exactly 2 meaningful inputs (`featureSlug`, `stage`), both with sensible defaults, reading `req.session.login`/`tenantId` for ownership. The 4 callers' apparent payload differences are legitimate different `stage` values by design, not divergence — the existing `journeyFixture(overrides)` pattern already handles exactly this shape of variation.
 - **Risk (not a constraint):** Running 6 differently-shaped stories (2 mechanisms, 1 classification, 2 spikes, plus their conditional implementations) under one epic risks the same CI concurrency-collision pattern (`deploy-group`) seen repeatedly during the original epic, if any two stories' PRs are open simultaneously.
 - **Risk (not a constraint):** The "fast-follow" items named in Out of Scope could go stale if this MVP's own cycle runs long — worth a deliberate check-in once this ships, not an open-ended "someday."
 
@@ -83,15 +83,12 @@ Pending
 
 ---
 
-## /clarify recommendation
+## Clarification log
 
-This discovery contains 3 unconfirmed assumptions that affect scope and benefit measurement. Before proceeding to `/benefit-metric`, run `/clarify` to resolve:
-
-- The remaining `journey.js` files can be migrated to the shared fixture incrementally, one at a time, without a forced "big-bang" cutover.
-- `skills.js`'s real `req.session` shape is groundable into one canonical fixture shape the same clean way `journey.js`'s was.
-- The E2E `/test/seed-approval-journey` endpoint's payload contract is stable and uniform enough across its 4 callers to extract one shared fixture from.
-
-These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification.
+[2026-10-30] Clarified via /clarify:
+- Q: Can the remaining `journey.js` files be migrated to the shared fixture incrementally, one at a time, without a forced "big-bang" cutover? A: Resolved by investigation (no user input needed) — `tsir-s1` already migrated 1 of 17 hand-rolled files while leaving the other 16 untouched, full suite stayed clean before and after. Incremental migration already works.
+- Q: Is `skills.js`'s real `req.session` shape groundable into one canonical fixture shape the same clean way `journey.js`'s was? A: Resolved by investigation — grepped `skills.js`'s real session reads directly; every handler consistently reads the same 5 fields (`login`, `tenantId`, `accessToken`, `userId`, `role`) as `journey.js`'s canonical shape.
+- Q: Is the E2E `/test/seed-approval-journey` endpoint's payload contract stable and uniform enough across its 4 callers to extract one shared fixture from? A: Resolved by investigation — the real handler takes exactly 2 meaningful inputs (`featureSlug`, `stage`) with sensible defaults; callers' differing `stage` values are legitimate by-design variation, already handled by the proven `journeyFixture(overrides)` pattern.
 
 ---
 
