@@ -43939,9 +43939,9 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-10-29T08:27:08.725Z",
+              "updatedAt": "2026-10-29T08:41:19.997Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {

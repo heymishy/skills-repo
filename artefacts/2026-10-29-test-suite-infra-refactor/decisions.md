@@ -48,6 +48,14 @@
 
 ---
 
+**2026-10-29 | RISK-ACCEPT | /branch-setup (tsir-s1)**
+**Decision:** Proceed past the baseline test run with 1 failure (tests/check-pcr-s1-test-runner.js) rather than treating it as blocking.
+**Alternatives considered:** Pause and investigate before creating the worktree.
+**Rationale:** Confirmed via standalone re-run (14/14 checks passing in isolation) that this is the already-documented pcr-s1 timing-sensitive NFR flake (a hardcoded wall-clock assertion sensitive to concurrent machine load during the full 809-file sequential run), not a real regression — same signature already logged multiple times in workspace/capture-log.md for unrelated stories. Also separately confirmed the one genuinely NEW issue found at this baseline check — testPlan.artefact missing from tsir-s1/s2/s3's pipeline-state.json entries, causing a false validate-trace.ps1 failure — was a real bug (not a flake), already fixed directly on master (commit a5bac1dc) before this worktree was rebased onto it.
+**Made by:** Copilot (baseline check), consistent with established precedent for this exact flake signature.
+**Revisit trigger:** If pcr-s1-test-runner.js fails even when run standalone (not just under full-suite load), treat as a real regression, not this flake.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature — both decisions above are lightweight log entries, not structural/irreversible enough to warrant a full ADR. -->
