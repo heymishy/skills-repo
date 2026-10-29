@@ -208,6 +208,12 @@ await testAsync('listJourneys and _mergeStateFeaturesIntoJourneyList are each st
     return realMerge(journeys, repoRoot);
   });
 
+  // ctpl-s1: the merge now only ever fires for the platform's own
+  // self-hosted tenant -- this test's own call-count assertion requires
+  // that precondition, matching mockReq's own default tenantId ('t-sob-s2').
+  const _originalPlatformTenantId = process.env.PLATFORM_TENANT_ID;
+  process.env.PLATFORM_TENANT_ID = 't-sob-s2';
+
   try {
     const req = mockReq({});
     const res = mockRes();
@@ -223,6 +229,8 @@ await testAsync('listJourneys and _mergeStateFeaturesIntoJourneyList are each st
     journeyRoutes.setJourneyStoreModule(realJourneyStore);
     journeyRoutes.setMergeStateFeaturesIntoJourneyList(null);
     journeyRoutes.setRepoRoot(null);
+    if (_originalPlatformTenantId === undefined) delete process.env.PLATFORM_TENANT_ID;
+    else process.env.PLATFORM_TENANT_ID = _originalPlatformTenantId;
   }
 });
 
