@@ -3407,3 +3407,36 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** All three stories' WCAG 2.1 AA NFRs had to be handled as manual-only verification scenarios because a direct check (`grep` for `axe`/`pa11y` in `package.json` and `tests/`) confirmed no automated accessibility tooling is configured anywhere in this repo at all — not a gap specific to this feature. This is consistent with the already-logged `dsa-s3` WCAG AA contrast gap carried in `workspace/state.json`'s own `pendingActions`, confirming this is a recurring, structural gap rather than a one-off miss.
 
 **Rule:** Stop re-discovering this same limitation story-by-story. Any future UI-touching story's `/test-plan` should expect accessibility NFRs to default to manual-only until this is fixed at the platform level (e.g. adding `axe-core` or equivalent to the test suite once, rather than noting its absence repeatedly). Worth scoping as its own short-track story given how many stories this already affects.
+
+---
+
+## D49 — A spike identified in discovery's MVP scope must not be written as a story.md at /definition
+
+**Date:** 2026-10-30
+**Observed at:** `test-fixture-hardening-continuation` feature, `/definition`.
+
+**What happened:** Discovery's MVP scope named 2 of its 6 items as spikes with an explicit PROCEED/DEFER/REJECT verdict gate (`products.js`/`journeys.js` duplication; parallelization git-commit-collision risk). At `/definition`, the natural reflex was to write all 6 MVP items as `story.md` files the same way — but `/spike` is its own dedicated skill with its own question/blocking-stage/type/scope/done-condition flow and its own output artefact shape (`spikes/[slug]-brief.md`, `-outcome.md`, `-output.md`), not a set of Given/When/Then ACs. Writing a spike as a standard story would be a category error — a spike's deliverable is a verdict, not an implementation.
+
+**Rule:** When an MVP scope item is phrased as a spike (has an explicit PROCEED/REDESIGN/DEFER/REJECT verdict gate, not a bounded implementation outcome), `/definition` should track it as a named placeholder in the epic and benefit coverage matrix, but not write a `story.md` for it. Run `/spike` separately for each; only the spike's own PROCEED verdict should trigger writing a real follow-on story.
+
+---
+
+## D50 — A broad audit's approximate language ("20+ specs", "sprawl") needs independent re-verification with exact greps before it becomes a benefit-metric baseline
+
+**Date:** 2026-10-30
+**Observed at:** `test-fixture-hardening-continuation` feature, `/discovery` → `/clarify`.
+
+**What happened:** A forked sub-agent's E2E coverage audit reported "20+ Playwright specs each hand-roll their own inline payload to `/test/seed-approval-journey`." Taken at face value, this became the basis for an MVP scope item. Direct re-verification (`grep` for the literal endpoint string) found only 4 files actually call that specific endpoint — the "20+" figure came from a broader `/test/seed-*` family of 13 distinct, mostly-unrelated ad-hoc endpoints, of which only 5 were even journey-related. The real, bounded problem was an order of magnitude smaller than the initial framing suggested.
+
+**Rule:** Before an audit finding's approximate count ("20+", "dozens of", "widespread") is written into a discovery or benefit-metric artefact as a baseline, re-verify it with an exact, reproducible check (grep count, not estimate). A benefit-metric's credibility depends on exact baselines — an unverified approximate number, once written down, tends to get treated as fact by every downstream skill that reads it.
+
+---
+
+## D51 — Don't default to the prior epic's slicing strategy just because you're continuing its pattern
+
+**Date:** 2026-10-30
+**Observed at:** `test-fixture-hardening-continuation` feature, `/definition` Step 2.
+
+**What happened:** This feature continues `test-suite-infra-refactor`'s exact proven mechanism (fixture + self-test + structural check), and the reflex was to default to the same "Walking skeleton" slicing strategy the original epic used. But the original epic's 3 stories had real sequential dependencies (story 2 and 3 both required story 1's fixture module to exist first) — this continuation's items (E2E fixture, `journey.js` retrofit, `skills.js` extension, classification, 2 spikes) have no dependencies on each other at all; each is independently shippable.
+
+**Rule:** Slicing strategy is a property of the *dependency graph between this feature's own stories*, not a property inherited from a prior feature that happened to use the same implementation pattern. Check for real sequential dependencies before defaulting to walking-skeleton just because an earlier, similar-looking epic used it.
