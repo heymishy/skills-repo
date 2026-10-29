@@ -43939,36 +43939,63 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-29T07:53:12.499Z",
+              "updatedAt": "2026-10-29T07:59:02.478Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-29T07:52:10.057Z",
+              "updatedAt": "2026-10-29T07:59:02.478Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-29T07:53:12.500Z",
+              "updatedAt": "2026-10-29T07:59:02.478Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
       ],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T07:53:12.500Z",
+      "updatedAt": "2026-10-29T07:59:02.478Z",
       "metrics": [
         {
           "id": "m1",
