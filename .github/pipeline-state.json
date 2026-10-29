@@ -43934,7 +43934,7 @@
         {
           "slug": "journey-js-shared-test-fixture",
           "name": "journey.js tests stop silently diverging on their own mock request shape",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "tsir-s1",
@@ -44013,9 +44013,9 @@
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-29T17:46:11.521Z",
+              "updatedAt": "2026-10-29T17:51:36.762Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44046,7 +44046,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1040"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1040",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -44062,7 +44064,7 @@
           "baseline": "17/42 existing files (pre-MVP, not retrofitted)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Infrastructure-only story -- structural measurement mechanism (tsir-s3) not shipped yet.",
+          "evidence": "tsir-s3 shipped the structural measurement mechanism itself (check-journey-fixture-usage.js, wired into /review Category F) -- not yet exercised against a new journey.js-touching consumer story, so no first real signal yet.",
           "contributingStories": [
             "tsir-s1",
             "tsir-s3"
@@ -44088,7 +44090,7 @@
           "baseline": "0/42",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "The enforcement mechanism (/review Category F) just shipped -- first adoption signal requires a future journey.js-touching story to pass (or fail and fix) through it.",
           "contributingStories": [
             "tsir-s3"
           ]

@@ -64,6 +64,16 @@
 **Revisit trigger:** If pcr-s1-test-runner.js fails consistently across multiple standalone retries (not just once under load), treat as a real regression.
 ---
 
+---
+
+**2026-10-30 | RISK-ACCEPT | /definition-of-done (tsir-s3)**
+**Decision:** Accept that the test plan's described NFR test ("script source contains no network/DB call") was not coded as a standing assertion in `tests/check-tsir-s3-journey-fixture-usage-check.js`, rather than reopening PR #1040 to add it.
+**Alternatives considered:** Reopen the merged PR to add the missing one-line structural source-text test before closing DoD.
+**Rationale:** The property itself was verified manually at DoD time by reading `scripts/check-journey-fixture-usage.js`'s source directly — only `fs`/`path` required, synchronous read + regex match, no network/DB access. Low severity: a single-file script with the same minimal-surface shape as the existing `check-design-tokens.js` precedent, which also has no dedicated standing test for this property.
+**Made by:** Claude Sonnet 5 (DoD assessment)
+**Revisit trigger:** If `check-journey-fixture-usage.js` grows additional logic (e.g. a future slice extending it to `skills.js`/`products.js`/`journeys.js` consumers), add the standing no-network-call test at that point rather than carrying the gap forward indefinitely.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature — both decisions above are lightweight log entries, not structural/irreversible enough to warrant a full ADR. -->
