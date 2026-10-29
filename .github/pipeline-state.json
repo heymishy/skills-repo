@@ -43939,23 +43939,40 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T08:27:08.725Z",
+              "updatedAt": "2026-10-29T09:12:57.396Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s1-shared-journey-fixture-module-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s1-dor.md"
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Build the shared fixture module and its own unit tests (AC1, AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Migrate check-ep1-s1-journey-feature-merge.js to use the shared fixture (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1038"
             },
             {
               "slug": "tsir-s2",
