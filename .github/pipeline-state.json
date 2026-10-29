@@ -44222,26 +44222,38 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-29T20:08:28.349Z"
             },
             {
               "slug": "tfhc-s2",
               "name": "Migrate a bounded batch of hand-rolled journey.js test files to the shared fixture",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-29T20:08:44.519Z"
             },
             {
               "slug": "tfhc-s3",
               "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-29T20:09:01.835Z"
             },
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-10-29T20:09:18.820Z"
             },
             {
               "slug": "tfhc-s5",
@@ -44263,19 +44275,28 @@
           "id": "NFR-tfhc-self-test-perf",
           "category": "nfr",
           "label": "Shared fixture / self-test execution time < 1 second",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No violations found at /review (Category E) -- story NFRs align, no mandatory-constraint conflicts",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-29T20:09:18.822Z"
         },
         {
           "id": "NFR-tfhc-check-perf",
           "category": "nfr",
           "label": "Structural check execution time < 1 second per file",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No violations found at /review (Category E) -- story NFRs align, no mandatory-constraint conflicts",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-29T20:09:18.822Z"
         },
         {
           "id": "NFR-tfhc-no-prod-path",
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No violations found at /review (Category E) -- story NFRs align, no mandatory-constraint conflicts",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-29T20:09:18.822Z"
         }
       ]
     }
