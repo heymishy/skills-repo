@@ -43934,14 +43934,14 @@
         {
           "slug": "journey-js-shared-test-fixture",
           "name": "journey.js tests stop silently diverging on their own mock request shape",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-29T09:12:57.396Z",
+              "updatedAt": "2026-10-29T09:24:38.047Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43971,7 +43971,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1038"
             },
             {
