@@ -43924,7 +43924,7 @@
       "slug": "2026-10-29-test-suite-infra-refactor",
       "name": "Test Suite Infrastructure Refactor",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -43933,7 +43933,39 @@
       "epics": [],
       "stories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-10-29T07:42:48.460Z"
+      "updatedAt": "2026-10-29T07:44:33.346Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Fixture duplication (hand-rolled mockReq on new work)",
+          "target": "0 new hand-rolled fixtures on journey.js-touching stories after this MVP",
+          "baseline": "17/42 existing files (pre-MVP, not retrofitted)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Divergence-bug incidence",
+          "target": "0 further occurrences after MVP ships",
+          "baseline": "1 confirmed occurrence (ctpl-s1)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Adoption",
+          "target": "100% of new journey.js-touching stories use the shared fixture",
+          "baseline": "0/42",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
