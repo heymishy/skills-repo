@@ -100,17 +100,15 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 
 ## Metric Coverage Matrix
 
-<!-- Populated by /definition after stories are created. Placeholder mapping below reflects MVP Scope items 1-6 from discovery.md; real story slugs will replace these at /definition. -->
-
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| E2E seed-fixture duplication | MVP item 1 (E2E seed-journey fixture) | Pending /definition |
-| `journey.js` duplication (continued) | MVP item 2 (journey.js retrofit) | Pending /definition |
-| `skills.js` duplication | MVP item 3 (skills.js extension) | Pending /definition |
-| Journey-seed-endpoint classification | MVP item 4 (classification) | Pending /definition |
-| `products.js`/`journeys.js` duplication | MVP item 5 (spike) | Pending /definition |
-| Parallelization risk resolution | MVP item 6 (spike) | Pending /definition |
-| Divergence-bug incidence | MVP items 1, 2, 3 (cross-cutting) | Pending /definition |
+| E2E seed-fixture duplication (m1) | tfhc-s1 | Covered |
+| `journey.js` duplication, continued (m2) | tfhc-s2 | Covered |
+| `skills.js` duplication (m3) | tfhc-s3 | Covered |
+| Journey-seed-endpoint classification (m4) | tfhc-s4 | Covered |
+| `products.js`/`journeys.js` duplication (m5) | tfhc-s5 (spike — run via `/spike`, not a standard story; PROCEED unlocks a follow-on implementation story within this epic) | Covered, pending spike |
+| Parallelization risk resolution (m6) | tfhc-s6 (spike — run via `/spike`, not a standard story; PROCEED unlocks a follow-on implementation story within this epic) | Covered, pending spike |
+| Divergence-bug incidence, extended (m7) | tfhc-s1, tfhc-s2, tfhc-s3 (cross-cutting) | Covered |
 
 ---
 

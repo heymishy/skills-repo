@@ -44131,9 +44131,9 @@
     {
       "slug": "2026-10-30-test-fixture-hardening-continuation",
       "name": "Test Fixture Hardening - Continuation",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-29T19:46:28.655Z",
+      "updatedAt": "2026-10-29T20:00:03.558Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -44210,6 +44210,72 @@
           "lastMeasured": null,
           "evidence": null,
           "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "vertical-slice",
+      "epics": [
+        {
+          "slug": "fixture-divergence-closure",
+          "name": "Test fixture divergence risk closed across journey.js, skills.js, and the E2E layer",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "tfhc-s1",
+              "name": "Extract a shared E2E fixture for seeding an approval journey",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tfhc-s2",
+              "name": "Migrate a bounded batch of hand-rolled journey.js test files to the shared fixture",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tfhc-s3",
+              "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tfhc-s4",
+              "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tfhc-s5",
+              "name": "Spike: products.js/journeys.js fixture duplication",
+              "stage": "spike-pending",
+              "health": "green"
+            },
+            {
+              "slug": "tfhc-s6",
+              "name": "Spike: runner parallelization git-commit-collision risk",
+              "stage": "spike-pending",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "NFR-tfhc-self-test-perf",
+          "category": "nfr",
+          "label": "Shared fixture / self-test execution time < 1 second",
+          "status": "not-assessed"
+        },
+        {
+          "id": "NFR-tfhc-check-perf",
+          "category": "nfr",
+          "label": "Structural check execution time < 1 second per file",
+          "status": "not-assessed"
+        },
+        {
+          "id": "NFR-tfhc-no-prod-path",
+          "category": "nfr",
+          "label": "No new production code path (tests/scripts only)",
+          "status": "not-assessed"
         }
       ]
     }
