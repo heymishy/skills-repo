@@ -44000,9 +44000,9 @@
             {
               "slug": "tsir-s3",
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-10-29T10:24:34.298Z",
+              "updatedAt": "2026-10-29T10:26:20.205Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44016,7 +44016,21 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s3-dor.md"
+              "dorArtefact": "artefacts/2026-10-29-test-suite-infra-refactor/dor/tsir-s3-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Build the detection script, its fixtures, and its own tests (AC1, AC2, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire the check into /review as Category F (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s3-plan.md"
+                }
+              ]
             }
           ]
         }
