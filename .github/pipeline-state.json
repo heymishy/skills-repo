@@ -43979,9 +43979,9 @@
             {
               "slug": "tsir-s2",
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-10-29T09:44:32.450Z",
+              "updatedAt": "2026-10-29T09:53:58.900Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44000,7 +44000,7 @@
                 {
                   "id": "task-1",
                   "name": "Build the self-test for the shared fixture module (AC1, AC3, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s2-plan.md"
                 }
               ]
