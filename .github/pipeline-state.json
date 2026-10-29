@@ -43941,13 +43941,14 @@
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T08:06:36.357Z",
+              "updatedAt": "2026-10-29T08:27:08.725Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s1-shared-journey-fixture-module-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -43961,13 +43962,14 @@
               "name": "Add a dedicated self-test for the shared journey.js fixture module",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T08:06:36.357Z",
+              "updatedAt": "2026-10-29T08:27:08.725Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s2-fixture-module-self-test-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -43981,13 +43983,14 @@
               "name": "Add a structural /review check flagging hand-rolled mockReq on journey.js-touching test files",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-29T08:06:36.357Z",
+              "updatedAt": "2026-10-29T08:27:08.725Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-29-test-suite-infra-refactor/test-plans/tsir-s3-structural-review-check-fixture-usage-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
