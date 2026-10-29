@@ -43939,9 +43939,9 @@
             {
               "slug": "tsir-s1",
               "name": "Extract a shared mockReq/mockRes fixture module for journey.js tests",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-10-29T08:43:50.932Z",
+              "updatedAt": "2026-10-29T09:02:54.525Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -43960,13 +43960,13 @@
                 {
                   "id": "task-1",
                   "name": "Build the shared fixture module and its own unit tests (AC1, AC3, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Migrate check-ep1-s1-journey-feature-merge.js to use the shared fixture (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-29-test-suite-infra-refactor/plans/tsir-s1-plan.md"
                 }
               ]
