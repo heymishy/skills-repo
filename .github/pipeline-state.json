@@ -44131,15 +44131,87 @@
     {
       "slug": "2026-10-30-test-fixture-hardening-continuation",
       "name": "Test Fixture Hardening - Continuation",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-10-29T19:36:34.074Z",
+      "updatedAt": "2026-10-29T19:46:28.655Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "track": "standard"
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "E2E seed-fixture duplication",
+          "target": "2-3 of 4 migrated this MVP; 0 new hand-rolled callers after",
+          "baseline": "0 of 4 real callers use a shared fixture",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "journey.js fixture duplication (continued)",
+          "target": "11-13/41 after batch migration",
+          "baseline": "16/41 hand-rolled",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "skills.js fixture duplication",
+          "target": "11/45 after proof-of-pattern migration; 0 new after",
+          "baseline": "12/45 hand-rolled",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Journey-seed-endpoint classification completeness",
+          "target": "5 of 5 classified with a named verdict",
+          "baseline": "0 of 5 classified",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "products.js/journeys.js duplication (spike)",
+          "target": "confirmed duplication count + PROCEED/DEFER/REJECT verdict",
+          "baseline": "UNKNOWN BASELINE",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m6",
+          "name": "Parallelization risk resolution (spike)",
+          "target": "precise remaining-risk list + PROCEED/REDESIGN/DEFER verdict",
+          "baseline": "UNKNOWN BASELINE",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m7",
+          "name": "Divergence-bug incidence (cross-cutting, extended scope)",
+          "target": "0 new occurrences across journey.js, skills.js, or E2E seed-journey",
+          "baseline": "1 confirmed occurrence (ctpl-s1)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
