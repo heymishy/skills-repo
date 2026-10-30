@@ -25,6 +25,7 @@ function eq(a, b, label) {
 }
 
 const { _renderDefinitionMapHtml } = require('../src/web-ui/routes/skills');
+const { skillsFixture, skillsFixtureRes } = require('./helpers/skills-fixture');
 
 // Test data
 const sampleParsed = {
@@ -166,18 +167,11 @@ console.log('\n  T13 — initCanvasInteractivity in page source');
   });
 
   let capturedHtml = null;
-  const mockReq = {
-    session: { accessToken: 'tok', userId: 1, login: 'user' },
-    params:  { name: 'definition', id: SESSION_D1 }
-  };
-  const mockRes = {
-    _html: null,
-    writeHead: function() {},
-    end: function(h) { this._html = h; }
-  };
+  const mockReq = skillsFixture({ params: { name: 'definition', id: SESSION_D1 } });
+  const mockRes = skillsFixtureRes();
 
   handleGetChatHtml(mockReq, mockRes).then(function() {
-    const html = mockRes._html || '';
+    const html = mockRes._get().body || '';
     ok(html.includes('function initCanvasInteractivity'), 'T13: initCanvasInteractivity function present in page source');
     ok(html.includes('card--inherited'), 'T13: card--inherited class in renderDefinitionMap source');
     ok(html.includes('draggable'), 'T13: draggable in renderDefinitionMap source');
