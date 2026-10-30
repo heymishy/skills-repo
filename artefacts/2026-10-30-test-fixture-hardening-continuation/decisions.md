@@ -52,6 +52,7 @@
 **Rationale:** Task 3's implementer reproduced the failure 3x identically (`TimeoutError` on `page.waitForURL('**/skills/definition/sessions/**')` — the journey lands on a `discovery` session instead of `definition` after a regression-back action) both BEFORE and AFTER the fixture migration, proving the migration is behaviour-neutral. `git log --oneline -- tests/e2e/ep3-s1-regression.spec.js` shows exactly one commit ever touched this file (the original `ep3-s1` story, `50fd1fb5`) — nothing in this epic's scope created or could have created this bug. The defect sits in `handlePostJourneyRegress`/`handleGetJourneyResume` (`src/web-ui/routes/journey.js`), not in the seeding mechanism this story refactors.
 **Made by:** Copilot (subagent-execution, Task 3 implementer + orchestrator review)
 **Revisit trigger:** File a dedicated bug ticket/story for the `handlePostJourneyRegress`/`handleGetJourneyResume` redirect defect (stage-regression lands on the wrong stage's session) — out of scope for `test-fixture-hardening-continuation` to fix. Flag to Hamish King for prioritisation.
+**Filed:** [#1042](https://github.com/heymishy/skills-repo/issues/1042) (2026-10-30).
 
 ---
 
