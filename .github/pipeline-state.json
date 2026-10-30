@@ -44496,9 +44496,9 @@
             {
               "slug": "tfhc-s7",
               "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-30T21:55:34.596Z",
+              "updatedAt": "2026-10-30T22:07:22.868Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44510,14 +44510,15 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-30T21:56:39.465Z",
+              "updatedAt": "2026-10-30T22:07:22.869Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44529,7 +44530,8 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -44541,8 +44543,8 @@
           "label": "Shared fixture / self-test execution time < 1 second",
           "status": "met",
           "evidence": "Confirmed at tfhc-s3 DoD: self-test (4 cases) + structural checker both run well under 1s, no network/DB calls (structural source-inspection test).",
-          "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-30T09:20:44.350Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-30T22:07:22.869Z"
         },
         {
           "id": "NFR-tfhc-check-perf",
@@ -44550,8 +44552,8 @@
           "label": "Structural check execution time < 1 second per file",
           "status": "met",
           "evidence": "Confirmed at tfhc-s3 DoD: check-skills-fixture-usage.js runs instantly against both AC4 fixtures and the real migrated file.",
-          "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-30T09:20:44.350Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-30T22:07:22.869Z"
         },
         {
           "id": "NFR-tfhc-no-prod-path",
@@ -44559,8 +44561,8 @@
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
           "evidence": "Confirmed at tfhc-s1/s2/s3 DoD: all deliverables live under tests/ or scripts/ only; zero src/ references confirmed fresh this session.",
-          "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-30T09:20:44.350Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-30T22:07:22.869Z"
         }
       ],
       "stories": [],
