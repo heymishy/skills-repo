@@ -44417,11 +44417,11 @@
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T04:26:28.517Z",
+              "updatedAt": "2026-10-30T18:42:02.003Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
