@@ -44336,11 +44336,11 @@
             {
               "slug": "tfhc-s3",
               "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T04:26:28.340Z",
+              "updatedAt": "2026-10-30T07:37:27.983Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
