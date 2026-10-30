@@ -44149,7 +44149,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s1"
+          ]
         },
         {
           "id": "m2",
@@ -44159,7 +44161,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s2"
+          ]
         },
         {
           "id": "m3",
@@ -44169,7 +44173,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s3"
+          ]
         },
         {
           "id": "m4",
@@ -44179,7 +44185,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s4"
+          ]
         },
         {
           "id": "m5",
@@ -44189,7 +44197,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s5"
+          ]
         },
         {
           "id": "m6",
@@ -44199,7 +44209,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s6"
+          ]
         },
         {
           "id": "m7",
@@ -44209,7 +44221,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "tfhc-s1",
+            "tfhc-s2",
+            "tfhc-s3"
+          ]
         }
       ],
       "slicingStrategy": "vertical-slice",
