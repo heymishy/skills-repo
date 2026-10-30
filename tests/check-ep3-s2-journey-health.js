@@ -7,6 +7,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const { JSDOM, VirtualConsole } = require('jsdom');
+var journeysFixture = require('./helpers/journeys-fixture').journeysFixture;
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log('  [PASS] ' + name); passed++; }
@@ -39,7 +40,7 @@ function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
 }
 
 function makeMockReqRes() {
-  var req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+  var req = journeysFixture({ params: { id: 'j1' } });
   var res = {
     status: function(c) { this._s = c; return this; },
     json: function(b) { this._b = b; },
