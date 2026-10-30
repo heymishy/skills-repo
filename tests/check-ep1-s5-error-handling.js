@@ -9,6 +9,8 @@ var assert = require('assert');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var journeyFixture = require('./helpers/journey-fixture').journeyFixture;
+var journeyFixtureRes = require('./helpers/journey-fixture').journeyFixtureRes;
 
 var passed = 0;
 var failed = 0;
@@ -121,23 +123,6 @@ check('backfillJourneyFromPipelineState does NOT log stage_routing_error when ge
 
 var journeyStore = require('../src/web-ui/modules/journey-store');
 
-function mockReq(overrides) {
-  return Object.assign({
-    session: { accessToken: 'tok-alice', userId: '1', login: 'alice', tenantId: 't1' },
-    params: {}
-  }, overrides || {});
-}
-
-function mockRes() {
-  var _statusCode = null;
-  var _body = '';
-  return {
-    writeHead: function (code) { _statusCode = code; return this; },
-    end: function (body) { if (body != null) _body = body; },
-    _get: function () { return { statusCode: _statusCode, body: _body }; }
-  };
-}
-
 (async () => {
 
 // ── Task 4: skills.js's _KEY_DIRS per-file read failures are logged ──────
@@ -179,8 +164,8 @@ await checkAsync('handleGetJourneyResume degrades gracefully (404, not a crash) 
   var dir = path.join(scratchRoot, '.github');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'pipeline-state.json'), JSON.stringify({ features: [] }), 'utf8');
-  var req = mockReq({ params: { featureSlug: 'ep1s5-genuinely-unknown' } });
-  var res = mockRes();
+  var req = journeyFixture({ params: { featureSlug: 'ep1s5-genuinely-unknown' } });
+  var res = journeyFixtureRes();
   await journeyRoutes.handleGetJourneyResume(req, res);
   var result = res._get();
   assert.strictEqual(result.statusCode, 404, 'expected a clean 404, not an uncaught exception');
