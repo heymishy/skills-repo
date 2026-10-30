@@ -44496,16 +44496,20 @@
             {
               "slug": "tfhc-s7",
               "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
-              "updatedAt": "2026-10-30T21:23:12.975Z"
+              "updatedAt": "2026-10-30T21:36:48.940Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "definition",
-              "health": "green",
-              "updatedAt": "2026-10-30T21:23:12.976Z"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-10-30T21:37:57.741Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 0
             }
           ]
         }
