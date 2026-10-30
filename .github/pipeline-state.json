@@ -44417,11 +44417,11 @@
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T18:42:02.003Z",
+              "updatedAt": "2026-10-30T18:56:03.811Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -44430,7 +44430,27 @@
               },
               "acTotal": 4,
               "acVerified": 0,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write structural self-check test (RED)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Write the classification artefact (GREEN for AC1-AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Reference the artefact from benefit-metric.md Metric 4 (GREEN for AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
+                }
+              ]
             },
             {
               "slug": "tfhc-s5",
