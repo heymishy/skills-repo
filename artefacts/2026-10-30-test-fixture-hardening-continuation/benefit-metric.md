@@ -60,9 +60,8 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 | **Baseline** | 0 of 5 classified today — this is the exact unknown this story resolves |
 | **Target** | 5 of 5 classified, each with a named verdict (redundant → named as a correctly-sized fast-follow candidate; legitimate → documented and closed) |
 | **Minimum validation signal** | All 5 classified with a concrete verdict; if any are found redundant, at least one is named with a bounded scope, not left vague |
-| **Measurement method** | The classification artefact itself, reviewed at this story's own `/definition-of-done` |
+| **Measurement method** | The classification artefact itself (`artefacts/2026-10-30-test-fixture-hardening-continuation/research/tfhc-s4-journey-seed-endpoint-classification.md`), reviewed at this story's own `/definition-of-done` |
 | **Feedback loop** | If the classification reveals a genuinely large hidden problem (contradicting this session's own narrowing from "13 endpoints" to "5 journey-related"), log an `/improve` candidate — the original audit's framing needed verification before being trusted, and that lesson should feed back into how future audits are scoped |
-| **Evidence** | artefacts/2026-10-30-test-fixture-hardening-continuation/research/tfhc-s4-journey-seed-endpoint-classification.md |
 
 ### Metric 5: `products.js`/`journeys.js` duplication (spike)
 
