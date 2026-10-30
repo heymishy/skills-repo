@@ -44217,7 +44217,7 @@
         {
           "slug": "fixture-divergence-closure",
           "name": "Test fixture divergence risk closed across journey.js, skills.js, and the E2E layer",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "tfhc-s1",
@@ -44226,7 +44226,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T04:26:28.008Z",
+              "updatedAt": "2026-10-30T04:37:58.115Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -44271,7 +44271,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1041"
             },
             {

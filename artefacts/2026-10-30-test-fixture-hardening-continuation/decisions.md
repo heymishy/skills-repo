@@ -54,3 +54,12 @@
 **Revisit trigger:** File a dedicated bug ticket/story for the `handlePostJourneyRegress`/`handleGetJourneyResume` redirect defect (stage-regression lands on the wrong stage's session) — out of scope for `test-fixture-hardening-continuation` to fix. Flag to Hamish King for prioritisation.
 
 ---
+
+**2026-10-30 | RISK-ACCEPT | /branch-complete (tfhc-s1, post-merge bookkeeping)**
+**Decision:** After PR #1041 merged, left `testPlan.passing: 4` (of 5) in `pipeline-state.json` for `tfhc-s1` rather than setting it to 5, even though `scripts/check-pipeline-state-integrity.js`'s C3 rule treats `prStatus: "merged"` with `passing < totalTests` as a hard FAIL.
+**Alternatives considered:** Set `passing: 5` to satisfy C3 and keep `npm test` green; or drop `totalTests` to 4 to exclude the known-failing test from the count.
+**Rationale:** The one non-passing test (`ep3-s1-regression.spec.js`'s E2E case) fails for the same documented pre-existing, unrelated product bug as the Task 3 RISK-ACCEPT above — not anything this story introduced. Setting `passing: 5` would be a false claim this session has deliberately avoided throughout (see Problem Solving discipline in this epic's `/verify-completion` and `/subagent-execution` runs — testPlan.passing was never inflated for an AC that didn't literally pass). C3 itself has no carve-out for a documented, RISK-ACCEPT'd pre-existing failure — it assumes "merged" always means "all tests in totalTests now pass," which doesn't hold here. The honest `4/5` value is correct; the checker's assumption is the gap.
+**Made by:** Hamish King (confirmed "Merged"), bookkeeping executed by Copilot
+**Revisit trigger:** If `scripts/check-pipeline-state-integrity.js`'s C3 check gains a documented-exception carve-out (e.g. a `testPlan.knownFailing` count, or a decisions.md cross-reference), re-run C3 against this story to confirm it then passes cleanly. Logged as an `/improve` candidate in `workspace/capture-log.md`.
+
+---
