@@ -33,6 +33,23 @@ test('journeysFixture() default session includes every field journeys.js actuall
   });
 });
 
+// AC1 (robustness): fresh object per call, no shared reference leaking mutations across tests.
+test('journeysFixture() returns a fresh object on every call, not a shared reference', () => {
+  const { journeysFixture } = require('./helpers/journeys-fixture');
+  const first = journeysFixture();
+  first.session.tenantId = 'mutated-by-first-call';
+  const second = journeysFixture();
+  assert.notStrictEqual(second.session.tenantId, 'mutated-by-first-call');
+});
+
+// AC2: overrides merge correctly without discarding other defaults.
+test('journeysFixture(overrides) merges a params override without discarding the default session', () => {
+  const { journeysFixture } = require('./helpers/journeys-fixture');
+  const req = journeysFixture({ params: { id: 'j1' } });
+  assert.strictEqual(req.params.id, 'j1');
+  assert.ok(req.session.tenantId, 'tenantId must still be present after a params-only override');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
