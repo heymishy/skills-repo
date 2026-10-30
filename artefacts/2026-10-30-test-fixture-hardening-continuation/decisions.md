@@ -36,3 +36,21 @@
 **Revisit trigger:** If a future `/trace` or CI run surfaces that `validate-trace.ps1 --ci`'s real exit-1 behaviour reflects an actual trace-health problem (not an environment artifact), investigate and fix separately from this epic.
 
 ---
+
+**2026-10-30 | RISK-ACCEPT | /subagent-execution (tfhc-s1, Task 2)**
+**Decision:** Confirmed the full local test suite has additional pre-existing, non-deterministic flakiness beyond the single documented `check-p3.5-validate-trace.js` failure — not caused by this story, no action taken within this epic.
+**Alternatives considered:** Investigate and fix the flaky tests before continuing this story's remaining tasks.
+**Rationale:** Task 2's implementer ran a clean baseline `npm test` on the pre-Task-2 commit (stash/pop) and found a *different* 2nd/3rd failing file each run (`check-pcr-s1-test-runner.js` — a perf-timing threshold assertion, "measured 768.6ms/file" vs a 749.8ms/file bound; `check-rtvap-s1-archived-test-plan-coverage.js` — `execvpe /bin/bash failed`, a local WSL/bash environment artifact), neither touching `tests/e2e/` or seed-journey code. This is environment-level suite flakiness (timing + WSL availability), unrelated to `tfhc-s1`'s scope, and pre-dates this story.
+**Made by:** Copilot (subagent-execution, Task 2 implementer + orchestrator review)
+**Revisit trigger:** If this flakiness starts affecting CI (not just local Windows/WSL runs) or starts implicating `tests/e2e/` files, raise a dedicated fast-follow ticket to either raise `check-pcr-s1-test-runner.js`'s perf tolerance or make `check-rtvap-s1-archived-test-plan-coverage.js` skip gracefully when `bash`/WSL is unavailable, matching this suite's existing pattern for `check-p3.5-validate-trace.js`'s own pwsh-unavailable skip.
+
+---
+
+**2026-10-30 | RISK-ACCEPT | /subagent-execution (tfhc-s1, Task 3)**
+**Decision:** `tests/e2e/ep3-s1-regression.spec.js` was already failing before this story's migration touched it — a real, pre-existing product bug, not caused by or related to the seed-fixture work. AC3/AC4 are satisfied under the "pass/fail outcome unchanged by migration" reading (already the literal text of AC4 as revised at `/review`), not a literal "must be passing" reading, since the file was already failing beforehand.
+**Alternatives considered:** Fix the underlying product bug as part of this task before committing the migration; or treat this as an AC3 failure and block the task.
+**Rationale:** Task 3's implementer reproduced the failure 3x identically (`TimeoutError` on `page.waitForURL('**/skills/definition/sessions/**')` — the journey lands on a `discovery` session instead of `definition` after a regression-back action) both BEFORE and AFTER the fixture migration, proving the migration is behaviour-neutral. `git log --oneline -- tests/e2e/ep3-s1-regression.spec.js` shows exactly one commit ever touched this file (the original `ep3-s1` story, `50fd1fb5`) — nothing in this epic's scope created or could have created this bug. The defect sits in `handlePostJourneyRegress`/`handleGetJourneyResume` (`src/web-ui/routes/journey.js`), not in the seeding mechanism this story refactors.
+**Made by:** Copilot (subagent-execution, Task 3 implementer + orchestrator review)
+**Revisit trigger:** File a dedicated bug ticket/story for the `handlePostJourneyRegress`/`handleGetJourneyResume` redirect defect (stage-regression lands on the wrong stage's session) — out of scope for `test-fixture-hardening-continuation` to fix. Flag to Hamish King for prioritisation.
+
+---
