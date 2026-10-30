@@ -44170,9 +44170,9 @@
           "name": "skills.js fixture duplication",
           "target": "11/45 after proof-of-pattern migration; 0 new after",
           "baseline": "12/45 hand-rolled",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-30",
+          "evidence": "Count dropped from 12/45 to 11/45 (1 proof-of-pattern migration) -- exactly meets target. Minimum validation signal fully met: migrated file unchanged (34/0), structural check correctly tells apart hand-rolled vs compliant files, confirmed fresh at DoD.",
           "contributingStories": [
             "tfhc-s3"
           ]
@@ -44356,11 +44356,11 @@
             {
               "slug": "tfhc-s3",
               "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T09:01:26.304Z",
+              "updatedAt": "2026-10-30T09:20:29.116Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -44410,7 +44410,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1044"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1044",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "tfhc-s4",
@@ -44451,27 +44453,27 @@
           "category": "nfr",
           "label": "Shared fixture / self-test execution time < 1 second",
           "status": "met",
-          "evidence": "No violations found at /review (Category E) -- story NFRs align, no mandatory-constraint conflicts",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-29T20:09:18.822Z"
+          "evidence": "Confirmed at tfhc-s3 DoD: self-test (4 cases) + structural checker both run well under 1s, no network/DB calls (structural source-inspection test).",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-30T09:20:44.350Z"
         },
         {
           "id": "NFR-tfhc-check-perf",
           "category": "nfr",
           "label": "Structural check execution time < 1 second per file",
           "status": "met",
-          "evidence": "No violations found at /review (Category E) -- story NFRs align, no mandatory-constraint conflicts",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-29T20:09:18.822Z"
+          "evidence": "Confirmed at tfhc-s3 DoD: check-skills-fixture-usage.js runs instantly against both AC4 fixtures and the real migrated file.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-30T09:20:44.350Z"
         },
         {
           "id": "NFR-tfhc-no-prod-path",
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
-          "evidence": "Confirmed at tfhc-s2 DoD (and tfhc-s1): all deliverables live under tests/ only, no src/ changes.",
+          "evidence": "Confirmed at tfhc-s1/s2/s3 DoD: all deliverables live under tests/ or scripts/ only; zero src/ references confirmed fresh this session.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-30T09:19:10.662Z"
+          "assessedAt": "2026-10-30T09:20:44.350Z"
         }
       ],
       "stories": []
