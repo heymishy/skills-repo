@@ -91,3 +91,12 @@
 **Revisit trigger:** If `journeys.js`'s implementation does not land within this MVP's own cycle for capacity reasons, its fast-follow status (not `products.js`'s) must be explicitly logged, per `discovery.md` Out of Scope item 2's own conditional wording.
 
 ---
+
+**2026-10-30 | SCOPE | /spike (tfhc-s6)**
+**Decision:** `tfhc-s6`'s spike ("parallelization git-commit-collision risk") closed PROCEED (conditional). `scripts/run-all-tests.js` parallelization is conditionally added to this MVP's in-scope work, gated on first stubbing `setSkillTurnGitCommitAdapter` in 14 precisely-named remaining-risk test files (not the originally-estimated, never-enumerated "64 subprocess-spawning files").
+**Alternatives considered:** PROCEED with parallelization immediately, accepting the 14-file collision risk; REDESIGN/DEFER parallelization entirely.
+**Rationale:** Investigated the real risk mechanism directly (`_skillTurnGitCommit`'s default `execSync` git-commit implementation, D37 adapter from `stis-s1`, gated by `handlePostTurnStreamHtml`'s `done && _artefactText` branch) rather than the vague, never-enumerated "64 files" estimate. Found 41 test files call the handler; 12 already stub the adapter (exactly matching the one previously-known figure in this epic's chain — validates the method); of the remaining 29, only 14 genuinely drive an artefact-completing turn (confirmed via `ARTEFACT-END` marker presence) and are therefore real, currently-active risk. 14 is a small, closeable list — meeting `discovery.md`'s own PROCEED condition. These 14 files are also very likely the exact source of the already-logged "skills.js fires a real git commit during tests" junk-commit-contamination bug (`workspace/learnings.md`), making the fix valuable independent of parallelization's own scheduling.
+**Made by:** Copilot (spike investigation, full outcome in `spikes/tfhc-s6-outcome.md`)
+**Revisit trigger:** If the 14-file stubbing fix is not completed before parallelization is implemented, this RISK-ACCEPT must be explicitly re-logged acknowledging the known collision risk is being shipped, not closed.
+
+---

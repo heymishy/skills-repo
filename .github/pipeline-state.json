@@ -44194,9 +44194,9 @@
           "name": "products.js/journeys.js duplication (spike)",
           "target": "confirmed duplication count + PROCEED/DEFER/REJECT verdict",
           "baseline": "UNKNOWN BASELINE",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-30",
+          "evidence": "Confirmed duplication on both surfaces: products.js 27/32 files (~84%), journeys.js 30/31 files (~97%), both proportionally higher than either closed precedent. PROCEED verdict recorded: journeys.js walking-skeleton implementation added to this MVP; products.js logged as a separate, bounded fast-follow.",
           "contributingStories": [
             "tfhc-s5"
           ]
@@ -44206,9 +44206,9 @@
           "name": "Parallelization risk resolution (spike)",
           "target": "precise remaining-risk list + PROCEED/REDESIGN/DEFER verdict",
           "baseline": "UNKNOWN BASELINE",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-30",
+          "evidence": "14 of the 41 unit/integration test files exercising the skill-turn git-commit path remain unstubbed and genuinely at-risk (confirmed via direct source investigation, not the original unenumerated 64-file estimate) -- a precise, small, closeable list. PROCEED verdict recorded, conditional on stubbing all 14 before enabling true parallel execution.",
           "contributingStories": [
             "tfhc-s6"
           ]
@@ -44442,8 +44442,9 @@
             {
               "slug": "tfhc-s6",
               "name": "Spike: runner parallelization git-commit-collision risk",
-              "stage": "spike-pending",
-              "health": "green"
+              "stage": "spike-complete",
+              "health": "green",
+              "updatedAt": "2026-10-30T09:32:27.979Z"
             }
           ]
         }
@@ -44485,6 +44486,13 @@
           "verdict": "PROCEED",
           "outputArtefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/spikes/tfhc-s5-output.md",
           "verdictAt": "2026-10-30T09:25:49.273Z"
+        },
+        {
+          "id": "spike-tfhc-s6",
+          "storySlug": "tfhc-s6",
+          "verdict": "PROCEED",
+          "outputArtefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/spikes/tfhc-s6-output.md",
+          "verdictAt": "2026-10-30T09:32:27.977Z"
         }
       ]
     }
