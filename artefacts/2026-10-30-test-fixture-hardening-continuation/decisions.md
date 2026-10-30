@@ -73,3 +73,12 @@
 **Revisit trigger:** Same as the two originating entries above — if C3 gains a carve-out, or if the perf-timing flake starts affecting CI, raise a dedicated fast-follow ticket.
 
 ---
+
+**2026-10-30 | RISK-ACCEPT | /branch-setup (tfhc-s3)**
+**Decision:** Proceed with the `tfhc-s3` worktree despite 1 pre-existing baseline test failure: `scripts/check-pipeline-state-integrity.js`.
+**Alternatives considered:** Investigate and fix before starting any implementation.
+**Rationale:** Already documented, understood, and unrelated to `tfhc-s3`'s scope. This is the C3 flag from this epic's own `/branch-complete (tfhc-s1, post-merge bookkeeping)` RISK-ACCEPT above — a deliberate, honest `4/5` passing count, not a defect. `check-pcr-s1-test-runner.js`'s perf-timing flake (also previously RISK-ACCEPTed) did not fail on this particular run — consistent with its documented non-deterministic nature.
+**Made by:** Copilot (branch-setup baseline check)
+**Revisit trigger:** Same as the originating entry above — if C3 gains a carve-out, re-run against this story to confirm it then passes cleanly.
+
+---
