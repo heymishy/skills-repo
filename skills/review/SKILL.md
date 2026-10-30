@@ -199,6 +199,18 @@ LOW: none
 
 **Journey.js fixture hygiene score (1–5):** [score] — [one-line justification. 5 if no finding or N/A; 3 if a MEDIUM finding is present but acknowledged.]
 
+### Category G: skills.js fixture hygiene
+
+Applies only when a story's touched files include a test file that requires `src/web-ui/routes/skills` (directly or transitively via a fixture). If no touched file matches, state "Category G: N/A — no skills.js-touching file in scope" and skip.
+
+For each skills.js-touching test file in the story's scope, run: `node scripts/check-skills-fixture-usage.js <file>`.
+
+HIGH: none — this check never blocks /test-plan on its own
+MEDIUM: the check reports a hand-rolled `mockReq` instead of the shared fixture (`tests/helpers/skills-fixture.js`) — name the file and recommend the fix
+LOW: none
+
+**skills.js fixture hygiene score (1–5):** [score] — [one-line justification. 5 if no finding or N/A; 3 if a MEDIUM finding is present but acknowledged.]
+
 ---
 
 ## Full report output format
