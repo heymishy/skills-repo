@@ -44243,7 +44243,7 @@
           "id": "m9",
           "name": "Parallelization risk resolution, implementation half",
           "target": "0 of 41 calling files unstubbed",
-          "baseline": "14 of 41 calling files unstubbed",
+          "baseline": "13 of 41 calling files unstubbed (tfhc-s6 named 14; corrected to 13 at tfhc-s8 own /review, 2026-10-31)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -44506,9 +44506,9 @@
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
               "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-10-30T21:37:57.741Z",
-              "reviewStatus": "has-findings",
+              "health": "green",
+              "updatedAt": "2026-10-30T21:46:02.937Z",
+              "reviewStatus": "passed",
               "highFindings": 0
             }
           ]

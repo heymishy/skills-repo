@@ -109,3 +109,12 @@
 **Revisit trigger:** None — both stories now proceed through the standard pipeline (/review → /test-plan → /definition-of-ready → inner loop) like any other story in this epic.
 
 ---
+
+**2026-10-31 | LEARNING | /review (tfhc-s8)**
+**Decision:** Corrected `tfhc-s8`'s AC1 file list from 14 to 13 files. `tfhc-s6`'s spike had named `check-isc-s1-ideate-success-lens-cycling.js` as a 14th at-risk file; direct inspection at `tfhc-s8`'s own `/review` (finding 1-M1) found it never calls `handlePostTurnStreamHtml` in executable code — only in comments — so it cannot reach the `_skillTurnGitCommit` adapter call site at all. Spot-checked 8 of the other 13 files to confirm this was an isolated miss, not a pattern in the spike's own method.
+**Alternatives considered:** Log a RISK-ACCEPT and proceed with the uncorrected 14-file list, fixing it later during implementation.
+**Rationale:** The fix was unambiguous, free, and strictly improves accuracy — no reason to defer it. Fixed `tfhc-s8`'s story (title, AC1-AC4, Architecture Constraints, User Story/Benefit Linkage prose), `benefit-metric.md` m9's baseline, the epic's Benefit Metrics Addressed table, and `pipeline-state.json`'s `m9.baseline`, all from 14 to 13. This is also a methodology learning for future spikes: an `ARTEFACT-END`-marker grep alone is not sufficient evidence that a file reaches a gated code path — confirming an actual call to the real handler (not just a comment mentioning it, and not just a fixture-data accessor that happens to contain a similarly-shaped marker string) is necessary too.
+**Made by:** Copilot (/review finding 1-M1, resolved same session)
+**Revisit trigger:** None — resolved before /test-plan, as intended.
+
+---

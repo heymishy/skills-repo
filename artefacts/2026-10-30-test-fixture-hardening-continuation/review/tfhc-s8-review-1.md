@@ -110,3 +110,9 @@ Applies — 13 of the 14 named files require `src/web-ui/routes/skills` (all exc
 ## Verdict
 
 PASS — 0 HIGH, 1 MEDIUM (1-M1). All 4 primary criteria scored ≥3 (AC quality scored 3 due to 1-M1, still passing). Architecture and both fixture-hygiene categories clean. 1-M1 should be resolved (drop `check-isc-s1-ideate-success-lens-cycling.js` from AC1's file list, correct m9's counts to 13/41 baseline) or explicitly RISK-ACCEPTed before `/test-plan`, since the test plan will otherwise be written against the uncorrected 14-file premise.
+
+---
+
+## Resolution (2026-10-31)
+
+**1-M1: RESOLVED.** `check-isc-s1-ideate-success-lens-cycling.js` removed from the story's AC1 file list. Story title, AC1-AC4, Architecture Constraints, and the User Story/Benefit Linkage prose all corrected from 14 to 13 files. `benefit-metric.md` m9's baseline corrected to "13 of 41" (was "14 of 41"); the epic's own Benefit Metrics Addressed table and `pipeline-state.json`'s `m9.baseline` corrected to match. No story rework needed beyond this count correction — the underlying approach (mirror the 12-file stubbing pattern, add a structural check) is unaffected. Cleared to proceed to `/test-plan`.

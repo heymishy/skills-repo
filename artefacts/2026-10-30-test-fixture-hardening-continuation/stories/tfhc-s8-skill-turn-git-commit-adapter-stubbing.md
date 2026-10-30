@@ -1,4 +1,4 @@
-## Story: Stub the real git-commit adapter in the 14 remaining skill-turn test files
+## Story: Stub the real git-commit adapter in the 13 remaining skill-turn test files
 
 **Epic reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/epics/fixture-divergence-closure.md
 **Discovery reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/discovery.md
@@ -9,17 +9,17 @@
 ## User Story
 
 As the **platform maintainer who owns the long-term health of this repo's test infrastructure**,
-I want **all 14 test files that genuinely drive an artefact-completing skill turn to stub the real `_skillTurnGitCommit` adapter, the same way the 12 already-safe files do**,
+I want **all 13 test files that genuinely drive an artefact-completing skill turn to stub the real `_skillTurnGitCommit` adapter, the same way the 12 already-safe files do**,
 So that **this repo's own test run never fires a real `git add`/`git commit` as a side effect — closing both the standing "skills.js fires a real git commit during tests" junk-commit-contamination bug and the precondition `scripts/run-all-tests.js` parallelization needs before it can be implemented safely**.
 
 ## Benefit Linkage
 
 **Metric moved:** Parallelization risk resolution, implementation half (m9)
-**How:** `tfhc-s6`'s spike found the real risk mechanism directly (`stis-s1`'s D37 adapter, `_skillTurnGitCommit`, gated by `done && _artefactText` in `handlePostTurnStreamHtml`) and named a precise, small, closeable 14-file list — this story closes that list using the exact mechanical pattern already proven 12 times in this same suite.
+**How:** `tfhc-s6`'s spike found the real risk mechanism directly (`stis-s1`'s D37 adapter, `_skillTurnGitCommit`, gated by `done && _artefactText` in `handlePostTurnStreamHtml`) and named a precise, small, closeable remaining-risk list — independently re-verified at this story's own `/review` to be 13 files, not the spike's originally-named 14 (see AC1's note) — this story closes that list using the exact mechanical pattern already proven 12 times in this same suite.
 
 ## Architecture Constraints
 
-D37 injectable adapter rule (CLAUDE.md "Coding standards") — `setSkillTurnGitCommitAdapter` already exists and is already the established pattern; this story applies it to 14 more call sites, it does not introduce a new adapter.
+D37 injectable adapter rule (CLAUDE.md "Coding standards") — `setSkillTurnGitCommitAdapter` already exists and is already the established pattern; this story applies it to 13 more call sites, it does not introduce a new adapter.
 
 ## Dependencies
 
@@ -28,13 +28,15 @@ D37 injectable adapter rule (CLAUDE.md "Coding standards") — `setSkillTurnGitC
 
 ## Acceptance Criteria
 
-**AC1:** Given the 14 files named in `tfhc-s6`'s spike outcome (`check-alrf-s8-journey-slug-priority.js`, `check-mfc1-model-first-chat-session.js`, `check-res-s3-suggest-revision-materiality.js`, `check-defs-revs-s1-wiring-into-turn-completion.js`, `check-wsd-s4-pipeline-state-owner-repo-resolution.js`, `check-wsap-s3-multi-story-commit-and-no-review-rerun.js`, `check-wsap-s1-story-scoped-artefact-paths.js`, `check-rsc-s1-review-split-coverage.js`, `check-res-s2-overwrite-artefact-in-place-on-revision.js`, `check-ral-s1-audit-log-journey-id-and-timestamp.js`, `check-isc-s1-ideate-success-lens-cycling.js`, `check-dsh-s1-persist-session-turns.js`, `check-dcuf-s1-github-commit-real-completion-point.js`, `check-csgc-s1-story-extraction-and-gate-confirm.js`), When each file is modified, Then every one calls `setSkillTurnGitCommitAdapter` with a no-op or assertion-only stub before any test that drives a turn reaching `done && _artefactText`, matching the exact pattern already used in the 12 currently-safe files (e.g. `tests/check-dic1-story-cards.js`).
+**AC1:** Given the 13 files that genuinely drive an artefact-completing skill turn through `handlePostTurnStreamHtml` (`check-alrf-s8-journey-slug-priority.js`, `check-mfc1-model-first-chat-session.js`, `check-res-s3-suggest-revision-materiality.js`, `check-defs-revs-s1-wiring-into-turn-completion.js`, `check-wsd-s4-pipeline-state-owner-repo-resolution.js`, `check-wsap-s3-multi-story-commit-and-no-review-rerun.js`, `check-wsap-s1-story-scoped-artefact-paths.js`, `check-rsc-s1-review-split-coverage.js`, `check-res-s2-overwrite-artefact-in-place-on-revision.js`, `check-ral-s1-audit-log-journey-id-and-timestamp.js`, `check-dsh-s1-persist-session-turns.js`, `check-dcuf-s1-github-commit-real-completion-point.js`, `check-csgc-s1-story-extraction-and-gate-confirm.js`), When each file is modified, Then every one calls `setSkillTurnGitCommitAdapter` with a no-op or assertion-only stub before any test that drives a turn reaching `done && _artefactText`, matching the exact pattern already used in the 12 currently-safe files (e.g. `tests/check-dic1-story-cards.js`).
 
-**AC2:** Given all 14 files are stubbed, When `scripts/check-skill-turn-git-commit-stubbing.js` (new structural check) scans every `tests/*.js` file that calls `handlePostTurnStreamHtml` with an `---ARTEFACT-END---`-bearing fixture response, Then it exits non-zero and names any file missing a `setSkillTurnGitCommitAdapter` stub; run against the repo after AC1, it exits 0 — 0 of 41 calling files unstubbed, down from the 14 `tfhc-s6`'s spike found.
+<!-- MEDIUM finding 1-M1 (tfhc-s8 review-1), resolved 2026-10-31: tfhc-s6's spike had originally also named check-isc-s1-ideate-success-lens-cycling.js as a 14th file. Direct inspection at /review found it never calls handlePostTurnStreamHtml in executable code (only in comments) -- it exercises mock-llm-gateway.js's own fixture data directly and cannot reach the git-commit adapter call site at all. Removed from this AC's file list; the real, verified count is 13 files, not 14. -->
 
-**AC3:** Given the full test suite, When it is run before and after this story's changes, Then it passes with no new failures and no behavioural change to any of the 14 files' own existing assertions — only the adapter stubbing is added, nothing else about the test's logic changes.
+**AC2:** Given all 13 files are stubbed, When `scripts/check-skill-turn-git-commit-stubbing.js` (new structural check) scans every `tests/*.js` file that calls `handlePostTurnStreamHtml` with an `---ARTEFACT-END---`-bearing fixture response, Then it exits non-zero and names any file missing a `setSkillTurnGitCommitAdapter` stub; run against the repo after AC1, it exits 0 — 0 of 41 calling files unstubbed, down from the 13 confirmed at `/review`.
 
-**AC4:** Given the standing "skills.js fires a real git commit during tests" junk-commit-contamination bug already logged in `workspace/learnings.md`, When this story's AC1-AC2 are complete, Then the learnings entry is updated to record that its root cause (the 14 unstubbed files found by `tfhc-s6`) is now closed, with a cross-reference to this story.
+**AC3:** Given the full test suite, When it is run before and after this story's changes, Then it passes with no new failures and no behavioural change to any of the 13 files' own existing assertions — only the adapter stubbing is added, nothing else about the test's logic changes.
+
+**AC4:** Given the standing "skills.js fires a real git commit during tests" junk-commit-contamination bug already logged in `workspace/learnings.md`, When this story's AC1-AC2 are complete, Then the learnings entry is updated to record that its root cause (the 13 unstubbed files confirmed at this story's own `/review`, after correcting `tfhc-s6`'s originally-named 14) is now closed, with a cross-reference to this story.
 
 ## Out of Scope
 
@@ -53,7 +55,7 @@ D37 injectable adapter rule (CLAUDE.md "Coding standards") — `setSkillTurnGitC
 
 **Rating:** 1
 
-<!-- Small, bounded, purely mechanical -- the stubbing pattern itself is already proven 12 times in this exact suite; the only work is applying it 14 more times plus one new structural check mirroring an already-existing precedent shape. -->
+<!-- Small, bounded, purely mechanical -- the stubbing pattern itself is already proven 12 times in this exact suite; the only work is applying it 13 more times plus one new structural check mirroring an already-existing precedent shape. -->
 
 **Scope stability:** Stable
 

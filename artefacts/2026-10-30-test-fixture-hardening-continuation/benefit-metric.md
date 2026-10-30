@@ -111,10 +111,10 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Count of the 14 precisely-named test files (from `tfhc-s6`'s spike) that still do not stub `setSkillTurnGitCommitAdapter` before driving an artefact-completing skill turn |
-| **Baseline** | 14 of 41 calling files unstubbed (confirmed by `tfhc-s6`'s spike, 2026-10-30) |
+| **What we measure** | Count of the precisely-named test files that still do not stub `setSkillTurnGitCommitAdapter` before driving an artefact-completing skill turn |
+| **Baseline** | 13 of 41 calling files unstubbed (`tfhc-s6`'s spike originally named 14; corrected to 13 at `tfhc-s8`'s own `/review`, 2026-10-31 — one named file, `check-isc-s1-ideate-success-lens-cycling.js`, never calls `handlePostTurnStreamHtml` at all) |
 | **Target** | 0 of 41 unstubbed after this story ships |
-| **Minimum validation signal** | All 14 named files stub the adapter, the new structural check (`scripts/check-skill-turn-git-commit-stubbing.js`) exits 0 against the repo, and the full suite shows no new failures |
+| **Minimum validation signal** | All 13 named files stub the adapter, the new structural check (`scripts/check-skill-turn-git-commit-stubbing.js`) exits 0 against the repo, and the full suite shows no new failures |
 | **Measurement method** | The new structural check, run against the repo at `/definition-of-done` |
 | **Feedback loop** | If a future PR adds a new test file that drives an artefact-completing turn without stubbing the adapter, the structural check should catch it before merge — a miss here is a direct regression of this story's own closing condition, not a deferrable finding |
 

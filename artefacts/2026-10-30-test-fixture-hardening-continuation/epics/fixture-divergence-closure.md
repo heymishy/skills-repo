@@ -31,7 +31,7 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 | Parallelization risk resolution (m6) | UNKNOWN BASELINE | Precise remaining-risk list + verdict | Story 6's spike resolves the unknown; PROCEED unlocks implementation within this epic |
 | Divergence-bug incidence, extended (m7) | 1 occurrence (`ctpl-s1`) | 0 new across all 3 surfaces | Stories 1-3 close the mechanism gap that let `ctpl-s1`-class bugs happen |
 | `journeys.js` fixture duplication (m8) | 30/31 hand-rolled, 0 using even a local factory | 1 migrated as proof-of-pattern | Story 7 delivers the full walking skeleton + 1 proof-of-pattern migration, unlocked by Story 5's PROCEED verdict |
-| Parallelization risk resolution, implementation half (m9) | 14/41 calling files unstubbed (precise, from Story 6's spike) | 0/41 unstubbed | Story 8 stubs all 14 named files, unlocked by Story 6's PROCEED-conditional verdict; closes the standing junk-commit-contamination bug and is the precondition for a future, separate parallelization-implementation story |
+| Parallelization risk resolution, implementation half (m9) | 13/41 calling files unstubbed (Story 6's spike named 14; corrected to 13 at Story 8's own `/review`) | 0/41 unstubbed | Story 8 stubs all 13 named files, unlocked by Story 6's PROCEED-conditional verdict; closes the standing junk-commit-contamination bug and is the precondition for a future, separate parallelization-implementation story |
 
 ## Stories in This Epic
 
