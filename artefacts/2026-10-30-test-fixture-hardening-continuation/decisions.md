@@ -27,3 +27,12 @@
 **Revisit trigger:** If a `/verify-completion` run finds a verification scenario doesn't actually match the real behaviour (a sign the pre-code review would have caught something), revert to requiring pre-code review for future stories in this repo.
 
 ---
+
+**2026-10-30 | RISK-ACCEPT | /branch-setup (tfhc-s1)**
+**Decision:** Proceed with the `tfhc-s1` worktree despite one pre-existing baseline test failure: `tests/check-p3.5-validate-trace.js`'s `ps1-exits-0-on-valid-repo-with-ci-flag` sub-test (`validate-trace.ps1 --ci exited 1`).
+**Alternatives considered:** Investigate and fix the failure before starting any implementation.
+**Rationale:** Confirmed identical failure on `master` (ran `node tests/check-p3.5-validate-trace.js` in both the main checkout and the new worktree, same result) — this predates the worktree and is unrelated to `tfhc-s1`'s scope (a Playwright E2E fixture for `/test/seed-approval-journey`; this failing test is about the `validate-trace.ps1` CI script's own exit behaviour against the real repo). 811/812 other test files pass.
+**Made by:** Copilot (branch-setup baseline check)
+**Revisit trigger:** If a future `/trace` or CI run surfaces that `validate-trace.ps1 --ci`'s real exit-1 behaviour reflects an actual trace-health problem (not an environment artifact), investigate and fix separately from this epic.
+
+---

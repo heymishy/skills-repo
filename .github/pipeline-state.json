@@ -44222,11 +44222,11 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T23:31:17.860Z",
+              "updatedAt": "2026-10-30T00:16:43.919Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
