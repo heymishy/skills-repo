@@ -58,6 +58,7 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
+const { seedApprovalJourney } = require('./fixtures/seed-journey');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3999';
 
@@ -68,17 +69,6 @@ function uniqueSlug(label) {
 async function seedSession(request, sessionId, tenantId) {
   const res = await request.get('/test/session?sessionId=' + sessionId + '&tenantId=' + tenantId);
   expect(res.status()).toBe(200);
-}
-
-async function seedApprovalJourney(request, featureSlug) {
-  const seedRes = await request.post('/test/seed-approval-journey', {
-    data: { featureSlug: featureSlug, stage: 'discovery', completedStages: [{ skillName: 'discovery' }] },
-    headers: { 'Content-Type': 'application/json' }
-  });
-  expect(seedRes.status(), 'POST /test/seed-approval-journey').toBe(200);
-  const seeded = await seedRes.json();
-  expect(seeded.journeyId, 'expected a real journeyId').toBeTruthy();
-  return seeded;
 }
 
 // Starts a raw (non-Playwright) SSE connection using Node's built-in fetch
@@ -205,7 +195,8 @@ test('concurrent saves within 100ms merge and both clients receive the result (A
   await seedSession(darrenContext.request, 'd2'.repeat(32), 'e2e-ep2s4');
 
   const featureSlug = uniqueSlug('payload');
-  const seeded = await seedApprovalJourney(request, featureSlug);
+  const seeded = await seedApprovalJourney(request, { featureSlug: featureSlug, stage: 'discovery', completedStages: [{ skillName: 'discovery' }] });
+  expect(seeded.journeyId, 'expected a real journeyId').toBeTruthy();
 
   const journeyId = seeded.journeyId;
   const stageName = 'discovery';
@@ -259,7 +250,8 @@ test('a third observer (neither saver) receives the merged push over the live SS
   await seedSession(darrenContext.request, 'd4'.repeat(32), 'e2e-ep2s4');
 
   const featureSlug = uniqueSlug('sse');
-  const seeded = await seedApprovalJourney(request, featureSlug);
+  const seeded = await seedApprovalJourney(request, { featureSlug: featureSlug, stage: 'discovery', completedStages: [{ skillName: 'discovery' }] });
+  expect(seeded.journeyId, 'expected a real journeyId').toBeTruthy();
 
   const journeyId = seeded.journeyId;
   const stageName = 'discovery';
