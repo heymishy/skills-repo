@@ -44222,18 +44222,18 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T00:40:54.294Z",
+              "updatedAt": "2026-10-30T03:08:01.112Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -44241,34 +44241,35 @@
                 {
                   "id": "task-1",
                   "name": "Fixture seeds a journey with sensible defaults (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Fixture accepts overrides and merges them over defaults (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Capture baseline, migrate ep3-s1-regression.spec.js (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Migrate ep2-s4-concurrent-merge.spec.js, remove its duplicate helper (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Confirm migration did not change pass/fail outcome (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "tfhc-s2",
