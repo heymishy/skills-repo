@@ -44222,21 +44222,57 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T23:31:17.860Z",
+              "updatedAt": "2026-10-30T04:26:28.008Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 4,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s1-e2e-seed-journey-fixture-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Fixture seeds a journey with sensible defaults (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Fixture accepts overrides and merges them over defaults (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Capture baseline, migrate ep3-s1-regression.spec.js (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Migrate ep2-s4-concurrent-merge.spec.js, remove its duplicate helper (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Confirm migration did not change pass/fail outcome (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1041"
             },
             {
               "slug": "tfhc-s2",
@@ -44245,11 +44281,12 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T23:31:23.068Z",
+              "updatedAt": "2026-10-30T04:26:28.174Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s2-journey-js-fixture-retrofit-batch-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -44262,11 +44299,12 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T23:31:28.441Z",
+              "updatedAt": "2026-10-30T04:26:28.340Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s3-skills-js-fixture-walking-skeleton-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -44279,11 +44317,12 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-29T23:31:33.508Z",
+              "updatedAt": "2026-10-30T04:26:28.517Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s4-journey-seed-endpoint-classification-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
