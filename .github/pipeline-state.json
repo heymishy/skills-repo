@@ -44417,40 +44417,41 @@
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T18:58:37.797Z",
+              "updatedAt": "2026-10-30T19:52:40.571Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s4-journey-seed-endpoint-classification-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "dorStatus": "signed-off",
               "tasks": [
                 {
                   "id": "task-1",
                   "name": "Write structural self-check test (RED)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Write the classification artefact (GREEN for AC1-AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Reference the artefact from benefit-metric.md Metric 4 (GREEN for AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "tfhc-s5",
