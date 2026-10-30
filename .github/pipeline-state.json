@@ -44277,20 +44277,59 @@
             {
               "slug": "tfhc-s2",
               "name": "Migrate a bounded batch of hand-rolled journey.js test files to the shared fixture",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T04:26:28.174Z",
+              "updatedAt": "2026-10-30T06:44:37.540Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s2-journey-js-fixture-retrofit-batch-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
-              "dorStatus": "signed-off"
+              "acVerified": 4,
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Capture pre-migration baseline",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Migrate check-ep1-s3-journey-backfill.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Migrate check-ep1-s4-stage-routing.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Migrate check-ep1-s5-error-handling.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Migrate check-pan-s1-product-aware-navigation.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Final verification -- full regression + hand-rolled count (AC3, AC4)",
+                  "tddState": "done",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "tfhc-s3",
