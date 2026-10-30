@@ -7,7 +7,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const { JSDOM, VirtualConsole } = require('jsdom');
-var journeysFixture = require('./helpers/journeys-fixture').journeysFixture;
+const { journeysFixture } = require('./helpers/journeys-fixture');
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log('  [PASS] ' + name); passed++; }
@@ -40,6 +40,9 @@ function makeCanvasMockPool(journeyRow, stageRows, mappingRows) {
 }
 
 function makeMockReqRes() {
+  // Default tenantId intentionally differs from the original literal ('t1'); now 'org-1'
+  // (the fixture's own default). Confirmed harmless for this file: tenantId is never read
+  // or asserted anywhere else below.
   var req = journeysFixture({ params: { id: 'j1' } });
   var res = {
     status: function(c) { this._s = c; return this; },
