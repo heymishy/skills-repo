@@ -100,3 +100,12 @@
 **Revisit trigger:** If the 14-file stubbing fix is not completed before parallelization is implemented, this RISK-ACCEPT must be explicitly re-logged acknowledging the known collision risk is being shipped, not closed.
 
 ---
+
+**2026-10-31 | SCOPE | /definition (tfhc-s7, tfhc-s8)**
+**Decision:** Wrote `tfhc-s7` (journeys.js fixture walking skeleton) and `tfhc-s8` (stub the 14 remaining skill-turn git-commit test files) as new stories under this epic's existing `fixture-divergence-closure` epic, per the operator's explicit instruction to proceed with both spike-unlocked follow-ons.
+**Alternatives considered:** None at this step — the scope decision itself was already made and logged at each spike's own completion (see the two SCOPE | /spike entries immediately above); this entry records the formal /definition write-up, not a new scope judgment.
+**Rationale:** Both stories fall squarely within discovery.md's own pre-anticipated conditional-MVP framing (Out of Scope items 2 and 3), not scope drift — item 2 explicitly anticipated journeys.js implementation landing in-MVP on a PROCEED verdict, and item 3 explicitly anticipated parallelization's precondition landing in-MVP on a PROCEED(-conditional) verdict. Added journeys.js duplication (m8) and parallelization risk resolution, implementation half (m9) as two new benefit-metric entries; updated the epic's own Stories list, Benefit Metrics Addressed table, and Out of Scope section accordingly.
+**Made by:** Copilot (/definition, operator-confirmed)
+**Revisit trigger:** None — both stories now proceed through the standard pipeline (/review → /test-plan → /definition-of-ready → inner loop) like any other story in this epic.
+
+---

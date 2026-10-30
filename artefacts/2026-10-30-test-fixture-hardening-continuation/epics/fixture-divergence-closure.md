@@ -14,8 +14,8 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 ## Out of Scope
 
 - Full retrofit of all remaining hand-rolled files beyond each story's bounded proof-of-pattern batch — explicitly deferred as a fast-follow (see discovery.md Out of Scope item 1).
-- `products.js`/`journeys.js` implementation beyond what the spike itself unlocks within this epic's own cycle — fast-follow if capacity doesn't allow it here (discovery.md Out of Scope item 2).
-- Runner parallelization implementation beyond what its own spike unlocks — gated, not fast-follow, unless the spike's verdict is PROCEED (discovery.md Out of Scope item 3).
+- `products.js` implementation — a separately-confirmed, lower-priority fast-follow per `tfhc-s5`'s spike (`journeys.js` is the implementation target unlocked within this MVP's own cycle; `products.js` is not, per discovery.md Out of Scope item 2).
+- `scripts/run-all-tests.js` parallelization implementation itself — gated on `tfhc-s8` landing first, not bundled with it (per discovery.md Out of Scope item 3 and `tfhc-s6`'s own outcome artefact).
 - The 4 functional E2E coverage gaps (side-trip, spike, recommit, estimate flows) found in the 2026-10-30 E2E audit — intentionally a separate discovery, not this epic's concern.
 - Promoting any new structural check to a `/definition-of-ready` hard block — trigger-based on adoption data, not in scope here (discovery.md Out of Scope item 5).
 
@@ -30,6 +30,8 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 | `products.js`/`journeys.js` duplication (m5) | UNKNOWN BASELINE | Confirmed count + verdict | Story 5's spike resolves the unknown; PROCEED unlocks implementation within this epic |
 | Parallelization risk resolution (m6) | UNKNOWN BASELINE | Precise remaining-risk list + verdict | Story 6's spike resolves the unknown; PROCEED unlocks implementation within this epic |
 | Divergence-bug incidence, extended (m7) | 1 occurrence (`ctpl-s1`) | 0 new across all 3 surfaces | Stories 1-3 close the mechanism gap that let `ctpl-s1`-class bugs happen |
+| `journeys.js` fixture duplication (m8) | 30/31 hand-rolled, 0 using even a local factory | 1 migrated as proof-of-pattern | Story 7 delivers the full walking skeleton + 1 proof-of-pattern migration, unlocked by Story 5's PROCEED verdict |
+| Parallelization risk resolution, implementation half (m9) | 14/41 calling files unstubbed (precise, from Story 6's spike) | 0/41 unstubbed | Story 8 stubs all 14 named files, unlocked by Story 6's PROCEED-conditional verdict; closes the standing junk-commit-contamination bug and is the precondition for a future, separate parallelization-implementation story |
 
 ## Stories in This Epic
 
@@ -39,6 +41,8 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 - [ ] Journey-seed-endpoint classification — `tfhc-s4`
 - [ ] Spike: products.js/journeys.js fixture duplication — `tfhc-s5`
 - [ ] Spike: runner parallelization git-commit-collision risk — `tfhc-s6`
+- [ ] journeys.js shared fixture walking skeleton — `tfhc-s7`
+- [ ] Stub the 14 remaining skill-turn git-commit test files — `tfhc-s8`
 
 ## Human Oversight Level
 

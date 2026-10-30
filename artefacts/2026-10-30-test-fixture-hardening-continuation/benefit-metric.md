@@ -96,6 +96,28 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 | **Measurement method** | `workspace/capture-log.md` entries tagged to this bug class, reviewed at each `/definition-of-done` for a story touching any of these 3 surfaces |
 | **Feedback loop** | A new occurrence is a direct regression of this MVP's core premise, not a deferrable finding — open a fast-follow story immediately rather than logging it for a later slice |
 
+### Metric 8: `journeys.js` fixture duplication
+
+| Field | Value |
+|-------|-------|
+| **What we measure** | Count of files calling `journeys.js` route handlers directly that use a shared fixture vs. hand-roll their own inline session object |
+| **Baseline** | 0 of 31 real callers use a shared fixture today (confirmed by `tfhc-s5`'s spike, 2026-10-30) — 30 use ad-hoc inline literals, 1 is excluded as out-of-scope-at-baseline |
+| **Target** | 1 migrated as proof-of-pattern within this MVP; 0 new hand-rolled callers on any new test touching `journeys.js` after this MVP ships |
+| **Minimum validation signal** | The proof-of-pattern migration passes unchanged, and the new structural check correctly flags a hand-rolled inline literal and passes the migrated file |
+| **Measurement method** | New structural check (`scripts/check-journeys-fixture-usage.js`, same shape as the `check-journey-fixture-usage.js`/`check-skills-fixture-usage.js` precedent) plus a manual grep-count cross-check at `/review` |
+| **Feedback loop** | A new caller hand-rolling its session object despite the `/review` finding means either the finding was overridden (must be logged as a `RISK-ACCEPT` in `decisions.md`) or the fixture has an ergonomics gap worth investigating |
+
+### Metric 9: Parallelization risk resolution, implementation half
+
+| Field | Value |
+|-------|-------|
+| **What we measure** | Count of the 14 precisely-named test files (from `tfhc-s6`'s spike) that still do not stub `setSkillTurnGitCommitAdapter` before driving an artefact-completing skill turn |
+| **Baseline** | 14 of 41 calling files unstubbed (confirmed by `tfhc-s6`'s spike, 2026-10-30) |
+| **Target** | 0 of 41 unstubbed after this story ships |
+| **Minimum validation signal** | All 14 named files stub the adapter, the new structural check (`scripts/check-skill-turn-git-commit-stubbing.js`) exits 0 against the repo, and the full suite shows no new failures |
+| **Measurement method** | The new structural check, run against the repo at `/definition-of-done` |
+| **Feedback loop** | If a future PR adds a new test file that drives an artefact-completing turn without stubbing the adapter, the structural check should catch it before merge — a miss here is a direct regression of this story's own closing condition, not a deferrable finding |
+
 ---
 
 ## Metric Coverage Matrix
@@ -106,9 +128,11 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 | `journey.js` duplication, continued (m2) | tfhc-s2 | Covered |
 | `skills.js` duplication (m3) | tfhc-s3 | Covered |
 | Journey-seed-endpoint classification (m4) | tfhc-s4 | Covered |
-| `products.js`/`journeys.js` duplication (m5) | tfhc-s5 (spike — run via `/spike`, not a standard story; PROCEED unlocks a follow-on implementation story within this epic) | Covered, pending spike |
-| Parallelization risk resolution (m6) | tfhc-s6 (spike — run via `/spike`, not a standard story; PROCEED unlocks a follow-on implementation story within this epic) | Covered, pending spike |
+| `products.js`/`journeys.js` duplication (m5) | tfhc-s5 (spike, closed — PROCEED verdict unlocked tfhc-s7) | Covered |
+| Parallelization risk resolution (m6) | tfhc-s6 (spike, closed — PROCEED-conditional verdict unlocked tfhc-s8) | Covered |
 | Divergence-bug incidence, extended (m7) | tfhc-s1, tfhc-s2, tfhc-s3 (cross-cutting) | Covered |
+| `journeys.js` duplication (m8) | tfhc-s7 | Covered |
+| Parallelization risk resolution, implementation half (m9) | tfhc-s8 | Covered |
 
 ---
 

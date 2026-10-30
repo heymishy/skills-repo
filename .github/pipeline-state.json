@@ -44226,6 +44226,30 @@
             "tfhc-s2",
             "tfhc-s3"
           ]
+        },
+        {
+          "id": "m8",
+          "name": "journeys.js fixture duplication",
+          "target": "1 migrated as proof-of-pattern; 0 new hand-rolled callers after",
+          "baseline": "0 of 31 real callers use a shared fixture",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "tfhc-s7"
+          ]
+        },
+        {
+          "id": "m9",
+          "name": "Parallelization risk resolution, implementation half",
+          "target": "0 of 41 calling files unstubbed",
+          "baseline": "14 of 41 calling files unstubbed",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "tfhc-s8"
+          ]
         }
       ],
       "slicingStrategy": "vertical-slice",
@@ -44468,6 +44492,20 @@
               "stage": "spike-complete",
               "health": "green",
               "updatedAt": "2026-10-30T09:32:27.979Z"
+            },
+            {
+              "slug": "tfhc-s7",
+              "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-30T21:23:12.975Z"
+            },
+            {
+              "slug": "tfhc-s8",
+              "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-10-30T21:23:12.976Z"
             }
           ]
         }
