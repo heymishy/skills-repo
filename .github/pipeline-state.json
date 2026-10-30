@@ -44277,11 +44277,11 @@
             {
               "slug": "tfhc-s2",
               "name": "Migrate a bounded batch of hand-rolled journey.js test files to the shared fixture",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T04:26:28.174Z",
+              "updatedAt": "2026-10-30T05:05:39.070Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
