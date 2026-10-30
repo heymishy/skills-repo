@@ -12,6 +12,8 @@ var assert = require('assert');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var journeyFixture = require('./helpers/journey-fixture').journeyFixture;
+var journeyFixtureRes = require('./helpers/journey-fixture').journeyFixtureRes;
 
 var passed = 0;
 var failed = 0;
@@ -118,31 +120,14 @@ check('backfillJourneyFromPipelineState falls back to old behaviour for a stage 
 
 var journeyStore = require('../src/web-ui/modules/journey-store');
 
-function mockReq(overrides) {
-  return Object.assign({
-    session: { accessToken: 'tok-alice', userId: '1', login: 'alice', tenantId: 't1' },
-    params: {}
-  }, overrides || {});
-}
-
-function mockRes() {
-  var _statusCode = null;
-  var _body = '';
-  return {
-    writeHead: function (code) { _statusCode = code; return this; },
-    end: function (body) { if (body != null) _body = body; },
-    _get: function () { return { statusCode: _statusCode, body: _body }; }
-  };
-}
-
 (async () => {
 
 await (async function() {
   try {
     var journey = journeyStore.createJourney('ep1s4-confirm-fixture', 'default');
     journeyStore.completeStage(journey.journeyId, 'discovery', 'artefacts/ep1s4-confirm-fixture/discovery.md');
-    var req = mockReq({ params: { journeyId: journey.journeyId, stageName: 'discovery' } });
-    var res = mockRes();
+    var req = journeyFixture({ params: { journeyId: journey.journeyId, stageName: 'discovery' } });
+    var res = journeyFixtureRes();
     await journeyRoutes.handleGetStageConfirmBack(req, res);
     var result = res._get();
     assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
@@ -164,8 +149,8 @@ await (async function() {
 await (async function() {
   try {
     var journey = journeyStore.createJourney('ep1s4-confirm-notdone', 'default');
-    var req = mockReq({ params: { journeyId: journey.journeyId, stageName: 'discovery' } });
-    var res = mockRes();
+    var req = journeyFixture({ params: { journeyId: journey.journeyId, stageName: 'discovery' } });
+    var res = journeyFixtureRes();
     await journeyRoutes.handleGetStageConfirmBack(req, res);
     var result = res._get();
     assert.strictEqual(result.statusCode, 404, 'expected 404 for a stage that was never completed');

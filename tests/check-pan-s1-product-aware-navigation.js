@@ -45,33 +45,9 @@ const { renderShell, NAV_ITEMS } = require('../src/web-ui/utils/html-shell');
 const productsRoute = require('../src/web-ui/routes/products');
 const journeyRoute  = require('../src/web-ui/routes/journey');
 const journeyStore  = require('../src/web-ui/modules/journey-store');
+const { journeyFixture, journeyFixtureRes } = require('./helpers/journey-fixture');
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
-function mockRes() {
-  const r = {
-    statusCode: null,
-    headers: {},
-    body: '',
-    writeHead(code, hdrs) {
-      this.statusCode = code;
-      if (hdrs) Object.assign(this.headers, hdrs);
-    },
-    end(body) { this.body = (body != null ? String(body) : ''); }
-  };
-  return r;
-}
-
-function mockReq(overrides) {
-  return Object.assign({
-    session: { accessToken: 'test-token', userId: 42, login: 'alice', tenantId: 'tenant-1' },
-    sessionId: 'test-sid',
-    query: {},
-    headers: {},
-    method: 'GET',
-    url: '/dashboard'
-  }, overrides || {});
-}
-
 const FIXTURE_PRODUCTS = [
   { productId: 'p1', name: 'skills-framework', journeyCount: 3 },
   { productId: 'p2', name: 'acme-billing-portal', journeyCount: 1 }
@@ -205,14 +181,16 @@ async function runIntegrationTests() {
     const noProduct2 = journeyStore.createJourney('feat-noproduct-b', 'default');
     journeyStore.setJourneyFields(noProduct2.journeyId, { tenantId: 'tenant-1', ownerId: 'alice' });
 
-    const req = mockReq({ url: '/journey' });
-    const res = mockRes();
+    // override: this test's journeys are seeded with tenantId 'tenant-1' (not the fixture's default 't1')
+    const req = journeyFixture({ url: '/journey', session: { tenantId: 'tenant-1' } });
+    const res = journeyFixtureRes();
     await journeyRoute.handleGetJourney(req, res);
+    const result = res._get();
 
-    ok(res.body.includes('noproduct a'), 'IT2.1: no-product journey 1 appears in rendered page body');
-    ok(res.body.includes('noproduct b'), 'IT2.2: no-product journey 2 appears in rendered page body');
-    ok(!res.body.includes('with product a'), 'IT2.3: product-scoped journey 1 does NOT appear');
-    ok(!res.body.includes('with product b'), 'IT2.4: product-scoped journey 2 does NOT appear');
+    ok(result.body.includes('noproduct a'), 'IT2.1: no-product journey 1 appears in rendered page body');
+    ok(result.body.includes('noproduct b'), 'IT2.2: no-product journey 2 appears in rendered page body');
+    ok(!result.body.includes('with product a'), 'IT2.3: product-scoped journey 1 does NOT appear');
+    ok(!result.body.includes('with product b'), 'IT2.4: product-scoped journey 2 does NOT appear');
 
     journeyStore._clearForTesting();
   }
@@ -249,7 +227,7 @@ async function runIntegrationTests() {
       // instead.
       body: { _csrf: 'test-csrf-token' }
     };
-    const res = mockRes();
+    const res = journeyFixtureRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {}, identify: function() {}, groupIdentify: function() {} });
     // Recover the created journey via the in-memory store to confirm productId was set.
     const all = journeyStore.listJourneys ? journeyStore.listJourneys() : [];

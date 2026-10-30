@@ -11,6 +11,8 @@ var assert = require('assert');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var journeyFixture = require('./helpers/journey-fixture').journeyFixture;
+var journeyFixtureRes = require('./helpers/journey-fixture').journeyFixtureRes;
 
 var passed = 0;
 var failed = 0;
@@ -48,27 +50,6 @@ function writeState(features) {
   var dir = path.join(_scratchRoot, '.github');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'pipeline-state.json'), JSON.stringify({ features: features }), 'utf8');
-}
-
-function mockReq(overrides) {
-  return Object.assign({
-    session: { accessToken: 'tok-alice', userId: '1', login: 'alice', tenantId: 't1' },
-    params: {},
-    query: {},
-    body: {},
-    url: '/'
-  }, overrides || {});
-}
-
-function mockRes() {
-  var _statusCode = null;
-  var _headers = {};
-  var _body = '';
-  return {
-    writeHead: function (code, headers) { _statusCode = code; _headers = headers || {}; return this; },
-    end: function (body) { if (body != null) _body = body; },
-    _get: function () { return { statusCode: _statusCode, headers: _headers, body: _body }; }
-  };
 }
 
 check('AC1: creates a new journey record when none exists', () => {
@@ -132,8 +113,8 @@ check('missing pipeline-state.json returns null, does not throw', () => {
 // ── Integration: resume flow backfills instead of 404ing ──
 await checkAsync('integration: resume flow backfills instead of 404ing for a CLI-only feature', async () => {
   writeState([{ slug: 'ep1s3-resume', stage: 'definition', updatedAt: '2026-08-01T00:00:00.000Z' }]);
-  var req = mockReq({ params: { featureSlug: 'ep1s3-resume' } });
-  var res = mockRes();
+  var req = journeyFixture({ params: { featureSlug: 'ep1s3-resume' } });
+  var res = journeyFixtureRes();
   await journeyRoutes.handleGetJourneyResume(req, res);
   var result = res._get();
   assert.notStrictEqual(result.statusCode, 404, 'expected NOT 404 — backfill should have created a journey record');
@@ -143,8 +124,8 @@ await checkAsync('integration: resume flow backfills instead of 404ing for a CLI
 // ── Integration: a genuinely unknown slug still 404s (regression — backfill must not mask real not-found cases) ──
 await checkAsync('integration: resume flow still 404s for a slug in neither journey-store nor pipeline-state.json', async () => {
   writeState([{ slug: 'ep1s3-real', stage: 'definition', updatedAt: '2026-08-01T00:00:00.000Z' }]);
-  var req = mockReq({ params: { featureSlug: 'ep1s3-genuinely-nowhere' } });
-  var res = mockRes();
+  var req = journeyFixture({ params: { featureSlug: 'ep1s3-genuinely-nowhere' } });
+  var res = journeyFixtureRes();
   await journeyRoutes.handleGetJourneyResume(req, res);
   var result = res._get();
   assert.strictEqual(result.statusCode, 404, 'expected 404 for a slug that exists nowhere');

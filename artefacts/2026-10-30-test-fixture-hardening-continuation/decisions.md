@@ -64,3 +64,12 @@
 **Revisit trigger:** If `scripts/check-pipeline-state-integrity.js`'s C3 check gains a documented-exception carve-out (e.g. a `testPlan.knownFailing` count, or a decisions.md cross-reference), re-run C3 against this story to confirm it then passes cleanly. Logged as an `/improve` candidate in `workspace/capture-log.md`.
 
 ---
+
+**2026-10-30 | RISK-ACCEPT | /branch-setup (tfhc-s2)**
+**Decision:** Proceed with the `tfhc-s2` worktree despite 2 pre-existing baseline test failures: `scripts/check-pipeline-state-integrity.js` and `tests/check-pcr-s1-test-runner.js`.
+**Alternatives considered:** Investigate and fix both before starting any implementation.
+**Rationale:** Both are already documented, understood, and unrelated to `tfhc-s2`'s scope (retrofitting `journey.js`'s own fixtures). `check-pipeline-state-integrity.js`'s failure is the C3 flag from this epic's own `/branch-complete (tfhc-s1, post-merge bookkeeping)` RISK-ACCEPT above — a deliberate, honest `4/5` passing count, not a defect. `check-pcr-s1-test-runner.js` is the perf-timing-threshold flake already RISK-ACCEPTed during `tfhc-s1`'s own `/branch-setup` (Task 2 entry). Neither touches `src/web-ui/routes/journey.js` or this story's scope.
+**Made by:** Copilot (branch-setup baseline check)
+**Revisit trigger:** Same as the two originating entries above — if C3 gains a carve-out, or if the perf-timing flake starts affecting CI, raise a dedicated fast-follow ticket.
+
+---
