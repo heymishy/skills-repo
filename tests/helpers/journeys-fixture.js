@@ -8,6 +8,10 @@
 // handlers never read those; csrfToken is read separately by the CSRF
 // middleware wrapping CSRF-guarded routes, not by journeys.js itself,
 // matching journey-fixture.js's own precedent of excluding it from the default.
+//
+// Note: "journeysFixture" (this file, for journeys.js, plural) vs.
+// "journeyFixture" (journey-fixture.js, for journey.js, singular) is an
+// intentional naming distinction tracking the two route files' names, not a typo.
 
 function journeysFixture(overrides) {
   overrides = overrides || {};
@@ -22,6 +26,13 @@ function journeysFixture(overrides) {
   return merged;
 }
 
+// Diverges from journeyFixtureRes/skillsFixtureRes's {statusCode, body} shape
+// (no headers, writeHead returns this for chaining) deliberately: journeys.js
+// always calls res.writeHead(code, headers) with a real headers object (verified
+// via grep -n "writeHead" src/web-ui/routes/journeys.js), so capturing headers
+// here is more correct. Chaining support is omitted because no
+// .writeHead().end() chain exists anywhere in src/web-ui/routes/journeys.js --
+// every call site invokes writeHead and end as separate statements.
 function journeysFixtureRes() {
   var _status = null;
   var _body = null;
