@@ -44336,11 +44336,11 @@
             {
               "slug": "tfhc-s3",
               "name": "Extract a shared mockReq/mockRes fixture module for skills.js tests",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T07:37:27.983Z",
+              "updatedAt": "2026-10-30T07:49:45.364Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -44349,7 +44349,45 @@
               },
               "acTotal": 5,
               "acVerified": 0,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Create the shared fixture module (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Create the fixture self-test (AC1, AC2, NFRs)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Migrate check-dic1-story-cards.js T13 block (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Create the structural checker and AC4 test fixtures (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire the checker into /review as Category G (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Final verification -- full regression + NFR-security scope check",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "tfhc-s4",
