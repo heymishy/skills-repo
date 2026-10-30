@@ -61,9 +61,9 @@ State what was found first:
 > This is a re-run for [n] stories. I'll produce a diff against the previous
 > report showing what changed.
 >
-> Reviewing all [n] stories, all 6 categories (A–F).
+> Reviewing all [n] stories, all 7 categories (A–G).
 
-**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 6 categories (A–F) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
+**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 7 categories (A–G) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
 
 Before Step 2, read `.github/context.yml` and apply policy overlays:
 
