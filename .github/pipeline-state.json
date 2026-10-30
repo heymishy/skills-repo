@@ -44222,11 +44222,11 @@
             {
               "slug": "tfhc-s1",
               "name": "Extract a shared E2E fixture for seeding an approval journey",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T03:08:01.112Z",
+              "updatedAt": "2026-10-30T04:12:09.435Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -44269,7 +44269,9 @@
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1041"
             },
             {
               "slug": "tfhc-s2",
