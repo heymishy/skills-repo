@@ -181,6 +181,7 @@ async function runIntegrationTests() {
     const noProduct2 = journeyStore.createJourney('feat-noproduct-b', 'default');
     journeyStore.setJourneyFields(noProduct2.journeyId, { tenantId: 'tenant-1', ownerId: 'alice' });
 
+    // override: this test's journeys are seeded with tenantId 'tenant-1' (not the fixture's default 't1')
     const req = journeyFixture({ url: '/journey', session: { tenantId: 'tenant-1' } });
     const res = journeyFixtureRes();
     await journeyRoute.handleGetJourney(req, res);
