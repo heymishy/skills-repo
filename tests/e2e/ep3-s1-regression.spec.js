@@ -1,6 +1,7 @@
 'use strict';
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedApprovalJourney } = require('./fixtures/seed-journey');
 
 withAuth('ep3-s1: Request Regression form renders on the confirm-back interstitial (AC1); submitting resets the journey stage and downstream stages become unreachable via reopen (AC2)', async ({ page }) => {
   // Generous budget matching sibling specs with comparable real round trips
@@ -13,21 +14,16 @@ withAuth('ep3-s1: Request Regression form renders on the confirm-back interstiti
   const featureSlug = 'ep3-s1-e2e-' + Date.now();
   const reasonText = 'Architecture constraint needs revision before DoR. ep3-s1 E2E ' + Date.now() + '.';
 
-  const seedRes = await page.request.post('/test/seed-approval-journey', {
-    data: {
-      featureSlug: featureSlug,
-      stage: 'test-plan',
-      completedStages: [
-        { skillName: 'discovery' },
-        { skillName: 'benefit-metric' },
-        { skillName: 'definition' },
-        { skillName: 'review' }
-      ]
-    },
-    headers: { 'Content-Type': 'application/json' }
+  const seeded = await seedApprovalJourney(page.request, {
+    featureSlug: featureSlug,
+    stage: 'test-plan',
+    completedStages: [
+      { skillName: 'discovery' },
+      { skillName: 'benefit-metric' },
+      { skillName: 'definition' },
+      { skillName: 'review' }
+    ]
   });
-  expect(seedRes.status(), 'POST /test/seed-approval-journey').toBe(200);
-  const seeded = await seedRes.json();
   expect(seeded.journeyId, 'expected a real journeyId').toBeTruthy();
 
   // AC1: navigate to the confirm-back interstitial for an earlier, completed stage
