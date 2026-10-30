@@ -14,7 +14,37 @@ const path = require('path');
 
 const JOURNEYS_ROUTE_REQUIRE_PATTERN = /require\(['"][^'"]*routes\/journeys['"]\)/;
 const SHARED_FIXTURE_REQUIRE_PATTERN = /require\(['"][^'"]*helpers\/journeys-fixture['"]\)/;
-const HAND_ROLLED_PATTERN = /(function\s+mockReq\s*\(|(?:const|var|let)\s+mockReq\s*=\s*(?:\{|function)|(?:const|var|let)\s+req\s*=\s*\{[^}]*session\s*:)/;
+const HAND_ROLLED_MOCKREQ_PATTERN = /(function\s+mockReq\s*\(|(?:const|var|let)\s+mockReq\s*=\s*(?:\{|function))/;
+
+// Ad-hoc inline literal case: `const/var/let req = {`. Matched separately
+// (rather than folded into one regex with a `[^}]*session\s*:` tail) because
+// `[^}]*` cannot cross a nested object's own closing brace -- a literal like
+// `{ params: {...}, session: {...} }` would never match if `session` isn't
+// the first key. Instead, find the declaration's position, then look for
+// `session:` anywhere within a bounded window after it (same windowed-match
+// technique as tests/check-tfhc-s4-journey-seed-classification.js's own AC2
+// caller-count check), wide enough to cross sibling nested braces without
+// risking a match against unrelated, far-away code.
+const AD_HOC_REQ_DECLARATION_PATTERN = /(?:const|var|let)\s+req\s*=\s*\{/;
+const SESSION_KEY_PATTERN = /session\s*:/;
+const AD_HOC_SESSION_WINDOW = 300;
+
+// ── hasAdHocSessionLiteral ────────────────────────────────────────────────
+// Returns true if content contains a `const/var/let req = {` declaration
+// followed, within AD_HOC_SESSION_WINDOW characters, by a `session:` key --
+// regardless of whether `session` is the first key in the literal.
+function hasAdHocSessionLiteral(content) {
+  const match = AD_HOC_REQ_DECLARATION_PATTERN.exec(content);
+  if (!match) {
+    return false;
+  }
+
+  const windowStart = match.index + match[0].length;
+  const windowEnd = Math.min(content.length, windowStart + AD_HOC_SESSION_WINDOW);
+  const window = content.slice(windowStart, windowEnd);
+
+  return SESSION_KEY_PATTERN.test(window);
+}
 
 // ── scanFileForHandRolledFixture ─────────────────────────────────────────────
 // Reads the file at filePath. If it touches journeys.js (requires the route
@@ -36,7 +66,7 @@ function scanFileForHandRolledFixture(filePath) {
     return [];
   }
 
-  const handRolled = HAND_ROLLED_PATTERN.test(content);
+  const handRolled = HAND_ROLLED_MOCKREQ_PATTERN.test(content) || hasAdHocSessionLiteral(content);
   if (!handRolled) {
     return [];
   }
