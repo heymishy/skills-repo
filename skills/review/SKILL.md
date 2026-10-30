@@ -61,9 +61,9 @@ State what was found first:
 > This is a re-run for [n] stories. I'll produce a diff against the previous
 > report showing what changed.
 >
-> Reviewing all [n] stories, all 7 categories (A–G).
+> Reviewing all [n] stories, all 8 categories (A–H).
 
-**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 7 categories (A–G) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
+**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 8 categories (A–H) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
 
 Before Step 2, read `.github/context.yml` and apply policy overlays:
 
@@ -210,6 +210,18 @@ MEDIUM: the check reports a hand-rolled `mockReq` instead of the shared fixture 
 LOW: none
 
 **skills.js fixture hygiene score (1–5):** [score] — [one-line justification. 5 if no finding or N/A; 3 if a MEDIUM finding is present but acknowledged.]
+
+### Category H: journeys.js fixture hygiene
+
+Applies only when a story's touched files include a test file that requires `src/web-ui/routes/journeys` (directly or transitively via a fixture). If no touched file matches, state "Category H: N/A — no journeys.js-touching file in scope" and skip.
+
+For each journeys.js-touching test file in the story's scope, run: `node scripts/check-journeys-fixture-usage.js <file>`.
+
+HIGH: none — this check never blocks /test-plan on its own
+MEDIUM: the check reports a hand-rolled `mockReq` or ad-hoc inline session literal instead of the shared fixture (`tests/helpers/journeys-fixture.js`) — name the file and recommend the fix
+LOW: none
+
+**journeys.js fixture hygiene score (1–5):** [score] — [one-line justification. 5 if no finding or N/A; 3 if a MEDIUM finding is present but acknowledged.]
 
 ---
 
