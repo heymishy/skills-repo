@@ -44435,8 +44435,9 @@
             {
               "slug": "tfhc-s5",
               "name": "Spike: products.js/journeys.js fixture duplication",
-              "stage": "spike-pending",
-              "health": "green"
+              "stage": "spike-complete",
+              "health": "green",
+              "updatedAt": "2026-10-30T09:25:49.274Z"
             },
             {
               "slug": "tfhc-s6",
@@ -44476,7 +44477,16 @@
           "assessedAt": "2026-10-30T09:20:44.350Z"
         }
       ],
-      "stories": []
+      "stories": [],
+      "spikes": [
+        {
+          "id": "spike-tfhc-s5",
+          "storySlug": "tfhc-s5",
+          "verdict": "PROCEED",
+          "outputArtefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/spikes/tfhc-s5-output.md",
+          "verdictAt": "2026-10-30T09:25:49.273Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

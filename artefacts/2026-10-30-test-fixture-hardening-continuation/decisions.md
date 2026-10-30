@@ -82,3 +82,12 @@
 **Revisit trigger:** Same as the originating entry above — if C3 gains a carve-out, re-run against this story to confirm it then passes cleanly.
 
 ---
+
+**2026-10-30 | SCOPE | /spike (tfhc-s5)**
+**Decision:** `tfhc-s5`'s spike ("products.js/journeys.js fixture duplication") closed PROCEED. `journeys.js` walking-skeleton implementation (fixture + self-test + proof-of-pattern migration + structural checker + `/review` wiring, same bounded shape as `tfhc-s3`) is added to this MVP's in-scope work as a new follow-on story. `products.js`'s separately-confirmed duplication (27/32 files) is logged as a named, bounded fast-follow rather than folded into the same implementation cycle.
+**Alternatives considered:** Implement both surfaces' fixtures together in one cycle; DEFER both as out of scope.
+**Rationale:** Both surfaces show real, substantial duplication — `products.js` 27/32 (≈84%) and `journeys.js` 30/31 (≈97%), both proportionally higher than either closed precedent (`journey.js` 16/41, `skills.js` 12/45). `journeys.js`'s pattern is the more urgent: none of its 30 touching files share even a local hand-rolled factory — every one independently re-derives the same single-field (`req.session.tenantId`) session shape inline, per test. Sequencing `journeys.js` first and deferring `products.js` (a distinct 5-field shape: `accessToken`/`login`/`tenantId`/`plan`/`impersonation`) avoids repeating `discovery.md`'s own named risk of running too many differently-shaped stories under one epic at once (CI concurrency collisions on the shared `deploy-group`, already observed twice in this epic).
+**Made by:** Copilot (spike investigation, full outcome in `spikes/tfhc-s5-outcome.md`)
+**Revisit trigger:** If `journeys.js`'s implementation does not land within this MVP's own cycle for capacity reasons, its fast-follow status (not `products.js`'s) must be explicitly logged, per `discovery.md` Out of Scope item 2's own conditional wording.
+
+---
