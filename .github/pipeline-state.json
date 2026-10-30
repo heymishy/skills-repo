@@ -44496,20 +44496,40 @@
             {
               "slug": "tfhc-s7",
               "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-30T21:36:48.940Z",
+              "updatedAt": "2026-10-30T21:55:34.596Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s7-journeys-js-fixture-walking-skeleton-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-10-30T21:46:02.937Z",
+              "updatedAt": "2026-10-30T21:56:39.465Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s8-skill-turn-git-commit-adapter-stubbing-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
