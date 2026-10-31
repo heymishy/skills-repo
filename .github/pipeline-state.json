@@ -44256,10 +44256,12 @@
           "name": "run-all-tests.js wall-clock runtime",
           "baseline": "816 files, 485063ms sequential (confirmed 2026-10-31)",
           "target": "<=291000ms (>=40% reduction)",
-          "signal": "not-yet-measured",
+          "signal": "on-track",
           "contributingStories": [
             "tfhc-s9"
-          ]
+          ],
+          "evidence": "Fresh timed run on merged master (2026-11-01): 817 files, 259130ms -- a 46.6% reduction from the confirmed 485063ms sequential baseline, exceeding the >=40% target with wide margin. Only 4 failures, all pre-existing/already-documented and unrelated to this story.",
+          "lastMeasured": "2026-11-01"
         }
       ],
       "slicingStrategy": "vertical-slice",
@@ -44267,7 +44269,7 @@
         {
           "slug": "fixture-divergence-closure",
           "name": "Test fixture divergence risk closed across journey.js, skills.js, and the E2E layer",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "tfhc-s1",
@@ -44616,9 +44618,9 @@
             {
               "slug": "tfhc-s9",
               "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-31T23:32:56.576Z",
+              "updatedAt": "2026-10-31T23:40:22.848Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44654,7 +44656,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1048"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1048",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -44692,9 +44696,9 @@
           "category": "nfr",
           "label": "Full-suite wall-clock runtime reduces >=40% vs. 816-file/485063ms baseline",
           "status": "met",
-          "evidence": "NFR profile documents a concrete, DoD-measured performance target (m10); H-NFR/H-NFR3 pass at /definition-of-ready. Actual runtime achievement measured at /definition-of-done, not here.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-31T09:13:35.472Z"
+          "evidence": "Actual runtime achievement confirmed at /definition-of-done: 46.6% reduction (259130ms vs 485063ms baseline), measured fresh on merged master 2026-11-01.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-31T23:40:22.848Z"
         }
       ],
       "stories": [],
