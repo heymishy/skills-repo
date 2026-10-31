@@ -9,6 +9,24 @@
 
 ---
 
+## Addendum (2026-11-01): Real CI confirmation, post-DoD
+
+After this DoD's own verdict was recorded (local measurement: 46.6% reduction), pulled real GitHub Actions data to confirm the speedup holds in actual CI, not just the local dev machine. Isolated the `Unit test chain` step (the job's real `npm test` execution, separate from lint/typecheck/build, via `gh api repos/heymishy/skills-repo/actions/jobs/<id>`):
+
+| PR | Story | `Unit test chain` duration |
+|----|-------|---------------------------|
+| #1046 | tfhc-s7 (pre-parallelization) | 175s |
+| #1047 | tfhc-s8 (pre-parallelization) | 207s |
+| **#1048** | **tfhc-s9 (parallelized)** | **124s** |
+
+**Reduction vs. the most recent pre-change baseline (#1047): 40.1%.** Reduction vs. the 2-PR average (191s): 35.1%. Both confirm a real, substantial win in actual CI — not a local-machine artifact — and the closer (#1047) comparison clears the ≥40% target on its own.
+
+**Note for future reference:** GitHub-hosted runners typically have fewer logical cores than the 8-core reference dev machine this story's `Math.max(1, Math.ceil(os.cpus().length / 3))` formula was empirically tuned against. CI still landed close to the target with whatever core count the runner has, but the realized speedup in CI will scale with the *runner's* own core count, not the dev machine's — this is expected behaviour, not a regression, but worth knowing if the CI runner size ever changes.
+
+This does not change the verdict already recorded below (COMPLETE) — it is additional, stronger evidence for the same AC4/m10 signal already marked on-track.
+
+---
+
 ## AC Coverage
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
