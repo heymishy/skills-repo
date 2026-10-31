@@ -34,7 +34,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 
 // ── Grandfather list ─────────────────────────────────────────────────────
 // The 16 files chained in package.json as of 2026-07-11 that do not match
@@ -110,10 +110,13 @@ function getAllTestFiles(repoRoot) {
 /**
  * Runs each file in `files` as its own child process, bounded by
  * `options.concurrency` concurrent children at a time (default: number of
- * logical CPUs). Each child's stdout/stderr is buffered and flushed as one
- * contiguous block only when that child exits — never passed through live
- * via `stdio: 'inherit'`, which would interleave at the OS level once two
- * children run concurrently (AC5). A child exceeding `options.timeoutMs`
+ * logical CPUs). Each child's stdout and stderr are each buffered
+ * separately and flushed as one contiguous block, to their own respective
+ * real stream (process.stdout / process.stderr), only when that child
+ * exits — never passed through live via `stdio: 'inherit'`, which would
+ * interleave at the OS level once two children run concurrently (AC5).
+ * stdout and stderr are never merged into a single buffer. A child
+ * exceeding `options.timeoutMs`
  * (default 120000, matching the previous sequential behaviour) is killed
  * and recorded as failed, without blocking or delaying its siblings (AC6).
  *
@@ -127,7 +130,6 @@ function runFilesConcurrently(files, options) {
   const concurrency = options.concurrency || os.cpus().length;
   const timeoutMs = options.timeoutMs || 120000;
   const cwd = options.cwd || process.cwd();
-  const { spawn } = require('child_process');
 
   return new Promise(function(resolve) {
     const start = Date.now();
@@ -149,7 +151,8 @@ function runFilesConcurrently(files, options) {
 
     function runOne(file) {
       active++;
-      const chunks = [];
+      const stdoutChunks = [];
+      const stderrChunks = [];
       const child = spawn(process.execPath, [file], { cwd: cwd });
       let timedOut = false;
       const timer = setTimeout(function() {
@@ -157,12 +160,13 @@ function runFilesConcurrently(files, options) {
         child.kill('SIGKILL');
       }, timeoutMs);
 
-      child.stdout.on('data', function(d) { chunks.push(d); });
-      child.stderr.on('data', function(d) { chunks.push(d); });
+      child.stdout.on('data', function(d) { stdoutChunks.push(d); });
+      child.stderr.on('data', function(d) { stderrChunks.push(d); });
 
       child.on('close', function(code) {
         clearTimeout(timer);
-        if (chunks.length > 0) process.stdout.write(Buffer.concat(chunks));
+        if (stdoutChunks.length > 0) process.stdout.write(Buffer.concat(stdoutChunks));
+        if (stderrChunks.length > 0) process.stderr.write(Buffer.concat(stderrChunks));
         const failed = timedOut || code !== 0;
         if (failed) failedFiles.push(file);
         active--;
