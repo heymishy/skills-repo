@@ -142,14 +142,48 @@ async function main() {
   }
 
   // ── AC6: a hung file is killed without blocking its siblings ───────────
+  // CORRECTED (2026-11-01, Task 3 code-quality finding -- see decisions.md):
+  // the original version used concurrency: 3 == files.length (nothing ever
+  // queues) and a pass-fast fixture (exits in a few ms), so a fully-
+  // serialized replay of the same 3 fixtures ALSO passed both of its old
+  // assertions (empirically confirmed: 482ms serialized vs 350ms real
+  // concurrent, both well under the old 1000ms threshold) -- the test had
+  // zero discriminating power. This version uses concurrency: 2 (so the
+  // hang file permanently occupies one slot and the 2nd sleep-marker
+  // sibling can only start once the 1st sibling's slot frees) and asserts
+  // directly, via timestamped log events (same technique as AC2), that the
+  // 2nd sibling starts promptly when its slot frees -- not delayed until
+  // the hang file's own timeout death.
   {
     const T = 'AC6-hung-file-killed-without-blocking-siblings';
-    const files = [fixture('tfhc-s9-hang.js'), fixture('tfhc-s9-pass-fast.js'), fixture('tfhc-s9-pass-fast.js')];
-    const { failedFiles, elapsedMs } = await runFilesConcurrently(files, { concurrency: 3, timeoutMs: 300 });
+    const logPath = makeTempLogPath();
+    process.env.TFHC_S9_LOG_PATH = logPath;
+    process.env.TFHC_S9_SLEEP_MS = '100';
+    const files = [fixture('tfhc-s9-hang.js'), fixture('tfhc-s9-sleep-marker.js'), fixture('tfhc-s9-sleep-marker.js')];
+    const testStart = Date.now();
+    const { failedFiles, elapsedMs } = await runFilesConcurrently(files, { concurrency: 2, timeoutMs: 500 });
+    delete process.env.TFHC_S9_LOG_PATH;
+    delete process.env.TFHC_S9_SLEEP_MS;
+
     assert(T, failedFiles.length === 1 && failedFiles[0] === fixture('tfhc-s9-hang.js'),
       `Expected only the hang file to fail, got ${JSON.stringify(failedFiles)}`);
+
+    const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
+    const events = lines.map(function(line) {
+      const parts = line.split(' ');
+      return { type: parts[0], ts: parseInt(parts[2], 10) };
+    });
+    assert(T + '-both-siblings-ran', events.length === 4,
+      `Expected 2 START + 2 END events from the 2 sleep-marker siblings, got ${events.length}: ${JSON.stringify(lines)}`);
+
+    const starts = events.filter(function(e) { return e.type === 'START'; }).map(function(e) { return e.ts; }).sort(function(a, b) { return a - b; });
+    const secondSiblingStart = starts[1];
+    const secondSiblingOffset = secondSiblingStart - testStart;
+    assert(T + '-second-sibling-not-queued-behind-hang', secondSiblingOffset < 450,
+      `Expected the 2nd sibling to start within 450ms of the batch beginning (well before the hang file's own 500ms timeout) -- a correct implementation starts it as soon as the 1st sibling's slot frees (~300-350ms here), not after the hang dies (~800ms+). Measured offset: ${secondSiblingOffset}ms, events: ${JSON.stringify(lines)}`);
+
     assert(T + '-elapsed-not-blocked', elapsedMs < 1000,
-      `Expected elapsedMs < 1000 (close to the 300ms timeout, not blocked waiting on siblings), got ${elapsedMs}`);
+      `Expected elapsedMs < 1000 (dominated by the hang file's own 500ms timeout, not a serialized sum), got ${elapsedMs}`);
   }
 
   // ── AC1 (integration): getAllTestFiles -> runFilesConcurrently seam ─────
