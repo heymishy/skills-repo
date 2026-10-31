@@ -44551,19 +44551,19 @@
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-10-31T01:25:07.866Z",
+              "updatedAt": "2026-10-31T03:29:03.558Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s8-skill-turn-git-commit-adapter-stubbing-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -44571,28 +44571,29 @@
                 {
                   "id": "task-1",
                   "name": "Write the structural auditor script (AC2, RED first)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Stub the first 7 files, using a fully worked example (AC1, AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Stub the remaining 6 files (AC1, AC2, AC3 -- GREEN)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Update workspace/learnings.md to record closure (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
