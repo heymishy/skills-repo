@@ -44553,7 +44553,7 @@
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-31T07:31:01.709Z",
+              "updatedAt": "2026-10-31T08:02:41.702Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44594,7 +44594,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1047"
             }
           ]
