@@ -91,6 +91,7 @@ async function run() {
   console.log('\n  AC3 -- handlePostTurnStreamHtml: journey-linked session.featureSlug wins over the marker');
   {
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       onFirstChunk(0);
       onChunk(FIXTURE_RESPONSE);
@@ -113,6 +114,7 @@ async function run() {
   console.log('\n  AC4 -- handlePostTurnStreamHtml: no featureSlug known -> falls back to the marker (unchanged behaviour)');
   {
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       onFirstChunk(0);
       onChunk(FIXTURE_RESPONSE);
