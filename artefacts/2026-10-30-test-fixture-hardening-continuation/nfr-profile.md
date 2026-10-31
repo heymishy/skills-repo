@@ -17,8 +17,9 @@
 | Shared fixture / self-test execution time | < 1 second | Timed as part of `node scripts/run-all-tests.js` | tfhc-s7 |
 | Structural check execution time | < 1 second per file | Timed manual run of `scripts/check-journeys-fixture-usage.js` | tfhc-s7 |
 | Adapter-stubbing change | Not applicable — no runtime behavioural change, test-infrastructure-only | N/A | tfhc-s8 |
+| Full-suite wall-clock runtime | ≥40% reduction vs. the confirmed 816-file/485063ms sequential baseline (≤291000ms), bounded by the reference dev machine's 8 logical CPUs | Timed run of `node scripts/run-all-tests.js` at `/definition-of-done` | tfhc-s9 |
 
-**Source:** Story ACs (tfhc-s3 AC2, tfhc-s7 AC2, story NFRs). No product-level SLO applies — this is internal test tooling, not a served response path.
+**Source:** Story ACs (tfhc-s3 AC2, tfhc-s7 AC2, tfhc-s9 AC4, story NFRs). No product-level SLO applies — this is internal test tooling, not a served response path.
 
 ---
 
@@ -26,7 +27,7 @@
 
 | NFR | Requirement | Standard or clause | Applies to story |
 |-----|-------------|-------------------|-----------------|
-| No new production code path | All stories' deliverables live under `tests/` or `scripts/` only — no `src/` production code is added or modified | N/A — architectural boundary, not a named standard | tfhc-s1, tfhc-s2, tfhc-s3, tfhc-s4, tfhc-s7, tfhc-s8 |
+| No new production code path | All stories' deliverables live under `tests/` or `scripts/` only — no `src/` production code is added or modified | N/A — architectural boundary, not a named standard | tfhc-s1, tfhc-s2, tfhc-s3, tfhc-s4, tfhc-s7, tfhc-s8, tfhc-s9 |
 
 **Data classification:**
 - [x] Public — no PII, no sensitive data
@@ -65,4 +66,4 @@ Not applicable — no named regulatory framework or clause drives this feature. 
 
 ## Gaps and open questions
 
-No NFR gaps identified at 2026-10-30, reconfirmed 2026-10-31. The 2 spike stories (`tfhc-s5`, `tfhc-s6`) carried no NFRs of their own — pure investigation with no implementation surface. Their follow-on implementation stories (`tfhc-s7`, `tfhc-s8`, written 2026-10-31 once each spike's PROCEED verdict unlocked them) have now had their own NFRs defined above, same bounded shape as the earlier implementation stories.
+No NFR gaps identified at 2026-10-30, reconfirmed 2026-10-31. The 2 spike stories (`tfhc-s5`, `tfhc-s6`) carried no NFRs of their own — pure investigation with no implementation surface. Their follow-on implementation stories (`tfhc-s7`, `tfhc-s8`, written 2026-10-31 once each spike's PROCEED verdict unlocked them) have now had their own NFRs defined above, same bounded shape as the earlier implementation stories. `tfhc-s9` (written 2026-10-31 once `tfhc-s8` closed the git-commit-collision precondition) is the first story in this epic with a concrete, numeric performance NFR rather than a qualitative one — grounded in a fresh timed baseline run on 2026-10-31, not an estimate.

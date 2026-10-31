@@ -118,6 +118,17 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 | **Measurement method** | The new structural check, run against the repo at `/definition-of-done` |
 | **Feedback loop** | If a future PR adds a new test file that drives an artefact-completing turn without stubbing the adapter, the structural check should catch it before merge — a miss here is a direct regression of this story's own closing condition, not a deferrable finding |
 
+### Metric 10: `scripts/run-all-tests.js` wall-clock runtime
+
+| Field | Value |
+|-------|-------|
+| **What we measure** | Full-suite wall-clock time to run `node scripts/run-all-tests.js` against the current discovered file set |
+| **Baseline** | 816 files, 485063ms (~8m05s) sequential — confirmed fresh 2026-10-31, same run surfacing the 2 already-known, already-RISK-ACCEPTed pre-existing failures (`scripts/check-pipeline-state-integrity.js`'s `[C3]` flag, `tests/check-p3.5-validate-trace.js`'s stray local artefact dir) — neither is relevant to this metric |
+| **Target** | ≤291000ms (~4m51s) — at least a 40% reduction, bounded by the reference dev machine's confirmed 8 logical CPUs |
+| **Minimum validation signal** | A timed run at `/definition-of-done` shows ≥40% wall-clock reduction with an identical `failedFiles` list and exit code to the sequential baseline (no new or masked failures), and a dedicated test confirms peak concurrent child-process count never exceeds the configured limit |
+| **Measurement method** | `node scripts/run-all-tests.js`, timed, run fresh at `/definition-of-done` |
+| **Feedback loop** | If a future PR's new test file assumes exclusive filesystem/port/global-state access (an implicit sequential-only assumption), concurrency will surface it as a flaky failure — treat that as a test-isolation defect in the new file and fix the file, not as a reason to revert parallelization |
+
 ---
 
 ## Metric Coverage Matrix
@@ -133,6 +144,7 @@ Compliance/risk-reduction (Tier 3) does not apply — this feature is test-tooli
 | Divergence-bug incidence, extended (m7) | tfhc-s1, tfhc-s2, tfhc-s3 (cross-cutting) | Covered |
 | `journeys.js` duplication (m8) | tfhc-s7 | Covered |
 | Parallelization risk resolution, implementation half (m9) | tfhc-s8 | Covered |
+| `run-all-tests.js` wall-clock runtime (m10) | tfhc-s9 | Covered |
 
 ---
 

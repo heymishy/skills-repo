@@ -4,8 +4,8 @@
 **Benefit-metric reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/benefit-metric.md
 **Slicing strategy:** Vertical slice
 
-<!-- ---CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    EFIX[tests/e2e/fixtures/seed-journey.js]\n    ESPEC[ep3-s1-regression.spec.js + 2 others]\n    JFIX[tests/helpers/journey-fixture.js]\n    JCONS[3-5 journey.js consumer files]\n    SFIX[tests/helpers/skills-fixture.js]\n    SSELFTEST[tests/check-skills-fixture-self-test.js]\n    SCHECK[scripts/check-skills-fixture-usage.js]\n    SREVIEW[skills/review/SKILL.md]\n    SCONS[1 skills.js consumer proof-of-pattern]\n    CLASSIFY[classification report: 5 seed endpoints]\n    SPIKE1[spike: products.js/journeys.js duplication]\n    SPIKE2[spike: parallelization git-commit-collision risk]\n    ESPEC --> EFIX\n    JCONS --> JFIX\n    SCONS --> SFIX\n    SSELFTEST --> SFIX\n    SCHECK --> SCONS\n    SREVIEW --> SCHECK"}}--->
----CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    EFIX[tests/e2e/fixtures/seed-journey.js]\n    ESPEC[ep3-s1-regression.spec.js + 2 others]\n    JFIX[tests/helpers/journey-fixture.js]\n    JCONS[3-5 journey.js consumer files]\n    SFIX[tests/helpers/skills-fixture.js]\n    SSELFTEST[tests/check-skills-fixture-self-test.js]\n    SCHECK[scripts/check-skills-fixture-usage.js]\n    SREVIEW[skills/review/SKILL.md]\n    SCONS[1 skills.js consumer proof-of-pattern]\n    CLASSIFY[classification report: 5 seed endpoints]\n    SPIKE1[spike: products.js/journeys.js duplication]\n    SPIKE2[spike: parallelization git-commit-collision risk]\n    ESPEC --> EFIX\n    JCONS --> JFIX\n    SCONS --> SFIX\n    SSELFTEST --> SFIX\n    SCHECK --> SCONS\n    SREVIEW --> SCHECK"}}---
+<!-- ---CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    EFIX[tests/e2e/fixtures/seed-journey.js]\n    ESPEC[ep3-s1-regression.spec.js + 2 others]\n    JFIX[tests/helpers/journey-fixture.js]\n    JCONS[3-5 journey.js consumer files]\n    SFIX[tests/helpers/skills-fixture.js]\n    SSELFTEST[tests/check-skills-fixture-self-test.js]\n    SCHECK[scripts/check-skills-fixture-usage.js]\n    SREVIEW[skills/review/SKILL.md]\n    SCONS[1 skills.js consumer proof-of-pattern]\n    CLASSIFY[classification report: 5 seed endpoints]\n    JSFIX[tests/helpers/journeys-fixture.js]\n    JSSELFTEST[tests/check-journeys-fixture-self-test.js]\n    JSCHECK[scripts/check-journeys-fixture-usage.js]\n    JSCONS[1 journeys.js consumer proof-of-pattern]\n    GCAUDIT[scripts/check-skill-turn-git-commit-stubbing.js]\n    GCSTUB[13 skill-turn test files stubbed]\n    RUNNER[scripts/run-all-tests.js]\n    POOL[bounded-concurrency worker pool]\n    SPIKE1[spike: products.js/journeys.js duplication]\n    SPIKE2[spike: parallelization git-commit-collision risk]\n    ESPEC --> EFIX\n    JCONS --> JFIX\n    SCONS --> SFIX\n    SSELFTEST --> SFIX\n    SCHECK --> SCONS\n    SREVIEW --> SCHECK\n    JSCONS --> JSFIX\n    JSSELFTEST --> JSFIX\n    JSCHECK --> JSCONS\n    GCAUDIT --> GCSTUB\n    RUNNER --> POOL\n    GCSTUB --> RUNNER"}}--->
+---CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    EFIX[tests/e2e/fixtures/seed-journey.js]\n    ESPEC[ep3-s1-regression.spec.js + 2 others]\n    JFIX[tests/helpers/journey-fixture.js]\n    JCONS[3-5 journey.js consumer files]\n    SFIX[tests/helpers/skills-fixture.js]\n    SSELFTEST[tests/check-skills-fixture-self-test.js]\n    SCHECK[scripts/check-skills-fixture-usage.js]\n    SREVIEW[skills/review/SKILL.md]\n    SCONS[1 skills.js consumer proof-of-pattern]\n    CLASSIFY[classification report: 5 seed endpoints]\n    JSFIX[tests/helpers/journeys-fixture.js]\n    JSSELFTEST[tests/check-journeys-fixture-self-test.js]\n    JSCHECK[scripts/check-journeys-fixture-usage.js]\n    JSCONS[1 journeys.js consumer proof-of-pattern]\n    GCAUDIT[scripts/check-skill-turn-git-commit-stubbing.js]\n    GCSTUB[13 skill-turn test files stubbed]\n    RUNNER[scripts/run-all-tests.js]\n    POOL[bounded-concurrency worker pool]\n    SPIKE1[spike: products.js/journeys.js duplication]\n    SPIKE2[spike: parallelization git-commit-collision risk]\n    ESPEC --> EFIX\n    JCONS --> JFIX\n    SCONS --> SFIX\n    SSELFTEST --> SFIX\n    SCHECK --> SCONS\n    SREVIEW --> SCHECK\n    JSCONS --> JSFIX\n    JSSELFTEST --> JSFIX\n    JSCHECK --> JSCONS\n    GCAUDIT --> GCSTUB\n    RUNNER --> POOL\n    GCSTUB --> RUNNER"}}---
 
 ## Goal
 
@@ -15,7 +15,7 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 
 - Full retrofit of all remaining hand-rolled files beyond each story's bounded proof-of-pattern batch — explicitly deferred as a fast-follow (see discovery.md Out of Scope item 1).
 - `products.js` implementation — a separately-confirmed, lower-priority fast-follow per `tfhc-s5`'s spike (`journeys.js` is the implementation target unlocked within this MVP's own cycle; `products.js` is not, per discovery.md Out of Scope item 2).
-- `scripts/run-all-tests.js` parallelization implementation itself — gated on `tfhc-s8` landing first, not bundled with it (per discovery.md Out of Scope item 3 and `tfhc-s6`'s own outcome artefact).
+- ~~`scripts/run-all-tests.js` parallelization implementation itself — gated on `tfhc-s8` landing first, not bundled with it~~ — **no longer out of scope as of 2026-10-31**: `tfhc-s8` reached DoD-complete (PR #1047 merged), closing the precondition named in discovery.md Out of Scope item 3 and `tfhc-s6`'s own outcome artefact. The implementation itself is now in scope as `tfhc-s9`.
 - The 4 functional E2E coverage gaps (side-trip, spike, recommit, estimate flows) found in the 2026-10-30 E2E audit — intentionally a separate discovery, not this epic's concern.
 - Promoting any new structural check to a `/definition-of-ready` hard block — trigger-based on adoption data, not in scope here (discovery.md Out of Scope item 5).
 
@@ -32,17 +32,19 @@ A developer or AI coding agent touching `journey.js`, `skills.js`, or an E2E spe
 | Divergence-bug incidence, extended (m7) | 1 occurrence (`ctpl-s1`) | 0 new across all 3 surfaces | Stories 1-3 close the mechanism gap that let `ctpl-s1`-class bugs happen |
 | `journeys.js` fixture duplication (m8) | 30/31 hand-rolled, 0 using even a local factory | 1 migrated as proof-of-pattern | Story 7 delivers the full walking skeleton + 1 proof-of-pattern migration, unlocked by Story 5's PROCEED verdict |
 | Parallelization risk resolution, implementation half (m9) | 13/41 calling files unstubbed (Story 6's spike named 14; corrected to 13 at Story 8's own `/review`) | 0/41 unstubbed | Story 8 stubs all 13 named files, unlocked by Story 6's PROCEED-conditional verdict; closes the standing junk-commit-contamination bug and is the precondition for a future, separate parallelization-implementation story |
+| `run-all-tests.js` wall-clock runtime (m10) | 816 files, 485063ms (~8m05s) sequential, confirmed 2026-10-31 | ≤291000ms (≥40% reduction) | Story 9 parallelizes execution, unlocked by Story 8 closing the git-commit-collision precondition |
 
 ## Stories in This Epic
 
-- [ ] E2E seed-journey fixture — `tfhc-s1`
-- [ ] journey.js hand-rolled fixture retrofit, bounded batch — `tfhc-s2`
-- [ ] skills.js shared fixture walking skeleton — `tfhc-s3`
-- [ ] Journey-seed-endpoint classification — `tfhc-s4`
-- [ ] Spike: products.js/journeys.js fixture duplication — `tfhc-s5`
-- [ ] Spike: runner parallelization git-commit-collision risk — `tfhc-s6`
-- [ ] journeys.js shared fixture walking skeleton — `tfhc-s7`
-- [ ] Stub the 14 remaining skill-turn git-commit test files — `tfhc-s8`
+- [x] E2E seed-journey fixture — `tfhc-s1`
+- [x] journey.js hand-rolled fixture retrofit, bounded batch — `tfhc-s2`
+- [x] skills.js shared fixture walking skeleton — `tfhc-s3`
+- [x] Journey-seed-endpoint classification — `tfhc-s4`
+- [x] Spike: products.js/journeys.js fixture duplication — `tfhc-s5`
+- [x] Spike: runner parallelization git-commit-collision risk — `tfhc-s6`
+- [x] journeys.js shared fixture walking skeleton — `tfhc-s7`
+- [x] Stub the 14 remaining skill-turn git-commit test files — `tfhc-s8`
+- [ ] Parallelize scripts/run-all-tests.js's sequential child-process execution — `tfhc-s9`
 
 ## Human Oversight Level
 

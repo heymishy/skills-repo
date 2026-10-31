@@ -127,3 +127,12 @@
 **Revisit trigger:** If either script's described behaviour turns out to be wrong once implemented, that is itself evidence this warning should have been resolved pre-code — note for retrospective, not an immediate action.
 
 ---
+
+**2026-10-31 | SCOPE | /definition (tfhc-s9)**
+**Decision:** Wrote `tfhc-s9` (parallelize `scripts/run-all-tests.js`'s sequential child-process execution) as a new story under this epic's existing `fixture-divergence-closure` epic, per the operator's explicit "scope next" instruction after `/trace` confirmed the full feature HEALTHY and `tfhc-s8` closed the git-commit-collision precondition.
+**Alternatives considered:** None at this step — the scope decision was already made and anticipated at `tfhc-s6`'s own spike completion (discovery.md Out of Scope item 3: "Gated, not fast-follow, unless the spike's verdict is PROCEED"); this entry records the formal `/definition` write-up, not a new scope judgment.
+**Rationale:** Falls squarely within discovery.md's own pre-anticipated conditional-MVP framing, not scope drift — item 6/item 3 explicitly anticipated this implementation landing in-MVP once its precondition closed. Added `run-all-tests.js` wall-clock runtime (m10) as a new benefit-metric entry, grounded in a fresh timed baseline run on this session's own machine (816 files, 485063ms sequential, 8 logical CPUs) rather than an estimate — the fresh run also re-confirmed the only 2 failures present are the same 2 already-known, already-RISK-ACCEPTed pre-existing failures. Updated the epic's Stories list (also corrected stale unchecked boxes for `tfhc-s1`–`tfhc-s8`, all of which are actually DoD-complete), Benefit Metrics Addressed table, Out of Scope section, and refreshed the Program Design canvas marker to include the new fixture/audit/runner nodes added by `tfhc-s7`, `tfhc-s8`, and this story.
+**Made by:** Copilot (/definition, operator-confirmed)
+**Revisit trigger:** None — this story now proceeds through the standard pipeline (/review → /test-plan → /definition-of-ready → inner loop) like any other story in this epic.
+
+---

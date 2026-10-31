@@ -44133,7 +44133,7 @@
       "name": "Test Fixture Hardening - Continuation",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-29T20:00:03.558Z",
+      "updatedAt": "2026-10-31T08:48:36.682Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -44250,6 +44250,16 @@
           "contributingStories": [
             "tfhc-s8"
           ]
+        },
+        {
+          "id": "m10",
+          "name": "run-all-tests.js wall-clock runtime",
+          "baseline": "816 files, 485063ms sequential (confirmed 2026-10-31)",
+          "target": "<=291000ms (>=40% reduction)",
+          "signal": "not-yet-measured",
+          "contributingStories": [
+            "tfhc-s9"
+          ]
         }
       ],
       "slicingStrategy": "vertical-slice",
@@ -44257,7 +44267,7 @@
         {
           "slug": "fixture-divergence-closure",
           "name": "Test fixture divergence risk closed across journey.js, skills.js, and the E2E layer",
-          "status": "complete",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "tfhc-s1",
@@ -44602,6 +44612,12 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1047",
               "dodStatus": "complete",
               "releaseReady": true
+            },
+            {
+              "slug": "tfhc-s9",
+              "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
+              "stage": "definition",
+              "health": "green"
             }
           ]
         }
