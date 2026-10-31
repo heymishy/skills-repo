@@ -207,7 +207,14 @@ async function runAll(repoRoot) {
   });
 
   const poolResult = await runFilesConcurrently(poolFiles, {
-    concurrency: Math.max(1, os.cpus().length - 2),
+    // Math.max(1, Math.ceil(os.cpus().length / 3)) rather than -2: re-
+    // verification found os.cpus().length - 2 still made check-rb-s3-
+    // harness-agnostic-instructions.js's own 2-second wall-clock NFR budget
+    // fail consistently under CPU contention. Verified at concurrency 3 (on
+    // the 8-core reference machine): rb-s3 passes, and the pool still
+    // completes in ~200s, comfortably clearing the >=40% AC4 target. See
+    // decisions.md's 2026-11-01 DESIGN entries for the full history.
+    concurrency: Math.max(1, Math.ceil(os.cpus().length / 3)),
     timeoutMs: 120000,
     cwd: repoRoot
   });
