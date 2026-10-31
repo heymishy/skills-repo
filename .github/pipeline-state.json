@@ -44551,9 +44551,9 @@
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-10-30T22:07:22.869Z",
+              "updatedAt": "2026-10-31T01:20:30.082Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
