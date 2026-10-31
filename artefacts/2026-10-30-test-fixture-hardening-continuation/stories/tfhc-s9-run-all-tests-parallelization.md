@@ -3,6 +3,7 @@
 **Epic reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/epics/fixture-divergence-closure.md
 **Discovery reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/discovery.md
 **Benefit-metric reference:** artefacts/2026-10-30-test-fixture-hardening-continuation/benefit-metric.md
+**Domain:** [testing]
 
 ## User Story
 
