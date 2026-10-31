@@ -449,12 +449,16 @@ git commit -m "test: cover concurrency bound (AC2) and real wall-clock reporting
 
 ## Task 3: AC5 (output attribution) + AC6 (hang/timeout) + integration seam test
 
+**Status: COMPLETE** — spec compliance ✅ (first pass), code quality ✅ (2 fix rounds: an Important finding that AC6's own test had zero discriminating power, fixed and re-verified empirically before approval — see `decisions.md`'s 2026-11-01 "second correction" entry). Ending SHA: `d0a58e0c7de98ab21ca2c5f339c4b88e8934be7b`. Also absorbed a real latent-defect finding from the integration test itself (`getAllTestFiles` includes `GRANDFATHER_LIST` paths with no existence check) — fixed via the test's own fixture setup, not production code, since `getAllTestFiles` is explicitly out of scope for this story.
+
+**Final cross-cutting review (all 3 tasks, all 6 ACs): ✅ PASSED.** All ACs genuinely covered by non-vacuous tests (AC4 deliberately excluded per its own RISK-ACCEPT); both scope additions beyond the original plan (`SEQUENTIAL_EXCLUSIVE_LIST`, the tuned concurrency cap) confirmed necessary for AC1 to hold, not independent scope creep; Out of Scope boundaries honored across the full diff. 15/15 story tests pass; full suite shows only the 2 expected pre-existing failures plus the already-accepted residual flake category.
+
 **Files:**
 - Create: `tests/fixtures/tfhc-s9-print-lines.js`
 - Create: `tests/fixtures/tfhc-s9-hang.js`
 - Modify: `tests/check-tfhc-s9-run-all-tests-parallelization.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Insert these three blocks into `tests/check-tfhc-s9-run-all-tests-parallelization.js`'s `main()`, immediately after Task 2's AC3 block (before `// ── Report ──`):
 
@@ -502,22 +506,80 @@ Insert these three blocks into `tests/check-tfhc-s9-run-all-tests-parallelizatio
   }
 
   // ── AC6: a hung file is killed without blocking its siblings ───────────
+  // CORRECTED (2026-11-01, Task 3 code-quality finding -- see decisions.md):
+  // the original version used concurrency: 3 == files.length (nothing ever
+  // queues) and a pass-fast fixture (exits in a few ms), so a fully-
+  // serialized replay of the same 3 fixtures ALSO passed both of its old
+  // assertions (empirically confirmed: 482ms serialized vs 350ms real
+  // concurrent, both well under the old 1000ms threshold) -- the test had
+  // zero discriminating power. This version uses concurrency: 2 (so the
+  // hang file permanently occupies one slot and the 2nd sleep-marker
+  // sibling can only start once the 1st sibling's slot frees) and asserts
+  // directly, via timestamped log events (same technique as AC2), that the
+  // 2nd sibling starts promptly when its slot frees -- not delayed until
+  // the hang file's own timeout death.
+  // SECOND CORRECTION (2026-11-01): the first correction's '-second-sibling-
+  // not-queued-behind-hang' assertion measured the GAP between the 1st
+  // sibling's END and the 2nd sibling's START -- empirically this gap is
+  // dominated by Node child-process spawn/boot overhead (~80-130ms) in BOTH
+  // the real concurrency:2 case and a concurrency:1 comparison run, so it
+  // doesn't actually discriminate. Switched to an ABSOLUTE offset instead:
+  // the 2nd sibling's start time relative to when the batch itself began.
+  // Empirically validated (concurrency:2 vs a concurrency:1 comparison):
+  // ~300-320ms (real, correct) vs ~800-850ms (serialized/blocked) -- a
+  // threshold of 450ms sits cleanly between both with wide margin either
+  // side, and is well under the hang file's own 500ms timeout.
   {
     const T = 'AC6-hung-file-killed-without-blocking-siblings';
-    const files = [fixture('tfhc-s9-hang.js'), fixture('tfhc-s9-pass-fast.js'), fixture('tfhc-s9-pass-fast.js')];
-    const { failedFiles, elapsedMs } = await runFilesConcurrently(files, { concurrency: 3, timeoutMs: 300 });
+    const logPath = makeTempLogPath();
+    process.env.TFHC_S9_LOG_PATH = logPath;
+    process.env.TFHC_S9_SLEEP_MS = '100';
+    const files = [fixture('tfhc-s9-hang.js'), fixture('tfhc-s9-sleep-marker.js'), fixture('tfhc-s9-sleep-marker.js')];
+    const testStart = Date.now();
+    const { failedFiles, elapsedMs } = await runFilesConcurrently(files, { concurrency: 2, timeoutMs: 500 });
+    delete process.env.TFHC_S9_LOG_PATH;
+    delete process.env.TFHC_S9_SLEEP_MS;
+
     assert(T, failedFiles.length === 1 && failedFiles[0] === fixture('tfhc-s9-hang.js'),
       `Expected only the hang file to fail, got ${JSON.stringify(failedFiles)}`);
+
+    const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
+    const events = lines.map(function(line) {
+      const parts = line.split(' ');
+      return { type: parts[0], ts: parseInt(parts[2], 10) };
+    });
+    assert(T + '-both-siblings-ran', events.length === 4,
+      `Expected 2 START + 2 END events from the 2 sleep-marker siblings, got ${events.length}: ${JSON.stringify(lines)}`);
+
+    const starts = events.filter(function(e) { return e.type === 'START'; }).map(function(e) { return e.ts; }).sort(function(a, b) { return a - b; });
+    const secondSiblingStart = starts[1];
+    const secondSiblingOffset = secondSiblingStart - testStart;
+    assert(T + '-second-sibling-not-queued-behind-hang', secondSiblingOffset < 450,
+      `Expected the 2nd sibling to start within 450ms of the batch beginning (well before the hang file's own 500ms timeout) -- a correct implementation starts it as soon as the 1st sibling's slot frees (~300-350ms here), not after the hang dies (~800ms+). Measured offset: ${secondSiblingOffset}ms, events: ${JSON.stringify(lines)}`);
+
     assert(T + '-elapsed-not-blocked', elapsedMs < 1000,
-      `Expected elapsedMs < 1000 (close to the 300ms timeout, not blocked waiting on siblings), got ${elapsedMs}`);
+      `Expected elapsedMs < 1000 (dominated by the hang file's own 500ms timeout, not a serialized sum), got ${elapsedMs}`);
   }
 
   // ── AC1 (integration): getAllTestFiles -> runFilesConcurrently seam ─────
+  // NOTE (2026-11-01, Task 3 implementation finding -- see decisions.md):
+  // getAllTestFiles() unconditionally includes every GRANDFATHER_LIST path
+  // with no existence check (unlike the dynamic check-*.js glob, which only
+  // ever returns files that genuinely exist). GRANDFATHER_LIST itself is
+  // explicitly out of scope for this story to modify -- so this test's own
+  // fixture repo must contain stub versions of every GRANDFATHER_LIST path,
+  // or they show up as spurious MODULE_NOT_FOUND failures unrelated to the
+  // seam this test actually exercises.
   {
     const T = 'AC1-integration-seam-getAllTestFiles-to-runFilesConcurrently';
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tfhc-s9-repo-'));
+    GRANDFATHER_LIST.forEach(function(rel) {
+      const full = path.join(tempRoot, rel);
+      fs.mkdirSync(path.dirname(full), { recursive: true });
+      fs.writeFileSync(full, 'process.exit(0);\n');
+    });
     const testsDir = path.join(tempRoot, 'tests');
-    fs.mkdirSync(testsDir);
+    fs.mkdirSync(testsDir, { recursive: true });
     fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-a.js'), 'process.exit(0);\n');
     fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-b.js'), 'process.exit(1);\n');
     fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-c.js'), 'process.exit(0);\n');
@@ -536,9 +598,10 @@ Insert these three blocks into `tests/check-tfhc-s9-run-all-tests-parallelizatio
     process.exitCode = originalExitCode;
 
     const summaryLine = logged.find(function(l) { return l.indexOf('[run-all-tests]') !== -1 && l.indexOf('file(s) run') !== -1; });
+    const expectedTotal = GRANDFATHER_LIST.length + 3;
     assert(T + '-exit-code', exitCodeAfter === 1, `Expected exitCode 1 (one fixture fails), got ${exitCodeAfter}`);
-    assert(T + '-summary-counts', !!summaryLine && summaryLine.indexOf('3 file(s) run, 1 failed') !== -1,
-      `Expected summary to report "3 file(s) run, 1 failed", got: ${summaryLine}`);
+    assert(T + '-summary-counts', !!summaryLine && summaryLine.indexOf(expectedTotal + ' file(s) run, 1 failed') !== -1,
+      `Expected summary to report "${expectedTotal} file(s) run, 1 failed", got: ${summaryLine}`);
     const failedLine = logged.find(function(l) { return l.indexOf('check-tfhc-s9-fixture-b.js') !== -1; });
     assert(T + '-names-failed-file', !!failedLine, `Expected failed-file list to name check-tfhc-s9-fixture-b.js, got lines: ${JSON.stringify(logged)}`);
 
@@ -546,7 +609,9 @@ Insert these three blocks into `tests/check-tfhc-s9-run-all-tests-parallelizatio
   }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+**Note:** this test block now also requires `GRANDFATHER_LIST` destructured from the `require('../scripts/run-all-tests.js')` line at the top of the test file (already imports `runFilesConcurrently`, `runAll` — add `GRANDFATHER_LIST` to that same destructure).
+
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
@@ -554,7 +619,7 @@ node tests/check-tfhc-s9-run-all-tests-parallelization.js
 
 Expected output: `ENOENT` reading `tests/fixtures/tfhc-s9-print-lines.js` / `tests/fixtures/tfhc-s9-hang.js` (neither fixture exists yet).
 
-- [ ] **Step 3: Create the two remaining fixtures**
+- [x] **Step 3: Create the two remaining fixtures**
 
 `tests/fixtures/tfhc-s9-print-lines.js`:
 ```js
@@ -580,19 +645,19 @@ next();
 setInterval(function() {}, 1000);
 ```
 
-- [ ] **Step 4: Mutation-test the timeout guard before trusting AC6's test (per `.github/standards/testing/test-design-patterns.md`)**
+- [x] **Step 4: Mutation-test the timeout guard before trusting AC6's test (per `.github/standards/testing/test-design-patterns.md`)**
 
 Temporarily remove the `setTimeout(function() { timedOut = true; child.kill('SIGKILL'); }, timeoutMs);` call in `runOne` (or set it to an effectively-infinite delay), re-run `node tests/check-tfhc-s9-run-all-tests-parallelization.js` with a short wait, and confirm `AC6-hung-file-killed-without-blocking-siblings` now **fails** (or the whole test process itself hangs, proving the guard was genuinely load-bearing). Then restore the timeout logic and confirm the test passes again within the expected `< 1000ms`.
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
 ```
 
-Expected output: `[tfhc-s9-run-all-tests-parallelization] 11 check(s) OK ✓`
+Expected output: `[tfhc-s9-run-all-tests-parallelization] 15 check(s) OK ✓` (6 from Tasks 1–2, plus 9 new: AC5 ×2, AC6 ×4 (corrected — see the AC6 block's own note above), AC1-integration ×3 — corrected from the plan's original miscount of 11)
 
-- [ ] **Step 6: Run full suite — no regressions**
+- [x] **Step 6: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -600,7 +665,7 @@ npm test
 
 Expected output: same file count as before this story (+1 for the new `check-tfhc-s9-run-all-tests-parallelization.js` file itself) and only the same 2 pre-existing, RISK-ACCEPTed failures — no new or different failure.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/fixtures/tfhc-s9-print-lines.js tests/fixtures/tfhc-s9-hang.js tests/check-tfhc-s9-run-all-tests-parallelization.js
