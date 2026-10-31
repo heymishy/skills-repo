@@ -44498,13 +44498,13 @@
               "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-31T00:08:05.441Z",
+              "updatedAt": "2026-10-31T01:05:30.767Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 5,
+                "passing": 8,
                 "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s7-journeys-js-fixture-walking-skeleton-test-plan.md"
               },
               "acTotal": 5,
@@ -44545,7 +44545,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1046"
             },
             {
