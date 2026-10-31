@@ -44232,9 +44232,9 @@
           "name": "journeys.js fixture duplication",
           "target": "1 migrated as proof-of-pattern; 0 new hand-rolled callers after",
           "baseline": "0 of 31 real callers use a shared fixture",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-31",
+          "evidence": "1 of 31 real journeys.js-touching files migrated to the shared fixture as proof-of-pattern (meets target); structural check correctly distinguishes hand-rolled vs compliant, confirmed fresh on merged master. 0 new hand-rolled callers introduced.",
           "contributingStories": [
             "tfhc-s7"
           ]
@@ -44496,9 +44496,9 @@
             {
               "slug": "tfhc-s7",
               "name": "Extract a shared mockReq/mockRes fixture module for journeys.js tests",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-31T01:05:30.767Z",
+              "updatedAt": "2026-10-31T08:06:34.212Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44546,7 +44546,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1046"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1046",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "tfhc-s8",
@@ -44606,27 +44608,27 @@
           "category": "nfr",
           "label": "Shared fixture / self-test execution time < 1 second",
           "status": "met",
-          "evidence": "Confirmed at tfhc-s3 DoD: self-test (4 cases) + structural checker both run well under 1s, no network/DB calls (structural source-inspection test).",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-30T22:07:22.869Z"
+          "evidence": "Re-confirmed at tfhc-s7 DoD, 2026-10-31: self-test/structural-check run near-instantly; zero src/ changes.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-31T08:06:34.214Z"
         },
         {
           "id": "NFR-tfhc-check-perf",
           "category": "nfr",
           "label": "Structural check execution time < 1 second per file",
           "status": "met",
-          "evidence": "Confirmed at tfhc-s3 DoD: check-skills-fixture-usage.js runs instantly against both AC4 fixtures and the real migrated file.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-30T22:07:22.869Z"
+          "evidence": "Re-confirmed at tfhc-s7 DoD, 2026-10-31: self-test/structural-check run near-instantly; zero src/ changes.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-31T08:06:34.214Z"
         },
         {
           "id": "NFR-tfhc-no-prod-path",
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
-          "evidence": "Confirmed at tfhc-s1/s2/s3 DoD: all deliverables live under tests/ or scripts/ only; zero src/ references confirmed fresh this session.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-30T22:07:22.869Z"
+          "evidence": "Re-confirmed at tfhc-s7 DoD, 2026-10-31: self-test/structural-check run near-instantly; zero src/ changes.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-31T08:06:34.214Z"
         }
       ],
       "stories": [],
