@@ -31,13 +31,15 @@ Modify:
 
 ## Task 1: Core concurrent runner (`runFilesConcurrently`) + AC1 (pass/fail aggregation)
 
+**Status: COMPLETE** — spec compliance ✅, code quality ✅ (2 review rounds: Important finding on stdout/stderr channel merge, Minor on dead import — both fixed and re-approved). Ending SHA: `3901b1ed08a604389e35ec2287b34a4e32607054`. Also absorbed two real findings beyond the original spec during execution — a `SEQUENTIAL_EXCLUSIVE_LIST` mechanism (fixing a genuine file-race correctness bug between 2 unrelated test files) and a concurrency-cap tuning pass (`Math.max(1, Math.ceil(os.cpus().length / 3))` instead of the originally-planned `os.cpus().length`) — both logged in full in `decisions.md`'s 2026-11-01 entries, both operator-approved.
+
 **Files:**
 - Create: `tests/fixtures/tfhc-s9-pass-fast.js`
 - Create: `tests/fixtures/tfhc-s9-fail-fast.js`
 - Modify: `scripts/run-all-tests.js`
 - Create: `tests/check-tfhc-s9-run-all-tests-parallelization.js` (started here, extended in Tasks 2–3)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-tfhc-s9-run-all-tests-parallelization.js` with this initial content:
 
@@ -115,7 +117,7 @@ async function main() {
 main();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
@@ -123,7 +125,7 @@ node tests/check-tfhc-s9-run-all-tests-parallelization.js
 
 Expected output: `Error: Cannot find module '../scripts/run-all-tests.js'` export `runFilesConcurrently` — specifically a `TypeError: runFilesConcurrently is not a function` (the function doesn't exist yet), or the fixture files don't exist yet (`ENOENT`). Either way, a hard failure before any assertion runs.
 
-- [ ] **Step 3: Create the two simplest fixtures**
+- [x] **Step 3: Create the two simplest fixtures**
 
 `tests/fixtures/tfhc-s9-pass-fast.js`:
 ```js
@@ -137,9 +139,27 @@ process.exit(0);
 process.exit(1);
 ```
 
-- [ ] **Step 4: Implement `runFilesConcurrently` and wire it into `runAll`**
+- [x] **Step 4: Implement `runFilesConcurrently` and wire it into `runAll`**
 
-Modify `scripts/run-all-tests.js`. Add `const os = require('os');` near the top (alongside the existing `fs`/`path`/`spawnSync` requires — keep `spawnSync` imported too, it is no longer used by `runAll` but removing the import is not required by any AC). Replace the existing `runAll` function and the bottom `module.exports`/entry-point block with:
+Modify `scripts/run-all-tests.js`. Add `const os = require('os');` near the top (alongside the existing `fs`/`path`/`spawnSync` requires — keep `spawnSync` imported too, it is no longer used by `runAll` but removing the import is not required by any AC). Also add this constant near `GRANDFATHER_LIST` (same section, same style — see `decisions.md`'s 2026-11-01 DESIGN entry for why it exists):
+
+```js
+// Files that manipulate real, shared repo-root state (not a sandboxed temp
+// copy) and are therefore unsafe to run concurrently with each other.
+// Confirmed concrete collision (2026-11-01, tfhc-s9): both rename the real
+// workspace/learnings.md away and back to simulate "file missing" --
+// production code's path is hardcoded (src/web-ui/content/learnings-count.js),
+// not injectable, so neither test can be pointed at a sandboxed path instead.
+// Run sequentially (concurrency: 1), in their own phase, rather than in the
+// main concurrent pool. This is a maintained, explicit list, like
+// GRANDFATHER_LIST -- not a dynamically-detected one.
+const SEQUENTIAL_EXCLUSIVE_LIST = [
+  'tests/check-lcdf-s1-build-time-learnings-count.js',
+  'tests/check-lccf-s1-fail-open-learnings-count.js'
+];
+```
+
+Then replace the existing `runAll` function and the bottom `module.exports`/entry-point block with:
 
 ```js
 /**
@@ -225,17 +245,43 @@ function runFilesConcurrently(files, options) {
  * @returns {Promise<void>}
  */
 async function runAll(repoRoot) {
-  const files = getAllTestFiles(repoRoot).map(function(f) {
+  const allFiles = getAllTestFiles(repoRoot).map(function(f) {
     return path.relative(repoRoot, f).split(path.sep).join('/');
   });
 
-  const { failedFiles, elapsedMs } = await runFilesConcurrently(files, {
-    concurrency: os.cpus().length,
+  // SEQUENTIAL_EXCLUSIVE_LIST: files confirmed (2026-11-01) to race on real,
+  // shared repo-root state when run concurrently with each other -- see
+  // decisions.md's DESIGN entries. Run them in their own concurrency:1
+  // phase; everything else runs through the pool.
+  const exclusiveSet = new Set(SEQUENTIAL_EXCLUSIVE_LIST);
+  const exclusiveFiles = allFiles.filter(function(f) { return exclusiveSet.has(f); });
+  const poolFiles = allFiles.filter(function(f) { return !exclusiveSet.has(f); });
+
+  const start = Date.now();
+
+  const exclusiveResult = await runFilesConcurrently(exclusiveFiles, {
+    concurrency: 1,
     timeoutMs: 120000,
     cwd: repoRoot
   });
 
-  console.log('\n[run-all-tests] ' + files.length + ' file(s) run, ' +
+  // Math.max(1, Math.ceil(os.cpus().length / 3)) rather than the raw core
+  // count: full-core saturation (and even os.cpus().length - 2) was found
+  // (2026-11-01, Task 1 verification) to make check-rb-s3-harness-agnostic-
+  // instructions.js's own 2-second wall-clock NFR budget fail consistently
+  // under CPU contention -- see decisions.md's DESIGN entries. Verified at
+  // concurrency 3 (on the 8-core reference machine): rb-s3 passes, and the
+  // pool still completes in ~200s, comfortably clearing the >=40% AC4 target.
+  const poolResult = await runFilesConcurrently(poolFiles, {
+    concurrency: Math.max(1, Math.ceil(os.cpus().length / 3)),
+    timeoutMs: 120000,
+    cwd: repoRoot
+  });
+
+  const failedFiles = exclusiveResult.failedFiles.concat(poolResult.failedFiles);
+  const elapsedMs = Date.now() - start;
+
+  console.log('\n[run-all-tests] ' + allFiles.length + ' file(s) run, ' +
     failedFiles.length + ' failed, ' + elapsedMs + 'ms');
   if (failedFiles.length > 0) {
     console.log('[run-all-tests] Failed files (' + failedFiles.length + '):');
@@ -248,6 +294,7 @@ async function runAll(repoRoot) {
 module.exports = {
   discoverTestFiles: discoverTestFiles,
   GRANDFATHER_LIST: GRANDFATHER_LIST,
+  SEQUENTIAL_EXCLUSIVE_LIST: SEQUENTIAL_EXCLUSIVE_LIST,
   getAllTestFiles: getAllTestFiles,
   runFilesConcurrently: runFilesConcurrently,
   runAll: runAll
@@ -263,7 +310,7 @@ if (require.main === module) {
 
 This fully replaces the old sequential `runAll` (the `files.forEach(function(f) { ... spawnSync ... })` loop) and the old bottom block. `discoverTestFiles`, `GRANDFATHER_LIST`, and `getAllTestFiles` above this point in the file are untouched.
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
@@ -271,7 +318,7 @@ node tests/check-tfhc-s9-run-all-tests-parallelization.js
 
 Expected output: `[tfhc-s9-run-all-tests-parallelization] 2 check(s) OK ✓`
 
-- [ ] **Step 6: Run full suite — no regressions**
+- [x] **Step 6: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -279,7 +326,7 @@ npm test
 
 Expected output: same file count and same 2 pre-existing failures as this story's own `/branch-setup` baseline (`scripts/check-pipeline-state-integrity.js` [C3], `tests/check-pcr-s1-test-runner.js` N1 — both RISK-ACCEPTed in `decisions.md`, unrelated to this story) — no new or different failure, and the new test file itself passes.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/run-all-tests.js tests/fixtures/tfhc-s9-pass-fast.js tests/fixtures/tfhc-s9-fail-fast.js tests/check-tfhc-s9-run-all-tests-parallelization.js
