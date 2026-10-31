@@ -44618,7 +44618,7 @@
               "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-31T23:02:41.441Z",
+              "updatedAt": "2026-10-31T23:32:56.576Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44653,7 +44653,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1048"
             }
           ]
