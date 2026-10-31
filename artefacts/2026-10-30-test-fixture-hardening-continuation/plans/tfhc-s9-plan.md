@@ -337,11 +337,13 @@ git commit -m "feat: add bounded-concurrency runFilesConcurrently to run-all-tes
 
 ## Task 2: AC2 (concurrency bound) + AC3 (real wall-clock)
 
+**Status: COMPLETE** — spec compliance ✅, code quality ✅ (approved first pass, no findings). Mutation-test performed and verified (AC2's guard confirmed load-bearing: peak jumped to 6 when disabled, restored and re-confirmed passing). Ending SHA: `6ca96dedd55f78269ec61a651c8e396c88e9b730`. Full-suite run showed the 2 expected pre-existing failures plus one already-accepted residual flake (`check-cat-s1-core-trace-builder.js`, confirmed passing standalone) — per the standing RISK-ACCEPT in `decisions.md`.
+
 **Files:**
 - Create: `tests/fixtures/tfhc-s9-sleep-marker.js`
 - Modify: `tests/check-tfhc-s9-run-all-tests-parallelization.js`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Insert these two blocks into `tests/check-tfhc-s9-run-all-tests-parallelization.js`'s `main()`, immediately after the two AC1 blocks from Task 1 (before the `// ── Report ──` section):
 
@@ -388,7 +390,7 @@ Insert these two blocks into `tests/check-tfhc-s9-run-all-tests-parallelization.
   }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
@@ -396,7 +398,7 @@ node tests/check-tfhc-s9-run-all-tests-parallelization.js
 
 Expected output: a crash/`ENOENT` reading `tests/fixtures/tfhc-s9-sleep-marker.js` (the fixture doesn't exist yet) — the new AC2/AC3 blocks fail before reaching their assertions.
 
-- [ ] **Step 3: Create the sleep-marker fixture**
+- [x] **Step 3: Create the sleep-marker fixture**
 
 `tests/fixtures/tfhc-s9-sleep-marker.js`:
 ```js
@@ -416,11 +418,11 @@ setTimeout(function() {
 }, sleepMs);
 ```
 
-- [ ] **Step 4: Mutation-test the concurrency guard before trusting AC2's test (per `.github/standards/testing/test-design-patterns.md`)**
+- [x] **Step 4: Mutation-test the concurrency guard before trusting AC2's test (per `.github/standards/testing/test-design-patterns.md`)**
 
 Temporarily change `runFilesConcurrently`'s `launchNext` loop condition from `active < concurrency` to `true` (effectively unbounded), re-run `node tests/check-tfhc-s9-run-all-tests-parallelization.js`, and confirm `AC2-peak-concurrency-never-exceeds-limit` now **fails** (peak should jump to 6, since nothing bounds it). Then revert the change back to `active < concurrency` and confirm the test passes again. Do not commit the temporarily-broken version — this step is a verification discipline, not a code change.
 
-- [ ] **Step 5: Run test — must pass**
+- [x] **Step 5: Run test — must pass**
 
 ```bash
 node tests/check-tfhc-s9-run-all-tests-parallelization.js
@@ -428,7 +430,7 @@ node tests/check-tfhc-s9-run-all-tests-parallelization.js
 
 Expected output: `[tfhc-s9-run-all-tests-parallelization] 6 check(s) OK ✓`
 
-- [ ] **Step 6: Run full suite — no regressions**
+- [x] **Step 6: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -436,7 +438,7 @@ npm test
 
 Expected output: same as Task 1's Step 6 — no new or different failure.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/fixtures/tfhc-s9-sleep-marker.js tests/check-tfhc-s9-run-all-tests-parallelization.js
