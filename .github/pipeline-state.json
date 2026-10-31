@@ -44551,9 +44551,9 @@
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-10-31T01:20:30.082Z",
+              "updatedAt": "2026-10-31T01:24:49.104Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44566,7 +44566,33 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write the structural auditor script (AC2, RED first)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Stub the first 7 files, using a fully worked example (AC1, AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Stub the remaining 6 files (AC1, AC2, AC3 -- GREEN)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Update workspace/learnings.md to record closure (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
+                }
+              ]
             }
           ]
         }
