@@ -44182,9 +44182,9 @@
           "name": "Journey-seed-endpoint classification completeness",
           "target": "5 of 5 classified with a named verdict",
           "baseline": "0 of 5 classified",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-31",
+          "evidence": "All 5 journey-related /test/seed-* endpoints classified with an explicit verdict (0 found redundant), re-confirmed fresh on merged master (9/9 self-check pass). Exactly meets the minimum validation signal.",
           "contributingStories": [
             "tfhc-s4"
           ]
@@ -44257,7 +44257,7 @@
         {
           "slug": "fixture-divergence-closure",
           "name": "Test fixture divergence risk closed across journey.js, skills.js, and the E2E layer",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "tfhc-s1",
@@ -44441,11 +44441,11 @@
             {
               "slug": "tfhc-s4",
               "name": "Classify the 5 journey-related E2E seed endpoints as redundant or legitimate",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T20:28:39.033Z",
+              "updatedAt": "2026-10-31T08:21:14.847Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -44477,7 +44477,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1045"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1045",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "tfhc-s5",
