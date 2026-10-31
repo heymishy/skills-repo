@@ -44551,9 +44551,9 @@
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-10-31T03:29:03.558Z",
+              "updatedAt": "2026-10-31T07:31:01.709Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44593,7 +44593,9 @@
                   "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s8-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1047"
             }
           ]
         }
