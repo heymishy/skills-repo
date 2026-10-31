@@ -44244,9 +44244,9 @@
           "name": "Parallelization risk resolution, implementation half",
           "target": "0 of 41 calling files unstubbed",
           "baseline": "13 of 41 calling files unstubbed (tfhc-s6 named 14; corrected to 13 at tfhc-s8 own /review, 2026-10-31)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-10-31",
+          "evidence": "check-skill-turn-git-commit-stubbing.js passes repo-wide, 0 of 41 calling files unstubbed, re-confirmed fresh on merged master -- exactly meets target. Closes the junk-commit-contamination bug.",
           "contributingStories": [
             "tfhc-s8"
           ]
@@ -44553,9 +44553,9 @@
             {
               "slug": "tfhc-s8",
               "name": "Stub the real git-commit adapter in the 14 remaining skill-turn test files",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-10-31T08:02:41.702Z",
+              "updatedAt": "2026-10-31T08:18:54.133Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44597,7 +44597,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1047"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1047",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -44626,9 +44628,9 @@
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
-          "evidence": "Re-confirmed at tfhc-s7 DoD, 2026-10-31: self-test/structural-check run near-instantly; zero src/ changes.",
+          "evidence": "Re-confirmed at tfhc-s8 DoD, 2026-10-31: zero src/ changes, closes a risk rather than introducing one.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-31T08:06:34.214Z"
+          "assessedAt": "2026-10-31T08:18:54.135Z"
         }
       ],
       "stories": [],
