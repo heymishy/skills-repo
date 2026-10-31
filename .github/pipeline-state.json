@@ -44616,9 +44616,9 @@
             {
               "slug": "tfhc-s9",
               "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-10-31T09:13:35.472Z",
+              "updatedAt": "2026-10-31T19:08:11.533Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {

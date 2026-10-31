@@ -154,3 +154,12 @@
 **Revisit trigger:** If the script's described behaviour turns out to be wrong once implemented, that is itself evidence this warning should have been resolved pre-code — note for retrospective, not an immediate action.
 
 ---
+
+**2026-11-01 | RISK-ACCEPT | /branch-setup (tfhc-s9)**
+**Decision:** Proceed past a failing baseline in the `tfhc-s9` worktree. 2 failures present before any code is written: `scripts/check-pipeline-state-integrity.js` ([C3], the long-standing `tfhc-s1` flag tracked throughout this session) and `tests/check-pcr-s1-test-runner.js` (N1 perf NFR).
+**Alternatives considered:** Investigate before deciding (chosen first — see below), fix `check-pcr-s1-test-runner.js`'s baseline now as a side task before proceeding.
+**Rationale:** Investigated per explicit operator request rather than defaulting to acknowledge-and-proceed. [C3] is confirmed unrelated, already tracked. `check-pcr-s1-test-runner.js` was root-caused (not just pattern-matched as "a known flake"): its N1 check compares a positional `files.slice(0, 40)` sample against a baseline measured 2026-07-11 on a 224-file suite; the repo has grown to 816 files and the sampled slice's actual composition has silently drifted to a different, unrelated set of files (confirmed by printing the sampled file list — now the first 24 alphabetically-sorted `check-a*.js` files, none of which existed at baseline time). Failed 5/5 runs across both the worktree and the main checkout (778–1369ms/file vs. a 749.8ms/file threshold) — a stale baseline, not transient machine-load noise, and both failures are confirmed unrelated to `tfhc-s9`'s own scope (which touches only `run-all-tests.js`'s execution concurrency, not individual `check-*.js` files' own NFR logic, per the story's own Out of Scope section). Logged as an `/improve` candidate in `workspace/capture-log.md` (2026-11-01) rather than fixed inline, since re-baselining is itself a design decision (what should the new baseline be? sample differently?) not authorized as part of this story.
+**Made by:** Copilot (/branch-setup baseline check, investigated per operator's explicit "1" then resolved per operator's explicit "2")
+**Revisit trigger:** If `tests/check-pcr-s1-test-runner.js` continues to fail after this worktree's own work is merged (i.e. is still failing on master with no new early-alphabet files added since), that would indicate the root cause above is incomplete — otherwise, no action needed from this story.
+
+---
