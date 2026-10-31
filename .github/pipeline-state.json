@@ -44616,9 +44616,9 @@
             {
               "slug": "tfhc-s9",
               "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-10-31T19:08:11.533Z",
+              "updatedAt": "2026-10-31T19:21:04.185Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44631,7 +44631,27 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Core concurrent runner (runFilesConcurrently) + AC1 (pass/fail aggregation)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s9-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "AC2 (concurrency bound) + AC3 (real wall-clock)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s9-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC5 (output attribution) + AC6 (hang/timeout) + integration seam test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-10-30-test-fixture-hardening-continuation/plans/tfhc-s9-plan.md"
+                }
+              ]
             }
           ]
         }
