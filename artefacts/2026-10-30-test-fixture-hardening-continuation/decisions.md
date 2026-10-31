@@ -145,3 +145,12 @@
 **Revisit trigger:** If `/test-plan`'s own AC4 test design still ends up as a brittle single-run assertion, that is itself evidence this guidance should have been a story-level AC rewrite instead — note for retrospective.
 
 ---
+
+**2026-10-31 | RISK-ACCEPT | /definition-of-ready (tfhc-s9)**
+**Decision:** Proceed with DoR sign-off for `tfhc-s9` despite W4 (verification script reviewed by a domain expert) being unmet — `tfhc-s9-verification.md` has not been walked through by a human reviewer before coding begins.
+**Alternatives considered:** Block sign-off until a human reviews the script.
+**Rationale:** Same rationale as the existing tfhc-s1/s2/s3/s4/s7/s8 RISK-ACCEPT — solo-operator capacity, and the verification script remains available for post-merge smoke testing per the skill's own "three moments" design even if pre-code sign-off is skipped here. Medium oversight (per the epic's own rationale) is satisfied by the operator's own review of this DoR artefact, since the operator and nominal tech lead are the same person for this repo.
+**Made by:** Copilot (DoR warning check)
+**Revisit trigger:** If the script's described behaviour turns out to be wrong once implemented, that is itself evidence this warning should have been resolved pre-code — note for retrospective, not an immediate action.
+
+---

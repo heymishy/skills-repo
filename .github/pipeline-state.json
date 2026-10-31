@@ -44133,7 +44133,7 @@
       "name": "Test Fixture Hardening - Continuation",
       "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-10-31T09:08:47.925Z",
+      "updatedAt": "2026-10-31T09:13:35.472Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -44616,9 +44616,9 @@
             {
               "slug": "tfhc-s9",
               "name": "Parallelize scripts/run-all-tests.js's sequential child-process execution",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-10-31T09:08:47.923Z",
+              "updatedAt": "2026-10-31T09:13:35.472Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -44630,7 +44630,8 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -44659,9 +44660,18 @@
           "category": "nfr",
           "label": "No new production code path (tests/scripts only)",
           "status": "met",
-          "evidence": "Re-confirmed at tfhc-s8 DoD, 2026-10-31: zero src/ changes, closes a risk rather than introducing one.",
+          "evidence": "Re-confirmed at tfhc-s8 DoD, 2026-10-31: zero src/ changes, closes a risk rather than introducing one. Re-confirmed applicable to tfhc-s9 at /definition-of-ready 2026-10-31: story touches scripts/ and tests/ only.",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-10-31T08:18:54.135Z"
+        },
+        {
+          "id": "NFR-tfhc-s9-runtime-perf",
+          "category": "nfr",
+          "label": "Full-suite wall-clock runtime reduces >=40% vs. 816-file/485063ms baseline",
+          "status": "met",
+          "evidence": "NFR profile documents a concrete, DoD-measured performance target (m10); H-NFR/H-NFR3 pass at /definition-of-ready. Actual runtime achievement measured at /definition-of-done, not here.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-31T09:13:35.472Z"
         }
       ],
       "stories": [],
