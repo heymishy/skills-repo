@@ -96,6 +96,7 @@ async function run() {
   {
     const journeyStore = freshRequire(JOURNEY_STORE_PATH);
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     const eds = freshRequire(EXPORT_DATA_SOURCE_PATH);
     const acw = freshRequire(ARTEFACT_COMMIT_WRITER_PATH);
 
@@ -140,6 +141,7 @@ async function run() {
   {
     const journeyStore = freshRequire(JOURNEY_STORE_PATH);
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     const eds = freshRequire(EXPORT_DATA_SOURCE_PATH);
     const acw = freshRequire(ARTEFACT_COMMIT_WRITER_PATH);
 
@@ -181,6 +183,7 @@ async function run() {
   {
     const journeyStore = freshRequire(JOURNEY_STORE_PATH);
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     const eds = freshRequire(EXPORT_DATA_SOURCE_PATH);
     const acw = freshRequire(ARTEFACT_COMMIT_WRITER_PATH);
 
@@ -222,6 +225,7 @@ async function run() {
   {
     const journeyStore = freshRequire(JOURNEY_STORE_PATH);
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     const eds = freshRequire(EXPORT_DATA_SOURCE_PATH);
     const acw = freshRequire(ARTEFACT_COMMIT_WRITER_PATH);
 

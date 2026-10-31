@@ -2341,6 +2341,8 @@ audit:
 
 **Resolution:** Fixed via stis-s1 (PR #460, merged) — the git-commit call wrapped in a D37-style injectable adapter so tests stub it while production behaviour is fully preserved. See artefacts/2026-07-12-skill-turn-test-isolation/dod/stis-s1-dod.md.
 
+**Closure (2026-10-31, tfhc-s8):** This bug's root cause is now fully closed. stis-s1's own fix was scoped to 14 originally-estimated at-risk files calling `setSkillTurnGitCommitAdapter`; tfhc-s6's spike and tfhc-s8's own `/review` corrected that count to 13 real at-risk files (one of the original 14 did not actually need stubbing). All 13 of the corrected file set now stub `setSkillTurnGitCommitAdapter`, confirmed by `scripts/check-skill-turn-git-commit-stubbing.js` passing repo-wide with 0 of 41 calling files left unstubbed. See artefacts/2026-10-30-test-fixture-hardening-continuation/review/tfhc-s8-review-1.md (finding 1-M1) for the file-count correction.
+
 ---
 
 ## "Upstream feature reached DoD" is not sufficient evidence a downstream blocking assumption is resolved

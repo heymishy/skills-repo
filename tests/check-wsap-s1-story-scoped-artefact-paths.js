@@ -177,6 +177,7 @@ async function run() {
   console.log('\n  AC7 -- handlePostTurnStreamHtml: same per-story paths as the non-streaming handler');
   {
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       onFirstChunk(0);
       onChunk(FIXTURE_RESPONSE);

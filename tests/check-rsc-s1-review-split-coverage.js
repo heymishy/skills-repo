@@ -117,6 +117,7 @@ async function run() {
     const journey = journeyStore.createJourney('rsc-repro-feature');
     journeyStore.setStoryList(journey.journeyId, ['ep1-s1', 'ep1-s2']);
 
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       const resp = reviewResponseForStories(['ep1-s1']); // ep1-s2 missing from the model's own output
       onFirstChunk(0);
@@ -156,6 +157,7 @@ async function run() {
     const journey = journeyStore.createJourney('rsc-repro-feature-2');
     journeyStore.setStoryList(journey.journeyId, ['ep1-s1', 'ep1-s2']);
 
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       const resp = reviewResponseForStories(['ep1-s1', 'ep1-s2']);
       onFirstChunk(0);
@@ -190,6 +192,7 @@ async function run() {
     const journey = journeyStore.createJourney('rsc-repro-feature-3');
     // Deliberately never call setStoryList -- journey.storyList stays undefined.
 
+    routes.setSkillTurnGitCommitAdapter(function() {});
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       const resp = reviewResponseForStories(['ep1-s1']);
       onFirstChunk(0);

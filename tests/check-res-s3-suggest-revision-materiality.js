@@ -206,6 +206,7 @@ await (async function() {
   // overwrite completes, in the SAME turn's SSE response.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   var journeyStore = require('../src/web-ui/modules/journey-store');
   journeyStore._clear();
 
@@ -256,6 +257,7 @@ await (async function() {
   // key logged via PostHog, so res-s4 can join on it later.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   var journeyStore = require('../src/web-ui/modules/journey-store');
   journeyStore._clear();
 
@@ -302,6 +304,7 @@ await (async function() {
   // materiality event and must not break the existing turn/response flow.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes(); // fresh require -> hook resets to the D37 no-op default
+  routes.setSkillTurnGitCommitAdapter(function() {});
 
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
@@ -389,6 +392,7 @@ await (async function() {
   // from disk, not from session.artefactContent directly.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   var journeyStore = require('../src/web-ui/modules/journey-store');
   journeyStore._clear();
 

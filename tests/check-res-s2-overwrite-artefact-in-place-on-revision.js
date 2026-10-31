@@ -55,6 +55,7 @@ await (async function() {
   // AC4: a disk write failure surfaces an SSE error, not just a console log.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);
@@ -87,6 +88,7 @@ await (async function() {
   // before the write executes.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);
@@ -171,6 +173,7 @@ await (async function() {
   // write — if it were absent, the write would succeed.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);
@@ -222,6 +225,7 @@ await (async function() {
   var journeyStore = require('../src/web-ui/modules/journey-store');
   journeyStore._clear();
 
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);
@@ -268,6 +272,7 @@ await (async function() {
   var hookCalls = [];
   routes.setMaterialityCheckHook(function(payload) { hookCalls.push(payload); });
 
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);
@@ -322,6 +327,7 @@ await (async function() {
   var journeyStore = require('../src/web-ui/modules/journey-store');
   journeyStore._clear();
 
+  routes.setSkillTurnGitCommitAdapter(function() {});
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
     onFirstChunk(0);
     onChunk(ARTEFACT_RESPONSE);

@@ -272,6 +272,7 @@ queue.push(function runT3_2() {
     // session. Exercise that real path directly instead, matching the
     // pattern already established in check-sdrg-s1-session-done-reexecution-guard.js.
     const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
 
     let capturedHistory = null;
     let capturedInput = null;

@@ -144,6 +144,7 @@ async function run() {
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   {
     var skills = freshRequire(SKILLS_PATH);
+    skills.setSkillTurnGitCommitAdapter(function() {});
     var journey = freshRequire(JOURNEY_PATH);
     var store = getStore();
     store._clear();
