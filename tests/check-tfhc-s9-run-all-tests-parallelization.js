@@ -58,6 +58,47 @@ async function main() {
       `Expected all 3 failing files reported, got ${failedFiles.length}: ${JSON.stringify(failedFiles)}`);
   }
 
+  // ── AC2: peak concurrency never exceeds the configured limit ───────────
+  {
+    const T = 'AC2-peak-concurrency-never-exceeds-limit';
+    const logPath = makeTempLogPath();
+    process.env.TFHC_S9_LOG_PATH = logPath;
+    process.env.TFHC_S9_SLEEP_MS = '150';
+    const files = new Array(6).fill(fixture('tfhc-s9-sleep-marker.js'));
+    await runFilesConcurrently(files, { concurrency: 2 });
+    delete process.env.TFHC_S9_LOG_PATH;
+    delete process.env.TFHC_S9_SLEEP_MS;
+
+    const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
+    const events = lines.map(function(line) {
+      const parts = line.split(' ');
+      return { type: parts[0], ts: parseInt(parts[2], 10) };
+    }).sort(function(a, b) { return a.ts - b.ts; });
+
+    let current = 0;
+    let peak = 0;
+    events.forEach(function(e) {
+      if (e.type === 'START') { current++; if (current > peak) peak = current; }
+      else { current--; }
+    });
+
+    assert(T, peak <= 2, `Expected peak concurrency <= 2, measured peak=${peak}`);
+    assert(T + '-all-ran', lines.length === 12, `Expected 12 log lines (6 START + 6 END), got ${lines.length}`);
+  }
+
+  // ── AC3: reported elapsed time is real concurrent wall-clock, not serial sum ──
+  {
+    const T = 'AC3-real-concurrent-wallclock-not-serial-sum';
+    process.env.TFHC_S9_LOG_PATH = makeTempLogPath();
+    process.env.TFHC_S9_SLEEP_MS = '250';
+    const files = [fixture('tfhc-s9-sleep-marker.js'), fixture('tfhc-s9-sleep-marker.js')];
+    const { elapsedMs } = await runFilesConcurrently(files, { concurrency: 2 });
+    delete process.env.TFHC_S9_LOG_PATH;
+    delete process.env.TFHC_S9_SLEEP_MS;
+    assert(T, elapsedMs < 500, `Expected elapsedMs < 500 (below the ~500ms serial-sum floor for two 250ms runs), got ${elapsedMs}`);
+    assert(T + '-sanity-floor', elapsedMs >= 200, `Expected elapsedMs >= 200 (sanity floor, not a near-zero no-op), got ${elapsedMs}`);
+  }
+
   // ── Report ───────────────────────────────────────────────────────────────
   if (totalFailed > 0) {
     console.error(`[tfhc-s9-run-all-tests-parallelization] FAIL — ${issues.length} issue(s) found:`);
