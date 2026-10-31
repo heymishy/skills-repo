@@ -26,9 +26,11 @@ const path = require('path');
 const TESTS_DIR = path.resolve(__dirname, '..', 'tests');
 
 function scanForUnstubbedFiles() {
-  const files = fs.readdirSync(TESTS_DIR).filter(function(f) {
-    return f.endsWith('.js') && f.indexOf('check-') === 0;
-  });
+  const files = fs.readdirSync(TESTS_DIR, { withFileTypes: true })
+    .filter(function(entry) {
+      return entry.isFile() && entry.name.endsWith('.js') && entry.name.indexOf('check-') === 0;
+    })
+    .map(function(entry) { return entry.name; });
   const unstubbed = [];
   files.forEach(function(file) {
     const fullPath = path.join(TESTS_DIR, file);
@@ -37,7 +39,12 @@ function scanForUnstubbedFiles() {
     // comment-blind and produced a false positive on
     // check-isc-s1-ideate-success-lens-cycling.js, which only mentions
     // handlePostTurnStreamHtml inside comments, never in executable code.
-    const cleaned = content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    // The line-comment stripper is anchored to whole-line comments only
+    // (`^\s*\/\/`), not "// anywhere in the line" -- this avoids stripping
+    // a `//` that appears inside a string literal elsewhere on the same
+    // line (e.g. a URL like http://...), which would otherwise silently
+    // delete real code and risk a false negative on a future file.
+    const cleaned = content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     const callsHandler = cleaned.indexOf('handlePostTurnStreamHtml') !== -1;
     if (!callsHandler) return;
     const hasArtefactEnd = cleaned.indexOf('ARTEFACT-END') !== -1;
@@ -53,7 +60,13 @@ function scanForUnstubbedFiles() {
 module.exports = { scanForUnstubbedFiles: scanForUnstubbedFiles };
 
 if (require.main === module) {
-  const unstubbed = scanForUnstubbedFiles();
+  let unstubbed;
+  try {
+    unstubbed = scanForUnstubbedFiles();
+  } catch (err) {
+    console.error('check-skill-turn-git-commit-stubbing ERROR: ' + err.message);
+    process.exit(1);
+  }
   if (unstubbed.length === 0) {
     console.log('check-skill-turn-git-commit-stubbing PASS: 0 unstubbed files found');
     process.exit(0);
