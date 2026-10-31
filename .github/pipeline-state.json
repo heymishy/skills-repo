@@ -44719,8 +44719,8 @@
         }
       ],
       "traceStatus": "passed",
-      "traceReportPath": "artefacts/2026-10-30-test-fixture-hardening-continuation/trace/2026-10-31-trace.md",
-      "lastTracedAt": "2026-10-31"
+      "traceReportPath": "artefacts/2026-10-30-test-fixture-hardening-continuation/trace/2026-11-01-trace.md",
+      "lastTracedAt": "2026-11-01"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
