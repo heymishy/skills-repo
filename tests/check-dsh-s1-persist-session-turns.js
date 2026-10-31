@@ -160,6 +160,7 @@ async function main() {
     });
 
     var routes = freshRequirePath(ROUTES_PATH);
+    routes.setSkillTurnGitCommitAdapter(function() {});
     var FIXTURE = 'Understood.\n\n---ARTEFACT-START---\n# Discovery\n\nReal content.\n---ARTEFACT-END---\n---SLUG---\ndsh-s1-regression-slug';
     routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
       onFirstChunk(0);
