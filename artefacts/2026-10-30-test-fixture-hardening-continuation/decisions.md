@@ -136,3 +136,12 @@
 **Revisit trigger:** None — this story now proceeds through the standard pipeline (/review → /test-plan → /definition-of-ready → inner loop) like any other story in this epic.
 
 ---
+
+**2026-10-31 | RISK-ACCEPT | /review (tfhc-s9, finding 1-M1)**
+**Decision:** Acknowledge AC4's single-run 40% wall-clock-reduction threshold as a real flakiness risk, but do not rewrite the AC — instead, direct `/test-plan` to design AC4's own verification as a multi-run average (or the existing DoD-time timed-run approach m10's own benefit-metric entry already specifies) rather than a hard single-run CI-gating assertion.
+**Alternatives considered:** Rewrite AC4 now to remove the numeric threshold entirely; block /test-plan until a averaging mechanism is specified at story level.
+**Rationale:** This repo has already hit the identical flakiness shape once (`tests/check-pcr-s1-test-runner.js`, logged in `workspace/capture-log.md`) and the fix pattern (don't gate CI on a single noisy wall-clock run) is already established precedent, not a new design question — cheaper to resolve at `/test-plan`'s own verification-method design than to rework the story's AC wording now.
+**Made by:** Copilot (/review finding 1-M1)
+**Revisit trigger:** If `/test-plan`'s own AC4 test design still ends up as a brittle single-run assertion, that is itself evidence this guidance should have been a story-level AC rewrite instead — note for retrospective.
+
+---
