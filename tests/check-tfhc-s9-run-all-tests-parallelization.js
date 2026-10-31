@@ -16,7 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { runFilesConcurrently, runAll } = require('../scripts/run-all-tests.js');
+const { runFilesConcurrently, runAll, GRANDFATHER_LIST } = require('../scripts/run-all-tests.js');
 
 const fixturesDir = path.join(__dirname, 'fixtures');
 
@@ -97,6 +97,103 @@ async function main() {
     delete process.env.TFHC_S9_SLEEP_MS;
     assert(T, elapsedMs < 500, `Expected elapsedMs < 500 (below the ~500ms serial-sum floor for two 250ms runs), got ${elapsedMs}`);
     assert(T + '-sanity-floor', elapsedMs >= 200, `Expected elapsedMs >= 200 (sanity floor, not a near-zero no-op), got ${elapsedMs}`);
+  }
+
+  // ── AC5: each file's output stays contiguous, never interleaved ────────
+  {
+    const T = 'AC5-per-file-output-stays-contiguous';
+    process.env.TFHC_S9_LINE_COUNT = '5';
+    process.env.TFHC_S9_LINE_DELAY_MS = '15';
+    const files = [fixture('tfhc-s9-print-lines.js'), fixture('tfhc-s9-print-lines.js')];
+
+    const originalWrite = process.stdout.write;
+    const chunks = [];
+    process.stdout.write = function(chunk) { chunks.push(chunk.toString()); return true; };
+    try {
+      await runFilesConcurrently(files, { concurrency: 2 });
+    } finally {
+      process.stdout.write = originalWrite;
+    }
+    delete process.env.TFHC_S9_LINE_COUNT;
+    delete process.env.TFHC_S9_LINE_DELAY_MS;
+
+    const outputLines = chunks.join('').split('\n').filter(Boolean);
+    const labelOf = function(line) {
+      const m = line.match(/^(P\d+)-line-\d+$/);
+      return m ? m[1] : null;
+    };
+    const labelSequence = outputLines.map(labelOf).filter(Boolean);
+    const distinctLabels = Array.from(new Set(labelSequence));
+
+    assert(T + '-two-distinct-files-produced-output', distinctLabels.length === 2,
+      `Expected output from exactly 2 distinct child processes, found labels: ${JSON.stringify(distinctLabels)}`);
+
+    let contiguous = true;
+    let violation = null;
+    distinctLabels.forEach(function(label) {
+      const indices = [];
+      labelSequence.forEach(function(l, i) { if (l === label) indices.push(i); });
+      for (let k = 1; k < indices.length; k++) {
+        if (indices[k] !== indices[k - 1] + 1) { contiguous = false; violation = label; }
+      }
+    });
+    assert(T, contiguous,
+      `Expected each file's output to be one contiguous run; label ${violation}'s lines were interrupted. Full sequence: ${JSON.stringify(labelSequence)}`);
+  }
+
+  // ── AC6: a hung file is killed without blocking its siblings ───────────
+  {
+    const T = 'AC6-hung-file-killed-without-blocking-siblings';
+    const files = [fixture('tfhc-s9-hang.js'), fixture('tfhc-s9-pass-fast.js'), fixture('tfhc-s9-pass-fast.js')];
+    const { failedFiles, elapsedMs } = await runFilesConcurrently(files, { concurrency: 3, timeoutMs: 300 });
+    assert(T, failedFiles.length === 1 && failedFiles[0] === fixture('tfhc-s9-hang.js'),
+      `Expected only the hang file to fail, got ${JSON.stringify(failedFiles)}`);
+    assert(T + '-elapsed-not-blocked', elapsedMs < 1000,
+      `Expected elapsedMs < 1000 (close to the 300ms timeout, not blocked waiting on siblings), got ${elapsedMs}`);
+  }
+
+  // ── AC1 (integration): getAllTestFiles -> runFilesConcurrently seam ─────
+  // getAllTestFiles() unconditionally includes every GRANDFATHER_LIST path
+  // with no existence check (unlike the dynamic check-*.js glob) -- so this
+  // test's own fixture repo must contain stub versions of every
+  // GRANDFATHER_LIST path, or they show up as spurious MODULE_NOT_FOUND
+  // failures unrelated to the seam this test actually exercises.
+  {
+    const T = 'AC1-integration-seam-getAllTestFiles-to-runFilesConcurrently';
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tfhc-s9-repo-'));
+    GRANDFATHER_LIST.forEach(function(rel) {
+      const full = path.join(tempRoot, rel);
+      fs.mkdirSync(path.dirname(full), { recursive: true });
+      fs.writeFileSync(full, 'process.exit(0);\n');
+    });
+    const testsDir = path.join(tempRoot, 'tests');
+    fs.mkdirSync(testsDir, { recursive: true });
+    fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-a.js'), 'process.exit(0);\n');
+    fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-b.js'), 'process.exit(1);\n');
+    fs.writeFileSync(path.join(testsDir, 'check-tfhc-s9-fixture-c.js'), 'process.exit(0);\n');
+
+    const originalLog = console.log;
+    const logged = [];
+    console.log = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
+    const originalExitCode = process.exitCode;
+    process.exitCode = undefined;
+    try {
+      await runAll(tempRoot);
+    } finally {
+      console.log = originalLog;
+    }
+    const exitCodeAfter = process.exitCode;
+    process.exitCode = originalExitCode;
+
+    const summaryLine = logged.find(function(l) { return l.indexOf('[run-all-tests]') !== -1 && l.indexOf('file(s) run') !== -1; });
+    const expectedTotal = GRANDFATHER_LIST.length + 3;
+    assert(T + '-exit-code', exitCodeAfter === 1, `Expected exitCode 1 (one fixture fails), got ${exitCodeAfter}`);
+    assert(T + '-summary-counts', !!summaryLine && summaryLine.indexOf(expectedTotal + ' file(s) run, 1 failed') !== -1,
+      `Expected summary to report "${expectedTotal} file(s) run, 1 failed", got: ${summaryLine}`);
+    const failedLine = logged.find(function(l) { return l.indexOf('check-tfhc-s9-fixture-b.js') !== -1; });
+    assert(T + '-names-failed-file', !!failedLine, `Expected failed-file list to name check-tfhc-s9-fixture-b.js, got lines: ${JSON.stringify(logged)}`);
+
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   }
 
   // ── Report ───────────────────────────────────────────────────────────────
