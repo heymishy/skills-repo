@@ -44725,9 +44725,9 @@
     {
       "slug": "2026-11-01-fixture-hardening-fast-follows",
       "name": "Fixture Hardening Fast-Follows",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-11-01T01:25:28.704Z",
+      "updatedAt": "2026-11-01T01:34:29.321Z",
       "discoveryStatus": "clarified",
       "regulated": false,
       "complianceProfile": "standard",
@@ -44742,7 +44742,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s1"
+          ]
         },
         {
           "id": "m2",
@@ -44752,7 +44754,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s1"
+          ]
         },
         {
           "id": "m3",
@@ -44762,7 +44766,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s3"
+          ]
         },
         {
           "id": "m4",
@@ -44772,7 +44778,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s3"
+          ]
         },
         {
           "id": "m5",
@@ -44782,7 +44790,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s3"
+          ]
         },
         {
           "id": "m6",
@@ -44792,12 +44802,41 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "fhff-s2"
+          ]
         }
       ],
-      "epics": [],
+      "epics": [
+        {
+          "slug": "test-infra-fast-follow-batch",
+          "name": "The test suite runs faster and more reliably, and the remaining fixture-divergence risk is closed",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "fhff-s1",
+              "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "fhff-s2",
+              "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "fhff-s3",
+              "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "guardrails": [],
-      "track": "standard"
+      "track": "standard",
+      "slicingStrategy": "risk-first"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

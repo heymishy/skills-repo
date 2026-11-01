@@ -91,12 +91,12 @@ Tier 3 (compliance/risk-reduction) does not apply — this feature is test-tooli
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| `run-all-tests.js` concurrency cap (m1) | NFR-budget sweep story | Covered |
-| Real CI `Unit test chain` step duration (m2) | NFR-budget sweep story | Covered |
-| `journeys.js` shared-fixture adoption (m3) | Mechanical fixture/DRY batch story | Covered |
-| `products.js` shared-fixture adoption (m4) | Mechanical fixture/DRY batch story | Covered |
-| Fixture-usage-check script count (m5) | Mechanical fixture/DRY batch story | Covered |
-| CI `deploy-group` cancellation incidence (m6) | CI concurrency-cancellation fix story | Covered |
+| `run-all-tests.js` concurrency cap (m1) | fhff-s1 | Covered |
+| Real CI `Unit test chain` step duration (m2) | fhff-s1 | Covered |
+| `journeys.js` shared-fixture adoption (m3) | fhff-s3 | Covered |
+| `products.js` shared-fixture adoption (m4) | fhff-s3 | Covered |
+| Fixture-usage-check script count (m5) | fhff-s3 | Covered |
+| CI `deploy-group` cancellation incidence (m6) | fhff-s2 | Covered |
 
 ---
 
