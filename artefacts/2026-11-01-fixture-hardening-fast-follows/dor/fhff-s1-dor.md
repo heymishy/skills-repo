@@ -79,9 +79,10 @@ Constraints:
 - Do not add a CLI flag or environment variable to make concurrency
   operator-configurable.
 - Do not modify any .github/workflows/*.yml file.
-- Do not fix any file beyond the 3 named (rb-s3, cat-s4, cat-s1)
-  without first logging a decision — if the sweep finds more fragile
-  files, stop and add a PR comment describing the finding.
+- Do not fix any file beyond the 4 named (rb-s3, cat-s4, cat-s1,
+  bri-s2.2) without first logging a decision — if the sweep finds
+  more fragile files, stop and add a PR comment describing the
+  finding.
 - If fixing one of the 3 files would require a threshold wide enough
   that it would never meaningfully fail, do not force it through —
   defer that specific file's fix and log it in decisions.md (AC5).

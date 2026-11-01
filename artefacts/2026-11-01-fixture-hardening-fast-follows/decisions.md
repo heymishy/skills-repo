@@ -54,3 +54,12 @@
 **Revisit trigger:** If any script's described behaviour turns out to be wrong once implemented, that is itself evidence this warning should have been resolved pre-code — note for retrospective, not an immediate action.
 
 ---
+
+**2026-11-01 | SCOPE | /branch-setup (fhff-s1)**
+**Decision:** Fold `tests/check-bri-s2.2-neon-staging-branch.js` into `fhff-s1`'s own scope as a 4th fragile file to sweep, alongside `rb-s3`/`cat-s4`/`cat-s1`. Story, test plan, and DoR Coding Agent Instructions all updated to name 4 files instead of 3.
+**Alternatives considered:** Treat it as unrelated baseline noise and proceed past `/branch-setup`'s acknowledgment gate without expanding scope.
+**Rationale:** `fhff-s1`'s own baseline check (full-suite run in the `feature/fhff-s1` worktree) surfaced this file failing for the first time this session. Direct investigation confirmed: (1) it passes cleanly standalone (5/5, `node tests/check-bri-s2.2-neon-staging-branch.js`), failing only under full-suite concurrent load — the identical diagnostic signature already established for `rb-s3`/`cat-s4`/`cat-s1`; (2) the real mechanism is `IT2`'s mocked-never-resolving `waitForDbReady` call asserting its `DbConnectTimeoutError` rejection fires within an upper-bound window (`elapsed < 1000ms` against a 300ms configured timeout) — under real CPU contention, Node's `setTimeout` callbacks can fire late (event-loop lag), which is the same underlying contention-sensitivity category as the other 3 files, just manifesting as a timer-firing-late bug rather than a raw synchronous-walk-duration bug. This is a direct, evidenced materialisation of the risk already named and accepted in `discovery.md`'s own Assumptions and Risks section ("no additional fragile files will surface" — carried forward as a named, accepted risk, not resolved). Treating a materialised, named risk as noise rather than in-scope evidence would contradict this session's own "verify before trusting, log every real finding" discipline.
+**Made by:** Copilot (`/branch-setup` baseline investigation, operator-confirmed via "1" → investigate further → "Yes" to fold in)
+**Revisit trigger:** If a 5th previously-unseen file surfaces during this story's own implementation, repeat this same decision process rather than silently absorbing it.
+
+---

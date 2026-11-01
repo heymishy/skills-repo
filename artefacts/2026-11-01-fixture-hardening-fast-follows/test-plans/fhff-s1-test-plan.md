@@ -17,13 +17,15 @@
 
 Investigated directly during test-plan writing: `check-cat-s1-core-trace-builder.js` and `check-cat-s4-features-page-integration.js` both measure a real, in-process, synchronous filesystem walk over the real 205-file `phase4-scale` directory via `buildArtefactTrace` — no subprocess spawn, pure CPU-scheduling sensitivity. `check-rb-s3-harness-agnostic-instructions.js` spawns a real subprocess (`runAssembly`) plus `checkDrift()` against a 2000ms budget. All 3 are sensitive to *real* contention from *real* sibling processes under the *real* full-suite discovery — a synthetic mini-batch of mock CPU-load fixtures would not genuinely reproduce the actual production scenario these NFRs are measuring, and this repo already has a standing precedent (`tfhc-s9`'s own AC4) for treating a true full-scale wall-clock claim as a manual, real-environment verification rather than a synthetic unit test. Only AC2 (the cap *value* itself) is honestly unit-testable without faking the thing under test.
 
+**Added after `/branch-setup`'s own baseline check (2026-11-01):** a 4th fragile file, `tests/check-bri-s2.2-neon-staging-branch.js`, surfaced as a new (not previously seen in this epic's history) full-suite-only failure during `fhff-s1`'s own worktree baseline run — confirmed passing standalone (5/5) and failing only under concurrent load, the same diagnostic signature as the other 3. Its mechanism differs slightly: `IT2` asserts a mocked-never-resolving `waitForDbReady` call rejects within an upper-bound window (`elapsed < 1000ms` after a 300ms configured timeout) — under real CPU contention, Node's own `setTimeout` callback can fire late (event-loop lag), pushing the rejection past the upper bound. This is the same underlying contention-sensitivity category as the other 3, just manifesting as a timer-firing-late bug rather than a raw walk-duration bug. Folded into this story's scope rather than treated as unrelated baseline noise, per the discovery/decisions.md's own already-accepted "more fragile files may surface" risk.
+
 ---
 
 ## AC Coverage
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | Each of the 3 fragile files passes consistently across 5+ real full-suite runs at the new cap | — | — | — | 1 scenario | External-dependency | 🔴 |
+| AC1 | Each of the 4 fragile files passes consistently across 5+ real full-suite runs at the new cap | — | — | — | 1 scenario | External-dependency | 🔴 |
 | AC2 | Production concurrency cap re-tuned upward, replacing the old formula | 1 test | — | — | — | — | 🟢 |
 | AC3 | No unrelated file shows a new/different failure at the new cap | — | — | — | 1 scenario | External-dependency | 🔴 |
 | AC4 | Real CI `Unit test chain` step duration measurably reduces below 124s | — | — | — | 1 scenario | External-dependency | 🔴 |
@@ -51,7 +53,7 @@ Investigated directly during test-plan writing: `check-cat-s1-core-trace-builder
 
 | AC | Data needed | Source | Sensitive fields | Notes |
 |----|-------------|--------|-----------------|-------|
-| AC1 | The real `rb-s3`/`cat-s4`/`cat-s1` files, run for real, repeatedly | Real repo files | None | Manual, not synthetic — see Honest scoping note above |
+| AC1 | The real `rb-s3`/`cat-s4`/`cat-s1`/`bri-s2.2` files, run for real, repeatedly | Real repo files | None | Manual, not synthetic — see Honest scoping note above |
 | AC2 | The production module's own exported concurrency-cap value | `scripts/run-all-tests.js` | None | Direct code read |
 | AC3, AC4 | The real full discovered file set | Real repo | None | Manual, same as AC1 |
 | AC5 | `decisions.md` for this story, if triggered | Real artefact | None | Manual, conditional |
@@ -110,7 +112,7 @@ No audit-relevant surface. No NFR test written.
 ## Out of Scope for This Test Plan
 
 - Testing a synthetic/mocked reproduction of the real contention scenario — deliberately rejected, see Honest scoping note above; it would test a different, easier problem than the one AC1/AC3/AC4 actually claim.
-- Any test of `rb-s3`/`cat-s4`/`cat-s1`'s own unrelated assertions (the 25+ other tests in each of those files) — out of scope per the story's own Out of Scope section.
+- Any test of `rb-s3`/`cat-s4`/`cat-s1`/`bri-s2.2`'s own unrelated assertions (the other tests in each of those files, including `bri-s2.2`'s own `T1`/`T2`/`NFR2` static-analysis guards) — out of scope per the story's own Out of Scope section.
 
 ---
 
