@@ -19,16 +19,16 @@
 
 ## Scenarios
 
-### Scenario 1: The 3 known flaky files now pass reliably, every time
+### Scenario 1: The 4 known flaky files now pass reliably, every time
 
 **Covers:** AC1
 
 **Steps:**
 1. Run `npm test` 5 times in a row.
-2. Each time, check whether `check-rb-s3-harness-agnostic-instructions.js`, `check-cat-s4-features-page-integration.js`, or `check-cat-s1-core-trace-builder.js` appear in the failed-files list.
+2. Each time, check whether `check-rb-s3-harness-agnostic-instructions.js`, `check-cat-s4-features-page-integration.js`, `check-cat-s1-core-trace-builder.js`, or `check-bri-s2.2-neon-staging-branch.js` appear in the failed-files list.
 
 **Expected outcome:**
-> None of those 3 files appear as failed in any of the 5 runs.
+> None of those 4 files appear as failed in any of the 5 runs.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -93,7 +93,7 @@
 2. Check whether any entry says a file's fix was deferred because a safe widen wasn't possible.
 
 **Expected outcome:**
-> If no such entry exists, that's fine — it means none of the 3 files needed this. If one does exist, it should clearly name which file and why a wider threshold wasn't a safe option.
+> If no such entry exists, that's fine — it means none of the 4 files needed this. If one does exist, it should clearly name which file and why a wider threshold wasn't a safe option.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
