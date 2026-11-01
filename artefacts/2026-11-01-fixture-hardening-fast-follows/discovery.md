@@ -1,8 +1,8 @@
 # Discovery: Fixture Hardening Fast-Follows
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-11-01
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-11-01
 **Author:** Copilot
 
 ---
@@ -87,7 +87,7 @@ One assumption remains explicitly carried forward as an accepted, named risk rat
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-11-01
 
 ---
 

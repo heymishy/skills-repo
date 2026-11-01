@@ -44725,15 +44725,76 @@
     {
       "slug": "2026-11-01-fixture-hardening-fast-follows",
       "name": "Fixture Hardening Fast-Follows",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-01T01:02:24.867Z",
+      "updatedAt": "2026-11-01T01:25:28.704Z",
       "discoveryStatus": "clarified",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "metrics": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "run-all-tests.js concurrency cap",
+          "target": ">3 (ideally cpus().length - 1 or higher)",
+          "baseline": "3 on the 8-core reference machine",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Real CI Unit test chain step duration",
+          "target": "further reduction below 124s",
+          "baseline": "124s (PR #1048)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "journeys.js shared-fixture adoption",
+          "target": "6-9 of 31",
+          "baseline": "1 of 31",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "products.js shared-fixture adoption",
+          "target": "1 migrated as proof-of-pattern",
+          "baseline": "0 of N",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Fixture-usage-check script count",
+          "target": "1 shared factory + 3 thin call sites",
+          "baseline": "3 near-duplicate scripts",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m6",
+          "name": "CI deploy-group cancellation incidence",
+          "target": "0, or auto-recovered",
+          "baseline": "observed 3+ times (tfhc-s7/s8/s9)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
       "epics": [],
       "guardrails": [],
       "track": "standard"
