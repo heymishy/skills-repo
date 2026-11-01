@@ -44811,16 +44811,16 @@
         {
           "slug": "test-infra-fast-follow-batch",
           "name": "The test suite runs faster and more reliably, and the remaining fixture-divergence risk is closed",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T02:41:15.435Z",
+              "updatedAt": "2026-11-01T04:00:20.991Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 1,
@@ -44831,7 +44831,27 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extract getPoolConcurrency() as a behaviour-preserving refactor",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Investigate and fix the 4 fragile files (AC1, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Re-tune the production cap and close out AC1/AC2/AC3",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "fhff-s2",
