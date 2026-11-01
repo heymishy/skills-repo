@@ -44721,6 +44721,22 @@
       "traceStatus": "passed",
       "traceReportPath": "artefacts/2026-10-30-test-fixture-hardening-continuation/trace/2026-11-01-trace.md",
       "lastTracedAt": "2026-11-01"
+    },
+    {
+      "slug": "2026-11-01-fixture-hardening-fast-follows",
+      "name": "Fixture Hardening Fast-Follows",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-11-01T01:02:24.867Z",
+      "discoveryStatus": "clarified",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "metrics": [],
+      "epics": [],
+      "guardrails": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
