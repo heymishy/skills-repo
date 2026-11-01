@@ -44816,29 +44816,59 @@
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:44:33.839Z"
+              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 1,
+                "passing": 0,
+                "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s1-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:44:33.839Z"
+              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 0,
+                "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s2-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:44:33.839Z"
+              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s3-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }

@@ -36,3 +36,12 @@
 **Revisit trigger:** If the actual investigation finds all 3 files genuinely only need a threshold widen, this sizing decision was more conservative than strictly necessary — note for retrospective, not a defect.
 
 ---
+
+**2026-11-01 | SCOPE | /test-plan (fhff-s3)**
+**Decision:** `fhff-s3`'s AC4 now explicitly requires creating a dedicated regression-fixture/mutation-test pair for `check-skills-fixture-usage.js` (a hand-rolled case + a compliant case), not just preserving existing coverage for all 3 scripts.
+**Alternatives considered:** Leave AC4 as originally written (preserve existing regression fixtures only) and log the `check-skills-fixture-usage.js` coverage gap as a separate, future finding.
+**Rationale:** Direct search during `/test-plan` writing confirmed `check-skills-fixture-usage.js` has no dedicated regression-fixture/mutation-test pair today — unlike `check-journey-fixture-usage.js` (`tsir-s3`) and `check-journeys-fixture-usage.js` (`tfhc-s7`), both of which do. Since this story is already building the shared factory that all 3 scripts will call through, adding the missing coverage for the one sibling that lacks it is directly in scope (not an unrelated expansion) and makes AC4/AC5's own "the refactor is safe" claim actually true across all 3 shapes, not 2 of 3. Deferring it would mean shipping a DRY refactor with real, known-asymmetric safety coverage.
+**Made by:** Copilot (/test-plan, direct search)
+**Revisit trigger:** None — this is a direct strengthening, not a trade-off requiring future reconsideration.
+
+---
