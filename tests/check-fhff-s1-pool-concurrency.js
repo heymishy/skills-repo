@@ -28,16 +28,20 @@ function assertCheck(label, condition, message) {
   if (condition) { ok(); } else { fail(label, message); }
 }
 
-// -- Task 1: extraction is behaviour-preserving (same value as today's
-// inline formula). This is NOT yet AC2's final "higher than before" claim
-// -- that assertion replaces this one in Task 3, once the cap is actually
-// re-tuned using Task 2's real evidence. ----------------------------------
+// -- Task 3: AC2 (unit) -- the concurrency cap is confirmed, by fhff-s1's
+// own 16-run empirical investigation (see decisions.md), to already be
+// stable at its current, unchanged value. No concurrency above this value
+// was found stable (rb-s3 fails 100% of the time above 3, and raising the
+// cap at all would also require fixing tfhc-s9's own test file, which is
+// out of scope) -- so the cap intentionally stays unchanged. ---------------
 {
-  const T = 'extraction-is-behaviour-preserving';
+  const T = 'AC2-concurrency-cap-confirmed-stable-at-current-value';
   const oldFormulaValue = Math.max(1, Math.ceil(os.cpus().length / 3));
   const newCap = getPoolConcurrency();
   assertCheck(T, newCap === oldFormulaValue,
-    `Expected getPoolConcurrency() to return the same value as the pre-extraction formula (${oldFormulaValue}) until Task 3 re-tunes it, got ${newCap}`);
+    `Expected getPoolConcurrency() (${newCap}) to equal the formula's value (${oldFormulaValue}) -- fhff-s1's own 16-run investigation (see decisions.md) found no concurrency above this stable without also breaking tfhc-s9's own test file, so the cap intentionally stays unchanged`);
+  assertCheck(T + '-sanity-ceiling', newCap <= os.cpus().length,
+    `Expected getPoolConcurrency() (${newCap}) to never exceed the real core count (${os.cpus().length})`);
 }
 
 if (totalFailed > 0) {
