@@ -44816,20 +44816,29 @@
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-11-01T01:44:33.839Z"
             },
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-11-01T01:44:33.839Z"
             },
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-11-01T01:44:33.839Z"
             }
           ]
         }

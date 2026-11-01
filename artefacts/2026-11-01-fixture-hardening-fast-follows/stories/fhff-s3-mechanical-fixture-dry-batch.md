@@ -35,7 +35,7 @@ None identified — checked against `.github/architecture-guardrails.md`. Same f
 
 **AC4:** Given the 3 existing fixture-usage-check scripts (`check-journey-fixture-usage.js`, `check-skills-fixture-usage.js`, `check-journeys-fixture-usage.js`), When they are rewritten to call one new shared factory (`scripts/lib/make-fixture-usage-check.js`), Then all 3 scripts' own existing regression fixtures (including `tfhc-s7`'s own windowed-match-fix fixtures) produce identical pass/fail verdicts to before the refactor.
 
-**AC5:** Given the shared factory replaces 3 independent implementations, When it is built, Then it retains both known correctness fixes already present in the individual scripts (the comment-blindness fix from the skill-turn-git-commit-stubbing lineage's own precedent, and the nested-brace windowed-match fix from `tfhc-s7`) — confirmed by the same dedicated regression fixtures that originally caught each bug still passing against the shared factory.
+**AC5:** Given the shared factory replaces 3 independent implementations, When it is built, Then it retains the one known correctness fix already present in `check-journeys-fixture-usage.js` (the nested-brace windowed-match fix from `tfhc-s7` — a 300-character bounded window after a session declaration, confirmed present via `AD_HOC_SESSION_WINDOW` in the current script) — verified by the same dedicated regression fixture that originally caught this bug (`tests/fixtures/tfhc-s7-hand-rolled-mockreq-session-not-first.js`) still passing against the shared factory.
 
 ## Out of Scope
 
