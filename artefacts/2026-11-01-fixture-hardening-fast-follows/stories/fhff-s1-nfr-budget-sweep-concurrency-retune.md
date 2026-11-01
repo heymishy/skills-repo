@@ -29,7 +29,7 @@ None identified — checked against `.github/architecture-guardrails.md`. No app
 
 **AC1:** Given each of the 4 known fragile files (`rb-s3`, `cat-s4`, `cat-s1`, `bri-s2.2`), When its own wall-clock NFR assertion is investigated and fixed (a threshold widen only if genuinely justified by real contended-run-time evidence gathered during this story, or a redesign if a widen would mean "never fails"), Then each file passes consistently (0 failures) across at least 5 repeated full-suite runs at the story's own new, higher concurrency cap.
 
-> **Resolution (2026-11-01, Task 2 investigation — see decisions.md):** All 4 files were genuinely investigated across 16 real full-suite runs at concurrency 4–8. `cat-s4` and `bri-s2.2` needed no fix (never failed at any tested level). `rb-s3` and `cat-s1` were deferred via AC5 below — `rb-s3` fails 100% of the time at every concurrency above 3 with no narrow safe-widen window, and fixing it alone would not be sufficient since `tfhc-s9`'s own test file also breaks above concurrency 3 (out of this story's scope). AC1's "new, higher concurrency cap" premise did not hold — see AC2's resolution.
+> **Resolution (2026-11-01, Task 2 investigation — see decisions.md):** All 4 files were genuinely investigated across 16 real full-suite runs (14 at concurrency 4–8, plus 2 comparison runs at the current concurrency 3). `cat-s4` and `bri-s2.2` needed no fix (never failed at any tested level). `rb-s3` and `cat-s1` were deferred via AC5 below — `rb-s3` fails 100% of the time at every concurrency above 3 with no narrow safe-widen window, and fixing it alone would not be sufficient since `tfhc-s9`'s own test file also breaks above concurrency 3 (out of this story's scope). AC1's "new, higher concurrency cap" premise did not hold — see AC2's resolution.
 
 **AC2:** Given AC1's own findings, When the production concurrency cap in `run-all-tests.js` is re-tuned, Then it is set to the highest value empirically confirmed stable across those repeated runs, replacing the current `Math.max(1, Math.ceil(os.cpus().length / 3))`.
 
@@ -57,6 +57,8 @@ None identified — checked against `.github/architecture-guardrails.md`. No app
 ## NFRs
 
 - **Performance:** Real CI `Unit test chain` step duration measurably reduces below the confirmed 124s baseline (m2); the production concurrency cap (m1) increases above the current value of 3, confirmed stable across repeated local runs.
+
+> **Resolution (2026-11-01 — see AC1/AC2/AC4's own resolution notes above and decisions.md):** Neither half of this NFR held after the real investigation. The cap stays at 3 (no safe increase found); CI duration is therefore expected to stay flat, not reduce. Both are logged as honest negative results, not silently dropped.
 - **Security:** None identified — no new production code path, test-tooling/CI-measurement-only.
 - **Accessibility:** N/A — no UI.
 - **Audit:** N/A — no audit-relevant surface.

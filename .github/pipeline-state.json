@@ -44820,11 +44820,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T05:33:50.786Z",
+              "updatedAt": "2026-11-01T05:58:52.012Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 1,
-                "passing": 1,
+                "totalTests": 2,
+                "passing": 2,
                 "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s1-test-plan.md"
               },
               "acTotal": 5,
@@ -44847,8 +44847,8 @@
                 },
                 {
                   "id": "task-3",
-                  "name": "Re-tune the production cap and close out AC1/AC2/AC3",
-                  "tddState": "not-started",
+                  "name": "Confirm the cap stays at its current, empirically-optimal value (AC1/AC2/AC3)",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
                 }
               ]
