@@ -63,3 +63,26 @@
 **Revisit trigger:** If a 5th previously-unseen file surfaces during this story's own implementation, repeat this same decision process rather than silently absorbing it.
 
 ---
+
+**2026-11-01 | RISK-ACCEPT | /subagent-execution (fhff-s1, Task 2)**
+**Decision:** Defer fixing `tests/check-rb-s3-harness-agnostic-instructions.js`'s 2000ms wall-clock budget — no safe widen was found. The production concurrency cap stays at its current value (3 on the 8-core reference machine), unchanged from `tfhc-s9`.
+**Rationale:** 16 real full-suite runs (3 each at concurrency 8/7/5/4, 2 at the current 3) showed `rb-s3` failing 100% of the time at every tested concurrency above 3 (measured 2023ms–3620ms against the 2000ms budget) — there is no narrow "slightly too tight" window to widen into; the file is already maximally tight at the current cap. Reaching even one step up (concurrency 4) would require widening the budget to roughly 3369ms (`ceil(max observed × 1.5)`), and reaching higher values would require 5000ms+. Separately, and more decisively: at concurrency 4 and above, a file NOT named in this story — `tests/check-tfhc-s9-run-all-tests-parallelization.js`'s own AC3 (`elapsedMs < 500`) and AC6 (`offset < 450ms`) real wall-clock assertions — also starts failing from the same contention (intermittently at c4/c5, consistently at c7/c8). Fixing `rb-s3` alone would not be sufficient to raise the cap; that fix would also require touching `tfhc-s9`'s own test file, which is explicitly out of this story's scope (`fhff-s1`'s Out of Scope: "Touching any file other than the 4 named NFR-budget files and `scripts/run-all-tests.js` itself"). Per the operator's own direction (2026-11-01, "what do you suggest" → recommended option confirmed), the conservative path is taken: keep the cap at 3, defer `rb-s3`'s fix, and report the cap-increase goal as genuinely not achievable within this story's scope — an honest negative result, not a failure of the investigation. `m1`/`m2` (benefit-metric.md) will report "no safe increase found" rather than a numeric improvement.
+**Made by:** Copilot (AC5, operator-confirmed)
+**Revisit trigger:** If a future story brings `tfhc-s9`'s own timing-sensitive assertions into scope alongside a fresh `rb-s3` investigation, revisit with that combined evidence.
+
+---
+
+**2026-11-01 | RISK-ACCEPT | /subagent-execution (fhff-s1, Task 2)**
+**Decision:** Defer fixing `tests/check-cat-s1-core-trace-builder.js`'s 50ms wall-clock budget — no safe widen was found independent of the `rb-s3`/cap decision above.
+**Rationale:** Across the same 16 runs, `cat-s1` failed intermittently and with bounded values (roughly 40ms–107ms against the 50ms budget) — a real widen (e.g. to ~120–160ms) would likely be achievable in isolation, but since the cap itself is not being raised (per the `rb-s3`/`tfhc-s9` finding above), there is no concurrency level at which `cat-s1` would actually need this widen in production — `cat-s1` only flakes above concurrency 3, and the cap is staying at 3. Widening its threshold now, with no concurrency change to justify it, would loosen a real regression-detection budget for no benefit. Deferred as a no-op given the cap decision, not because a safe widen couldn't be found in isolation.
+**Made by:** Copilot (AC5, operator-confirmed)
+**Revisit trigger:** Revisit alongside `rb-s3` if a future story raises the cap.
+
+---
+
+**2026-11-01 | SCOPE | /subagent-execution (fhff-s1, Task 2)**
+**Decision:** `tests/check-cat-s4-features-page-integration.js` and `tests/check-bri-s2.2-neon-staging-branch.js` need no fix at all — both passed every one of the 16 real full-suite runs across concurrency 3–8, including the levels ultimately rejected above. Confirms the earlier `/branch-setup` finding that folded `bri-s2.2` into this story's scope was the right call (real investigation, not assumption) while also showing not every named file in that fold necessarily needs code changes.
+**Made by:** Copilot (AC1 investigation)
+**Revisit trigger:** None — this is a closed finding, not a carried-forward risk.
+
+---

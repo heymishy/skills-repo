@@ -29,13 +29,23 @@ None identified — checked against `.github/architecture-guardrails.md`. No app
 
 **AC1:** Given each of the 4 known fragile files (`rb-s3`, `cat-s4`, `cat-s1`, `bri-s2.2`), When its own wall-clock NFR assertion is investigated and fixed (a threshold widen only if genuinely justified by real contended-run-time evidence gathered during this story, or a redesign if a widen would mean "never fails"), Then each file passes consistently (0 failures) across at least 5 repeated full-suite runs at the story's own new, higher concurrency cap.
 
+> **Resolution (2026-11-01, Task 2 investigation — see decisions.md):** All 4 files were genuinely investigated across 16 real full-suite runs at concurrency 4–8. `cat-s4` and `bri-s2.2` needed no fix (never failed at any tested level). `rb-s3` and `cat-s1` were deferred via AC5 below — `rb-s3` fails 100% of the time at every concurrency above 3 with no narrow safe-widen window, and fixing it alone would not be sufficient since `tfhc-s9`'s own test file also breaks above concurrency 3 (out of this story's scope). AC1's "new, higher concurrency cap" premise did not hold — see AC2's resolution.
+
 **AC2:** Given AC1's own findings, When the production concurrency cap in `run-all-tests.js` is re-tuned, Then it is set to the highest value empirically confirmed stable across those repeated runs, replacing the current `Math.max(1, Math.ceil(os.cpus().length / 3))`.
+
+> **Resolution (2026-11-01, Task 2 investigation — see decisions.md):** The highest value empirically confirmed stable across the repeated runs is the current value itself (3 on the 8-core reference machine) — no concurrency above 3 was stable without also breaking `tfhc-s9`'s own test file. AC2 is satisfied as a genuine empirical confirmation that 3 is already optimal, not by a numeric increase. `getPoolConcurrency()`'s return value is unchanged from Task 1's extraction. `m1`/`m2` (benefit-metric.md) report "no safe increase found" as the real, honest outcome of this story's investigation.
 
 **AC3:** Given the new cap, When the full local suite is run at least 3 times, Then no file other than the already-known, already-accepted residual-risk category (a file that passes standalone but occasionally flakes under load) shows a new or different failure.
 
+> **Resolution (2026-11-01 — see decisions.md):** Trivially satisfied — since AC2's resolution keeps the cap unchanged at 3, there is no new cap to introduce a new failure. Confirmed by Task 1's own full-suite run (818 files, 4 known failures, no new ones) and Task 2's 2 comparison runs at the current concurrency 3.
+
 **AC4:** Given the new cap is merged, When the real CI `Unit test chain` step duration is measured on this story's own PR (same `gh api repos/heymishy/skills-repo/actions/jobs/<id>` technique already proven at `tfhc-s9`'s own DoD), Then it shows a measurable reduction below the confirmed 124s baseline.
 
+> **Resolution (2026-11-01 — see decisions.md):** AC4's premise does not hold given AC2's resolution — with no cap change, there is no mechanism by which real CI duration would measurably reduce. AC4 is NOT met as originally written. This is logged as a genuine negative result (same honesty standard as AC1/AC2's own resolutions), not silently dropped: `m2` (benefit-metric.md) will report "no change — cap-increase premise did not hold" rather than a reduction. The real CI measurement step itself (Task 3/DoD) is still worth running once, to confirm duration stays flat (not regressed) rather than to show an improvement.
+
 **AC5:** Given the sweep finds that fixing one of the 4 files would require widening its threshold enough that it would never meaningfully fail (not a real NFR anymore), When this is found, Then that specific file's fix is deferred as a named follow-up and logged in `decisions.md` rather than merged with an unsafe, meaningless threshold.
+
+> **Resolution (2026-11-01, Task 2 investigation — see decisions.md):** Triggered for both `rb-s3` (no safe widen exists at any tested concurrency) and `cat-s1` (a safe widen exists in isolation, but is a no-op since the cap isn't moving). Both logged as RISK-ACCEPT entries in `decisions.md`.
 
 ## Out of Scope
 

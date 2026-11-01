@@ -42,13 +42,15 @@ All 4 pass standalone; all 4 are sensitive to real sibling-process CPU contentio
 
 ## Task 1: Extract `getPoolConcurrency()` as a behaviour-preserving refactor
 
+**Status: COMPLETE** — spec compliance ✅, code quality ✅ (1 Minor, no fix required: `assertCheck` vs. the sibling convention's `assert` helper name — cosmetic only). Ending SHA: `8e9516ffd7d6ef67dfccd9e7af6c96d3a9a71d11`.
+
 **Goal:** Make the production concurrency value independently callable/testable (per `.github/standards/testing/test-design-patterns.md`'s "a whole-file source-text regex is vacuous" rule, already injected into this story's DoR) *without yet changing its value* — that happens in Task 3, once Task 2's evidence justifies a specific number.
 
 **Files:**
 - Create: `tests/check-fhff-s1-pool-concurrency.js`
 - Modify: `scripts/run-all-tests.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-fhff-s1-pool-concurrency.js`:
 
@@ -104,7 +106,7 @@ if (totalFailed > 0) {
 }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-fhff-s1-pool-concurrency.js
@@ -112,7 +114,7 @@ node tests/check-fhff-s1-pool-concurrency.js
 
 Expected output: `TypeError: getPoolConcurrency is not a function` (the export doesn't exist yet).
 
-- [ ] **Step 3: Extract the function in `scripts/run-all-tests.js`**
+- [x] **Step 3: Extract the function in `scripts/run-all-tests.js`**
 
 Add this function near the top-level helpers (same section as `GRANDFATHER_LIST`/`SEQUENTIAL_EXCLUSIVE_LIST`, before `runAll`):
 
@@ -159,7 +161,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-fhff-s1-pool-concurrency.js
@@ -167,7 +169,7 @@ node tests/check-fhff-s1-pool-concurrency.js
 
 Expected output: `[fhff-s1-pool-concurrency] 1 check(s) OK ✓`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -175,7 +177,7 @@ npm test
 
 Expected output: same file count as this story's own `/branch-setup` baseline (+1 for the new test file), and only the known baseline failures — `scripts/check-pipeline-state-integrity.js` ([C3]), `tests/check-pcr-s1-test-runner.js` (N1 flake), `tests/check-p3.5-validate-trace.js` (stray-artefact flake), plus the 4 files this story exists to fix (`rb-s3`, `cat-s4`, `cat-s1`, `bri-s2.2` — still expected to fail intermittently at this point, since the cap hasn't changed yet and no fix has been applied). No *other* new or different failure.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/run-all-tests.js tests/check-fhff-s1-pool-concurrency.js
@@ -185,6 +187,8 @@ git commit -m "refactor: extract getPoolConcurrency() from run-all-tests.js's in
 ---
 
 ## Task 2: Investigate and fix the 4 fragile files (AC1, AC5)
+
+**Status: COMPLETE (investigation, no code change)** — 16 real full-suite runs at concurrency 4–8 found no safe cap increase: `rb-s3` fails 100% of the time above concurrency 3 with no narrow widen window, and any increase would also require fixing `tfhc-s9`'s own test file (out of scope). `cat-s1` has a bounded-but-moot widen (no-op since the cap isn't moving). `cat-s4`/`bri-s2.2` never failed — no fix needed. Reported BLOCKED per the plan's own STOP rule (a file outside the 4 named ones failing); escalated to the operator, who confirmed: keep the cap at 3, do not expand scope into `tfhc-s9`. 4 RISK-ACCEPT/SCOPE decisions logged in `decisions.md`. Ending SHA unchanged from Task 1 (`8e9516ff`) — no commit, since no code changed. Task 3 below is rewritten to match this real outcome.
 
 **Goal:** Gather real contended-run-time evidence at a deliberately-raised trial concurrency, then for each of the 4 files either (a) widen its budget to an evidence-justified value, or (b) defer the fix and log why in `decisions.md` per AC5 — never force through a threshold wide enough to be meaningless.
 
@@ -263,13 +267,15 @@ git commit -m "fix: widen contention-sensitive wall-clock NFR budgets with real 
 
 ---
 
-## Task 3: Re-tune the production cap and close out AC1/AC2/AC3
+## Task 3: Confirm the cap stays at its current, empirically-optimal value and close out AC1/AC2/AC3
 
-**Goal:** Make `getPoolConcurrency()`'s real, permanent return value match the trial concurrency Task 2 confirmed stable, prove AC2's "higher than before" claim with a genuinely-discriminating test, and run the final repeated verification sweeps.
+**REVISED 2026-11-01 (see decisions.md's Task 2 entries):** Task 2's real investigation (16 full-suite runs, concurrency 4–8) found no concurrency above 3 stable — `rb-s3` fails 100% of the time above 3 with no narrow safe-widen window, and reaching any higher value would also require fixing `tfhc-s9`'s own test file (out of scope). Both `rb-s3` and `cat-s1` were deferred via AC5 RISK-ACCEPT entries; `cat-s4` and `bri-s2.2` needed no fix (never failed). The operator confirmed (2026-11-01): keep the cap at 3, do not expand scope into `tfhc-s9`. This task's goal and steps below are rewritten accordingly — it no longer sets a higher value, it proves the current value is the correct, evidence-confirmed one.
+
+**Goal:** Prove, with a genuinely-discriminating test, that `getPoolConcurrency()`'s current value is the real, empirically-confirmed-stable one (not just an unchanged default nobody checked), and run the final repeated verification sweeps at that value.
 
 **Files:**
-- Modify: `scripts/run-all-tests.js`
 - Modify: `tests/check-fhff-s1-pool-concurrency.js`
+- (scripts/run-all-tests.js is NOT modified in this task — Task 2's investigation confirmed no change is needed)
 
 - [ ] **Step 1: Replace Task 1's test block with AC2's real final assertion**
 
@@ -277,60 +283,42 @@ In `tests/check-fhff-s1-pool-concurrency.js`, replace the `extraction-is-behavio
 
 ```js
 {
-  const T = 'AC2-concurrency-cap-retuned-upward';
+  const T = 'AC2-concurrency-cap-confirmed-stable-at-current-value';
   const oldFormulaValue = Math.max(1, Math.ceil(os.cpus().length / 3));
   const newCap = getPoolConcurrency();
-  assertCheck(T, newCap > oldFormulaValue,
-    `Expected getPoolConcurrency() (${newCap}) to be strictly greater than the old formula's value (${oldFormulaValue})`);
+  assertCheck(T, newCap === oldFormulaValue,
+    `Expected getPoolConcurrency() (${newCap}) to equal the formula's value (${oldFormulaValue}) -- fhff-s1's own 16-run investigation (see decisions.md) found no concurrency above this stable without also breaking tfhc-s9's own test file, so the cap intentionally stays unchanged`);
   assertCheck(T + '-sanity-ceiling', newCap <= os.cpus().length,
     `Expected getPoolConcurrency() (${newCap}) to never exceed the real core count (${os.cpus().length})`);
 }
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [ ] **Step 2: Run test — must pass immediately**
 
 ```bash
 node tests/check-fhff-s1-pool-concurrency.js
 ```
 
-Expected output: a failure on `AC2-concurrency-cap-retuned-upward` — `getPoolConcurrency()` still returns the old formula's value at this point (Task 2's trial value was never committed to this function).
+Expected output: `[fhff-s1-pool-concurrency] 2 check(s) OK ✓` — this passes immediately since no production code changed in Task 2. This is expected and correct for this revised task (there is no RED step here, because there is no behaviour change to drive with a failing test — the test exists to lock in and prove the empirical finding, not to drive new code).
 
-- [ ] **Step 3: Set the real, permanent value**
+- [ ] **Step 3: Mutation-test the guard**
 
-Replace `getPoolConcurrency()`'s body with the trial concurrency value Task 2 confirmed stable (remove the `TEMPORARY` comment from Task 2 Step 1). Follow the existing code's own documentation style (see `tfhc-s9`'s own comment at the old inline site for the expected level of detail):
+Temporarily change `getPoolConcurrency()` to return `oldFormulaValue + 1` (simulating the original, now-rejected "re-tune upward" plan), confirm `node tests/check-fhff-s1-pool-concurrency.js` now **fails** on `AC2-concurrency-cap-confirmed-stable-at-current-value` (proving the test has real discriminating power — it would have caught Task 2's original plan going ahead without the investigation). Restore the real value and confirm it passes again.
 
-```js
-function getPoolConcurrency() {
-  // Re-tuned 2026-11 (fhff-s1): the previous Math.max(1, Math.ceil(cores/3))
-  // value (tfhc-s9) was throttled specifically because rb-s3/cat-s4/cat-s1
-  // failed under contention at higher concurrency. This story's own NFR-
-  // budget sweep fixed those 3 plus a 4th (bri-s2.2) with real evidence-
-  // justified widened budgets, confirmed stable across 10 repeated full-
-  // suite runs (5 in Task 2, 5 more below) at this value. See decisions.md's
-  // fhff-s1 entries for the full measurement history.
-  return <the value Task 2 confirmed stable>;
-}
-```
-
-- [ ] **Step 4: Run test — must pass**
-
-```bash
-node tests/check-fhff-s1-pool-concurrency.js
-```
-
-Expected output: `[fhff-s1-pool-concurrency] 2 check(s) OK ✓`
-
-- [ ] **Step 5: Mutation-test the guard**
-
-Temporarily revert `getPoolConcurrency()` to return the old formula value, confirm `node tests/check-fhff-s1-pool-concurrency.js` now fails on `AC2-concurrency-cap-retuned-upward`. Restore the real value and confirm it passes again.
-
-- [ ] **Step 6: Final verification sweeps (AC1, AC3)**
+- [ ] **Step 4: Final verification sweeps (AC1, AC3) at the unchanged cap**
 
 ```bash
 npm test
 ```
 
-Run this 5 more times. Expected output each time: the same known baseline failures only (`scripts/check-pipeline-state-integrity.js` [C3], `tests/check-pcr-s1-test-runner.js` N1 flake, `tests/check-p3.5-validate-trace.js` stray-artefact flake, plus any file Task 2 explicitly deferred under AC5) — `rb-s3`, `cat-s4`, `cat-s1`, and `bri-s2.2` must now pass in every run unless individually deferred. No file outside this known list may appear (AC3).
+Run this 3 times at the current (unchanged) concurrency. Expected output each time: the same known baseline failures only (`scripts/check-pipeline-state-integrity.js` [C3], `tests/check-pcr-s1-test-runner.js` N1 flake, `tests/check-p3.5-validate-trace.js` stray-artefact flake) — `rb-s3`, `cat-s4`, `cat-s1`, and `bri-s2.2` should behave exactly as they did before this story (no new instability introduced; `cat-s1` may show its own pre-existing occasional flake, already in the known-baseline list). No file outside this known list may appear (AC3). This directly satisfies AC3's letter (no new/different failure at "the new cap" — which is the same as the old cap).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tests/check-fhff-s1-pool-concurrency.js
+git commit -m "test: confirm run-all-tests.js's concurrency cap is already empirically optimal (fhff-s1)"
+```
 
 - [ ] **Step 7: Commit**
 
@@ -343,4 +331,4 @@ git commit -m "perf: re-tune run-all-tests.js's pool concurrency cap based on fh
 
 ## After all 3 tasks: AC4 (manual, not a task)
 
-AC4 (real CI `Unit test chain` step duration measurably reduces below 124s) has no task above by design — per the test plan's own Coverage gaps table, it is measured manually once this story's own PR is open, via the same `gh api repos/heymishy/skills-repo/actions/jobs/<id>` technique already proven at `tfhc-s9`'s own DoD. Do not add a 4th task for it.
+**REVISED 2026-11-01:** AC4's original premise (measurable reduction below 124s) does not hold since AC2's resolution keeps the cap unchanged — see the story artefact's AC4 resolution note and decisions.md. AC4 has no task above by design — per the test plan's own Coverage gaps table, it is still measured manually once this story's own PR is open, via the same `gh api repos/heymishy/skills-repo/actions/jobs/<id>` technique already proven at `tfhc-s9`'s own DoD, but now to confirm no regression (duration stays at or near 124s) rather than to demonstrate an improvement. Do not add a 4th task for it.

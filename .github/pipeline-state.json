@@ -44816,15 +44816,15 @@
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T04:00:20.991Z",
+              "updatedAt": "2026-11-01T05:33:50.786Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 1,
-                "passing": 0,
+                "passing": 1,
                 "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s1-test-plan.md"
               },
               "acTotal": 5,
@@ -44836,13 +44836,13 @@
                 {
                   "id": "task-1",
                   "name": "Extract getPoolConcurrency() as a behaviour-preserving refactor",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
                 },
                 {
                   "id": "task-2",
-                  "name": "Investigate and fix the 4 fragile files (AC1, AC5)",
-                  "tddState": "not-started",
+                  "name": "Investigate the 4 fragile files -- no safe cap increase found (AC1, AC5)",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
                 },
                 {
