@@ -19,32 +19,36 @@
 
 ## Scenarios
 
-### Scenario 1: The 4 known flaky files now pass reliably, every time
+### Scenario 1: All 4 files were genuinely investigated; 2 needed no fix, 2 are formally deferred
 
 **Covers:** AC1
 
+**REVISED (2026-11-01, Task 2 investigation — see decisions.md and the story's own AC1 resolution note):** The original premise (all 4 files pass reliably at a new, higher cap) did not hold — no safe cap increase was found. `cat-s4` and `bri-s2.2` never failed at any tested concurrency and need no fix. `rb-s3` and `cat-s1` were deferred via AC5 RISK-ACCEPT (see Edge case below) — they are expected to keep occasionally flaking, same as before this story.
+
 **Steps:**
 1. Run `npm test` 5 times in a row.
-2. Each time, check whether `check-rb-s3-harness-agnostic-instructions.js`, `check-cat-s4-features-page-integration.js`, `check-cat-s1-core-trace-builder.js`, or `check-bri-s2.2-neon-staging-branch.js` appear in the failed-files list.
+2. Each time, check the failed-files list.
 
 **Expected outcome:**
-> None of those 4 files appear as failed in any of the 5 runs.
+> `check-cat-s4-features-page-integration.js` and `check-bri-s2.2-neon-staging-branch.js` never appear as failed in any of the 5 runs. `check-rb-s3-harness-agnostic-instructions.js` and `check-cat-s1-core-trace-builder.js` may appear intermittently — that is the expected, accepted outcome (see decisions.md's AC5 RISK-ACCEPT entries for both), not a failure of this verification.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 2: The concurrency cap really did go up
+### Scenario 2: The concurrency cap is confirmed empirically optimal at its current value
 
 **Covers:** AC2
 
+**REVISED (2026-11-01, Task 2 investigation):** The original premise (the cap goes up) did not hold. AC2 is satisfied instead by a genuine empirical confirmation that the current value is already the highest stable one — no numeric increase.
+
 **Steps:**
 1. Run `node -e "console.log(require('./scripts/run-all-tests.js').getPoolConcurrency())"`.
-2. Compare the printed number to `node -e "console.log(Math.ceil(require('os').cpus().length / 3))"` (the old value).
+2. Compare the printed number to `node -e "console.log(Math.max(1, Math.ceil(require('os').cpus().length / 3)))"` (the pre-story formula).
 
 **Expected outcome:**
-> The first number is bigger than the second number.
+> The two numbers are equal — the cap is unchanged, confirmed stable by the real investigation logged in decisions.md rather than by a numeric increase.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -55,9 +59,11 @@
 
 **Covers:** AC3
 
+**REVISED (2026-11-01):** Trivially satisfied by Scenario 2's own resolution — since the cap is unchanged, there is no new cap to introduce a new failure. Still worth confirming directly.
+
 **Steps:**
 1. Run `npm test` 3 times.
-2. Compare the failed-files list each time against the known baseline: the pipeline-state-integrity flag, the pcr-s1 flake, and (occasionally) one unrelated file that also passes on its own.
+2. Compare the failed-files list each time against the known baseline: the pipeline-state-integrity flag ([C3]), the pcr-s1 flake, and `rb-s3`/`cat-s1` (now formally deferred, not just "occasional" — see Scenario 1/Edge case).
 
 **Expected outcome:**
 > No file outside that known list shows up as failed, in any of the 3 runs.
@@ -67,9 +73,11 @@
 
 ---
 
-### Scenario 4: The real GitHub Actions job is actually faster 🔴
+### Scenario 4: The real GitHub Actions job duration stays flat (not regressed) 🔴
 
 **Covers:** AC4
+
+**REVISED (2026-11-01):** The original premise (the job gets faster) does not hold given Scenario 2's resolution — with no cap change, there is no mechanism for a real reduction. AC4 is logged as NOT met as originally written (a genuine negative result — see the story's own AC4 resolution note and decisions.md). This scenario is now a flat-not-regressed check, not an improvement check.
 
 **Steps:**
 1. Once this story's own PR is open, run `gh pr checks <PR number>` to find the "Lint, typecheck, test, build" job's run ID.
@@ -77,10 +85,10 @@
 3. Compare the duration to 124 seconds (the time recorded before this story).
 
 **Expected outcome:**
-> The new duration is less than 124 seconds.
+> The new duration is approximately 124 seconds (no meaningful regression) — not less than 124 seconds, since no cap change was made.
 
 **Result:** [ ] Pass  [ ] Fail
-**Notes:** Marked 🔴 — a real timing measurement that can vary with load, not an automatic CI check. Re-run once if the first result looks unusually slow before recording a Fail.
+**Notes:** Marked 🔴 — a real timing measurement that can vary with load, not an automatic CI check. A duration noticeably *worse* than 124s would be a real regression worth investigating (this story's diff is test-tooling only, so none is expected); a duration similar to or even on the faster side of 124s due to normal CI variance both count as Pass.
 
 ---
 
@@ -92,8 +100,8 @@
 1. Open `artefacts/2026-11-01-fixture-hardening-fast-follows/decisions.md`.
 2. Check whether any entry says a file's fix was deferred because a safe widen wasn't possible.
 
-**Expected outcome:**
-> If no such entry exists, that's fine — it means none of the 4 files needed this. If one does exist, it should clearly name which file and why a wider threshold wasn't a safe option.
+**Expected outcome (REVISED 2026-11-01):**
+> Two such entries exist: `rb-s3` (no safe widen exists at any tested concurrency above 3) and `cat-s1` (a safe widen exists in isolation, but is a no-op since the cap isn't moving). Both name the file and the reason clearly.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
