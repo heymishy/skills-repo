@@ -44816,11 +44816,11 @@
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T06:27:21.352Z",
+              "updatedAt": "2026-11-01T06:30:34.794Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -44852,7 +44852,9 @@
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1049"
             },
             {
               "slug": "fhff-s2",
