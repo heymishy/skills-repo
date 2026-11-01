@@ -44816,11 +44816,11 @@
             {
               "slug": "fhff-s1",
               "name": "Sweep fragile wall-clock NFR budgets and re-tune run-all-tests.js's concurrency cap",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "updatedAt": "2026-11-01T02:41:15.435Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 1,
@@ -44830,16 +44830,17 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "updatedAt": "2026-11-01T02:41:15.435Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -44849,16 +44850,17 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T01:57:29.717Z",
+              "updatedAt": "2026-11-01T02:41:15.435Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -44868,7 +44870,8 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }

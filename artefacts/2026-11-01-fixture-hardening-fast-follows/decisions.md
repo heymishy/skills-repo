@@ -45,3 +45,12 @@
 **Revisit trigger:** None — this is a direct strengthening, not a trade-off requiring future reconsideration.
 
 ---
+
+**2026-11-01 | RISK-ACCEPT | /definition-of-ready (fhff-s1, fhff-s2, fhff-s3)**
+**Decision:** Proceed with DoR sign-off for all 3 stories despite W4 (verification script reviewed by a domain expert) being unmet.
+**Alternatives considered:** Block sign-off until a human reviews all 3 verification scripts.
+**Rationale:** Same rationale as every prior story in the parent `fixture-divergence-closure` epic — solo-operator capacity; the verification scripts remain available for post-merge smoke testing per the skill's own "three moments" design even if pre-code sign-off is skipped here.
+**Made by:** Copilot (DoR warning check)
+**Revisit trigger:** If any script's described behaviour turns out to be wrong once implemented, that is itself evidence this warning should have been resolved pre-code — note for retrospective, not an immediate action.
+
+---
