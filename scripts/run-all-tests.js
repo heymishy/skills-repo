@@ -76,6 +76,21 @@ const SEQUENTIAL_EXCLUSIVE_LIST = [
 ];
 
 /**
+ * Returns the production concurrency cap used by runAll()'s pool phase.
+ * Extracted out of the formerly-inline Math.max(1, Math.ceil(...))
+ * expression so AC2 can assert against this function's real return value
+ * rather than a fragile whole-file source-text match (see
+ * .github/standards/testing/test-design-patterns.md, applied at fhff-s1's
+ * own DoR). See decisions.md's fhff-s1 entries for the real contended-
+ * run-time evidence behind this value.
+ *
+ * @returns {number}
+ */
+function getPoolConcurrency() {
+  return Math.max(1, Math.ceil(os.cpus().length / 3));
+}
+
+/**
  * Discover all `check-*.js` files directly inside `dir` (non-recursive —
  * matches the current chain's behaviour, which never referenced files in
  * subdirectories of tests/ or .github/scripts/). Returns absolute paths,
@@ -211,14 +226,7 @@ async function runAll(repoRoot) {
   });
 
   const poolResult = await runFilesConcurrently(poolFiles, {
-    // Math.max(1, Math.ceil(os.cpus().length / 3)) rather than -2: re-
-    // verification found os.cpus().length - 2 still made check-rb-s3-
-    // harness-agnostic-instructions.js's own 2-second wall-clock NFR budget
-    // fail consistently under CPU contention. Verified at concurrency 3 (on
-    // the 8-core reference machine): rb-s3 passes, and the pool still
-    // completes in ~200s, comfortably clearing the >=40% AC4 target. See
-    // decisions.md's 2026-11-01 DESIGN entries for the full history.
-    concurrency: Math.max(1, Math.ceil(os.cpus().length / 3)),
+    concurrency: getPoolConcurrency(),
     timeoutMs: 120000,
     cwd: repoRoot
   });
@@ -242,6 +250,7 @@ module.exports = {
   SEQUENTIAL_EXCLUSIVE_LIST: SEQUENTIAL_EXCLUSIVE_LIST,
   getAllTestFiles: getAllTestFiles,
   runFilesConcurrently: runFilesConcurrently,
+  getPoolConcurrency: getPoolConcurrency,
   runAll: runAll
 };
 
