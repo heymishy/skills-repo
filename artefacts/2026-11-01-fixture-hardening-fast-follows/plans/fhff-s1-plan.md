@@ -269,6 +269,10 @@ git commit -m "fix: widen contention-sensitive wall-clock NFR budgets with real 
 
 ## Task 3: Confirm the cap stays at its current, empirically-optimal value and close out AC1/AC2/AC3
 
+**Status: COMPLETE** — spec compliance ✅. Code quality: 1 Important (fixed), 2 Minor (accepted, no fix needed — see below). Ending SHA: `8cf2e985cf3e4b51de889ca73447adedbb5da268`.
+
+**Mutation-test confirmation (per `.github/standards/testing/test-design-patterns.md`, Step 3 below):** performed twice — once by the implementer, once independently re-confirmed by the code-quality reviewer. Both runs: temporarily changing `getPoolConcurrency()` to return `oldFormulaValue + 1` made `AC2-concurrency-cap-confirmed-stable-at-current-value` fail with the expected "got 4, expected 3"-shaped message; restoring the real implementation (confirmed `git diff --stat scripts/run-all-tests.js` empty afterward) made it pass again. The code-quality review's Important finding was that this evidence lived only in the subagent's own ephemeral report, not durably in the commit/decisions.md/plan trail — this note is the fix for that gap. The 2 Minor findings (assertion-message verbosity duplicating the block comment; the concatenated `-sanity-ceiling` label) were accepted as-is, no fix required — cosmetic, not correctness-affecting.
+
 **REVISED 2026-11-01 (see decisions.md's Task 2 entries):** Task 2's real investigation (16 full-suite runs, concurrency 4–8) found no concurrency above 3 stable — `rb-s3` fails 100% of the time above 3 with no narrow safe-widen window, and reaching any higher value would also require fixing `tfhc-s9`'s own test file (out of scope). Both `rb-s3` and `cat-s1` were deferred via AC5 RISK-ACCEPT entries; `cat-s4` and `bri-s2.2` needed no fix (never failed). The operator confirmed (2026-11-01): keep the cap at 3, do not expand scope into `tfhc-s9`. This task's goal and steps below are rewritten accordingly — it no longer sets a higher value, it proves the current value is the correct, evidence-confirmed one.
 
 **Goal:** Prove, with a genuinely-discriminating test, that `getPoolConcurrency()`'s current value is the real, empirically-confirmed-stable one (not just an unchanged default nobody checked), and run the final repeated verification sweeps at that value.
@@ -277,7 +281,7 @@ git commit -m "fix: widen contention-sensitive wall-clock NFR budgets with real 
 - Modify: `tests/check-fhff-s1-pool-concurrency.js`
 - (scripts/run-all-tests.js is NOT modified in this task — Task 2's investigation confirmed no change is needed)
 
-- [ ] **Step 1: Replace Task 1's test block with AC2's real final assertion**
+- [x] **Step 1: Replace Task 1's test block with AC2's real final assertion**
 
 In `tests/check-fhff-s1-pool-concurrency.js`, replace the `extraction-is-behaviour-preserving` block with:
 
@@ -293,7 +297,7 @@ In `tests/check-fhff-s1-pool-concurrency.js`, replace the `extraction-is-behavio
 }
 ```
 
-- [ ] **Step 2: Run test — must pass immediately**
+- [x] **Step 2: Run test — must pass immediately**
 
 ```bash
 node tests/check-fhff-s1-pool-concurrency.js
@@ -301,11 +305,11 @@ node tests/check-fhff-s1-pool-concurrency.js
 
 Expected output: `[fhff-s1-pool-concurrency] 2 check(s) OK ✓` — this passes immediately since no production code changed in Task 2. This is expected and correct for this revised task (there is no RED step here, because there is no behaviour change to drive with a failing test — the test exists to lock in and prove the empirical finding, not to drive new code).
 
-- [ ] **Step 3: Mutation-test the guard**
+- [x] **Step 3: Mutation-test the guard**
 
 Temporarily change `getPoolConcurrency()` to return `oldFormulaValue + 1` (simulating the original, now-rejected "re-tune upward" plan), confirm `node tests/check-fhff-s1-pool-concurrency.js` now **fails** on `AC2-concurrency-cap-confirmed-stable-at-current-value` (proving the test has real discriminating power — it would have caught Task 2's original plan going ahead without the investigation). Restore the real value and confirm it passes again.
 
-- [ ] **Step 4: Final verification sweeps (AC1, AC3) at the unchanged cap**
+- [x] **Step 4: Final verification sweeps (AC1, AC3) at the unchanged cap**
 
 ```bash
 npm test
@@ -313,18 +317,11 @@ npm test
 
 Run this 3 times at the current (unchanged) concurrency. Expected output each time: the same known baseline failures only (`scripts/check-pipeline-state-integrity.js` [C3], `tests/check-pcr-s1-test-runner.js` N1 flake, `tests/check-p3.5-validate-trace.js` stray-artefact flake) — `rb-s3`, `cat-s4`, `cat-s1`, and `bri-s2.2` should behave exactly as they did before this story (no new instability introduced; `cat-s1` may show its own pre-existing occasional flake, already in the known-baseline list). No file outside this known list may appear (AC3). This directly satisfies AC3's letter (no new/different failure at "the new cap" — which is the same as the old cap).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add tests/check-fhff-s1-pool-concurrency.js
 git commit -m "test: confirm run-all-tests.js's concurrency cap is already empirically optimal (fhff-s1)"
-```
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add scripts/run-all-tests.js tests/check-fhff-s1-pool-concurrency.js
-git commit -m "perf: re-tune run-all-tests.js's pool concurrency cap based on fhff-s1's NFR-budget sweep"
 ```
 
 ---
