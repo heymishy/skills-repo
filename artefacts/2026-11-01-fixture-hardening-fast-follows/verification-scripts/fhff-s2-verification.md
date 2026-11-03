@@ -62,8 +62,8 @@
 **Expected outcome:**
 > The cancelled job reruns on its own, without you having to manually click "Re-run jobs."
 
-**Result:** [ ] Pass  [ ] Fail (not yet measurable)
-**Notes:** No PR exists yet for this story (pre-`/branch-complete`) — cannot be observed before a real PR/push exists. Deferred to `/definition-of-done`, same honest-scoping precedent as `fhff-s1`'s own AC4 real-CI-timing deferral. Will check this story's own PR first (the pattern has recurred 3+ times already this session), then the next PR after merge if it doesn't occur here.
+**Result:** [ ] Pass  [ ] Fail (not yet measurable — genuine platform constraint, see below)
+**Notes:** A real deploy-group eviction occurred live on this story's own PR #1050 shortly after opening it (Scenario A E2E job, confirmed via `gh api .../jobs/126113539498` → `"conclusion":"cancelled"`, empty `steps`) — directly confirming AC1's premise is still real and reproducible. However, `gh run list --workflow="deploy-group-auto-rerun.yml"` returned a 404 ("workflow not found on the default branch") for this exact cancellation: GitHub Actions evaluates `workflow_run` triggers using the workflow file as it exists on the repository's **default branch**, not the PR branch that introduces it. A workflow new to a PR cannot act on events from that same PR before it merges — this is a genuine GitHub Actions platform constraint, not a bug in this implementation. Unblocked the PR with a manual `gh run rerun 41692250538 --failed`, same operational step as PR #1049. **Correction to this scenario's original framing:** AC1/AC3's trigger half can only be observed starting from the *first PR opened after this one merges* — never on this story's own PR, regardless of how many collisions occur on it. Deferred to `/definition-of-done` with this corrected expectation.
 
 ---
 

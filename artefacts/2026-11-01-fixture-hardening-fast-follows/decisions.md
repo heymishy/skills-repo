@@ -95,3 +95,12 @@
 **Revisit trigger:** If GitHub changes where/how concurrency-eviction annotations are surfaced, or if the jobs-list endpoint ever gains this text natively, revisit whether the check-runs fetch is still necessary.
 
 ---
+
+**2026-11-04 | ASSUMPTION | /branch-complete (fhff-s2)**
+**Decision:** AC1/AC3's real-trigger half can only ever be observed starting from the first PR opened *after* this story merges to master — never on this story's own PR, no matter how many deploy-group collisions occur on it while it's open.
+**Alternatives considered:** The test plan's and verification script's original framing, which assumed this story's own PR might serve as the first real observation opportunity if a collision happened to occur on it before merge (the pattern had already recurred 3+ times earlier this session, on other PRs).
+**Rationale:** A real deploy-group eviction occurred live on PR #1050 (Scenario A E2E job, confirmed cancelled via `gh api`) shortly after opening it. Checking whether `deploy-group-auto-rerun.yml` fired (`gh run list --workflow="deploy-group-auto-rerun.yml"`) returned a 404 — "workflow not found on the default branch." GitHub Actions evaluates `workflow_run` triggers using the triggering workflow's definition as committed on the repository's **default branch** at the time of the event, not the branch that introduces the new workflow file. A workflow introduced on a PR branch cannot react to events from that same PR before the PR merges. This is a documented GitHub Actions platform behaviour, not a defect in this story's implementation — the decision logic and permissions are correct (confirmed separately in Task 2's own review), they simply cannot be exercised against a real trigger until this code exists on master. Unblocked PR #1050 with the same manual `gh run rerun --failed` step used on PR #1049.
+**Made by:** Copilot (live observation on PR #1050, confirmed via `gh api`/`gh run list`)
+**Revisit trigger:** None — this is a structural fact about how `workflow_run` triggers work, not a risk that changes with more evidence. Future operators should not expect to validate a new `workflow_run`-triggered mechanism against its own introducing PR.
+
+---
