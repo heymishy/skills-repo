@@ -22,7 +22,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { isDeployGroupEviction } = require('../scripts/lib/is-deploy-group-eviction.js');
+const { isDeployGroupEviction, DEPLOY_GROUP_EVICTION_TEXT } = require('../scripts/lib/is-deploy-group-eviction.js');
 
 let totalPassed = 0;
 let totalFailed = 0;
@@ -91,12 +91,10 @@ function assertCheck(label, condition, message) {
 {
   const T = 'AC3-isDeployGroupEviction-recognizes-real-eviction-text';
 
-  // The exact text confirmed live on PR #633, documented in e2e.yml's own
-  // historical comments.
-  const realEvictionText = 'Canceling since a higher priority waiting request for deploy-group exists';
-
-  assertCheck(T, isDeployGroupEviction(realEvictionText) === true,
-    `Expected isDeployGroupEviction() to return true for the real GitHub Actions eviction annotation text, got ${isDeployGroupEviction(realEvictionText)}`);
+  // Reuses the module's own exported constant rather than a second literal
+  // copy of the text, so the two can never silently drift out of sync.
+  assertCheck(T, isDeployGroupEviction(DEPLOY_GROUP_EVICTION_TEXT) === true,
+    `Expected isDeployGroupEviction() to return true for the real GitHub Actions eviction annotation text, got ${isDeployGroupEviction(DEPLOY_GROUP_EVICTION_TEXT)}`);
 }
 
 {
