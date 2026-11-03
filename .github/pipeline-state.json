@@ -44763,9 +44763,9 @@
           "name": "journeys.js shared-fixture adoption",
           "target": "6-9 of 31",
           "baseline": "1 of 31",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "6 of 32 journeys.js-touching test files now use the shared fixture (grep -rl \"routes/journeys\" tests/*.js = 32 total; grep -rl \"helpers/journeys-fixture\" tests/*.js = 6 using it). Meets the low end of the 6-9 target range. Total-file count drifted from the 31 baseline to 32 -- an unrelated file touching journeys.js was added by a different story in the interim; this does not affect the adoption count itself.",
           "contributingStories": [
             "fhff-s3"
           ]
@@ -44775,9 +44775,9 @@
           "name": "products.js shared-fixture adoption",
           "target": "1 migrated as proof-of-pattern",
           "baseline": "0 of N",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "1 real caller (tests/check-dsa-s2-product-dashboard-wiring.js) migrated to the shared fixture, exactly meeting the \"1 migrated as proof-of-pattern\" target. (tests/check-products-fixture-self-test.js also requires the fixture, but is the fixture's own self-test, not a real products.js caller -- not counted toward this metric.)",
           "contributingStories": [
             "fhff-s3"
           ]
@@ -44787,9 +44787,9 @@
           "name": "Fixture-usage-check script count",
           "target": "1 shared factory + 3 thin call sites",
           "baseline": "3 near-duplicate scripts",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "Exceeded target: 1 shared factory (scripts/lib/make-fixture-usage-check.js, 125 lines) + 4 thin wrappers (check-journey-fixture-usage.js 31, check-journeys-fixture-usage.js 35, check-skills-fixture-usage.js 31, check-products-fixture-usage.js 31 -- 128 lines total), vs. the original 3 near-duplicate scripts at 72+106+72=250 lines combined. Target said \"3 thin call sites\"; fhff-s3's Task 2 added a 4th consumer (products.js's own new check) on top of the planned 3, since it was a natural 4th use of the same factory.",
           "contributingStories": [
             "fhff-s3"
           ]
@@ -44799,9 +44799,9 @@
           "name": "CI deploy-group cancellation incidence",
           "target": "0, or auto-recovered",
           "baseline": "observed 3+ times (tfhc-s7/s8/s9)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "Partially measured -- only 1 of the 2 subsequent PRs AC4 requires has merged since fhff-s2 (PR #1050) (PR #1051/fhff-s3). On that 1 PR, zero cancellations occurred at all (clean CI run). Separately, the real auto-rerun workflow has fired 3 times since merging to master (gh run list --workflow=deploy-group-auto-rerun.yml): 2 skipped (triggering run was not cancelled -- correct no-op) and 1 ran its full decision logic and correctly concluded \"not a deploy-group eviction\" (fail-safe behavior confirmed, no false positives) -- no genuine eviction-and-recovery event observed yet. Needs 1 more subsequent PR to be fully measurable per AC4; record a follow-up re-check once it exists.",
           "contributingStories": [
             "fhff-s2"
           ]
