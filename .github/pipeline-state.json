@@ -44725,7 +44725,7 @@
     {
       "slug": "2026-11-01-fixture-hardening-fast-follows",
       "name": "Fixture Hardening Fast-Follows",
-      "stage": "branch-setup",
+      "stage": "definition",
       "health": "green",
       "updatedAt": "2026-11-01T01:34:29.321Z",
       "discoveryStatus": "clarified",
@@ -44859,11 +44859,11 @@
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-03T18:13:05.093Z",
+              "updatedAt": "2026-11-03T18:15:55.277Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -44889,7 +44889,9 @@
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1050"
             },
             {
               "slug": "fhff-s3",
