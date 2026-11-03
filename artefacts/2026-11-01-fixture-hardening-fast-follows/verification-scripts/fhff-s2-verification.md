@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-11-01-fixture-hardening-fast-follows/stories/fhff-s2-ci-deploy-group-concurrency-fix.md
 **Technical test plan:** artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s2-test-plan.md
 **Script version:** 1
-**Verified by:** _____________ | **Date:** _____________ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Copilot (/verify-completion) | **Date:** 2026-11-04 | **Context:** [x] Pre-code (post-implementation, pre-PR)  [ ] Post-merge  [ ] Demo
 
 ---
 
@@ -30,8 +30,8 @@
 **Expected outcome:**
 > The value is still the plain word `deploy-group`, not something that includes the branch name or PR number. If it includes the branch/PR, that's wrong — it would let two different PRs deploy to the same real app at the same time.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed fresh via `grep -n "^\s*concurrency:" .github/workflows/e2e.yml .github/workflows/staging-deploy.yml` — all 3 lines (e2e.yml:151, e2e.yml:375, staging-deploy.yml:58) are the bare string `deploy-group`, unchanged by this story. Also covered by `tests/check-fhff-s2-deploy-group-eviction.js`'s AC2 checks (11/11 passing, part of the fresh full-suite run above).
 
 ---
 
@@ -46,8 +46,8 @@
 **Expected outcome:**
 > The first one is recognized as "this should be retried." The second one is recognized as "this is a real failure, do not retry."
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran fresh: `isDeployGroupEviction('Canceling since a higher priority waiting request for deploy-group exists')` → `true`; `isDeployGroupEviction('Process completed with exit code 1')` → `false`. Also independently re-verified during `/subagent-execution` against the real historical API response for a genuine deploy-group eviction (job id 124773105599, PR #1049) — the current implementation correctly fetches this text from the check-runs annotations endpoint (not the jobs-list endpoint, which was an earlier implementation bug, found and fixed before this verification).
 
 ---
 
@@ -62,8 +62,8 @@
 **Expected outcome:**
 > The cancelled job reruns on its own, without you having to manually click "Re-run jobs."
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:** Marked 🔴 — this needs a real, naturally-occurring double-push to observe. If none happens during this story's own PR, check again on the next PR after merge.
+**Result:** [ ] Pass  [ ] Fail (not yet measurable)
+**Notes:** No PR exists yet for this story (pre-`/branch-complete`) — cannot be observed before a real PR/push exists. Deferred to `/definition-of-done`, same honest-scoping precedent as `fhff-s1`'s own AC4 real-CI-timing deferral. Will check this story's own PR first (the pattern has recurred 3+ times already this session), then the next PR after merge if it doesn't occur here.
 
 ---
 
@@ -78,8 +78,8 @@
 **Expected outcome:**
 > Across those 2 PRs, either no cancellation happens, or every one that does happen reruns on its own.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:** This can only be checked once 2 more PRs exist after this one. If none exist yet, record this as "not yet measurable" rather than a fail.
+**Result:** [ ] Pass  [ ] Fail (not yet measurable)
+**Notes:** By definition requires 2+ PRs after this one merges — none exist yet. Recorded as not-yet-measurable per the test plan's own handling; deferred to `/definition-of-done` with a follow-up re-check once 2 subsequent PRs exist.
 
 ---
 
@@ -87,12 +87,12 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 | | |
-| Scenario 2 | | |
-| Scenario 3 🔴 | | |
-| Edge case | | |
+| Scenario 1 | ✅ Pass | Bare `deploy-group` confirmed in both workflow files |
+| Scenario 2 | ✅ Pass | Decision function correctly distinguishes real eviction text from real failure text |
+| Scenario 3 🔴 | ⏸ Not yet measurable | No PR exists yet; deferred to `/definition-of-done` |
+| Edge case | ⏸ Not yet measurable | Requires 2+ subsequent PRs; deferred to `/definition-of-done` |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All testable-now scenarios pass — ready to proceed; 2 real-environment scenarios (AC1/AC3 trigger half, AC4) explicitly deferred to `/definition-of-done` by design, not a gap (same precedent as `fhff-s1`'s AC4).
 [ ] Failures found — log findings below before proceeding
 
 ---
