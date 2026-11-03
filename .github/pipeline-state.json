@@ -44739,9 +44739,9 @@
           "name": "run-all-tests.js concurrency cap",
           "target": ">3 (ideally cpus().length - 1 or higher)",
           "baseline": "3 on the 8-core reference machine",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "off-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "Cap stays at 3 (unchanged from tfhc-s9) -- fhff-s1's own 16-run investigation found no concurrency above 3 stable without also breaking tfhc-s9's own test file (out of scope). Honest negative result, not a failure of the investigation -- logged as a RISK-ACCEPT in fhff-s1's decisions.md.",
           "contributingStories": [
             "fhff-s1"
           ]
@@ -44751,9 +44751,9 @@
           "name": "Real CI Unit test chain step duration",
           "target": "further reduction below 124s",
           "baseline": "124s (PR #1048)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "off-track",
+          "lastMeasured": "2026-11-04",
+          "evidence": "Real CI Unit test chain step duration across all 3 merged PRs: PR #1049 (fhff-s1) 121s (flat, no regression, as expected since the cap did not change). PR #1050 (fhff-s2) 138s. PR #1051 (fhff-s3) 134s. Final value (134s) is ABOVE the 124s baseline, not below it -- the target (\"further reduction below 124s\") was not met. The increase correlates directly with fhff-s2/fhff-s3 adding net-new test files (819 -> 822 files run), not a concurrency-related regression -- more coverage costs more wall-clock time per run at a fixed concurrency cap, and the cap could not be safely raised (see m1). This is a genuine trade-off the epic made (closing fixture-divergence/coverage gaps) at the cost of its own speed-reduction goal, not an unexplained regression.",
           "contributingStories": [
             "fhff-s1"
           ]
