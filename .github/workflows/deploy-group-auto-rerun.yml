@@ -48,6 +48,12 @@ jobs:
     timeout-minutes: 5
     permissions:
       actions: write
+      # checks:read is required for the check-runs annotations endpoint
+      # fetched below -- the annotation text (the real eviction message)
+      # lives there, not on the jobs-list endpoint, and since this job
+      # already narrows permissions to actions:write only, every other
+      # scope (including checks) defaults to none unless listed here.
+      checks: read
 
     steps:
       # Checked out at the repository default ref (workflow_run's own
@@ -64,13 +70,39 @@ jobs:
           gh api "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/jobs" > jobs.json
           echo "Fetched job data for run ${{ github.event.workflow_run.id }}"
 
+      - name: Fetch check-run annotations for each job
+        # The jobs-list endpoint above never carries annotation text --
+        # confirmed against a real cancelled job in this repo's history
+        # (job/check-run id 124773105599, PR #1049, run 41281131060):
+        # `gh api repos/{owner}/{repo}/actions/jobs/<id>` returns
+        # "steps": [] with no annotation text anywhere, while
+        # `gh api repos/{owner}/{repo}/check-runs/<id>/annotations`
+        # returns the real eviction message. A job's `id` from the
+        # jobs-list response is the same numeric id as its check-run id,
+        # so this fetches annotations per job id from that run.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const jobs = JSON.parse(fs.readFileSync('jobs.json', 'utf8')).jobs || [];
+            fs.writeFileSync('job-ids.txt', jobs.map((j) => j.id).join('\n'));
+          "
+          : > annotations.txt
+          while IFS= read -r JOB_ID; do
+            [ -z "$JOB_ID" ] && continue
+            gh api "repos/${{ github.repository }}/check-runs/${JOB_ID}/annotations" >> annotations.txt
+            echo "" >> annotations.txt
+          done < job-ids.txt
+          echo "Fetched check-run annotations for $(wc -l < job-ids.txt) job(s) in run ${{ github.event.workflow_run.id }}"
+
       - name: Decide whether this was a deploy-group eviction
         id: decide
         run: |
           IS_EVICTION=$(node -e "
             const { isDeployGroupEviction } = require('./scripts/lib/is-deploy-group-eviction.js');
             const fs = require('fs');
-            const annotationText = fs.readFileSync('jobs.json', 'utf8');
+            const annotationText = fs.readFileSync('annotations.txt', 'utf8');
             console.log(isDeployGroupEviction(annotationText));
           ")
           echo "is_eviction=${IS_EVICTION}" >> "$GITHUB_OUTPUT"
