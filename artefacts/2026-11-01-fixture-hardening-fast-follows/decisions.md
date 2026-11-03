@@ -86,3 +86,12 @@
 **Revisit trigger:** None — this is a closed finding, not a carried-forward risk.
 
 ---
+
+**2026-11-04 | ARCH | /subagent-execution (fhff-s2, Task 2)**
+**Decision:** `deploy-group-auto-rerun.yml`'s eviction-detection step fetches the cancellation annotation text from `GET /repos/{owner}/{repo}/check-runs/{job_id}/annotations`, not from `GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs` (the endpoint the implementation originally used).
+**Alternatives considered:** The original implementation — pass the jobs-list response text through `isDeployGroupEviction()` directly, on the assumption that a cancelled job's API response would carry its own cancellation reason somewhere in that payload.
+**Rationale:** Independently verified live against this repo's real history (job/check-run id `124773105599`, PR #1049, run `41281131060`, a genuine deploy-group eviction): `gh api repos/{owner}/{repo}/actions/jobs/124773105599` returns `"conclusion": "cancelled"` with `"steps": []` — no annotation text anywhere. `gh api repos/{owner}/{repo}/check-runs/124773105599/annotations` returns `[{"message":"Canceling since a higher priority waiting request for deploy-group exists", ...}]` — the real text lives there instead. A job's numeric `id` from the jobs-list response is the same id as its check-run id, so the fix fetches annotations per job id from that endpoint. Replaying `isDeployGroupEviction()` against both real API responses confirmed the fix: `true` against the check-runs annotations content, `false` against the jobs-list content — the original wiring would never have fired the auto-rerun for a real eviction, the exact scenario AC1/AC3 require it to handle. This was found during independent verification of a subagent's "DONE" report, not by either dispatched reviewer (spec-compliance and code-quality reviews both ran after the fix, on the corrected version) — logged here so a future operator touching this workflow doesn't rediscover the same wrong assumption about where GitHub Actions surfaces concurrency-eviction text.
+**Made by:** Copilot (independent verification against real `gh api` history, prior to dispatching spec-compliance review)
+**Revisit trigger:** If GitHub changes where/how concurrency-eviction annotations are surfaced, or if the jobs-list endpoint ever gains this text natively, revisit whether the check-runs fetch is still necessary.
+
+---

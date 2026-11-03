@@ -16,7 +16,9 @@ Unmodified (confirmed intentionally, per AC2/Out of Scope):
   .github/workflows/staging-deploy.yml              — concurrency: deploy-group stays bare, unchanged
 ```
 
-## Task 1: `isDeployGroupEviction()` decision function + unit tests
+## Task 1: `isDeployGroupEviction()` decision function + unit tests — ✅ COMPLETE
+
+**Status: COMPLETE** — spec compliance ✅, code quality ✅ (1 Minor DRY issue found and fixed: test re-typed the eviction-text literal instead of importing the module's own exported constant). Ending SHA: `5e251dd9`.
 
 **Verifies:** AC2 (static YAML scoping check), AC3's decision-logic half.
 
@@ -25,7 +27,11 @@ Unmodified (confirmed intentionally, per AC2/Out of Scope):
   - AC2 test: read `.github/workflows/e2e.yml` and `.github/workflows/staging-deploy.yml` as text, assert both jobs' `concurrency:` value is the bare string `deploy-group` — not a templated expression incorporating `github.ref`/`github.head_ref`/any per-branch variable.
   - AC3 test: call `isDeployGroupEviction()` with (a) the real annotation text → expect `true`, (b) a genuine failure message → expect `false` (the edge case proving the mechanism doesn't mask real failures as recoverable).
 
-## Task 2: Auto-rerun workflow + real verification
+## Task 2: Auto-rerun workflow + real verification — ✅ COMPLETE (implementation; real-environment verification still pending, see below)
+
+**Status: COMPLETE (implementation)** — spec compliance ✅. Code quality: 1 Important issue found and fixed (silent `gh api` failure in the per-job annotation fetch loop could mask a real eviction as "not an eviction" — now fails loudly), 1 Minor fixed (`contents: read` added for `actions/checkout@v4`), re-reviewed ✅. Ending SHA: `bbdb01c3`.
+
+**Critical correctness finding during independent verification (not from either reviewer — found via live `gh api` calls against this repo's real history):** the original implementation fetched the cancelled run's `/actions/runs/{id}/jobs` response and fed its text to `isDeployGroupEviction()` — but that endpoint never carries the cancellation annotation text (confirmed empty `steps: []` against real job id `124773105599`, PR #1049). The real annotation text only lives at `GET /repos/{owner}/{repo}/check-runs/{job_id}/annotations`. As originally wired, the auto-rerun would never have fired for a real eviction — the exact scenario AC1/AC3 require it to handle. Fixed at SHA `7911e916` to fetch from the correct endpoint; re-verified by replaying both the old and new approaches against the real historical API responses: new approach → `true` (correctly detects the real eviction), old approach → `false` (confirms the bug was real). See `scripts/lib/is-deploy-group-eviction.js` (unchanged, correct in isolation) and `.github/workflows/deploy-group-auto-rerun.yml`.
 
 **Verifies:** AC1, AC3 (trigger half), AC4 — real-environment manual checks per the test plan's own Honest scoping note; NFR Security (least-privilege permissions).
 
