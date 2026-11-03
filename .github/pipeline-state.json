@@ -44859,11 +44859,11 @@
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-03T10:01:51.668Z",
+              "updatedAt": "2026-11-03T17:18:19.243Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
@@ -44874,7 +44874,21 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "isDeployGroupEviction() decision function + unit tests",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Auto-rerun workflow + real verification",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s2-plan.md"
+                }
+              ]
             },
             {
               "slug": "fhff-s3",
