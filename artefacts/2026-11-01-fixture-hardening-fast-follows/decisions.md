@@ -104,3 +104,12 @@
 **Revisit trigger:** None — this is a structural fact about how `workflow_run` triggers work, not a risk that changes with more evidence. Future operators should not expect to validate a new `workflow_run`-triggered mechanism against its own introducing PR.
 
 ---
+
+**2026-11-04 | SCOPE | /subagent-execution (fhff-s3, Task 2)**
+**Decision:** Do not add a `products.js` fixture-hygiene category (`Category I`) to `skills/review/SKILL.md` as part of this story, despite the new `scripts/check-products-fixture-usage.js` being structurally identical to Category F/G/H's own wired scripts (journey.js/skills.js/journeys.js) and lacking equivalent `/review` wiring.
+**Alternatives considered:** Add Category I now, mirroring Category H's shape (same HIGH/MEDIUM/LOW guidance, same hygiene-score line), closing the gap immediately since the code-quality reviewer flagged it as a real, if non-blocking, inconsistency.
+**Rationale:** `skills/review/SKILL.md` is a platform-governed file — per CLAUDE.md's "Platform change policy (Phase 2+)," changes to `.github/skills/` (and this repo's own `skills/`) must go through a feature branch → PR → platform-team-review cycle, not be bundled into an unrelated story's implementation commit. `fhff-s3`'s own ACs (AC2, AC3) only require the structural check's own mutation-test discipline to pass — they do not require `/review` wiring, unlike `AC4` which explicitly scopes the 3 *existing* scripts' refactor. Journey.js/skills.js/journeys.js each got their own Category wiring as part of *their own* build-out story (`tsir-s3`, `tfhc-s3`, `tfhc-s7`), not retrofitted later by an unrelated story — the same pattern should apply here: a future story adds Category I for products.js specifically, through its own governed change. Deferred, not silently dropped.
+**Made by:** Copilot (Task 2 code-quality review finding, logged rather than actioned in-story)
+**Revisit trigger:** When a future story builds out `products.js`'s fixture adoption further (beyond this story's 1 proof-of-pattern migration), add Category I to `skills/review/SKILL.md` as part of that story's own governed change.
+
+---
