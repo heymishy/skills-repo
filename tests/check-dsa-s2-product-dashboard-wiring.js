@@ -5,6 +5,7 @@ const { _renderProductDashboard, handleGetDashboard } = require('../src/web-ui/r
 const { setValidateRepositoryAccess, setGetArtefactDescriptors, setFetchArtefact } = require('../src/web-ui/adapters/action-queue');
 const repoRootAdapter = require('../src/web-ui/adapters/repo-root');
 const journeyStore = require('../src/web-ui/modules/journey-store');
+const { productsFixture, productsFixtureRes } = require('./helpers/products-fixture');
 
 // dsa-s2 Task 2 -- getPendingActions() reads its repo list from this env var
 // (config/repo-list.js), matching tests/check-wuce5-action-queue.js's own
@@ -41,11 +42,6 @@ function makePool() {
   };
 }
 
-function makeRes() {
-  var html = null;
-  return { html: function() { return html; }, writeHead: function() {}, end: function(b) { html = b; } };
-}
-
 /**
  * dsa-s2 Task 2 (AC5, AC7): handleGetDashboard -- dispatched with a fake
  * getPendingActions() (via action-queue.js's own real injectable seams, no
@@ -72,11 +68,11 @@ async function testRealPendingActionsAndJourneyDataRenderOnDashboard() {
   var journey = journeyStore.createJourney(journeySlug, 'default');
   journeyStore.completeStage(journey.journeyId, 'discovery', 'artefacts/' + journeySlug + '/discovery.md');
 
-  var req = { session: { userId: 42, login: 'pending-tester', tenantId: null, accessToken: 'tok' }, query: {} };
-  var res = makeRes();
+  var req = productsFixture({ session: { userId: 42, login: 'pending-tester', tenantId: null, accessToken: 'tok' } });
+  var res = productsFixtureRes();
   var pool = makePool();
   await handleGetDashboard(req, res, null, pool);
-  var html = res.html();
+  var html = res._get().body;
 
   // AC5 -- real pending item (_mapPendingActionsForDashboard's 'Sign off ' + artefactType, + real featureName), not the '0'/'[]' placeholder.
   assert.ok(html.includes('Sign off Discovery'), 'expected the real mapped pending-action text, not a placeholder');
