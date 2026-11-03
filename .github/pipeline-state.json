@@ -44859,22 +44859,39 @@
             {
               "slug": "fhff-s2",
               "name": "Stop the deploy-group concurrency lock from silently cancelling E2E coverage",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T02:41:15.435Z",
+              "updatedAt": "2026-11-03T18:15:55.277Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 2,
-                "passing": 0,
+                "passing": 2,
                 "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s2-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 2,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "isDeployGroupEviction() decision function + unit tests",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Auto-rerun workflow + real verification",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1050"
             },
             {
               "slug": "fhff-s3",
