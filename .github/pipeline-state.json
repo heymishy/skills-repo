@@ -44811,7 +44811,7 @@
         {
           "slug": "test-infra-fast-follow-batch",
           "name": "The test suite runs faster and more reliably, and the remaining fixture-divergence risk is closed",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "fhff-s1",
@@ -44900,7 +44900,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-03T19:19:00.180Z",
+              "updatedAt": "2026-11-03T19:36:13.555Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -44933,7 +44933,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/1051"
             }
           ]
