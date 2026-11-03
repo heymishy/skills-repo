@@ -44896,11 +44896,11 @@
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-03T18:39:36.001Z",
+              "updatedAt": "2026-11-03T18:45:43.803Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -44911,7 +44911,27 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "DRY-extract 3 fixture-usage-check scripts into shared factory + skills.js fixture pair",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "products.js walking skeleton + 1 proof-of-pattern migration",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Migrate 4 more journeys.js-touching files to the shared fixture",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                }
+              ]
             }
           ]
         }
