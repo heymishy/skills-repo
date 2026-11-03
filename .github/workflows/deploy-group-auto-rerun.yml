@@ -54,6 +54,12 @@ jobs:
       # already narrows permissions to actions:write only, every other
       # scope (including checks) defaults to none unless listed here.
       checks: read
+      # contents:read is required by actions/checkout@v4 below. Public
+      # repos tolerate an anonymous checkout without it, but this keeps
+      # the job correct regardless of repo visibility and matches this
+      # repo's own convention (see trace-commit.yml, which always lists
+      # contents alongside any other scope whenever it checks out).
+      contents: read
 
     steps:
       # Checked out at the repository default ref (workflow_run's own
@@ -83,6 +89,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
           node -e "
             const fs = require('fs');
             const jobs = JSON.parse(fs.readFileSync('jobs.json', 'utf8')).jobs || [];
@@ -91,7 +98,16 @@ jobs:
           : > annotations.txt
           while IFS= read -r JOB_ID; do
             [ -z "$JOB_ID" ] && continue
-            gh api "repos/${{ github.repository }}/check-runs/${JOB_ID}/annotations" >> annotations.txt
+            # A transient gh api failure here must not be swallowed: the decide
+            # step below treats "no matching text found" the same whether that's
+            # because the cancellation genuinely wasn't a deploy-group eviction,
+            # or because this fetch silently came back empty -- the latter would
+            # let a real eviction go un-rerun with no visible signal anywhere,
+            # exactly the failure mode this workflow exists to eliminate.
+            if ! gh api "repos/${{ github.repository }}/check-runs/${JOB_ID}/annotations" >> annotations.txt; then
+              echo "::error::Failed to fetch check-run annotations for job ${JOB_ID} -- aborting rather than risking a false 'not an eviction' conclusion from incomplete data."
+              exit 1
+            fi
             echo "" >> annotations.txt
           done < job-ids.txt
           echo "Fetched check-run annotations for $(wc -l < job-ids.txt) job(s) in run ${{ github.event.workflow_run.id }}"
