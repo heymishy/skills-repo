@@ -22,7 +22,7 @@ const SHARED_FIXTURE_REQUIRE_PATTERN = /require\(['"][^'"]*helpers\/journeys-fix
 const { scanFileForHandRolledFixture, runCli } = makeFixtureUsageCheck({
   routeRequirePattern: JOURNEYS_ROUTE_REQUIRE_PATTERN,
   fixtureRequirePattern: SHARED_FIXTURE_REQUIRE_PATTERN,
-  fixtureModuleLabel: 'Hand-rolled mockReq or ad-hoc inline session literal found in a journeys.js-touching file. Use the shared fixture from tests/helpers/journeys-fixture.js instead.',
+  findingMessage: 'Hand-rolled mockReq or ad-hoc inline session literal found in a journeys.js-touching file. Use the shared fixture from tests/helpers/journeys-fixture.js instead.',
   detectAdHocSessionLiteral: true,
   scriptLabel: 'check-journeys-fixture-usage'
 });

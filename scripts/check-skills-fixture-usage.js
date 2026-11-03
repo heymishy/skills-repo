@@ -18,7 +18,7 @@ const SHARED_FIXTURE_REQUIRE_PATTERN = /require\(['"][^'"]*helpers\/skills-fixtu
 const { scanFileForHandRolledFixture, runCli } = makeFixtureUsageCheck({
   routeRequirePattern: SKILLS_ROUTE_REQUIRE_PATTERN,
   fixtureRequirePattern: SHARED_FIXTURE_REQUIRE_PATTERN,
-  fixtureModuleLabel: 'Hand-rolled mockReq found in a skills.js-touching file. Use the shared fixture from tests/helpers/skills-fixture.js instead.',
+  findingMessage: 'Hand-rolled mockReq found in a skills.js-touching file. Use the shared fixture from tests/helpers/skills-fixture.js instead.',
   detectAdHocSessionLiteral: false,
   scriptLabel: 'check-skills-fixture-usage'
 });

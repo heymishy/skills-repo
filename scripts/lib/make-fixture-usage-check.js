@@ -12,8 +12,10 @@
 // `config`:
 //   - routeRequirePattern: RegExp matching the route-module require() call
 //   - fixtureRequirePattern: RegExp matching the shared-fixture require() call
-//   - fixtureModuleLabel: string used in the finding message (e.g.
-//     'journey.js-touching file' / 'tests/helpers/journey-fixture.js')
+//   - findingMessage: the full finding message text, used verbatim as
+//     `finding.message` when a hand-rolled fixture is detected (e.g.
+//     'Hand-rolled mockReq found in a journey.js-touching file. Use the
+//     shared fixture from tests/helpers/journey-fixture.js instead.')
 //   - detectAdHocSessionLiteral: bool (default false) -- only true for
 //     journeys.js's check, which additionally flags an ad-hoc inline
 //     `const req = { session: {...} }` literal
@@ -57,7 +59,7 @@ function hasAdHocSessionLiteral(content) {
 function makeFixtureUsageCheck(config) {
   const routeRequirePattern = config.routeRequirePattern;
   const fixtureRequirePattern = config.fixtureRequirePattern;
-  const fixtureModuleLabel = config.fixtureModuleLabel;
+  const findingMessage = config.findingMessage;
   const detectAdHocSessionLiteral = config.detectAdHocSessionLiteral || false;
   const scriptLabel = config.scriptLabel;
 
@@ -89,7 +91,7 @@ function makeFixtureUsageCheck(config) {
 
     return [{
       file: filePath,
-      message: fixtureModuleLabel
+      message: findingMessage
     }];
   }
 

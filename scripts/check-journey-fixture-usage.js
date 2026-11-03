@@ -18,7 +18,7 @@ const SHARED_FIXTURE_REQUIRE_PATTERN = /require\(['"][^'"]*helpers\/journey-fixt
 const { scanFileForHandRolledFixture, runCli } = makeFixtureUsageCheck({
   routeRequirePattern: JOURNEY_ROUTE_REQUIRE_PATTERN,
   fixtureRequirePattern: SHARED_FIXTURE_REQUIRE_PATTERN,
-  fixtureModuleLabel: 'Hand-rolled mockReq found in a journey.js-touching file. Use the shared fixture from tests/helpers/journey-fixture.js instead.',
+  findingMessage: 'Hand-rolled mockReq found in a journey.js-touching file. Use the shared fixture from tests/helpers/journey-fixture.js instead.',
   detectAdHocSessionLiteral: false,
   scriptLabel: 'check-journey-fixture-usage'
 });
