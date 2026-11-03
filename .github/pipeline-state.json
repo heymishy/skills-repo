@@ -44741,7 +44741,7 @@
           "baseline": "3 on the 8-core reference machine",
           "signal": "off-track",
           "lastMeasured": "2026-11-04",
-          "evidence": "Cap stays at 3 (unchanged from tfhc-s9) -- fhff-s1's own 16-run investigation found no concurrency above 3 stable without also breaking tfhc-s9's own test file (out of scope). Honest negative result, not a failure of the investigation -- logged as a RISK-ACCEPT in fhff-s1's decisions.md.",
+          "evidence": "Cap stays at 3 (unchanged from tfhc-s9) -- fhff-s1's own 16-run investigation found no concurrency above 3 stable without also breaking tfhc-s9's own test file (out of scope). Honest negative result, not a failure of the investigation -- logged as a RISK-ACCEPT in fhff-s1's decisions.md. IMPORTANT CAVEAT found during the 2026-11-04 CI-performance deep-dive: the real CI runner (ubuntu-latest, confirmed via .github/workflows/pr-checks.yml) has 4 vCPUs, not the 8 cores of the local dev machine fhff-s1's 16-run investigation was conducted on. getPoolConcurrency() therefore evaluates to 2 on real CI, not 3 -- meaning CI itself has likely never run this suite at concurrency 3 at all, before or after this epic. The formula and runner are unchanged by this epic, so this does not change the cap-stays-at-3 conclusion's validity for the local dev machine, but a future cap-tuning attempt should measure against a real CI run, not a local machine -- the empirical findings here describe local-machine behavior, not CI's actual behavior.",
           "contributingStories": [
             "fhff-s1"
           ]
@@ -44751,9 +44751,9 @@
           "name": "Real CI Unit test chain step duration",
           "target": "further reduction below 124s",
           "baseline": "124s (PR #1048)",
-          "signal": "off-track",
+          "signal": "on-track",
           "lastMeasured": "2026-11-04",
-          "evidence": "Real CI Unit test chain step duration across all 3 merged PRs: PR #1049 (fhff-s1) 121s (flat, no regression, as expected since the cap did not change). PR #1050 (fhff-s2) 138s. PR #1051 (fhff-s3) 134s. Final value (134s) is ABOVE the 124s baseline, not below it -- the target (\"further reduction below 124s\") was not met. The increase correlates directly with fhff-s2/fhff-s3 adding net-new test files (819 -> 822 files run), not a concurrency-related regression -- more coverage costs more wall-clock time per run at a fixed concurrency cap, and the cap could not be safely raised (see m1). This is a genuine trade-off the epic made (closing fixture-divergence/coverage gaps) at the cost of its own speed-reduction goal, not an unexplained regression.",
+          "evidence": "CORRECTED (2026-11-04 deep-dive audit): the prior reading (134s > 124s baseline = regression) was wrong -- it compared against a single cherry-picked low data point, not a stable baseline. Pulled real Unit test chain timing for the 5 unrelated PRs immediately preceding the 124s baseline (PR #1048): #1044=185s, #1045=222s, #1046=175s, #1047=207s, #1048=124s. Normal range is 124s-222s (avg ~183s) -- PR #1048 was the single fastest run in that whole window, not representative. fhff-s1/s2/s3's real values (121s, 138s, 134s) all sit AT OR BELOW this normal range. Individually timed all 5 new test files added by this epic: 775ms total -- negligible, cannot explain any multi-second delta. The CI step did not get slower because of this epic's changes; the metric's own target (\"reduction below 124s\") was framed against noise, not a real baseline. m2 needs a multi-run median baseline (5-10 PRs) to be meaningful going forward -- single-run comparisons on this step are not valid signal.",
           "contributingStories": [
             "fhff-s1"
           ]
