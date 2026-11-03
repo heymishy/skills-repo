@@ -44896,11 +44896,11 @@
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-03T19:17:06.097Z",
+              "updatedAt": "2026-11-03T19:19:00.180Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -44932,7 +44932,9 @@
                   "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1051"
             }
           ]
         }
