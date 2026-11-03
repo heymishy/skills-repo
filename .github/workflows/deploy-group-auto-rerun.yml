@@ -1,0 +1,90 @@
+name: Deploy Group Auto-Rerun
+
+# fhff-s2 -- the deploy-group concurrency lock (see e2e.yml and
+# staging-deploy.yml's own `concurrency: deploy-group` lines) only ever
+# holds one running plus one queued request per group. When a third
+# request lands -- another push, another PR's own E2E job, or a
+# deploy-staging run -- GitHub Actions cancels the queued one outright
+# rather than delaying it, with the annotation "Canceling since a higher
+# priority waiting request for deploy-group exists" (confirmed live on
+# PR #633; see e2e.yml's own historical comments and
+# scripts/lib/is-deploy-group-eviction.js). That cancellation silently
+# skipped real E2E coverage on tfhc-s7/s8/s9's own PRs this session, with
+# no human-visible signal that anything had happened -- a red or missing
+# check should always mean something real occurred, not that two pushes
+# happened to land close together.
+#
+# See artefacts/2026-11-01-fixture-hardening-fast-follows/stories/
+# fhff-s2-ci-deploy-group-concurrency-fix.md (AC1, AC3, AC4).
+#
+# This workflow watches both deploy-group-scoped workflows for a
+# `cancelled` conclusion, confirms -- via isDeployGroupEviction(), the
+# same decision function covered by
+# tests/check-fhff-s2-deploy-group-eviction.js -- that the cancellation
+# was a genuine deploy-group eviction rather than a real failure, and
+# only in that case reruns the run automatically. A real failure or a
+# real success is never touched: the `if:` gate below
+# (conclusion == 'cancelled') and the decision function's strict text
+# match are what keep this mechanism from ever masking a genuine red
+# result as transient.
+#
+# AC2 (out of scope for this file, already verified by fhff-s2 Task 1):
+# the concurrency key itself stays the bare, shared `deploy-group` string
+# in e2e.yml/staging-deploy.yml -- narrowing it was already explicitly
+# rejected as a regression against the single shared wuce-staging
+# resource. This workflow is the narrower, additive recovery mechanism
+# instead.
+
+on:
+  workflow_run:
+    workflows: ["E2E Tests (Playwright)", "Staging Deploy"]
+    types: [completed]
+
+jobs:
+  rerun-if-deploy-group-eviction:
+    name: Rerun if cancelled by deploy-group eviction
+    if: github.event.workflow_run.conclusion == 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+
+    steps:
+      # Checked out at the repository default ref (workflow_run's own
+      # default behaviour, since no `ref:` is given here) -- i.e. the
+      # trusted master copy of the decision function, never the
+      # triggering PR branch's own copy.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch cancelled run's job data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/jobs" > jobs.json
+          echo "Fetched job data for run ${{ github.event.workflow_run.id }}"
+
+      - name: Decide whether this was a deploy-group eviction
+        id: decide
+        run: |
+          IS_EVICTION=$(node -e "
+            const { isDeployGroupEviction } = require('./scripts/lib/is-deploy-group-eviction.js');
+            const fs = require('fs');
+            const annotationText = fs.readFileSync('jobs.json', 'utf8');
+            console.log(isDeployGroupEviction(annotationText));
+          ")
+          echo "is_eviction=${IS_EVICTION}" >> "$GITHUB_OUTPUT"
+          echo "Deploy-group eviction detected: ${IS_EVICTION}"
+
+      - name: Rerun the cancelled run
+        if: steps.decide.outputs.is_eviction == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Deploy-group eviction confirmed -- rerunning run ${{ github.event.workflow_run.id }}"
+          gh run rerun ${{ github.event.workflow_run.id }}
+
+      - name: No action (not a deploy-group eviction)
+        if: steps.decide.outputs.is_eviction != 'true'
+        run: |
+          echo "Cancellation was not a deploy-group eviction -- leaving the real result untouched."
