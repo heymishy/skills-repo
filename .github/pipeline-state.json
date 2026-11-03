@@ -44896,22 +44896,45 @@
             {
               "slug": "fhff-s3",
               "name": "Extend journeys.js/products.js fixture adoption and DRY-extract the fixture-usage-check scripts",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-01T02:41:15.435Z",
+              "updatedAt": "2026-11-03T19:19:00.180Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s3-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "DRY-extract 3 fixture-usage-check scripts into shared factory + skills.js fixture pair",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "products.js walking skeleton + 1 proof-of-pattern migration",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Migrate 4 more journeys.js-touching files to the shared fixture",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-01-fixture-hardening-fast-follows/plans/fhff-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1051"
             }
           ]
         }

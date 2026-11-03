@@ -5,6 +5,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
+const { journeysFixture } = require('./helpers/journeys-fixture');
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
@@ -40,7 +41,7 @@ async function renderCanvas() {
   const stages = [{ id: 's1', name: 'Evaluate', position: 0, description: null, customer_actions: null, touchpoints: null, channel: null, emotion: null, pain_points: null, opportunities: null, moment_of_truth: false, position_x: null, position_y: null }];
   const pool = makeCanvasMockPool({ id: 'j1', name: 'J', description: null }, stages);
   return withMockedPipelineState(JSON.stringify({ features: [] }), async () => {
-    const req = { session: { tenantId: 't1' }, params: { id: 'j1' } };
+    const req = journeysFixture({ session: { tenantId: 't1' }, params: { id: 'j1' } });
     const res = { status: function(c) { this._s = c; return this; }, json: function(b) { this._b = b; }, _s: 200, _b: null };
     await handleGetJourneyCanvas(req, res, null, pool);
     return res._b.bodyContent;

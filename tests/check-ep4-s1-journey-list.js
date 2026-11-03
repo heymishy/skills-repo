@@ -5,6 +5,7 @@
 // cj-ep4-s1: not to be confused with the unrelated, pre-existing "ep4-s1"
 // story-slug reused elsewhere in this repo's history (Assign pods modal).
 const assert = require('assert');
+const { journeysFixture } = require('./helpers/journeys-fixture');
 
 function makeMockRes() {
   return {
@@ -83,7 +84,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       stages: [{ journey_id: 'j1' }, { journey_id: 'j1' }],
       products: [{ product_id: 'p1', name: 'Widgets', tenant_id: 'org-1' }]
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -105,7 +106,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       stages: [],
       products: []
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -117,7 +118,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // ── AC2 ─────────────────────────────────────────────────────────────────
   try {
     const pool = makeMockPool({ journeys: [], stages: [], products: [] });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -133,7 +134,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       stages: [],
       products: [{ product_id: 'p1', name: 'Widgets', tenant_id: 'org-1' }, { product_id: 'p2', name: 'Gadgets', tenant_id: 'org-1' }]
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -146,7 +147,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // ── AC4 (shape) ─────────────────────────────────────────────────────────
   try {
     const pool = makeMockPool({ journeys: [], stages: [], products: [] });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const script = extractScript(res._b.bodyContent);
@@ -166,7 +167,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       ],
       stages: [], products: []
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -187,7 +188,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       stages: [{ journey_id: 'j2' }, { journey_id: 'j2' }, { journey_id: 'j2' }],
       products: []
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;
@@ -206,7 +207,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       stages: [],
       products: [{ product_id: 'p1', name: 'ResolvedProductName', tenant_id: 'org-1' }]
     });
-    const req = { session: { tenantId: 'org-1' } };
+    const req = journeysFixture();
     const res = makeMockRes();
     await handleGetCustomerJourneysList(req, res, null, pool);
     const html = res._b.bodyContent;

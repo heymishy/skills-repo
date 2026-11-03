@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-11-01-fixture-hardening-fast-follows/stories/fhff-s3-mechanical-fixture-dry-batch.md
 **Technical test plan:** artefacts/2026-11-01-fixture-hardening-fast-follows/test-plans/fhff-s3-test-plan.md
 **Script version:** 1
-**Verified by:** _____________ | **Date:** _____________ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Copilot (/verify-completion) | **Date:** 2026-11-04 | **Context:** [x] Pre-code (post-implementation, pre-PR)  [ ] Post-merge  [ ] Demo
 
 ---
 
@@ -30,8 +30,8 @@
 **Expected outcome:**
 > Each one shows the same number of passing checks as it did before the migration — nothing broke by switching to the shared fixture.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran fresh: `check-ep1-s1-journey-create.js` 8/8, `check-ep1-s2-journey-stage-create.js` 7/7, `check-cnsf-s1-canvas-node-token-styling.js` 6/6, `check-ep4-s1-journey-list.js` 8/8 — all identical to pre-migration counts (confirmed independently during `/subagent-execution`'s own review cycle, not just the implementer's claim).
 
 ---
 
@@ -47,8 +47,8 @@
 **Expected outcome:**
 > The file passes, same as before migration.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** `tests/check-dsa-s2-product-dashboard-wiring.js` imports `productsFixture`/`productsFixtureRes` from `tests/helpers/products-fixture.js` (confirmed via read), no more inline session literal or local `makeRes()`. Ran fresh: all 3 of its own tests pass (`has-products branch`, `zero-products onboarding`, `real-pending-actions-and-journey-data`), exit 0.
 
 ---
 
@@ -63,8 +63,8 @@
 **Expected outcome:**
 > The hand-rolled file is flagged. The migrated file is not.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran fresh: `node scripts/check-products-fixture-usage.js tests/fixtures/fhff-s3-products-hand-rolled.js` → FAIL (flagged, as expected); `node scripts/check-products-fixture-usage.js tests/fixtures/fhff-s3-products-shared-fixture-usage.js` → PASS (not flagged, as expected).
 
 ---
 
@@ -80,8 +80,8 @@
 **Expected outcome:**
 > All of them pass — the journey.js and journeys.js ones exactly as before, and the new skills.js one proves that script now has the same level of checking the other two always had.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran fresh: `check-tsir-s3-journey-fixture-usage-check.js` 4/4 (unchanged from before the DRY refactor), `check-tfhc-s7-journeys-fixture-usage-check.js` 5/5 (unchanged), new `check-tfhc-s3-skills-fixture-usage-check.js` 4/4 — wires the two previously-unused `tfhc-s3-hand-rolled-mockreq.js`/`tfhc-s3-shared-fixture-usage.js` fixtures, closing the exact coverage gap AC4(b) describes.
 
 ---
 
@@ -96,8 +96,8 @@
 **Expected outcome:**
 > It's still correctly flagged as hand-rolled, exactly as it was before this story's refactor.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran fresh: `node scripts/check-journeys-fixture-usage.js tests/fixtures/tfhc-s7-hand-rolled-mockreq-session-not-first.js` → FAIL (flagged), exactly as before — confirms the factory's `AD_HOC_SESSION_WINDOW = 300` windowed-match logic (the `tfhc-s7` bug fix) is retained byte-identical after the DRY extraction.
 
 ---
 
@@ -105,13 +105,13 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 | | |
-| Scenario 2 | | |
-| Scenario 3 | | |
-| Scenario 4 | | |
-| Edge case | | |
+| Scenario 1 | ✅ Pass | 4 migrated journeys.js files, all counts unchanged |
+| Scenario 2 | ✅ Pass | products.js proof-of-pattern migration passes |
+| Scenario 3 | ✅ Pass | products structural check flags/passes correctly |
+| Scenario 4 | ✅ Pass | journey/journeys unchanged, skills.js gap closed |
+| Edge case | ✅ Pass | tfhc-s7 windowed-match fix retained |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---

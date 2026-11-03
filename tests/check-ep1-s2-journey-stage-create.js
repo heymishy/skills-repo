@@ -5,6 +5,7 @@
 // confused with the two other unrelated "ep1-s2" story-slugs already used
 // elsewhere in server.js (migratePodsSchema / signals-panel).
 const assert = require('assert');
+const { journeysFixture } = require('./helpers/journeys-fixture');
 
 const REAL_CSRF = 'ep1-s2-real-token'; // mirrors jcg-s1's own REAL_CSRF convention
 
@@ -59,7 +60,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // AC2 — valid submission inserts customer_journey_stages record, appended at end
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-1' }], maxPosition: 0 });
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } };
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } });
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     const ins = pool._ops.find(op => /INSERT INTO customer_journey_stages/i.test(op.sql));
@@ -75,7 +76,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // AC2 edge case — first stage in an empty journey gets position 0
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-1' }] }); // no maxPosition -> -1 -> position 0
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } };
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } });
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     const ins = pool._ops.find(op => /INSERT INTO customer_journey_stages/i.test(op.sql));
@@ -87,7 +88,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // AC3 — blank name returns 400, no insert
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-1' }], maxPosition: 0 });
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: '', _csrf: REAL_CSRF } };
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: '', _csrf: REAL_CSRF } });
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     assert(res._s === 400, `Expected 400, got ${res._s}`);
@@ -102,7 +103,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       journeys: [{ id: 'j1', tenant_id: 'org-1' }],
       stages: [{ id: 's1', name: 'Discover', position: 0 }]
     });
-    const req = { session: { tenantId: 'org-1' }, params: { id: 'j1' } };
+    const req = journeysFixture({ params: { id: 'j1' } });
     const res = makeMockRes();
     await handleGetJourneyCanvas(req, res, null, pool);
     assert(res._s === 200, `Expected 200, got ${res._s}`);
@@ -114,7 +115,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // (security) CSRF — no or mismatched token is rejected
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-1' }], maxPosition: 0 });
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover' } }; // no _csrf
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover' } }); // no _csrf
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     assert(res._s === 403, `Expected 403, got ${res._s}`);
@@ -125,7 +126,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-1' }], maxPosition: 0 });
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: 'wrong-token' } };
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: 'wrong-token' } });
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     assert(res._s === 403, `Expected 403, got ${res._s}`);
@@ -137,7 +138,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // (security) cross-tenant journey id is rejected as not found
   try {
     const pool = makeMockPool({ journeys: [{ id: 'j1', tenant_id: 'org-OTHER' }], maxPosition: 0 });
-    const req = { session: { tenantId: 'org-1', csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } };
+    const req = journeysFixture({ session: { csrfToken: REAL_CSRF }, params: { id: 'j1' }, body: { name: 'Discover', _csrf: REAL_CSRF } });
     const res = makeMockRes();
     await handlePostJourneyStage(req, res, null, pool);
     assert(res._s === 404, `Expected 404, got ${res._s}`);
