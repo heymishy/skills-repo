@@ -4,6 +4,26 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
 
 ---
 
+- date: 2026-11-04
+  session-phase: review (2026-11-04-inner-loop-cycle-efficiency)
+  signal-type: pattern
+  signal-text: "/review Category C found two related patterns worth tracking: (1) an AC that describes an agent-memory/session property (ilce-s2's AC3, 'fresh is scoped to the same session') without naming a concrete testable mechanism (no session ID or equivalent field) -- this is the testability filter's category (b) in a form specific to agentic systems, not just the usual 'describes implementation not behaviour' case. (2) a story (ilce-s3) that adds a safeguard for one direction of a two-way interaction (spec-fix invalidating code-quality's result) without addressing the reverse direction (code-quality-fix invalidating spec-compliance's result) -- worth checking for on any story introducing a new interaction between two previously-independent checks or dispatches."
+  source: agent-auto
+
+- date: 2026-11-04
+  session-phase: test-plan (2026-11-04-inner-loop-cycle-efficiency)
+  signal-type: pattern
+  signal-text: "Two test-design choices worth reusing: (1) for ilce-s3 (parallel review dispatch, an agentic orchestration behaviour), testability came from extracting the decision logic into a pure function (decideReviewOutcome(specResult, qualityResult)) that can be unit-tested directly, rather than trying to test the LLM dispatch behaviour itself -- the same pattern already used successfully in fhff-s2's isDeployGroupEviction(). (2) for ilce-s4's AC5, the test plan deliberately uses REAL repo data (the 22 already-confirmed merged-but-no-DoD stories) as the regression anchor instead of a synthetic substitute, since the whole point of that AC is catching a real, already-known backlog -- a synthetic fixture would prove the mechanism works in the abstract but not that it catches the specific problem this story exists to solve."
+  source: agent-auto
+
+- date: 2026-11-04
+  session-phase: definition-of-ready (2026-11-04-inner-loop-cycle-efficiency)
+  signal-type: gap
+  signal-text: "/definition-of-ready's mandatory Contract Proposal step caught a real cross-story contract gap that /review and /test-plan both missed on both ilce-s1 and ilce-s2 individually: ilce-s2's AC3 needed a fullSuite boolean on verify-completion-stage timing records to distinguish a full-suite run from a targeted/partial one, but ilce-s1's AC1 (the story that defines the record schema) never specified that field. Neither story's own review caught it because each was reviewed in isolation against its own ACs -- the gap only became visible when ilce-s2's Contract Proposal was checked against what ilce-s1 actually promises to produce. Worth checking explicitly on any pair of stories where one story's AC depends on a specific field/shape from another story's own data output, not just on the other story existing."
+  source: agent-auto
+
+---
+
 - date: 2026-04-28
   session-phase: pre-discovery exploration
   signal-type: pattern

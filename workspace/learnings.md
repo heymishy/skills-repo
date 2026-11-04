@@ -34,6 +34,20 @@ Platform dogfood signal log. One entry per metric measurement event. Populated d
 
 ---
 
+## ADRs need periodic staleness review, not just one-time authoring
+
+### Observed — 2026-11-04
+
+**Circumstance:** At `/definition` for `2026-11-04-inner-loop-cycle-efficiency`, writing the `pipeline-state.json` entry required choosing between flat `feature.stories[]` and epic-nested `feature.epics[].stories[]`. `architecture-guardrails.md`'s ADR-017 explicitly says "all new features use flat... epics-nested shape is legacy and not migrated." A dedicated investigation found ADR-017 is 6 months stale (dated 2026-05-02) and was never acted on — the 5 most recently updated features in the repo, including `fhff` itself, are all epic-nested, and the two systems that actually matter here (`/workflow`'s reconciliation logic, the pipeline visualiser) are both built around the nested shape, not the one the ADR recommends.
+
+**Gap:** ADRs are written once, at a point-in-time decision, but nothing re-checks whether they still match actual practice as the product/tooling evolves around them. This is the second time this session an architecture/product document was found describing a state that doesn't match current reality (the first: `product/tech-stack.md`'s Phase 4/5 section describes an aspirational file structure — `skills/core/discovery.md`, `workspace/traces/` — that doesn't match the actual `skills/discovery/SKILL.md` paths and mechanisms in current use).
+
+**Learning:** when a written ADR or architecture doc conflicts with how the actual skills/tooling behave today, verify against the tooling's real behavior before trusting the doc — a written decision record is a point-in-time snapshot, not a live guarantee that it's still being followed. A regular-ish review cadence for ADR staleness and continued appropriateness, as the product evolves, would catch this class of drift before it has to be rediscovered ad hoc at decomposition time. How to run that cadence (a periodic `/trace`-style sweep? a dated review field on each ADR?) is a separate question, not resolved here.
+
+**Action:** None taken beyond logging — flagged as a future platform-maintenance candidate, not actioned within this feature's scope.
+
+---
+
 ## Pipeline gap — learnings.md not written at definition phase completion
 
 ### Observed — 2026-04-09
