@@ -17,6 +17,24 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   source: agent-auto
 
 - date: 2026-11-04
+  session-phase: implementation-plan (2026-11-04-inner-loop-cycle-efficiency)
+  signal-type: gap
+  signal-text: "The pipeline-state-write-safety 'fetch from origin master' procedure in implementation-plan/SKILL.md caught a real gap this session: the feature-level bookkeeping commit (a7f1c858) had been made to LOCAL master but never pushed to origin. Fetching origin/master returned the OLD sha (c41c3360, pre-dating the whole feature), and reading that content would have silently reverted the new feature's pipeline-state.json entry entirely. Fixed by pushing local master to origin before retrying the fetch-merge-write. Confirms the fetch-based procedure works as designed -- it surfaced the staleness as a crash (missing feature) rather than a silent overwrite. Separately hit the same execSync ENOBUFS issue on 'git show origin/master:...' already logged earlier this session -- fixed inline this time with an increased maxBuffer option rather than the file-redirect workaround, a simpler fix worth preferring when just raising the buffer size is sufficient."
+  source: agent-auto
+
+- date: 2026-11-04
+  session-phase: subagent-execution (2026-11-04-inner-loop-cycle-efficiency, ilce-s1 Task 6)
+  signal-type: gap
+  signal-text: "Minor, out-of-scope consistency gap found during Task 6 code-quality review: skills/branch-setup/SKILL.md never received the featureSlug/storySlug-sourcing clarifying sentence that implementation-plan/verify-completion/branch-complete/subagent-execution all have (after review corrections during Tasks 5-6) -- it still has only the original bare Timing instrumentation sentence from the Task 5 commit (98103f2e), untouched by any of the 3 later fix commits. The sentence would be equally accurate there (same qualifying artefact-path references exist in that file). Not fixed within ilce-s1 -- its own review cycle already closed; logging as a trivial follow-up for whichever story next touches branch-setup/SKILL.md, not worth reopening a closed task for."
+  source: agent-auto
+
+- date: 2026-11-04
+  session-phase: subagent-execution (2026-11-04-inner-loop-cycle-efficiency, ilce-s1 Task 4)
+  signal-type: gap
+  signal-text: "tests/known-baseline-failures.json (the repo's own authoritative pre-existing-failure list, consumed by scripts/ci-test-regression-check.js to gate CI) is badly stale: last refreshed 2026-07-16, and a fresh run against it this session showed 69 of its 70 listed files now pass (should have been pruned already), while 2 real currently-failing files (check-cat-s1-core-trace-builder.js, check-pcr-s1-test-runner.js) are NOT in it, so the regression checker flags them as 'new regressions' even though they are genuinely pre-existing (confirmed via this story's own /branch-setup baseline run, captured before any code existed). Worth a dedicated baseline-refresh story (mirroring the repo's own prior tst-s1 pattern) -- out of scope for ilce-s1 to fix itself, since the 2 flagged files are unrelated to this story's own changes."
+  source: agent-auto
+
+- date: 2026-11-04
   session-phase: definition-of-ready (2026-11-04-inner-loop-cycle-efficiency)
   signal-type: gap
   signal-text: "/definition-of-ready's mandatory Contract Proposal step caught a real cross-story contract gap that /review and /test-plan both missed on both ilce-s1 and ilce-s2 individually: ilce-s2's AC3 needed a fullSuite boolean on verify-completion-stage timing records to distinguish a full-suite run from a targeted/partial one, but ilce-s1's AC1 (the story that defines the record schema) never specified that field. Neither story's own review caught it because each was reviewed in isolation against its own ACs -- the gap only became visible when ilce-s2's Contract Proposal was checked against what ilce-s1 actually promises to produce. Worth checking explicitly on any pair of stories where one story's AC depends on a specific field/shape from another story's own data output, not just on the other story existing."
