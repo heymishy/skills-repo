@@ -18,4 +18,8 @@ function isFresh(record, context) {
   return commitTime <= recordTime;
 }
 
-module.exports = { isFresh };
+function decideSkipOrRun(record, context) {
+  return { skipped: isFresh(record, context) };
+}
+
+module.exports = { isFresh, decideSkipOrRun };

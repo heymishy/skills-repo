@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const LOG_PATH = path.join(__dirname, '..', '..', '.github', 'pipeline-timings.jsonl');
-const ALLOWED_FIELDS = ['skill', 'featureSlug', 'storySlug', 'stage', 'timestamp', 'dispatchCount', 'fullSuite'];
+const ALLOWED_FIELDS = ['skill', 'featureSlug', 'storySlug', 'stage', 'timestamp', 'dispatchCount', 'fullSuite', 'skipped'];
 const REQUIRED_FIELDS = ['skill', 'featureSlug', 'storySlug', 'stage', 'timestamp'];
 
 function validateRecord(record) {
