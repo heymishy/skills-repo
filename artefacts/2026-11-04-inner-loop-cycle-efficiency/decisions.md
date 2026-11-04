@@ -67,6 +67,16 @@
 ---
 
 ---
+**2026-11-04 | RISK-ACCEPT | branch-setup**
+**Decision:** Proceeding with `ilce-s1`'s worktree baseline despite 4 pre-existing test failures (`scripts/check-pipeline-state-integrity.js`, `tests/check-cat-s1-core-trace-builder.js`, `tests/check-pcr-s1-test-runner.js`, `tests/check-p3.5-validate-trace.js`) — none caused by this feature, which has not written any code yet.
+**Alternatives considered:** (a) investigate and fix all 4 before proceeding — rejected, 3 of the 4 are the same already-documented rotating contention-flake category observed repeatedly this session (`cat-s1`/`pcr-s1`/`p3.5`/`rb-s3`), and the 4th (`tfhc-s1`'s `testPlan.passing` drift) is a real but entirely unrelated pre-existing data issue in a different feature.
+**Rationale:** fixing unrelated pre-existing issues is out of scope for this story; the known flake category has been independently reconfirmed as intermittent/contention-driven multiple times this session, and `tfhc-s1`'s drift is tracked separately, not introduced by this work.
+**Made by:** Hamish King (via /branch-setup, 2026-11-04)
+**Revisit trigger:** if any of these 4 files' failures ever correlate with a change this feature actually makes (none currently touch `check-pipeline-state-integrity.js`'s logic, trace-builder, test-runner, or `validate-trace`), re-open as a real regression.
+**Strengthened 2026-11-04 (post-Task-4):** `scripts/ci-test-regression-check.js` (the repo's own authoritative CI gate) flagged `check-cat-s1-core-trace-builder.js` and `check-pcr-s1-test-runner.js` as "NEW regressions" because `tests/known-baseline-failures.json` is stale (last refreshed 2026-07-16; 69 of its 70 listed files now pass, per this run). This is not evidence of a real regression from this story — `/branch-setup`'s own baseline run, captured before any `ilce-s1` code existed, already showed these exact two files failing. The stale baseline file is a separate, out-of-scope finding (logged to `capture-log.md`), not something this story caused or should fix.
+---
+
+---
 **2026-11-04 | ASSUMPTION | discovery/clarify**
 **Decision:** Instrumentation is a new, standalone append-only log, `.github/pipeline-timings.jsonl`, written by each relevant skill's own "State update" step — not new fields added to `pipeline-state.json`, and not further mining of Claude Code's own session-transcript logs.
 **Alternatives considered:** (a) add timing fields directly into `pipeline-state.json` — rejected, triggers CLAUDE.md's Artefact-first rule's schema-change requirement for no real benefit, and risks the large-JSON read-modify-write fragility already experienced in the session preceding this discovery; (b) continue mining Claude Code's session-transcript logs — rejected, confirmed unreliable in that same session (`gitBranch` broken by git worktrees, slug-text-matching contaminated by later, unrelated citations).
