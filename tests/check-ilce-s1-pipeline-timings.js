@@ -104,7 +104,7 @@ test('appendTimingRecord does not throw when the underlying write fails', () => 
   assert.strictEqual(result, false, 'appendTimingRecord must return false on write failure, not throw');
 });
 
-test('two near-simultaneous append calls do not corrupt the log file', () => {
+test('multiple sequential appendTimingRecord calls each produce a separate, valid JSON line', () => {
   const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
   const logPath = tempLogPath();
   appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'existing', stage: 'branch-setup' }, logPath);
