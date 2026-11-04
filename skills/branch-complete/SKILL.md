@@ -30,6 +30,8 @@ If not:
 
 ## Step 1 - Final test verification
 
+**Before running the full suite below, check for an already-fresh `/verify-completion` result** — read the most recent `verify-completion`-stage record for this story via `scripts/lib/pipeline-timings.js`'s reader and pass it to `scripts/lib/branch-complete-freshness.js`'s `decideSkipOrRun(record, {lastCommitTimestamp})`. If `decideSkipOrRun` returns `{skipped: true}`, reuse that result and skip the rerun below — append `{skipped: true}` to the timing log via `appendTimingRecord` and proceed to Step 2. If `{skipped: false}`, run the full suite as below, then append `{skipped: false}`.
+
 ```bash
 [test command]
 ```

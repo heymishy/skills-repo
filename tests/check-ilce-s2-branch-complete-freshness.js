@@ -72,6 +72,17 @@ test('decideSkipOrRun returns skipped:false when not fresh', () => {
   assert.strictEqual(decision.skipped, false);
 });
 
+test('branch-complete SKILL.md Step 1 references the freshness-check module', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/branch-complete/SKILL.md'), 'utf8');
+  const step1Index = content.indexOf('## Step 1');
+  const freshnessRefIndex = content.indexOf('branch-complete-freshness');
+  assert.ok(step1Index !== -1, 'must have a "## Step 1" heading');
+  assert.ok(freshnessRefIndex !== -1, 'must reference branch-complete-freshness.js');
+  assert.ok(freshnessRefIndex > step1Index, 'the reference must appear within or after Step 1, not elsewhere in the file');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
