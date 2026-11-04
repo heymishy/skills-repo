@@ -45513,26 +45513,67 @@
         {
           "slug": "inner-loop-timing-instrumentation",
           "name": "Operators can measure real inner-loop cycle time without manual log archaeology",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "ilce-s1",
               "name": "Add structured per-skill timing writes to pipeline-timings.jsonl",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T05:56:10.092Z",
+              "updatedAt": "2026-11-04T17:21:30.417Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Core append function -- required fields, allowlist sanitization, fresh-file creation",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Stage-conditional fields (dispatchCount, fullSuite) regression coverage",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Schema validation and non-fatal write-failure regression coverage",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Concurrent-write safety regression coverage",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire timing write into branch-setup, implementation-plan, verify-completion, branch-complete",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Wire timing write into subagent-execution with dispatchCount",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1052"
             },
             {
               "slug": "ilce-s2",

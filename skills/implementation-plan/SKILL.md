@@ -166,6 +166,8 @@ The visualiser shows tasks as soon as the plan is saved; if you skip this write,
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is this skill's own name, `stage` matches this skill's stage value. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 **Pipeline-state write safety — fetch from master before every write:**

@@ -162,6 +162,7 @@ Repeat until ✅.
 - Record the ending git SHA for this task
 - **Write `pipeline-state.json` locally now, but do not commit it per task** (see "State-write cadence vs. commit cadence" below): set this task's `tddState: "committed"`, run the task's own targeted test file(s) (see "Test run scope per task" below), set `testPlan.passing` to the current count, update story `updatedAt` — write these fields to the local file only.
 - **Commit `pipeline-state.json` in a batch** at the next natural checkpoint (end of `/implementation-plan`, then covering all tasks together at `/verify-completion`) — not after every individual task. This halves the commit count on multi-task stories without losing resumability: the local file already carries every task's true state within the same worktree session.
+- Also append this task's timing record now (see "Timing instrumentation" in the State update section below) — this is a per-task write, not deferred to story end.
 
 **Why this distinction exists (2026-08-23 clarification):** full-history commit-density analysis across ~30 stories found this step's earlier wording ("update pipeline-state.json now... fetch from origin/master first... then set this task's tddState") was read literally by some sessions as "commit after every task," producing 2.5–2.8 commits/task on affected stories versus 1.3–2.0 on stories that batched instead — with zero evidence the extra commits caught anything the batched pattern missed. See `artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md` for the full evidence base and the commits-per-task target this change is measured against.
 
@@ -235,6 +236,8 @@ least capable model that can handle each role to conserve cost:
 ---
 
 ## State update — mandatory final step
+
+**Timing instrumentation:** After each task's dispatch round completes, append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill: 'subagent-execution', featureSlug, storySlug, stage: 'subagent-execution', dispatchCount})` — `dispatchCount` is the number of subagent dispatches issued for that task (implementer + reviewer(s), counting any re-dispatch). `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. A write failure here is non-fatal and must not block this skill's own completion.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
