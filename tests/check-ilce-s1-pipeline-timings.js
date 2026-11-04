@@ -74,6 +74,36 @@ test('appendTimingRecord includes fullSuite only when provided', () => {
   fs.unlinkSync(logPath);
 });
 
+test('validateRecord rejects a record missing a required field', () => {
+  const { validateRecord } = require('../scripts/lib/pipeline-timings');
+  const result = validateRecord({ skill: 'branch-setup', featureSlug: 'test-feat', stage: 'branch-setup', timestamp: new Date().toISOString() });
+  assert.strictEqual(result.valid, false);
+  assert.ok(/storySlug/.test(result.reason), 'reason must name the missing field');
+});
+
+test('validateRecord accepts a well-formed record', () => {
+  const { validateRecord } = require('../scripts/lib/pipeline-timings');
+  const result = validateRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup', timestamp: new Date().toISOString() });
+  assert.strictEqual(result.valid, true);
+});
+
+test('appendTimingRecord does not throw when the underlying write fails', () => {
+  const pipelineTimings = require('../scripts/lib/pipeline-timings');
+  const originalAppend = fs.appendFileSync;
+  fs.appendFileSync = () => { throw new Error('simulated disk failure'); };
+  let threw = false;
+  let result;
+  try {
+    result = pipelineTimings.appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup' }, tempLogPath());
+  } catch (e) {
+    threw = true;
+  } finally {
+    fs.appendFileSync = originalAppend;
+  }
+  assert.strictEqual(threw, false, 'appendTimingRecord must not throw on write failure');
+  assert.strictEqual(result, false, 'appendTimingRecord must return false on write failure, not throw');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
