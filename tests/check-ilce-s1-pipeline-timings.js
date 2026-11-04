@@ -66,9 +66,11 @@ test('appendTimingRecord includes fullSuite only when provided', () => {
   const logPath = tempLogPath();
   appendTimingRecord({ skill: 'verify-completion', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'verify-completion', fullSuite: true }, logPath);
   appendTimingRecord({ skill: 'verify-completion', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'verify-completion', fullSuite: false }, logPath);
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup' }, logPath);
   const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
   assert.strictEqual(lines[0].fullSuite, true);
   assert.strictEqual(lines[1].fullSuite, false);
+  assert.ok(!('fullSuite' in lines[2]), 'a record with no fullSuite passed in must not contain the field');
   fs.unlinkSync(logPath);
 });
 
