@@ -45513,7 +45513,7 @@
         {
           "slug": "inner-loop-timing-instrumentation",
           "name": "Operators can measure real inner-loop cycle time without manual log archaeology",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ilce-s1",
@@ -45578,21 +45578,44 @@
             {
               "slug": "ilce-s2",
               "name": "/branch-complete skips the redundant full-suite rerun when a fresh result exists",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T05:56:10.092Z",
+              "updatedAt": "2026-11-04T19:57:22.764Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Core freshness-check function -- commit-state and fullSuite conditions",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Skip/ran decision logged to the timing log",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire the freshness check into /branch-complete's Step 1",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1053"
             }
           ]
         },

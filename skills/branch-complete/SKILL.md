@@ -30,11 +30,13 @@ If not:
 
 ## Step 1 - Final test verification
 
+**Before running the full suite below, check for an already-fresh `/verify-completion` result** — read the most recent `verify-completion`-stage record for this story via `scripts/lib/pipeline-timings.js`'s `getMostRecentRecord({storySlug, featureSlug, stage: 'verify-completion'})` (both `storySlug` and `featureSlug` as the filter, not just "this story," to guard against slug collisions across features) and pass the result to `scripts/lib/branch-complete-freshness.js`'s `decideSkipOrRun(record, {lastCommitTimestamp})`. If `decideSkipOrRun` returns `{skipped: true}`, reuse that result and skip the rerun below and proceed to Step 2. If `{skipped: false}`, run the full suite as below. Either way, do not append a timing record here — hold this decision for the State-update step below, which appends the single timing record for this run, including `skipped`.
+
 ```bash
 [test command]
 ```
 
-Also re-run `/verify-completion`'s route/handler E2E coverage check if the diff has changed since that gate last ran — confirm nothing new is broken and the same residual-risk list from its Step 4 report still holds.
+Also re-run `/verify-completion`'s route/handler E2E coverage check if the diff has changed since that gate last ran — confirm nothing new is broken and the same residual-risk list from its Step 4 report still holds. This E2E recheck has its own independent condition (whether the diff has changed since that gate last ran) and always runs as specified above regardless of the skip/run decision above — skipping the full-suite rerun does not skip or otherwise affect it.
 
 **If tests fail:**
 
@@ -259,7 +261,7 @@ git worktree remove [worktree-path]
 
 ## State update - mandatory final step
 
-**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is this skill's own name, `stage` matches this skill's stage value. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. The timing record's `stage` is always the literal `'branch-complete'`, regardless of what value this skill writes to `pipeline-state.json`'s own `stage` field in the discard-without-PR case — these are two different concepts that happen to usually match.
+**Timing instrumentation:** Append exactly one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, skipped})` — `skill` is this skill's own name, `stage` matches this skill's stage value, and `skipped` carries the `{skipped: true|false}` decision computed by Step 1's `decideSkipOrRun` call. This is the one-and-only timing record written for this skill run — Step 1 only computes and holds the decision; it does not append anything itself. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. The timing record's `stage` is always the literal `'branch-complete'`, regardless of what value this skill writes to `pipeline-state.json`'s own `stage` field in the discard-without-PR case — these are two different concepts that happen to usually match.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 

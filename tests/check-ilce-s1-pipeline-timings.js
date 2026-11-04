@@ -74,6 +74,19 @@ test('appendTimingRecord includes fullSuite only when provided', () => {
   fs.unlinkSync(logPath);
 });
 
+test('appendTimingRecord includes skipped only when provided', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'branch-complete', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-complete', skipped: true }, logPath);
+  appendTimingRecord({ skill: 'branch-complete', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-complete', skipped: false }, logPath);
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup' }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.strictEqual(lines[0].skipped, true);
+  assert.strictEqual(lines[1].skipped, false);
+  assert.ok(!('skipped' in lines[2]), 'a record with no skipped passed in must not contain the field');
+  fs.unlinkSync(logPath);
+});
+
 test('validateRecord rejects a record missing a required field', () => {
   const { validateRecord } = require('../scripts/lib/pipeline-timings');
   const result = validateRecord({ skill: 'branch-setup', featureSlug: 'test-feat', stage: 'branch-setup', timestamp: new Date().toISOString() });
@@ -131,6 +144,52 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
     assert.ok(timingsRefIndex !== -1, relPath + ' must reference pipeline-timings.jsonl');
     assert.ok(timingsRefIndex > stateUpdateIndex, relPath + ' must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
   });
+});
+
+test('getMostRecentRecord returns the most recent of several matching records by timestamp', () => {
+  const { appendTimingRecord, getMostRecentRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  const fixedAppend = (record, ts, lp) => {
+    fs.appendFileSync(lp, JSON.stringify(Object.assign({}, record, { timestamp: ts })) + '\n', 'utf8');
+  };
+  fixedAppend({ skill: 'verify-completion', featureSlug: 'ilce', storySlug: 'ilce-s2', stage: 'verify-completion' }, '2026-11-04T00:00:00.000Z', logPath);
+  fixedAppend({ skill: 'verify-completion', featureSlug: 'ilce', storySlug: 'ilce-s2', stage: 'verify-completion' }, '2026-11-05T00:00:00.000Z', logPath);
+  fixedAppend({ skill: 'verify-completion', featureSlug: 'ilce', storySlug: 'ilce-s2', stage: 'verify-completion' }, '2026-11-03T00:00:00.000Z', logPath);
+  const record = getMostRecentRecord({ storySlug: 'ilce-s2', stage: 'verify-completion' }, logPath);
+  assert.ok(record, 'expected a matching record');
+  assert.strictEqual(record.timestamp, '2026-11-05T00:00:00.000Z');
+  fs.unlinkSync(logPath);
+});
+
+test('getMostRecentRecord returns null when no record matches the filter', () => {
+  const { appendTimingRecord, getMostRecentRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'ilce', storySlug: 'ilce-s2', stage: 'branch-setup' }, logPath);
+  const record = getMostRecentRecord({ storySlug: 'ilce-s2', stage: 'verify-completion' }, logPath);
+  assert.strictEqual(record, null);
+  fs.unlinkSync(logPath);
+});
+
+test('getMostRecentRecord returns null when the log file does not exist at all', () => {
+  const { getMostRecentRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  assert.ok(!fs.existsSync(logPath), 'precondition: file must not exist yet');
+  const record = getMostRecentRecord({ storySlug: 'ilce-s2', stage: 'verify-completion' }, logPath);
+  assert.strictEqual(record, null);
+});
+
+test('getMostRecentRecord skips a malformed/unparseable line without throwing and still finds the correct record', () => {
+  const { appendTimingRecord, getMostRecentRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'verify-completion', featureSlug: 'ilce', storySlug: 'ilce-s2', stage: 'verify-completion' }, logPath);
+  fs.appendFileSync(logPath, 'this is not valid json {{{\n', 'utf8');
+  let record;
+  assert.doesNotThrow(() => {
+    record = getMostRecentRecord({ storySlug: 'ilce-s2', stage: 'verify-completion' }, logPath);
+  });
+  assert.ok(record, 'expected the valid record to still be found');
+  assert.strictEqual(record.storySlug, 'ilce-s2');
+  fs.unlinkSync(logPath);
 });
 
 test('subagent-execution SKILL.md references pipeline-timings and dispatchCount', () => {
