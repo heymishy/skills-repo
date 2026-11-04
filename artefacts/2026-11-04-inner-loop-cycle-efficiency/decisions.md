@@ -76,6 +76,24 @@
 ---
 
 ---
+**2026-11-05 | RISK-ACCEPT | branch-setup**
+**Decision:** Proceeding with `ilce-s2`'s worktree baseline despite 3 pre-existing test failures (`scripts/check-pipeline-state-integrity.js`, `tests/check-pcr-s1-test-runner.js`, `tests/check-p3.5-validate-trace.js`) — same established category as `ilce-s1`'s own baseline, none caused by this story.
+**Alternatives considered:** investigate and fix — rejected, same reasoning as `ilce-s1`'s own RISK-ACCEPT: these are already-documented pre-existing/flaky failures unrelated to this feature.
+**Rationale:** confirmed via direct baseline run before any `ilce-s2` code existed; fixing unrelated pre-existing issues is out of scope for this story.
+**Made by:** Hamish King (via /branch-setup, 2026-11-05)
+**Revisit trigger:** same as `ilce-s1`'s — if any of these files' failures ever correlate with a change this feature actually makes, re-open as a real regression.
+---
+
+---
+**2026-11-05 | SCOPE | subagent-execution**
+**Decision:** Added `getMostRecentRecord(filter, logPath)` to `scripts/lib/pipeline-timings.js` (`ilce-s1`'s already-merged module) during `ilce-s2`'s Task 3 code-quality review, after discovering no read/query function existed at all.
+**Alternatives considered:** (a) rewrite `/branch-complete`'s Step 1 to manually parse `.github/pipeline-timings.jsonl` inline (split/JSON.parse/filter/max-timestamp) rather than naming a shared function — rejected, duplicates logic every other reader-style instruction would also need, and this repo's own pattern is a shared `scripts/lib/` module, not inline parsing in SKILL.md prose; (b) add the reader now, exported alongside `ilce-s1`'s existing functions — chosen.
+**Rationale:** `ilce-s1`'s own AC1 only ever required *appending* records — reading them back was never in scope for that story. `ilce-s2`'s DoR contract (`ilce-s2-dor-contract.md`) assumed "ilce-s1's appendTimingRecord/reader API" already existed and said not to invent a parallel mechanism — but no reader was ever actually built. This assumption went unverified through `/definition-of-ready`'s Contract Review, Task 3's implementation, and its first code-quality review pass, and was only caught on a close prose-level re-read during review. A genuine gap between what one story's DoR assumed and what the upstream story actually shipped — the same class of issue the `fullSuite` cross-story contract gap caught earlier, just a round later this time.
+**Made by:** Hamish King (via /subagent-execution Task 3 code-quality review, 2026-11-05)
+**Revisit trigger:** none — `getMostRecentRecord` is now part of `pipeline-timings.js`'s shipped, tested contract. Worth checking at `/definition-of-ready` time, going forward, whether a DoR contract's stated dependency on an upstream module's function actually exists in that module's real exports, not just its own narrative description.
+---
+
+---
 
 ## Architecture Decision Records
 
