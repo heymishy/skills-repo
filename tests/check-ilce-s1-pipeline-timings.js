@@ -116,6 +116,19 @@ test('multiple sequential appendTimingRecord calls each produce a separate, vali
   fs.unlinkSync(logPath);
 });
 
+test('branch-setup, implementation-plan, verify-completion, and branch-complete SKILL.md files reference pipeline-timings', () => {
+  const skillFiles = [
+    'skills/branch-setup/SKILL.md',
+    'skills/implementation-plan/SKILL.md',
+    'skills/verify-completion/SKILL.md',
+    'skills/branch-complete/SKILL.md',
+  ];
+  skillFiles.forEach(relPath => {
+    const content = fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+    assert.ok(content.includes('pipeline-timings.jsonl'), relPath + ' must reference pipeline-timings.jsonl in its State update section');
+  });
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
