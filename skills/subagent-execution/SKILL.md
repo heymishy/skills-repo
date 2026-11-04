@@ -236,6 +236,8 @@ least capable model that can handle each role to conserve cost:
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** After each task's dispatch round completes, append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill: 'subagent-execution', featureSlug, storySlug, stage: 'subagent-execution', dispatchCount})` — `dispatchCount` is the number of subagent dispatches issued for that task (implementer + reviewer(s), counting any re-dispatch). `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 **Pipeline-state write safety — fetch from master before writing at a checkpoint, not before every local task-state update:**

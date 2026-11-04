@@ -133,6 +133,12 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
   });
 });
 
+test('subagent-execution SKILL.md references pipeline-timings and dispatchCount', () => {
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/subagent-execution/SKILL.md'), 'utf8');
+  assert.ok(content.includes('pipeline-timings.jsonl'), 'must reference pipeline-timings.jsonl');
+  assert.ok(content.includes('dispatchCount'), 'must reference dispatchCount specifically');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
