@@ -74,6 +74,19 @@ test('appendTimingRecord includes fullSuite only when provided', () => {
   fs.unlinkSync(logPath);
 });
 
+test('appendTimingRecord includes skipped only when provided', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'branch-complete', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-complete', skipped: true }, logPath);
+  appendTimingRecord({ skill: 'branch-complete', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-complete', skipped: false }, logPath);
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup' }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.strictEqual(lines[0].skipped, true);
+  assert.strictEqual(lines[1].skipped, false);
+  assert.ok(!('skipped' in lines[2]), 'a record with no skipped passed in must not contain the field');
+  fs.unlinkSync(logPath);
+});
+
 test('validateRecord rejects a record missing a required field', () => {
   const { validateRecord } = require('../scripts/lib/pipeline-timings');
   const result = validateRecord({ skill: 'branch-setup', featureSlug: 'test-feat', stage: 'branch-setup', timestamp: new Date().toISOString() });

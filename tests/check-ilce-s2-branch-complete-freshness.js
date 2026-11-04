@@ -58,23 +58,11 @@ test('isFresh returns false without throwing when a timestamp is malformed (NaN 
   assert.strictEqual(result, false);
 });
 
-test('decideSkipOrRun returns skipped:true when fresh, and appends that to the timing log', () => {
+test('decideSkipOrRun returns skipped:true when fresh', () => {
   const { decideSkipOrRun } = require('../scripts/lib/branch-complete-freshness');
-  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
-  const os = require('os');
-  const path = require('path');
-  const fs = require('fs');
-  const logPath = path.join(os.tmpdir(), 'ilce-s2-decision-' + Date.now() + '.jsonl');
-
   const freshRecord = { stage: 'verify-completion', fullSuite: true, timestamp: '2026-11-05T00:00:00.000Z' };
   const decision = decideSkipOrRun(freshRecord, { lastCommitTimestamp: '2026-11-04T23:00:00.000Z' });
   assert.strictEqual(decision.skipped, true);
-
-  appendTimingRecord({ skill: 'branch-complete', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-complete', skipped: decision.skipped }, logPath);
-  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n');
-  const written = JSON.parse(lines[lines.length - 1]);
-  assert.strictEqual(written.skipped, true);
-  fs.unlinkSync(logPath);
 });
 
 test('decideSkipOrRun returns skipped:false when not fresh', () => {
