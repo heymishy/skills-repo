@@ -104,6 +104,18 @@ test('appendTimingRecord does not throw when the underlying write fails', () => 
   assert.strictEqual(result, false, 'appendTimingRecord must return false on write failure, not throw');
 });
 
+test('two near-simultaneous append calls do not corrupt the log file', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'existing', stage: 'branch-setup' }, logPath);
+  appendTimingRecord({ skill: 'implementation-plan', featureSlug: 'test-feat', storySlug: 'concurrent-a', stage: 'implementation-plan' }, logPath);
+  appendTimingRecord({ skill: 'implementation-plan', featureSlug: 'test-feat', storySlug: 'concurrent-b', stage: 'implementation-plan' }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n');
+  assert.strictEqual(lines.length, 3, 'all 3 appends must be present as 3 separate lines');
+  lines.forEach(line => assert.doesNotThrow(() => JSON.parse(line), 'every line must parse as valid JSON, none interleaved or truncated'));
+  fs.unlinkSync(logPath);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
