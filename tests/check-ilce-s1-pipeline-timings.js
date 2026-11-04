@@ -135,8 +135,14 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
 
 test('subagent-execution SKILL.md references pipeline-timings and dispatchCount', () => {
   const content = fs.readFileSync(path.join(__dirname, '..', 'skills/subagent-execution/SKILL.md'), 'utf8');
-  assert.ok(content.includes('pipeline-timings.jsonl'), 'must reference pipeline-timings.jsonl');
+  const stateUpdateIndex = content.indexOf('## State update');
+  const timingsRefIndex = content.indexOf('pipeline-timings.jsonl');
+  const dispatchCountIndex = content.indexOf('dispatchCount');
+  assert.ok(stateUpdateIndex !== -1, 'must have a "## State update" heading');
+  assert.ok(timingsRefIndex !== -1, 'must reference pipeline-timings.jsonl');
   assert.ok(content.includes('dispatchCount'), 'must reference dispatchCount specifically');
+  assert.ok(timingsRefIndex > stateUpdateIndex, 'must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
+  assert.ok(dispatchCountIndex > stateUpdateIndex, 'must reference dispatchCount after its "## State update" heading, not merely somewhere in the file');
 });
 
 console.log('\n── Summary ──');
