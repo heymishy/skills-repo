@@ -125,7 +125,11 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
   ];
   skillFiles.forEach(relPath => {
     const content = fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
-    assert.ok(content.includes('pipeline-timings.jsonl'), relPath + ' must reference pipeline-timings.jsonl in its State update section');
+    const stateUpdateIndex = content.indexOf('## State update');
+    const timingsRefIndex = content.indexOf('pipeline-timings.jsonl');
+    assert.ok(stateUpdateIndex !== -1, relPath + ' must have a "## State update" heading');
+    assert.ok(timingsRefIndex !== -1, relPath + ' must reference pipeline-timings.jsonl');
+    assert.ok(timingsRefIndex > stateUpdateIndex, relPath + ' must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
   });
 });
 
