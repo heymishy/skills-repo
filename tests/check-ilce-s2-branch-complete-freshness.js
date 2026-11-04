@@ -44,6 +44,20 @@ test('isFresh returns false when no verify-completion record is provided', () =>
   assert.strictEqual(result, false);
 });
 
+test('isFresh returns true when the commit timestamp exactly equals the record timestamp (boundary)', () => {
+  const { isFresh } = require('../scripts/lib/branch-complete-freshness');
+  const record = { stage: 'verify-completion', fullSuite: true, timestamp: '2026-11-05T00:00:00.000Z' };
+  const result = isFresh(record, { lastCommitTimestamp: '2026-11-05T00:00:00.000Z' });
+  assert.strictEqual(result, true);
+});
+
+test('isFresh returns false without throwing when a timestamp is malformed (NaN guard)', () => {
+  const { isFresh } = require('../scripts/lib/branch-complete-freshness');
+  const record = { stage: 'verify-completion', fullSuite: true, timestamp: 'not-a-date' };
+  const result = isFresh(record, { lastCommitTimestamp: '2026-11-05T00:00:00.000Z' });
+  assert.strictEqual(result, false);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
