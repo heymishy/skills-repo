@@ -16,6 +16,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-text: "Two test-design choices worth reusing: (1) for ilce-s3 (parallel review dispatch, an agentic orchestration behaviour), testability came from extracting the decision logic into a pure function (decideReviewOutcome(specResult, qualityResult)) that can be unit-tested directly, rather than trying to test the LLM dispatch behaviour itself -- the same pattern already used successfully in fhff-s2's isDeployGroupEviction(). (2) for ilce-s4's AC5, the test plan deliberately uses REAL repo data (the 22 already-confirmed merged-but-no-DoD stories) as the regression anchor instead of a synthetic substitute, since the whole point of that AC is catching a real, already-known backlog -- a synthetic fixture would prove the mechanism works in the abstract but not that it catches the specific problem this story exists to solve."
   source: agent-auto
 
+- date: 2026-11-05
+  session-phase: subagent-execution (2026-11-04-inner-loop-cycle-efficiency, ilce-s2 Task 3)
+  signal-type: gap
+  signal-text: "A DoR contract's stated dependency on an upstream story's function ('build on ilce-s1's appendTimingRecord/reader API') went unverified against that module's actual real exports through /definition-of-ready's own Contract Review, Task 3's implementation, and its first code-quality review pass -- the referenced 'reader' function never existed in ilce-s1's shipped code (only appendTimingRecord/validateRecord/sanitizeRecord). Only caught on a close prose-level re-read during a SECOND code-quality review pass. Same class of issue as the earlier fullSuite cross-story contract gap (caught at DoR this time, not caught until implementation this time) -- worth a standing check: when a DoR contract names a specific function from an upstream module, grep that module's real exports before accepting the contract, don't trust the contract's own narrative description of what the upstream module provides."
+  source: agent-auto
+
 - date: 2026-11-04
   session-phase: implementation-plan (2026-11-04-inner-loop-cycle-efficiency)
   signal-type: gap
