@@ -222,6 +222,38 @@ test('workflow SKILL.md instructs surfacing the gh-unavailable warning, not sile
   assert.ok(content.includes('.warning'), 'must reference the result object\'s warning field');
 });
 
+// AC5: the check correctly identifies every real, currently-known merged-but-no-DoD story.
+// Computed dynamically (not hardcoded) to avoid a brittle test -- the real count will have
+// grown or shrunk since the original 2026-11-04 audit.
+test('runReconciliationCheck finds every real merged-but-no-DoD story in this repo\'s own pipeline-state.json', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const { flattenStories, runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const realPipelineState = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '.github/pipeline-state.json'), 'utf8'));
+  const realStories = flattenStories(realPipelineState);
+  const expectedSlugs = new Set(
+    realStories.filter(s => s.prStatus === 'merged' && s.dodStatus !== 'complete').map(s => s.slug)
+  );
+  assert.ok(expectedSlugs.size > 0, 'this repo is expected to have at least one real merged-but-no-DoD story at the time this test runs');
+  const noOpExec = () => [];
+  const result = runReconciliationCheck({ pipelineState: realPipelineState, execGhPrList: noOpExec });
+  const foundSlugs = new Set(result.gaps.map(g => g.storySlug));
+  for (const slug of expectedSlugs) {
+    assert.ok(foundSlugs.has(slug), `expected real gap "${slug}" was not found by runReconciliationCheck`);
+  }
+});
+
+// NFR: the gh pr list call (mocked here) does not meaningfully slow down the check
+test('runReconciliationCheck with a mocked gh call completes in well under a second', () => {
+  const { runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = { features: [{ slug: 'perf-test', stories: Array.from({ length: 50 }, (_, i) => ({ slug: 'perf-s' + i, prUrl: 'https://github.com/org/repo/pull/' + i, prStatus: 'merged', dodStatus: 'complete' })) }] };
+  const mockExec = () => Array.from({ length: 50 }, (_, i) => ({ number: i, mergedAt: '2026-10-01T00:00:00Z' }));
+  const start = Date.now();
+  runReconciliationCheck({ pipelineState, execGhPrList: mockExec });
+  const elapsedMs = Date.now() - start;
+  assert.ok(elapsedMs < 1000, `expected well under 1000ms for a mocked call, took ${elapsedMs}ms`);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
