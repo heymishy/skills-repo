@@ -50,7 +50,7 @@ Group `result.gaps` by their `source` field before printing, since the two sourc
 
 Only print whichever of the two callouts above has at least one matching gap; skip a callout entirely if its filtered slug list is empty.
 
-If `result.warning` is non-null (the live `gh` check could not run this session), also print it, directly below the callout above — do not silently swallow it:
+If `result.warning` is non-null (the live `gh` check could not run this session), also print it, directly below whichever of the two callouts above was printed (or at the same position if neither was) — do not silently swallow it:
 
 > ℹ️ [result.warning]
 
