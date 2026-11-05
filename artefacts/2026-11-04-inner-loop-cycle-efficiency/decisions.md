@@ -123,6 +123,15 @@
 **Revisit trigger:** none — Test 5 now asserts the property against current structure. Worth noting as a general pattern: a SKILL.md non-regression test keyed to exact literal prose strings is inherently fragile against any future *intentional* rewrite of that same section; this is an accepted tradeoff of the prose-testing approach used throughout this repo, not something to fix here.
 ---
 
+---
+**2026-11-06 | SCOPE | branch-complete**
+**Decision:** Added a CI workflow fix (pinning 7 Playwright-installing jobs across 4 workflow files from `ubuntu-latest` to `ubuntu-24.04`) to `ilce-s3`'s own branch, outside this story's DoR-scoped files.
+**Alternatives considered:** (a) open a separate branch/PR for the CI fix, merge it to master first, then rebase `ilce-s3` onto master — rejected, since GitHub Actions resolves `pull_request`-triggered workflow YAML from the PR branch's own HEAD, so a fix landing only on a separate branch would not make `ilce-s3`'s own PR checks pass until after a rebase, and the operator explicitly asked for this PR's checks fixed before merging; (b) fix directly on `ilce-s3`'s branch — chosen, since the operator authorized it explicitly ("Fix please before I merge PR") and the practical GitHub Actions mechanics require the fix to be on this branch for this PR's own checks to go green.
+**Rationale:** GitHub's `ubuntu-latest` tag rolled forward to `ubuntu26.04-x64` sometime between `ilce-s2`'s merge (PR #1053, all checks green) and `ilce-s3`'s PR (#1054, same day) — confirmed repo-wide, not caused by this story's diff, by checking that `ilce-s2`'s PR passed cleanly on the identical jobs hours earlier. Left two `staging-deploy.yml` jobs (`deploy-staging`, `promote-to-production`) on `ubuntu-latest` since neither installs Playwright and neither is affected.
+**Made by:** Hamish King (via /branch-complete, explicit follow-up request, 2026-11-06)
+**Revisit trigger:** when Playwright is upgraded to a version supporting `ubuntu26.04-x64` (or later), the pin can be removed and these jobs can return to `ubuntu-latest` if desired.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

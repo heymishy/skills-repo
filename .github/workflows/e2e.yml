@@ -20,7 +20,9 @@ on:
 jobs:
   e2e:
     name: Playwright E2E smoke tests
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
+    # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -137,7 +139,9 @@ jobs:
   # master ruleset's required_status_checks list.
   scenario-a-staging-e2e:
     name: Scenario A E2E (staging)
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
+    # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -366,7 +370,9 @@ jobs:
   # for a different, not-permanently-unfixable reason.
   scenario-b-staging-e2e:
     name: Scenario B E2E (staging)
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
+    # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
