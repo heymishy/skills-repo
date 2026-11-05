@@ -85,6 +85,30 @@ test('findReconciliationGaps produces no finding when prStatus already says merg
   assert.strictEqual(gaps.length, 0);
 });
 
+// Edge case: a crossReferenceResults entry whose storySlug has no matching story entry
+test('findReconciliationGaps skips a cross-reference result with no matching story entry', () => {
+  const { findReconciliationGaps } = require('../scripts/lib/dod-handoff-reconciliation');
+  const crossRef = [{ storySlug: 'ghost-s1', prUrl: 'https://github.com/org/repo/pull/999', liveMatch: { number: 999, mergedAt: '2026-10-01T00:00:00Z' } }];
+  const stories = []; // no story matching 'ghost-s1'
+  assert.doesNotThrow(() => findReconciliationGaps(crossRef, stories));
+  const gaps = findReconciliationGaps(crossRef, stories);
+  assert.strictEqual(gaps.length, 0);
+});
+
+// Mixed array: a story with no live match must never be flagged, regardless of its own prStatus
+test('findReconciliationGaps never flags a story with no live match, even with a non-merged prStatus', () => {
+  const { crossReferenceStories, findReconciliationGaps } = require('../scripts/lib/dod-handoff-reconciliation');
+  const ghMergedPrs = [{ number: 999, mergedAt: '2026-10-01T00:00:00Z' }];
+  const stories = [
+    { slug: 'matched-s1', prUrl: 'https://github.com/org/repo/pull/999', prStatus: 'draft' },
+    { slug: 'unmatched-s2', prUrl: 'https://github.com/org/repo/pull/111', prStatus: 'draft' },
+  ];
+  const crossRef = crossReferenceStories(ghMergedPrs, stories);
+  const gaps = findReconciliationGaps(crossRef, stories);
+  assert.strictEqual(gaps.length, 1);
+  assert.strictEqual(gaps[0].storySlug, 'matched-s1');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
