@@ -106,6 +106,20 @@ test('subagent-execution SKILL.md references symmetric discard-and-redispatch an
   assert.ok(content.includes('redispatch-quality') || content.includes('redispatch-spec'), 'must reference at least one of the two symmetric redispatch actions');
 });
 
+// AC5: a dispatched task's timing records already contain enough data to compute active-minutes-per-task
+test('subagent-execution timing records include dispatchCount, enabling active-minutes-per-task measurement', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const os = require('os');
+  const path = require('path');
+  const fs = require('fs');
+  const logPath = path.join(os.tmpdir(), 'ilce-s3-timing-' + Date.now() + '.jsonl');
+  appendTimingRecord({ skill: 'subagent-execution', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'subagent-execution', dispatchCount: 2 }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.strictEqual(lines[0].dispatchCount, 2);
+  assert.ok(typeof lines[0].timestamp === 'string', 'timestamp must be present to compute elapsed time');
+  fs.unlinkSync(logPath);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
