@@ -112,11 +112,15 @@ test('subagent-execution timing records include dispatchCount, enabling active-m
   const os = require('os');
   const path = require('path');
   const fs = require('fs');
-  const logPath = path.join(os.tmpdir(), 'ilce-s3-timing-' + Date.now() + '.jsonl');
+  const logPath = path.join(os.tmpdir(), 'ilce-s3-timing-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.jsonl');
+  const firstTimestamp = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
+  fs.writeFileSync(logPath, JSON.stringify({ skill: 'subagent-execution', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'subagent-execution', dispatchCount: 1, timestamp: firstTimestamp }) + '\n', 'utf8');
   appendTimingRecord({ skill: 'subagent-execution', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'subagent-execution', dispatchCount: 2 }, logPath);
   const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
-  assert.strictEqual(lines[0].dispatchCount, 2);
-  assert.ok(typeof lines[0].timestamp === 'string', 'timestamp must be present to compute elapsed time');
+  assert.strictEqual(lines.length, 2, 'expected two timing records for this task');
+  const elapsedMs = new Date(lines[1].timestamp).getTime() - new Date(lines[0].timestamp).getTime();
+  assert.ok(elapsedMs >= 5 * 60 * 1000 - 1000, 'elapsed time between first and last dispatch-round record must be computable from timestamp alone, and reflect the real gap (expected ~5 minutes, got ' + (elapsedMs / 1000) + 's)');
+  assert.strictEqual(lines[1].dispatchCount, 2, 'dispatchCount must be present on the latest record for per-task dispatch-count granularity');
   fs.unlinkSync(logPath);
 });
 
