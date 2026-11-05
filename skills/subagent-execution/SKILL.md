@@ -117,44 +117,25 @@ Wait for the implementer to return one of four statuses:
 
 Never force the same model to retry without changes. Never ignore an escalation.
 
-### 2b — Dispatch spec compliance reviewer
+### 2b/2c — Dispatch both reviewers concurrently
 
-Construct context:
+Construct context for BOTH reviewers and dispatch them together, in the same turn (same message, same batch of tool calls) — not sequentially. Each reviewer still receives its own precisely constructed context:
 
-- Full task text from the plan
-- Git diff since the task started: `git diff [start-sha] HEAD`
-- ACs from the story artefact that this task covers
-- Instruction: "Review ONLY for spec compliance. Does the implementation match the spec? Nothing extra, nothing missing."
-- **Mandatory, every dispatch:** the same background-process warning as 2a — a reviewer subagent has no mechanism to be notified when a background process it starts (e.g. running a verification command) completes. Instruct it to run everything in the foreground.
-- If the task under review is a removal/deletion (deleting a route, table, identifier, or dead code path): explicitly instruct the reviewer to check `tests/e2e/*.spec.js` for any dangling literal reference to what was removed — not just `src/` and `tests/*.js`. An automated grep-based lock-in test typically has this exact blind spot too, so this is a check only the reviewer can catch pre-merge.
+- **Spec compliance reviewer:** full task text from the plan, git diff since the task started (`git diff [start-sha] HEAD`), ACs from the story artefact this task covers, instruction "Review ONLY for spec compliance. Does the implementation match the spec? Nothing extra, nothing missing."
+- **Code quality reviewer:** git diff for the task, codebase conventions from the active agent instruction file (e.g. `copilot-instructions.md` or `AGENTS.md` — see `context.yml: agent.instruction_file`) and `.github/architecture-guardrails.md`, instruction "Review for code quality: naming, structure, test quality, YAGNI, DRY. Report Critical / Important / Minor issues."
+- Both reviewers also receive the same background-process warning as 2a, and — if the task under review is a removal/deletion — the same `tests/e2e/*.spec.js` dangling-reference scanning instruction as before.
 
-Reviewer responds with:
+Once both results are back, call `scripts/lib/review-outcome.js`'s `decideReviewOutcome(specResult, qualityResult)`:
 
-- ✅ Spec compliant — proceed to code quality review (Step 2c)
-- ❌ Issues found — list them specifically
+- `{action: 'accept-both'}` — both passed clean. Mark the task complete (proceed to Step 2d) with both results as-is.
+- `{action: 'redispatch-quality', discard: 'quality'}` — spec-compliance required a fix (or both did, in which case spec takes priority since its fix changes the code quality was evaluated against anyway). Dispatch the implementer (same subagent, updated context) to fix. Discard the code-quality result (it was evaluated against pre-fix code), and re-dispatch code-quality review against the post-fix code.
+- `{action: 'redispatch-spec', discard: 'spec'}` — the symmetric case: code-quality required a fix while spec-compliance already passed. Dispatch the implementer to fix. Discard the spec-compliance result, and re-dispatch spec-compliance review against the post-fix code.
 
-If issues found: dispatch the implementer (same subagent, updated context) to fix.
-Re-dispatch the spec reviewer after each fix.
-Repeat until ✅.
+Repeat the redispatch-and-decide cycle until `decideReviewOutcome` returns `{action: 'accept-both'}`.
 
-**Spec compliance must be ✅ before starting code quality review.**
+Build the task's final review record via `buildFinalRecord(specResult, qualityResult, decision, postFixResult)` — this retains only the post-fix result on whichever side was redispatched; the pre-fix result never appears in the final record.
 
-### 2c — Dispatch code quality reviewer
-
-Construct context:
-
-- Git diff for the task
-- Codebase conventions from the active agent instruction file (e.g. `copilot-instructions.md` or `AGENTS.md` — see `context.yml: agent.instruction_file`) and `.github/architecture-guardrails.md`
-- Instruction: "Review for code quality: naming, structure, test quality, YAGNI, DRY. Report Critical / Important / Minor issues."
-- **Mandatory, every dispatch:** the same background-process warning as 2a/2b.
-- If the task under review is a removal/deletion: the same `tests/e2e/*.spec.js` scanning instruction as 2b.
-
-Reviewer responds with:
-
-- ✅ Approved — mark task complete
-- Critical or Important issues → implementer fixes, reviewer re-reviews
-
-Repeat until ✅.
+**Both reviews must each independently reach approval before the task is marked complete** — this replaces the old "spec compliance must be ✅ before starting code quality review" ordering constraint; the two reviews now run concurrently instead of gating each other, with `decideReviewOutcome` handling whichever one (or both) comes back needing a fix.
 
 ### 2d — Mark task complete
 

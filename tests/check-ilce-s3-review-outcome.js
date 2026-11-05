@@ -87,6 +87,25 @@ test('buildFinalRecord carries both original results through when no redispatch 
   assert.strictEqual(record.qualityResult, qualityResult);
 });
 
+// AC1: Steps 2b and 2c are dispatched together, not sequentially
+test('subagent-execution SKILL.md Step 2 dispatches spec-compliance and code-quality review concurrently', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/subagent-execution/SKILL.md'), 'utf8');
+  assert.ok(content.includes('review-outcome'), 'must reference scripts/lib/review-outcome.js');
+  assert.ok(content.includes('decideReviewOutcome'), 'must reference decideReviewOutcome specifically');
+  assert.ok(content.includes('concurrently') || content.includes('same turn') || content.includes('in parallel'), 'must instruct concurrent dispatch, not sequential');
+});
+
+// AC3/AC4: the wiring references the symmetric discard-and-redispatch and single-record retention
+test('subagent-execution SKILL.md references symmetric discard-and-redispatch and buildFinalRecord', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/subagent-execution/SKILL.md'), 'utf8');
+  assert.ok(content.includes('buildFinalRecord'), 'must reference buildFinalRecord specifically');
+  assert.ok(content.includes('redispatch-quality') || content.includes('redispatch-spec'), 'must reference at least one of the two symmetric redispatch actions');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
