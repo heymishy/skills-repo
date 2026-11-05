@@ -45627,15 +45627,15 @@
             {
               "slug": "ilce-s3",
               "name": "/subagent-execution runs spec-compliance and code-quality review in parallel, with discard-and-re-dispatch on spec failure",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-05T07:05:45.317Z",
+              "updatedAt": "2026-11-05T08:57:20.170Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -45644,27 +45644,27 @@
               "dorStatus": "signed-off",
               "tasks": [
                 {
-                  "id": "task-1",
+                  "id": 1,
                   "name": "Core decision function: both-clean and symmetric redispatch directions",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": "task-2",
+                  "id": 2,
                   "name": "Final-record retention: only the post-fix result survives",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": "task-3",
+                  "id": 3,
                   "name": "Wire parallel dispatch + symmetric discard-and-redispatch into /subagent-execution",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": "task-4",
+                  "id": 4,
                   "name": "Confirm AC5's measurement data is already complete",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 }
               ]
