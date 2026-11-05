@@ -45,6 +45,32 @@ test('decideReviewOutcome returns redispatch-quality when both reviewers require
   assert.deepStrictEqual(result, { action: 'redispatch-quality', discard: 'quality' });
 });
 
+// AC4: buildFinalRecord retains only the post-fix result when a redispatch occurred
+test('buildFinalRecord retains only the post-fix result when a redispatch occurred', () => {
+  const { buildFinalRecord } = require('../scripts/lib/review-outcome');
+  const preFixQuality = { status: 'pass', notes: 'PRE-FIX — stale' };
+  const postFixQuality = { status: 'pass', notes: 'POST-FIX — current' };
+  const record = buildFinalRecord(
+    { status: 'fix-required' }, // original spec result (now fixed)
+    preFixQuality,
+    { action: 'redispatch-quality', discard: 'quality' },
+    postFixQuality
+  );
+  assert.strictEqual(record.qualityResult, postFixQuality);
+  assert.notStrictEqual(record.qualityResult, preFixQuality);
+  assert.ok(JSON.stringify(record).indexOf('PRE-FIX') === -1, 'pre-fix result must not appear anywhere in the final record');
+});
+
+// AC4 (no-redispatch case): buildFinalRecord just carries both original results through unchanged
+test('buildFinalRecord carries both original results through when no redispatch occurred', () => {
+  const { buildFinalRecord } = require('../scripts/lib/review-outcome');
+  const specResult = { status: 'pass' };
+  const qualityResult = { status: 'pass' };
+  const record = buildFinalRecord(specResult, qualityResult, { action: 'accept-both' }, null);
+  assert.strictEqual(record.specResult, specResult);
+  assert.strictEqual(record.qualityResult, qualityResult);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);

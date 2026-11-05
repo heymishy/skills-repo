@@ -16,4 +16,14 @@ function decideReviewOutcome(specResult, qualityResult) {
   return { action: 'redispatch-spec', discard: 'spec' };
 }
 
-module.exports = { decideReviewOutcome };
+function buildFinalRecord(specResult, qualityResult, decision, postFixResult) {
+  if (decision.action === 'redispatch-quality') {
+    return { specResult, qualityResult: postFixResult };
+  }
+  if (decision.action === 'redispatch-spec') {
+    return { specResult: postFixResult, qualityResult };
+  }
+  return { specResult, qualityResult };
+}
+
+module.exports = { decideReviewOutcome, buildFinalRecord };
