@@ -62,6 +62,29 @@ test('crossReferenceStories returns liveMatch null for a story with no prUrl at 
   assert.strictEqual(result[0].liveMatch, null);
 });
 
+// AC2: flags a reconciliation gap when prUrl matches a merged PR but prStatus disagrees
+test('findReconciliationGaps flags a gap when live-merged story has a non-merged prStatus', () => {
+  const { crossReferenceStories, findReconciliationGaps } = require('../scripts/lib/dod-handoff-reconciliation');
+  const ghMergedPrs = [{ number: 999, mergedAt: '2026-10-01T00:00:00Z' }];
+  const stories = [{ slug: 'abc-s1', prUrl: 'https://github.com/org/repo/pull/999', prStatus: 'draft' }];
+  const crossRef = crossReferenceStories(ghMergedPrs, stories);
+  const gaps = findReconciliationGaps(crossRef, stories);
+  assert.strictEqual(gaps.length, 1);
+  assert.strictEqual(gaps[0].storySlug, 'abc-s1');
+  assert.strictEqual(gaps[0].severity, 'merged-no-dod');
+  assert.strictEqual(gaps[0].source, 'live-reconciliation');
+});
+
+// AC2 (negative/control case): no finding when prUrl and prStatus agree
+test('findReconciliationGaps produces no finding when prStatus already says merged', () => {
+  const { crossReferenceStories, findReconciliationGaps } = require('../scripts/lib/dod-handoff-reconciliation');
+  const ghMergedPrs = [{ number: 999, mergedAt: '2026-10-01T00:00:00Z' }];
+  const stories = [{ slug: 'abc-s1', prUrl: 'https://github.com/org/repo/pull/999', prStatus: 'merged' }];
+  const crossRef = crossReferenceStories(ghMergedPrs, stories);
+  const gaps = findReconciliationGaps(crossRef, stories);
+  assert.strictEqual(gaps.length, 0);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
