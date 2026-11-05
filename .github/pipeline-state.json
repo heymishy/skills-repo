@@ -45631,7 +45631,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-05T09:25:20.441Z",
+              "updatedAt": "2026-11-05T09:36:50.509Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -45644,25 +45644,25 @@
               "dorStatus": "signed-off",
               "tasks": [
                 {
-                  "id": 1,
+                  "id": "1",
                   "name": "Core decision function: both-clean and symmetric redispatch directions",
                   "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": 2,
+                  "id": "2",
                   "name": "Final-record retention: only the post-fix result survives",
                   "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": 3,
+                  "id": "3",
                   "name": "Wire parallel dispatch + symmetric discard-and-redispatch into /subagent-execution",
                   "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
                 },
                 {
-                  "id": 4,
+                  "id": "4",
                   "name": "Confirm AC5's measurement data is already complete",
                   "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"

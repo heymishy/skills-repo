@@ -68,10 +68,10 @@ Extract all tasks:
 
 **Immediately write the `tasks` array to `pipeline-state.json` before dispatching any subagent.**
 This is not a "final step" — it must happen here so the visualiser shows task progress live.
-Set story `stage: "subagent-execution"`, `health: "green"`, `updatedAt: [now]`, and initialise all tasks:
+Set story `stage: "subagent-execution"`, `health: "green"`, `updatedAt: [now]`, and initialise all tasks. `id` must be a string (`.github/pipeline-state.schema.json`'s `tasks[].id` requires `"type": "string"` — a bare number fails schema validation):
 ```json
 {
-  "id": 1,
+  "id": "1",
   "name": "<task title from plan>",
   "tddState": "not-started",
   "file": "artefacts/[feature-slug]/plans/[story-slug]-plan.md"
