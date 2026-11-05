@@ -45677,16 +45677,16 @@
         {
           "slug": "dod-handoff-reconciliation",
           "name": "Merged stories stop silently stalling before Definition of Done",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-05T21:58:54.952Z",
+              "updatedAt": "2026-11-05T23:34:36.502Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -45729,7 +45729,9 @@
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1055"
             }
           ]
         }
