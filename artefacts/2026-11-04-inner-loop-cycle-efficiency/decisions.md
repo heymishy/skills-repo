@@ -132,6 +132,15 @@
 **Revisit trigger:** when Playwright is upgraded to a version supporting `ubuntu26.04-x64` (or later), the pin can be removed and these jobs can return to `ubuntu-latest` if desired.
 ---
 
+---
+**2026-11-06 | RISK-ACCEPT | branch-setup**
+**Decision:** Proceeding with `ilce-s4`'s worktree baseline despite 4 pre-existing test failures (`scripts/check-pipeline-state-integrity.js`, `tests/check-cat-s1-core-trace-builder.js`, `tests/check-pcr-s1-test-runner.js`, `tests/check-p3.5-validate-trace.js`) — same established rotating category as `ilce-s1`/`ilce-s2`/`ilce-s3`'s own baselines, none caused by this story.
+**Alternatives considered:** investigate and fix — rejected, same reasoning as the prior three stories' RISK-ACCEPTs: already-documented pre-existing/flaky failures unrelated to this feature.
+**Rationale:** confirmed via direct baseline run before any `ilce-s4` code existed; fixing unrelated pre-existing issues is out of scope for this story.
+**Made by:** Hamish King (via /branch-setup, 2026-11-06)
+**Revisit trigger:** same as the prior three stories' — if any of these files' failures ever correlate with a change this feature actually makes, re-open as a real regression.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

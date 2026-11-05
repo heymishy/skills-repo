@@ -44947,7 +44947,7 @@
     {
       "slug": "2026-11-04-inner-loop-cycle-efficiency",
       "name": "Inner Loop Cycle Efficiency",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "updatedAt": "2026-11-04T05:56:10.092Z",
       "discoveryStatus": "approved",
@@ -45682,11 +45682,11 @@
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T05:56:10.092Z",
+              "updatedAt": "2026-11-05T18:27:50.606Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
