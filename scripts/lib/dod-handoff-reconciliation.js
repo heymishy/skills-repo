@@ -84,12 +84,7 @@ function runReconciliationCheck({ pipelineState, execGhPrList = defaultExecGhPrL
   const crossReferenceResults = crossReferenceStories(ghMergedPrs, stories);
   const liveMismatchGaps = findReconciliationGaps(crossReferenceResults, stories);
 
-  const bySlug = new Map();
-  for (const gap of [...pipelineStateOnlyGaps, ...liveMismatchGaps]) {
-    bySlug.set(gap.storySlug, gap);
-  }
-
-  return { gaps: Array.from(bySlug.values()), warning: null, liveCheckFailed: false };
+  return { gaps: [...pipelineStateOnlyGaps, ...liveMismatchGaps], warning: null, liveCheckFailed: false };
 }
 
 module.exports = {

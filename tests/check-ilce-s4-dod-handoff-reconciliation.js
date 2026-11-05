@@ -158,6 +158,47 @@ test('runReconciliationCheck surfaces pipeline-state-only gaps even when the liv
   assert.strictEqual(result.gaps[0].storySlug, 'epic-nested-s1');
 });
 
+// Both gap sources must appear together when both fire in the same run
+test('runReconciliationCheck merges gaps from both sources when both fire in the same run', () => {
+  const { runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = {
+    features: [{
+      slug: 'test-feat',
+      stories: [
+        { slug: 'pipeline-state-only-s1', prUrl: 'https://github.com/org/repo/pull/1', prStatus: 'merged', dodStatus: 'none' },
+        { slug: 'live-mismatch-s2', prUrl: 'https://github.com/org/repo/pull/2', prStatus: 'draft' },
+      ],
+    }],
+  };
+  const mockExec = () => [{ number: 2, mergedAt: '2026-10-05T00:00:00Z' }];
+  const result = runReconciliationCheck({ pipelineState, execGhPrList: mockExec });
+  assert.strictEqual(result.gaps.length, 2);
+  const foundSlugs = new Set(result.gaps.map(g => g.storySlug));
+  assert.ok(foundSlugs.has('pipeline-state-only-s1'), 'the pipeline-state-only gap must be present');
+  assert.ok(foundSlugs.has('live-mismatch-s2'), 'the live-reconciliation gap must be present');
+  const pipelineStateGap = result.gaps.find(g => g.storySlug === 'pipeline-state-only-s1');
+  const liveGap = result.gaps.find(g => g.storySlug === 'live-mismatch-s2');
+  assert.strictEqual(pipelineStateGap.source, 'pipeline-state-only');
+  assert.strictEqual(liveGap.source, 'live-reconciliation');
+});
+
+// flattenStories' own dual-shape case, tested directly rather than only indirectly
+test('flattenStories flattens both flat stories[] and epic-nested epics[].stories[] on the same feature', () => {
+  const { flattenStories } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = {
+    features: [{
+      slug: 'dual-shape-feat',
+      stories: [{ slug: 'flat-s1' }],
+      epics: [{ name: 'epic-a', stories: [{ slug: 'epic-nested-s1' }] }],
+    }],
+  };
+  const result = flattenStories(pipelineState);
+  const slugs = result.map(s => s.slug);
+  assert.ok(slugs.includes('flat-s1'), 'flat stories[] entry must be present');
+  assert.ok(slugs.includes('epic-nested-s1'), 'epic-nested epics[].stories[] entry must be present');
+  assert.strictEqual(result.length, 2);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
