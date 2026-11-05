@@ -37,6 +37,31 @@ test('crossReferenceStories returns liveMatch null when no merged PR matches', (
   assert.strictEqual(result[0].liveMatch, null);
 });
 
+// Direct coverage of extractPrNumber's own branches (previously only exercised indirectly)
+test('extractPrNumber extracts the numeric PR number from a well-formed GitHub PR URL', () => {
+  const { extractPrNumber } = require('../scripts/lib/dod-handoff-reconciliation');
+  assert.strictEqual(extractPrNumber('https://github.com/org/repo/pull/999'), 999);
+});
+
+test('extractPrNumber returns null for a missing, null, or non-matching prUrl', () => {
+  const { extractPrNumber } = require('../scripts/lib/dod-handoff-reconciliation');
+  assert.strictEqual(extractPrNumber(undefined), null);
+  assert.strictEqual(extractPrNumber(null), null);
+  assert.strictEqual(extractPrNumber(''), null);
+  assert.strictEqual(extractPrNumber('https://github.com/org/repo/issues/999'), null);
+});
+
+// The single most common real production input: a story with no prUrl yet (not merged)
+test('crossReferenceStories returns liveMatch null for a story with no prUrl at all', () => {
+  const { crossReferenceStories } = require('../scripts/lib/dod-handoff-reconciliation');
+  const ghMergedPrs = [{ number: 999, mergedAt: '2026-10-01T00:00:00Z' }];
+  const stories = [{ slug: 'not-yet-merged-s1', prStatus: 'test-plan' }];
+  const result = crossReferenceStories(ghMergedPrs, stories);
+  assert.strictEqual(result[0].storySlug, 'not-yet-merged-s1');
+  assert.strictEqual(result[0].prUrl, null);
+  assert.strictEqual(result[0].liveMatch, null);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
