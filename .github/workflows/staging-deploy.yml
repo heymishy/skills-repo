@@ -136,7 +136,9 @@ jobs:
   smoke-test:
     name: Staging smoke test (@mocked)
     needs: deploy-staging
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
+    # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -274,7 +276,9 @@ jobs:
     # ordering changed, not the "always attempt after a successful deploy"
     # behaviour the original `needs: deploy-staging` alone provided.
     if: ${{ always() && needs.deploy-staging.result == 'success' }}
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
+    # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4

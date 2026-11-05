@@ -18,7 +18,12 @@ on:
 jobs:
   cross-tenant-repeat-gate:
     name: Cross-tenant isolation spec — 20x repeat, zero-tolerance
-    runs-on: ubuntu-latest
+    # Pinned (was ubuntu-latest): GitHub's ubuntu-latest rolled forward to
+    # ubuntu26.04-x64, which Playwright 1.59.1 does not support
+    # ("Playwright does not support chromium on ubuntu26.04-x64"). Pin to the
+    # last LTS runner Playwright officially supports until Playwright is
+    # upgraded. See workspace/capture-log.md, 2026-11-05.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read

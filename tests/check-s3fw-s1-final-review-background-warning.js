@@ -114,17 +114,14 @@ runTest('steps2a2b2cAndStatusTableUnchanged (AC4, non-regression)', function() {
   const step2aWarningIntact = subagentExecutionMd.indexOf(
     "**Mandatory, every dispatch:** \"You have no mechanism to be notified when a background/detached process you start completes"
   ) !== -1;
-  const step2bWarningIntact = subagentExecutionMd.indexOf(
-    '**Mandatory, every dispatch:** the same background-process warning as 2a — a reviewer subagent has no mechanism to be notified'
-  ) !== -1;
-  const step2cWarningIntact = subagentExecutionMd.indexOf(
-    '**Mandatory, every dispatch:** the same background-process warning as 2a/2b.'
+  const bothReviewersWarningIntact = subagentExecutionMd.indexOf(
+    'Both reviewers also receive the same background-process warning as 2a'
   ) !== -1;
   const statusTableIntact = subagentExecutionMd.indexOf('| `DONE`') !== -1 &&
     subagentExecutionMd.indexOf('| `DONE_WITH_CONCERNS`') !== -1 &&
     subagentExecutionMd.indexOf('| `NEEDS_CONTEXT`') !== -1 &&
     subagentExecutionMd.indexOf('| `BLOCKED`') !== -1;
-  return step2aWarningIntact && step2bWarningIntact && step2cWarningIntact && statusTableIntact;
+  return step2aWarningIntact && bothReviewersWarningIntact && statusTableIntact;
 });
 
 // ---------------------------------------------------------------------------

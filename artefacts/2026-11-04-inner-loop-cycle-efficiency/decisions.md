@@ -104,6 +104,33 @@
 ---
 
 ---
+**2026-11-05 | RISK-ACCEPT | branch-setup**
+**Decision:** Proceeding with `ilce-s3`'s worktree baseline despite 3 pre-existing test failures (`scripts/check-pipeline-state-integrity.js`, `tests/check-pcr-s1-test-runner.js`, `tests/check-p3.5-validate-trace.js`) — same established rotating category as `ilce-s1`/`ilce-s2`'s own baselines, none caused by this story.
+**Alternatives considered:** investigate and fix — rejected, same reasoning as the prior two stories' RISK-ACCEPTs: already-documented pre-existing/flaky failures unrelated to this feature.
+**Rationale:** confirmed via direct baseline run before any `ilce-s3` code existed; fixing unrelated pre-existing issues is out of scope for this story.
+**Made by:** Hamish King (via /branch-setup, 2026-11-05)
+**Revisit trigger:** same as the prior two stories' — if any of these files' failures ever correlate with a change this feature actually makes, re-open as a real regression.
+---
+
+---
+
+---
+**2026-11-05 | SCOPE | subagent-execution**
+**Decision:** `ilce-s3`'s Task 3 rewrite of `skills/subagent-execution/SKILL.md`'s Steps 2b/2c (merging them into one concurrent-dispatch section) also required updating `tests/check-s3fw-s1-final-review-background-warning.js`'s Test 5 (`steps2a2b2cAndStatusTableUnchanged`, AC4 non-regression), an earlier story's (`s3fw-s1`) lock-in test that hard-asserted the exact literal old-2b and old-2c background-process-warning strings. Replaced those two literal-string checks with a check that the new merged section still states both reviewers receive the background-process warning (`'Both reviewers also receive the same background-process warning as 2a'`), leaving the Step 2a and status-table checks in the same test untouched since those sections are not touched by this story.
+**Alternatives considered:** (a) keep the old literal 2b/2c warning strings present verbatim somewhere in the new merged section purely to satisfy the old test, alongside the new prose — rejected, this reintroduces exactly the duplicated/stale-text smell the merge was meant to remove, and would read as confusing leftover scaffolding to a future operator; (b) mark `s3fw-s1`'s AC4 obsolete and delete Test 5 outright — rejected, the underlying safety property Test 5 protects (the background-process warning must keep reaching every dispatch site, including both reviewers) is still real and worth guarding, it was only the exact-string implementation that went stale; (c) update Test 5 to check the new structure's equivalent property — chosen.
+**Rationale:** this is a genuine downstream collision, not a defect in either story: `s3fw-s1` correctly locked in a safety property using the only mechanism SKILL.md-prose tests have (string matching on literal text), and `ilce-s3`'s DoR-approved redesign legitimately changes that literal text while preserving the property. The fix path is the same principle CLAUDE.md's "DoR contract must not contradict the test plan" guidance generalizes to: when an intentional, approved change collides with an existing lock-in test's literal implementation, update the test to re-assert the same underlying property against the new structure — never loosen or delete the safety check itself.
+**Made by:** Hamish King (via /subagent-execution Task 3, discovered by the dispatched implementer's own full-suite run, 2026-11-05)
+**Revisit trigger:** none — Test 5 now asserts the property against current structure. Worth noting as a general pattern: a SKILL.md non-regression test keyed to exact literal prose strings is inherently fragile against any future *intentional* rewrite of that same section; this is an accepted tradeoff of the prose-testing approach used throughout this repo, not something to fix here.
+---
+
+---
+**2026-11-06 | SCOPE | branch-complete**
+**Decision:** Added a CI workflow fix (pinning 7 Playwright-installing jobs across 4 workflow files from `ubuntu-latest` to `ubuntu-24.04`) to `ilce-s3`'s own branch, outside this story's DoR-scoped files.
+**Alternatives considered:** (a) open a separate branch/PR for the CI fix, merge it to master first, then rebase `ilce-s3` onto master — rejected, since GitHub Actions resolves `pull_request`-triggered workflow YAML from the PR branch's own HEAD, so a fix landing only on a separate branch would not make `ilce-s3`'s own PR checks pass until after a rebase, and the operator explicitly asked for this PR's checks fixed before merging; (b) fix directly on `ilce-s3`'s branch — chosen, since the operator authorized it explicitly ("Fix please before I merge PR") and the practical GitHub Actions mechanics require the fix to be on this branch for this PR's own checks to go green.
+**Rationale:** GitHub's `ubuntu-latest` tag rolled forward to `ubuntu26.04-x64` sometime between `ilce-s2`'s merge (PR #1053, all checks green) and `ilce-s3`'s PR (#1054, same day) — confirmed repo-wide, not caused by this story's diff, by checking that `ilce-s2`'s PR passed cleanly on the identical jobs hours earlier. Left two `staging-deploy.yml` jobs (`deploy-staging`, `promote-to-production`) on `ubuntu-latest` since neither installs Playwright and neither is affected.
+**Made by:** Hamish King (via /branch-complete, explicit follow-up request, 2026-11-06)
+**Revisit trigger:** when Playwright is upgraded to a version supporting `ubuntu26.04-x64` (or later), the pin can be removed and these jobs can return to `ubuntu-latest` if desired.
+---
 
 ## Architecture Decision Records
 

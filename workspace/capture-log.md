@@ -3046,3 +3046,8 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: learning
   signal-text: "git show origin/master:<path>" silently returns 0 bytes in Git Bash on Windows (MSYS path translation mangling the ref:path argument). Workaround confirmed working: MSYS_NO_PATHCONV=1 git rev-parse origin/master:<path> to get the blob SHA, then git cat-file -p <sha> to extract content -- cleaner than falling back to the local worktree copy, since it actually reads master's real content instead of skipping the read.
   source: agent-auto
+- date: 2026-11-05
+  session-phase: branch-complete (ilce-s3)
+  signal-type: gap
+  signal-text: "GitHub Actions hosted runner image for this repo upgraded to ubuntu26.04-x64 sometime between ilce-s2's merge (PR #1053, all checks passing) and ilce-s3's PR (#1054, opened same day). Playwright 1.59.1 (pinned in this repo) does not support ubuntu26.04-x64 ('Playwright does not support chromium on ubuntu26.04-x64'), so both Playwright-dependent CI jobs ('Cross-tenant isolation spec', 'Scenario A E2E (staging)') fail at the browser-install step on every PR going forward, regardless of diff content. This is a repo-wide CI infra break, not a per-PR code issue. Fix requires either pinning the runner image (e.g. runs-on: ubuntu-24.04) or upgrading Playwright to a version supporting ubuntu26.04 in the relevant workflow YAML(s) -- a shared CI-config change, out of scope for any single inner-loop story, needs explicit operator decision."
+  source: agent-auto
