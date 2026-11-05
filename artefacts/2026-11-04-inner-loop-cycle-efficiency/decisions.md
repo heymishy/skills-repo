@@ -114,6 +114,15 @@
 
 ---
 
+---
+**2026-11-05 | SCOPE | subagent-execution**
+**Decision:** `ilce-s3`'s Task 3 rewrite of `skills/subagent-execution/SKILL.md`'s Steps 2b/2c (merging them into one concurrent-dispatch section) also required updating `tests/check-s3fw-s1-final-review-background-warning.js`'s Test 5 (`steps2a2b2cAndStatusTableUnchanged`, AC4 non-regression), an earlier story's (`s3fw-s1`) lock-in test that hard-asserted the exact literal old-2b and old-2c background-process-warning strings. Replaced those two literal-string checks with a check that the new merged section still states both reviewers receive the background-process warning (`'Both reviewers also receive the same background-process warning as 2a'`), leaving the Step 2a and status-table checks in the same test untouched since those sections are not touched by this story.
+**Alternatives considered:** (a) keep the old literal 2b/2c warning strings present verbatim somewhere in the new merged section purely to satisfy the old test, alongside the new prose — rejected, this reintroduces exactly the duplicated/stale-text smell the merge was meant to remove, and would read as confusing leftover scaffolding to a future operator; (b) mark `s3fw-s1`'s AC4 obsolete and delete Test 5 outright — rejected, the underlying safety property Test 5 protects (the background-process warning must keep reaching every dispatch site, including both reviewers) is still real and worth guarding, it was only the exact-string implementation that went stale; (c) update Test 5 to check the new structure's equivalent property — chosen.
+**Rationale:** this is a genuine downstream collision, not a defect in either story: `s3fw-s1` correctly locked in a safety property using the only mechanism SKILL.md-prose tests have (string matching on literal text), and `ilce-s3`'s DoR-approved redesign legitimately changes that literal text while preserving the property. The fix path is the same principle CLAUDE.md's "DoR contract must not contradict the test plan" guidance generalizes to: when an intentional, approved change collides with an existing lock-in test's literal implementation, update the test to re-assert the same underlying property against the new structure — never loosen or delete the safety check itself.
+**Made by:** Hamish King (via /subagent-execution Task 3, discovered by the dispatched implementer's own full-suite run, 2026-11-05)
+**Revisit trigger:** none — Test 5 now asserts the property against current structure. Worth noting as a general pattern: a SKILL.md non-regression test keyed to exact literal prose strings is inherently fragile against any future *intentional* rewrite of that same section; this is an accepted tradeoff of the prose-testing approach used throughout this repo, not something to fix here.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
