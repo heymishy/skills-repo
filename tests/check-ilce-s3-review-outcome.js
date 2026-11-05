@@ -61,6 +61,22 @@ test('buildFinalRecord retains only the post-fix result when a redispatch occurr
   assert.ok(JSON.stringify(record).indexOf('PRE-FIX') === -1, 'pre-fix result must not appear anywhere in the final record');
 });
 
+// AC4 (the symmetric direction): buildFinalRecord retains only the post-fix spec result when spec was redispatched
+test('buildFinalRecord retains only the post-fix spec result when the symmetric redispatch-spec occurred', () => {
+  const { buildFinalRecord } = require('../scripts/lib/review-outcome');
+  const preFixSpec = { status: 'pass', notes: 'PRE-FIX — stale' };
+  const postFixSpec = { status: 'pass', notes: 'POST-FIX — current' };
+  const record = buildFinalRecord(
+    preFixSpec,
+    { status: 'fix-required' }, // original quality result (now fixed)
+    { action: 'redispatch-spec', discard: 'spec' },
+    postFixSpec
+  );
+  assert.strictEqual(record.specResult, postFixSpec);
+  assert.notStrictEqual(record.specResult, preFixSpec);
+  assert.ok(JSON.stringify(record).indexOf('PRE-FIX') === -1, 'pre-fix result must not appear anywhere in the final record');
+});
+
 // AC4 (no-redispatch case): buildFinalRecord just carries both original results through unchanged
 test('buildFinalRecord carries both original results through when no redispatch occurred', () => {
   const { buildFinalRecord } = require('../scripts/lib/review-outcome');
