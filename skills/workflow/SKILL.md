@@ -40,6 +40,16 @@ None. Always safe to run at any point.
 When invoked without a specific feature, output the status table immediately —
 no preamble. Then ask a single focused question.
 
+**Before the status table:** call `scripts/lib/dod-handoff-reconciliation.js`'s `runReconciliationCheck({ pipelineState })` (reading the real `pipeline-state.json` already loaded for this session). If `result.gaps.length > 0`, print this callout FIRST — before the status table, before everything else in the report:
+
+> ⚠️ **Merged-but-no-DoD gap(s) found: [N]** — [comma-separated story slugs] — merged but Definition of Done not complete. Run `/definition-of-done` for each.
+
+If `result.warning` is non-null (the live `gh` check could not run this session), also print it, directly below the callout above — do not silently swallow it:
+
+> ℹ️ [result.warning]
+
+If `result.gaps.length === 0` and `result.warning` is null, skip both lines and proceed straight to the status table — do not print an empty/all-clear callout.
+
 ```
 ## Pipeline Status — [date]
 

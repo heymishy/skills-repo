@@ -199,6 +199,29 @@ test('flattenStories flattens both flat stories[] and epic-nested epics[].storie
   assert.strictEqual(result.length, 2);
 });
 
+// AC3: the reconciliation callout appears before the status table, not after
+test('workflow SKILL.md wires the reconciliation check in before the status table', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/workflow/SKILL.md'), 'utf8');
+  assert.ok(content.includes('dod-handoff-reconciliation'), 'must reference scripts/lib/dod-handoff-reconciliation.js');
+  assert.ok(content.includes('runReconciliationCheck'), 'must reference runReconciliationCheck specifically');
+  const sessionStartIdx = content.indexOf('## Session start behaviour');
+  const reconciliationIdx = content.indexOf('runReconciliationCheck');
+  const tableHeaderIdx = content.indexOf('| Feature | Stage | Status | Next action |');
+  assert.ok(sessionStartIdx !== -1 && reconciliationIdx !== -1 && tableHeaderIdx !== -1, 'all three markers must be present');
+  assert.ok(sessionStartIdx < reconciliationIdx, 'the reconciliation wiring must be inside the Session start behaviour section');
+  assert.ok(reconciliationIdx < tableHeaderIdx, 'the reconciliation callout must be instructed BEFORE the status table, not after');
+});
+
+// AC4's warning must also be instructed to surface in the session-start output
+test('workflow SKILL.md instructs surfacing the gh-unavailable warning, not silently swallowing it', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '..', 'skills/workflow/SKILL.md'), 'utf8');
+  assert.ok(content.includes('.warning'), 'must reference the result object\'s warning field');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
