@@ -104,6 +104,15 @@
 ---
 
 ---
+**2026-11-05 | RISK-ACCEPT | branch-setup**
+**Decision:** Proceeding with `ilce-s3`'s worktree baseline despite 3 pre-existing test failures (`scripts/check-pipeline-state-integrity.js`, `tests/check-pcr-s1-test-runner.js`, `tests/check-p3.5-validate-trace.js`) — same established rotating category as `ilce-s1`/`ilce-s2`'s own baselines, none caused by this story.
+**Alternatives considered:** investigate and fix — rejected, same reasoning as the prior two stories' RISK-ACCEPTs: already-documented pre-existing/flaky failures unrelated to this feature.
+**Rationale:** confirmed via direct baseline run before any `ilce-s3` code existed; fixing unrelated pre-existing issues is out of scope for this story.
+**Made by:** Hamish King (via /branch-setup, 2026-11-05)
+**Revisit trigger:** same as the prior two stories' — if any of these files' failures ever correlate with a change this feature actually makes, re-open as a real regression.
+---
+
+---
 
 ## Architecture Decision Records
 

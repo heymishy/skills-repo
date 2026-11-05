@@ -45627,11 +45627,11 @@
             {
               "slug": "ilce-s3",
               "name": "/subagent-execution runs spec-compliance and code-quality review in parallel, with discard-and-re-dispatch on spec failure",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T05:56:10.092Z",
+              "updatedAt": "2026-11-05T07:05:45.317Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -45641,7 +45641,33 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Core decision function: both-clean and symmetric redispatch directions",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Final-record retention: only the post-fix result survives",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire parallel dispatch + symmetric discard-and-redispatch into /subagent-execution",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Confirm AC5's measurement data is already complete",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s3-plan.md"
+                }
+              ]
             }
           ]
         },
