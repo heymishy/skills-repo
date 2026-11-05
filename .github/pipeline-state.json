@@ -45682,15 +45682,15 @@
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-05T18:34:55.804Z",
+              "updatedAt": "2026-11-05T19:52:53.387Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -45699,33 +45699,33 @@
               "dorStatus": "signed-off",
               "tasks": [
                 {
-                  "id": "task-1",
+                  "id": "1",
                   "name": "Core cross-reference function: matches prUrl against gh pr list output",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 },
                 {
-                  "id": "task-2",
+                  "id": "2",
                   "name": "Reconciliation-gap detection (both directions)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 },
                 {
-                  "id": "task-3",
+                  "id": "3",
                   "name": "Graceful degradation + pipeline-state-only fallback",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 },
                 {
-                  "id": "task-4",
+                  "id": "4",
                   "name": "Wire the reconciliation callout into /workflow's session-start report",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 },
                 {
-                  "id": "task-5",
+                  "id": "5",
                   "name": "Real-data regression anchor (AC5) + NFR performance test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
                 }
               ]
