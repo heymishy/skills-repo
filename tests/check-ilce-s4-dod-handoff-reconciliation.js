@@ -109,6 +109,55 @@ test('findReconciliationGaps never flags a story with no live match, even with a
   assert.strictEqual(gaps[0].storySlug, 'matched-s1');
 });
 
+// AC4: degrades gracefully and falls back to pipeline-state-only checking when gh is unavailable
+test('runReconciliationCheck falls back to pipeline-state-only gaps when gh call throws', () => {
+  const { runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = {
+    features: [{
+      slug: 'test-feat',
+      stories: [{ slug: 'merged-no-dod-s1', prUrl: 'https://github.com/org/repo/pull/1', prStatus: 'merged', dodStatus: 'none' }],
+    }],
+  };
+  const throwingExec = () => { throw new Error('gh: command not found'); };
+  const result = runReconciliationCheck({ pipelineState, execGhPrList: throwingExec });
+  assert.strictEqual(result.liveCheckFailed, true);
+  assert.ok(typeof result.warning === 'string' && result.warning.length > 0, 'a warning message must be present');
+  assert.ok(result.warning.indexOf('gh') !== -1, 'warning should mention gh CLI unavailability');
+  // The fallback must still perform the pipeline-state-only check, not give up entirely.
+  assert.strictEqual(result.gaps.length, 1);
+  assert.strictEqual(result.gaps[0].storySlug, 'merged-no-dod-s1');
+  assert.strictEqual(result.gaps[0].source, 'pipeline-state-only');
+});
+
+// AC4 (no-crash case): runReconciliationCheck does not throw even when gh fails
+test('runReconciliationCheck does not throw when gh call throws', () => {
+  const { runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = { features: [] };
+  const throwingExec = () => { throw new Error('network unreachable'); };
+  assert.doesNotThrow(() => runReconciliationCheck({ pipelineState, execGhPrList: throwingExec }));
+});
+
+// AC3's "existing pipeline-state.json fields agreeing with it" path, exercised directly:
+// a story flagged by the plain prStatus=merged + dodStatus!=complete check, independent of gh,
+// AND correctly flattened out of the epic-nested shape (feature.epics[].stories[]).
+test('runReconciliationCheck surfaces pipeline-state-only gaps even when the live gh call succeeds', () => {
+  const { runReconciliationCheck } = require('../scripts/lib/dod-handoff-reconciliation');
+  const pipelineState = {
+    features: [{
+      slug: 'test-feat',
+      epics: [{
+        name: 'test-epic',
+        stories: [{ slug: 'epic-nested-s1', prUrl: 'https://github.com/org/repo/pull/2', prStatus: 'merged', dodStatus: 'none' }],
+      }],
+    }],
+  };
+  const emptyExec = () => [];
+  const result = runReconciliationCheck({ pipelineState, execGhPrList: emptyExec });
+  assert.strictEqual(result.liveCheckFailed, false);
+  assert.strictEqual(result.gaps.length, 1);
+  assert.strictEqual(result.gaps[0].storySlug, 'epic-nested-s1');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);

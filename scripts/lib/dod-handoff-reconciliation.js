@@ -34,4 +34,69 @@ function findReconciliationGaps(crossReferenceResults, stories) {
   return gaps;
 }
 
-module.exports = { extractPrNumber, crossReferenceStories, findReconciliationGaps };
+function flattenStories(pipelineState) {
+  const stories = [];
+  for (const feature of (pipelineState && pipelineState.features) || []) {
+    for (const story of feature.stories || []) {
+      stories.push(story);
+    }
+    for (const epic of feature.epics || []) {
+      for (const story of epic.stories || []) {
+        stories.push(story);
+      }
+    }
+  }
+  return stories;
+}
+
+function findPipelineStateOnlyGaps(stories) {
+  return stories
+    .filter(s => s.prStatus === 'merged' && s.dodStatus !== 'complete')
+    .map(s => ({
+      storySlug: s.slug,
+      severity: 'merged-no-dod',
+      source: 'pipeline-state-only',
+      message: `Story "${s.slug}" has prStatus "merged" but dodStatus is "${s.dodStatus || 'not set'}" -- merged but Definition of Done not complete.`,
+    }));
+}
+
+function defaultExecGhPrList() {
+  const { execSync } = require('child_process');
+  const output = execSync('gh pr list --state merged --json number,mergedAt --limit 1000', { encoding: 'utf8', timeout: 15000 });
+  return JSON.parse(output);
+}
+
+function runReconciliationCheck({ pipelineState, execGhPrList = defaultExecGhPrList } = {}) {
+  const stories = flattenStories(pipelineState);
+  const pipelineStateOnlyGaps = findPipelineStateOnlyGaps(stories);
+
+  let ghMergedPrs;
+  try {
+    ghMergedPrs = execGhPrList();
+  } catch (err) {
+    return {
+      gaps: pipelineStateOnlyGaps,
+      warning: 'Could not reach gh CLI this session (' + err.message + ') -- falling back to pipeline-state.json-only checking. Live reconciliation did not run.',
+      liveCheckFailed: true,
+    };
+  }
+
+  const crossReferenceResults = crossReferenceStories(ghMergedPrs, stories);
+  const liveMismatchGaps = findReconciliationGaps(crossReferenceResults, stories);
+
+  const bySlug = new Map();
+  for (const gap of [...pipelineStateOnlyGaps, ...liveMismatchGaps]) {
+    bySlug.set(gap.storySlug, gap);
+  }
+
+  return { gaps: Array.from(bySlug.values()), warning: null, liveCheckFailed: false };
+}
+
+module.exports = {
+  extractPrNumber,
+  crossReferenceStories,
+  findReconciliationGaps,
+  flattenStories,
+  findPipelineStateOnlyGaps,
+  runReconciliationCheck,
+};
