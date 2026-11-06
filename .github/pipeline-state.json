@@ -45472,7 +45472,7 @@
           "baseline": "22.0 active minutes/task",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "6 real dispatched tasks confirmed working correctly (ilce-s4: 5, bcfx-s1: 1), dispatchCount recorded for each -- short of a statistically meaningful sample against the 22.0-min/task baseline.",
           "contributingStories": [
             "ilce-s3"
           ]
@@ -45639,11 +45639,11 @@
             {
               "slug": "ilce-s3",
               "name": "/subagent-execution runs spec-compliance and code-quality review in parallel, with discard-and-re-dispatch on spec failure",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-05T18:17:03.457Z",
+              "updatedAt": "2026-11-06T03:30:05.136Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -45682,7 +45682,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1054"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1054",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
