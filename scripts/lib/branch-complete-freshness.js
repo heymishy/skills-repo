@@ -27,7 +27,13 @@ function defaultExecGitLog() {
 }
 
 function getLastCodeCommitTimestamp(execGitLog = defaultExecGitLog) {
-  const output = execGitLog().trim();
+  let output;
+  try {
+    output = execGitLog().trim();
+  } catch (err) {
+    console.warn(`[branch-complete-freshness] WARNING: git log failed in getLastCodeCommitTimestamp -- treating as not fresh (${err.message})`);
+    return null;
+  }
   return output.length > 0 ? output : null;
 }
 

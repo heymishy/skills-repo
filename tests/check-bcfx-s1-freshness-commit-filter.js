@@ -54,6 +54,26 @@ test('getLastCodeCommitTimestamp uses the injected executor, not real execSync, 
   assert.strictEqual(called, true, 'the injected mock must be the one actually called');
 });
 
+// Integration: the REAL default git command actually works against this repo's real history
+// (not a mock) -- confirms the literal pathspec-exclusion string is syntactically correct and
+// anchored correctly, not just that trim/pass-through logic works on a canned string.
+test('getLastCodeCommitTimestamp with the real default executor returns a valid ISO 8601 timestamp from this repo\'s own history', () => {
+  const { getLastCodeCommitTimestamp } = require('../scripts/lib/branch-complete-freshness');
+  const result = getLastCodeCommitTimestamp(); // no mock -- uses the real defaultExecGitLog
+  assert.ok(result !== null, 'expected a real commit touching non-bookkeeping files to exist in this repo\'s history');
+  assert.ok(!Number.isNaN(new Date(result).getTime()), `expected a valid ISO 8601 timestamp, got "${result}"`);
+});
+
+// Error handling: a git-log failure must not crash the freshness check -- it must fall back
+// to null (which isFresh's own existing NaN guard already treats as "not fresh" / run full suite).
+test('getLastCodeCommitTimestamp returns null without throwing when the git command itself fails', () => {
+  const { getLastCodeCommitTimestamp } = require('../scripts/lib/branch-complete-freshness');
+  const throwingExecGitLog = () => { throw new Error('fatal: not a git repository'); };
+  let result;
+  assert.doesNotThrow(() => { result = getLastCodeCommitTimestamp(throwingExecGitLog); });
+  assert.strictEqual(result, null);
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
