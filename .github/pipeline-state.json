@@ -45494,9 +45494,9 @@
           "name": "New occurrences of merged-but-no-DoD gap",
           "target": "0 new occurrences among stories merged after this feature ships",
           "baseline": "22 of 819 stories repo-wide (2026-11-04, frozen)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "off-track",
+          "lastMeasured": "2026-11-06T03:32:20.426Z",
+          "evidence": "Live run 2026-11-06 found 10 pipeline-state-only gaps + 20 additional live-reconciliation (ADR-030 corruption) gaps, spot-checked real via gh pr view (inc5/PR#389). Backlog is larger than the known-22 baseline; mechanism confirmed working. Forward-looking \"0 new occurrences\" claim not yet measurable -- no story has merged since this mechanism existed.",
           "contributingStories": [
             "ilce-s4"
           ]
@@ -45696,11 +45696,11 @@
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-06T00:09:40.665Z",
+              "updatedAt": "2026-11-06T03:32:20.424Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -45745,7 +45745,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1055"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1055",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
