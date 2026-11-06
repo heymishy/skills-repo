@@ -45759,7 +45759,7 @@
           "slug": "bcfx-s1",
           "id": "bcfx-s1",
           "name": "Fix freshness check bookkeeping-commit false-negative",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "na",
           "highFindings": 0,
@@ -45770,13 +45770,13 @@
             "artefact": "artefacts/2026-11-06-bcfx-s1/test-plans/bcfx-s1-test-plan.md"
           },
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-11-06-bcfx-s1/dor/bcfx-s1-dor.md",
           "dorSignedOffAt": "2026-11-06T01:24:51.646Z",
-          "updatedAt": "2026-11-06T02:07:12.062Z",
+          "updatedAt": "2026-11-06T02:16:52.748Z",
           "tasks": [
             {
               "id": "1",
@@ -45784,7 +45784,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-06-bcfx-s1/plans/bcfx-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
