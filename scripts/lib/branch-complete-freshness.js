@@ -18,8 +18,21 @@ function isFresh(record, context) {
   return commitTime <= recordTime;
 }
 
+function defaultExecGitLog() {
+  const { execSync } = require('child_process');
+  return execSync(
+    "git log -1 --format=%cI -- . ':!.github/pipeline-state.json' ':!.github/pipeline-timings.jsonl'",
+    { encoding: 'utf8' }
+  );
+}
+
+function getLastCodeCommitTimestamp(execGitLog = defaultExecGitLog) {
+  const output = execGitLog().trim();
+  return output.length > 0 ? output : null;
+}
+
 function decideSkipOrRun(record, context) {
   return { skipped: isFresh(record, context) };
 }
 
-module.exports = { isFresh, decideSkipOrRun };
+module.exports = { isFresh, decideSkipOrRun, getLastCodeCommitTimestamp };
