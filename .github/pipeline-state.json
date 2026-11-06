@@ -45484,7 +45484,7 @@
           "baseline": "0% skip rate (always reruns)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "Structurally stuck at 0% skip rate (same as baseline) until bcfx-s1 fixed the underlying mechanism on 2026-11-06 -- no story has yet run through the corrected /branch-complete to produce a first real observation.",
           "contributingStories": [
             "ilce-s2"
           ]
@@ -45588,11 +45588,11 @@
             {
               "slug": "ilce-s2",
               "name": "/branch-complete skips the redundant full-suite rerun when a fresh result exists",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T20:21:06.146Z",
+              "updatedAt": "2026-11-06T03:28:31.968Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -45625,7 +45625,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/1053"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1053",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
