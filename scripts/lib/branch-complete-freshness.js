@@ -4,6 +4,10 @@ function isFresh(record, context) {
   if (!record) return false;
   if (record.stage !== 'verify-completion') return false;
   if (!record.fullSuite) return false;
+  if (context.lastCommitTimestamp === null) {
+    console.warn('[branch-complete-freshness] WARNING: lastCommitTimestamp is null (a prior step could not determine it) -- treating as not fresh');
+    return false;
+  }
   const recordTime = new Date(record.timestamp).getTime();
   const commitTime = new Date(context.lastCommitTimestamp).getTime();
   if (Number.isNaN(recordTime) || Number.isNaN(commitTime)) {

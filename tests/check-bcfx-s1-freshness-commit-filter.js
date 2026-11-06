@@ -74,6 +74,16 @@ test('getLastCodeCommitTimestamp returns null without throwing when the git comm
   assert.strictEqual(result, null);
 });
 
+// Critical regression guard: a null lastCommitTimestamp (the designed failure-path return
+// value from getLastCodeCommitTimestamp when git log fails) must make isFresh/decideSkipOrRun
+// report NOT fresh -- never silently skip the safety-net full-suite rerun on a git failure.
+test('decideSkipOrRun returns skipped:false when lastCommitTimestamp is null (git-log failure path)', () => {
+  const { decideSkipOrRun } = require('../scripts/lib/branch-complete-freshness');
+  const record = { stage: 'verify-completion', fullSuite: true, timestamp: new Date().toISOString() };
+  const result = decideSkipOrRun(record, { lastCommitTimestamp: null });
+  assert.strictEqual(result.skipped, false, 'a null lastCommitTimestamp must never be treated as fresher than any real record -- new Date(null).getTime() is epoch 0, which is always <= any real timestamp, so this must be explicitly guarded, not left to fall through to the NaN check');
+});
+
 console.log('\n── Summary ──');
 console.log(`  Passed: ${passed}`);
 console.log(`  Failed: ${failed}`);
