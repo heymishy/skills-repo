@@ -45751,7 +45751,7 @@
       "slug": "2026-11-06-bcfx-s1",
       "name": "Branch-complete's freshness check must not be invalidated by verify-completion's own bookkeeping commit",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "epics": [],
       "stories": [
@@ -45759,7 +45759,7 @@
           "slug": "bcfx-s1",
           "id": "bcfx-s1",
           "name": "Fix freshness check bookkeeping-commit false-negative",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "reviewStatus": "na",
           "highFindings": 0,
@@ -45776,7 +45776,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-11-06-bcfx-s1/dor/bcfx-s1-dor.md",
           "dorSignedOffAt": "2026-11-06T01:24:51.646Z",
-          "updatedAt": "2026-11-06T01:24:51.646Z"
+          "updatedAt": "2026-11-06T01:32:24.352Z"
         }
       ],
       "metrics": [],
