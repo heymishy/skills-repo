@@ -40,6 +40,22 @@ None. Always safe to run at any point.
 When invoked without a specific feature, output the status table immediately —
 no preamble. Then ask a single focused question.
 
+**Before the status table:** call `scripts/lib/dod-handoff-reconciliation.js`'s `runReconciliationCheck({ pipelineState })` (reading the real `pipeline-state.json` already loaded for this session). If `result.gaps.length > 0`, print this callout FIRST — before the status table, before everything else in the report:
+
+Group `result.gaps` by their `source` field before printing, since the two sources need different remedies — a gap's `source` is never a cosmetic detail here, it determines what the operator should actually do next:
+
+> ⚠️ **Merged-but-no-DoD gap(s) found: [N]** — [comma-separated slugs of gaps where `source === 'pipeline-state-only'`] — `prStatus` is already `merged` but Definition of Done is not complete. Run `/definition-of-done` for each.
+
+> ⚠️ **Stale prStatus gap(s) found: [N]** — [comma-separated slugs of gaps where `source === 'live-reconciliation'`] — GitHub shows a real merged PR for each, but the locally recorded `prStatus` disagrees (per ADR-030). Reconcile first — e.g. `node bin/skills advance <feature-slug> <story-slug> prStatus=merged` — then re-check whether `/definition-of-done` is also still needed.
+
+Only print whichever of the two callouts above has at least one matching gap; skip a callout entirely if its filtered slug list is empty.
+
+If `result.warning` is non-null (the live `gh` check could not run this session), also print it, directly below whichever of the two callouts above was printed (or at the same position if neither was) — do not silently swallow it:
+
+> ℹ️ [result.warning]
+
+If `result.gaps.length === 0` and `result.warning` is null, skip both lines and proceed straight to the status table — do not print an empty/all-clear callout.
+
 ```
 ## Pipeline Status — [date]
 

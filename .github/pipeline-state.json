@@ -45677,26 +45677,61 @@
         {
           "slug": "dod-handoff-reconciliation",
           "name": "Merged stories stop silently stalling before Definition of Done",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-11-04T05:56:10.092Z",
+              "updatedAt": "2026-11-05T23:34:36.502Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "1",
+                  "name": "Core cross-reference function: matches prUrl against gh pr list output",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
+                },
+                {
+                  "id": "2",
+                  "name": "Reconciliation-gap detection (both directions)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
+                },
+                {
+                  "id": "3",
+                  "name": "Graceful degradation + pipeline-state-only fallback",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
+                },
+                {
+                  "id": "4",
+                  "name": "Wire the reconciliation callout into /workflow's session-start report",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
+                },
+                {
+                  "id": "5",
+                  "name": "Real-data regression anchor (AC5) + NFR performance test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-11-04-inner-loop-cycle-efficiency/plans/ilce-s4-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/1055"
             }
           ]
         }
