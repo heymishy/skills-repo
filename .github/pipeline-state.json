@@ -1231,7 +1231,7 @@
               "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-16T19:50:33.856Z",
+              "updatedAt": "2026-11-07T05:01:33.412Z",
               "name": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -1260,7 +1260,7 @@
                   "file": ".github/skills/ideate/SKILL.md"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/389"
             }
           ],
@@ -26485,7 +26485,7 @@
               "name": "Wire the viewer-write-block gate to Skill session routes",
               "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-23T06:36:56.472Z",
+              "updatedAt": "2026-11-07T05:01:33.635Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26570,7 +26570,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/757",
               "dodStatus": "complete",
               "releaseReady": true,
@@ -26581,7 +26581,7 @@
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
               "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-23T08:40:24.919Z",
+              "updatedAt": "2026-11-07T05:01:33.858Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26618,7 +26618,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/758",
               "dodStatus": "complete",
               "releaseReady": true,
@@ -26629,7 +26629,7 @@
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
               "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-23T10:44:29.652Z",
+              "updatedAt": "2026-11-07T05:01:34.073Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26672,7 +26672,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/759",
               "dodStatus": "complete",
               "releaseReady": true,
@@ -27216,7 +27216,7 @@
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
@@ -27228,7 +27228,7 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "updatedAt": "2026-08-25T05:03:44.436Z",
+          "updatedAt": "2026-11-07T05:01:34.268Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/768"
         }
       ],
@@ -27251,7 +27251,7 @@
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -27263,7 +27263,7 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "updatedAt": "2026-08-24T10:38:04.769Z",
+          "updatedAt": "2026-11-07T05:01:34.473Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/767"
         }
       ],
@@ -28765,9 +28765,9 @@
           "dorArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-29T23:09:09.895Z",
-          "updatedAt": "2026-08-30T04:43:17.389Z",
+          "updatedAt": "2026-11-07T05:01:34.683Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/789",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dod/cptr-s1-dod.md",
@@ -28807,9 +28807,9 @@
           "dorArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dor/jgcc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dor/jgcc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T00:23:22.906Z",
-          "updatedAt": "2026-08-30T04:43:17.389Z",
+          "updatedAt": "2026-11-07T05:01:34.881Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/790",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dod/jgcc-s1-dod.md",
@@ -28849,9 +28849,9 @@
           "dorArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T01:05:23.382Z",
-          "updatedAt": "2026-08-30T04:43:17.389Z",
+          "updatedAt": "2026-11-07T05:01:35.103Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/791",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dod/csdl-s1-dod.md",
@@ -28891,9 +28891,9 @@
           "dorArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T03:30:54.635Z",
-          "updatedAt": "2026-08-30T04:43:17.389Z",
+          "updatedAt": "2026-11-07T05:01:35.347Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/792",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dod/sccf-s1-dod.md",
@@ -29774,9 +29774,9 @@
               "file": "src/web-ui/routes/skills.js"
             }
           ],
-          "updatedAt": "2026-08-31T19:08:09.934Z",
+          "updatedAt": "2026-11-07T05:01:45.974Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/805",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     },
@@ -29819,9 +29819,9 @@
               "file": "src/web-ui/routes/skills.js"
             }
           ],
-          "updatedAt": "2026-08-31T18:29:55.197Z",
+          "updatedAt": "2026-11-07T05:01:46.191Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/804",
-          "prStatus": "open"
+          "prStatus": "merged"
         },
         {
           "id": "wsap-s2",
@@ -29884,9 +29884,9 @@
               "file": "src/web-ui/adapters/artefact-list.js"
             }
           ],
-          "updatedAt": "2026-08-31T18:29:12.279Z",
+          "updatedAt": "2026-11-07T05:01:46.409Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/803",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     },
@@ -29929,9 +29929,9 @@
               "file": "src/web-ui/routes/skills.js"
             }
           ],
-          "updatedAt": "2026-09-01T03:13:44.090Z",
+          "updatedAt": "2026-11-07T05:01:46.620Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/806",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     },
@@ -29974,9 +29974,9 @@
               "file": "src/web-ui/routes/skills.js"
             }
           ],
-          "updatedAt": "2026-09-01T08:26:32.886Z",
+          "updatedAt": "2026-11-07T05:01:46.824Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/807",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     },
@@ -32233,9 +32233,9 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/839",
-          "updatedAt": "2026-09-05T20:55:57.875Z",
+          "updatedAt": "2026-11-07T05:01:47.041Z",
           "verifyStatus": "passed"
         }
       ],
@@ -32264,10 +32264,10 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/840",
           "verifyStatus": "passed",
-          "updatedAt": "2026-09-05T21:58:24.891Z"
+          "updatedAt": "2026-11-07T05:01:47.247Z"
         }
       ],
       "metrics": [],
@@ -32295,10 +32295,10 @@
           },
           "acTotal": 7,
           "acVerified": 7,
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/841",
           "verifyStatus": "passed",
-          "updatedAt": "2026-09-05T23:38:02.742Z"
+          "updatedAt": "2026-11-07T05:01:47.479Z"
         }
       ],
       "metrics": [],
@@ -34818,7 +34818,7 @@
           "stage": "definition-of-ready",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 10,
@@ -34826,7 +34826,7 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "updatedAt": "2026-09-14T19:45:18.820Z",
+          "updatedAt": "2026-11-07T05:01:47.679Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/887"
         }
       ],
@@ -43852,7 +43852,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-10-28-auto-capture-target-resolution/dor/actr-s3-dor.md",
           "dorSignedOffAt": "2026-10-28T01:11:56.766Z",
-          "updatedAt": "2026-10-28T23:02:45.040Z",
+          "updatedAt": "2026-11-07T05:01:47.906Z",
           "tasks": [
             {
               "id": "task-1",
@@ -43868,7 +43868,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1036"
         }
       ],
