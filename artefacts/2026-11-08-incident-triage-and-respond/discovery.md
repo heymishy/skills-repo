@@ -1,6 +1,6 @@
 # Discovery: Incident Triage and Respond
 
-**Status:** Draft
+**Status:** Clarified
 **Created:** 2026-11-08
 **Author:** Claude Sonnet 5 (conversational discovery session with operator)
 
@@ -32,8 +32,8 @@ Three things converge:
 
 A 4-story MVP, consistent with the widened-slice pattern already used for initiatives 1–3:
 
-1. **Incident record mechanism** — a structured, durable incident log (replacing today's only precedent, the ad-hoc `productionErrorInvestigation` note in `workspace/state.json`). Each record captures: what triggered it, what's known, prior-incident links, status. Designed artefact-source-agnostic from the start, same pattern as initiative 2's story 3.
-2. **Triage drafting** — given an incident record (created manually for now, or later fed by initiative 2's alerts once those exist), search prior incident records and `decisions.md` for matches, and draft a triage summary: what's known, what's been tried before, suggested next step. Available via harness/Claude Code.
+1. **Incident record mechanism** — a structured, durable incident log (replacing today's only precedent, the ad-hoc `productionErrorInvestigation` note in `workspace/state.json`). Each record captures: what triggered it, a short structured summary/keyword-tags field (deliberately short and structured, not free text, so story 2's matching has something clean to score against), prior-incident links, status. Designed artefact-source-agnostic from the start, same pattern as initiative 2's story 3.
+2. **Triage drafting** — given an incident record (created manually for now, or later fed by initiative 2's alerts once those exist), score it against prior incident records' structured summary/tags fields using the Jaccard-similarity primitive already proven in `src/modules/drift-comparator.js` (`_jaccard`, reused, with its own threshold tuned for this domain rather than carrying over `DUPLICATE_SIMILARITY_THRESHOLD`'s `0.5`), and draft a triage summary: what's known, what's been tried before, suggested next step. Matching against raw `decisions.md` prose is explicitly out of scope for this MVP (see Out of Scope) — this repo has no stopword/tokenization tooling to make free-text matching meaningful yet. Available via harness/Claude Code.
 3. **Web UI rendering — the first real slice of initiative 1's visibility surface**, scoped specifically to incident records. Rather than a standalone view, this story extends `kanban-view.js` (or the equivalent route) to render incident records as its first real content, ahead of initiative 1's own implementation timeline.
 4. **Handoff + post-fix confirmation** — a lightweight handoff that attaches the triage summary's context when a story enters the existing short-track pipeline (`/test-plan → /definition-of-ready → coding agent`) — no new fix/test/promote mechanics. Once that story reaches DoD, re-run the original triggering check and update the incident record to confirmed/not-confirmed, closing the loop.
 
@@ -47,14 +47,15 @@ A 4-story MVP, consistent with the widened-slice pattern already used for initia
 4. **Long-term or delayed re-measurement of whether a fix held** (weeks later, trend-level) — that's initiative 5's post-DoD follow-through territory. Story 4's post-fix confirmation is a single, immediate re-check right after DoD, not ongoing tracking.
 5. **Automated incident classification, severity scoring, or auto-escalation** — story 2 drafts a summary for a human to read and decide on; it doesn't auto-prioritize or auto-assign without human review.
 6. **Non-Teams notification channels** — same precedent as initiative 2; only Teams has real scaffolding (`teams-adapter.js`) to extend.
+7. **Matching against raw free-text `decisions.md` prose** — verified during /clarify: `package.json` has no stopword-removal or tokenization library, and real `decisions.md` entries run to thousands of words of free-form rationale. Raw Jaccard similarity over whole paragraphs would be dominated by common-word overlap, not genuine relevance. Story 2 matches against incident records' short structured summary/tags fields only; full-text matching is future work if structured-field matching proves too narrow.
 
 ## Assumptions and Risks
 
-[ASSUMPTION — requires /clarify before scope is locked] Story 4's post-fix confirmation can fall back to a manual confirm step when no automated check exists yet — true today, since initiative 2 hasn't shipped. Needs confirming this fallback is acceptable for the MVP rather than blocking story 4 on initiative 2's build.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, by reasoning — CONFIRMED] Story 4's post-fix confirmation can fall back to a manual confirm step when no automated check exists yet. Since initiative 2 hasn't shipped, this isn't a fallback-of-convenience — it's the only option that exists right now. Accepted for the MVP; blocking story 4 on initiative 2's build first would delay this initiative with no real benefit.
 
-[ASSUMPTION — requires /clarify before scope is locked] Matching a new incident against prior incident records and `decisions.md` (story 2) will surface genuinely relevant prior context, not noisy false matches. An irrelevant "similar prior incident" is worse than none — it wastes the responder's time and can mislead, not just fail to help.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, verified in code — CORRECTED, not confirmed as originally stated] Matching a new incident against prior incident records and `decisions.md` (story 2) will surface genuinely relevant prior context, not noisy false matches. Checked for existing matching tooling: `src/modules/drift-comparator.js` has a real, working Jaccard-similarity primitive (`_jaccard`), but its proven inputs are short, clean column-name lists (`_columnNames`) — not long free-form prose. `package.json` has no stopword/tokenization library, and real `decisions.md` entries run to thousands of words. Raw paragraph-level Jaccard would be dominated by common-word overlap, not real relevance — reusing the function name without checking its real input shape would have repeated this repo's own `tir-s5` mock-shape mistake. Corrected: story 1 now captures a short structured summary/tags field specifically so story 2 has something clean to match against; matching raw `decisions.md` prose is out of scope for this MVP.
 
-[ASSUMPTION — requires /clarify before scope is locked] Building story 3 (the first slice of initiative 1's visibility surface) under initiative 4's own artefact chain won't create ownership or governance confusion when initiative 1 later runs its own `/definition` for the rest of its surface. `CLAUDE.md`'s Artefact-first rule ties UI behavioural changes to a story artefact — need to confirm which feature's chain story 3 belongs to structurally, not just conceptually.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, by decision] Building story 3 (the first slice of initiative 1's visibility surface) under initiative 4's own artefact chain won't create ownership or governance confusion when initiative 1 later runs its own `/definition` for the rest of its surface. Resolved: story 3's artefact lives under this feature's (`incident-triage-and-respond`) chain, since this is the feature actually building and shipping it. Initiative 1's own future `/definition` will reference and build on top of this slice rather than recreate it — not a competing implementation.
 
 **Known constraint, not an assumption:** story 3 pulls in design-system compliance (constraint #9, `hasDesignSystemTrack: true`) — already established, not open.
 
@@ -63,7 +64,7 @@ A 4-story MVP, consistent with the widened-slice pattern already used for initia
 ## Directional Success Indicators
 
 1. **Incident record mechanism (story 1).** Baseline: 0 structured incident records exist today — only one known ad-hoc note (`productionErrorInvestigation` in `workspace/state.json`), paused and unstructured. Target: every new production-defect investigation from this point forward creates a structured incident record instead of an ad-hoc note. Measured via: count of structured records vs. new ad-hoc `workspace/state.json` notes going forward — target is zero new ad-hoc notes once this ships.
-2. **Triage drafting (story 2).** Baseline: 0% of incidents get an auto-drafted summary with prior-incident context today — every investigation starts from scratch (confirmed: `productionErrorInvestigation` has no such summary). Target: 100% of new incident records get an auto-drafted triage summary attempt (prior-incident matches + suggested next step), even if some drafts turn out low-confidence. Measured via: count of incident records with a triage summary attached vs. total records created.
+2. **Triage drafting (story 2).** Baseline: 0% of incidents get an auto-drafted summary with prior-incident context today — every investigation starts from scratch (confirmed: `productionErrorInvestigation` has no such summary). Target: 100% of new incident records get an auto-drafted triage summary attempt, scored via structured-field Jaccard matching (prior-incident matches + suggested next step), even if some drafts turn out low-confidence. Measured via: count of incident records with a triage summary attached vs. total records created.
 3. **Web UI rendering (story 3).** Baseline: 0 incident records are visible in any web UI today — neither the mechanism nor the rendering surface exists yet. Target: incident records render in the web UI, confirmed end-to-end with at least one real record. Measured via: a direct check that the extended `kanban-view.js` route renders ≥1 incident record without error.
 4. **Handoff + post-fix confirmation (story 4).** Baseline: 0% of fixes get any post-deploy confirmation today — the still-unfixed `tenant_admin_bootstrap_failed` bug is the live proof: even if it were fixed tomorrow, nothing would check that the fix actually worked. Target: 100% of incidents that reach a merged fix get a confirmation status recorded (automated re-check where initiative 2's detection exists, manual confirm otherwise per the Assumptions section). Measured via: count of DoD-complete stories that originated from an incident record, cross-checked against whether each has a confirmation status set.
 
@@ -77,7 +78,7 @@ A 4-story MVP, consistent with the widened-slice pattern already used for initia
 
 **Structural governance preferred over instructional** (#13) — `/definition` should design story 1/2/4 so a test can verify a record or summary was actually created (e.g. an assertion that an incident record exists with a populated triage field), not just trust an instruction that it happened.
 
-**Process constraint — artefact ownership for story 3:** since story 3 is the first slice of initiative 1's visibility surface built under initiative 4's own chain, `/definition` needs to resolve which feature's artefact trail it formally belongs to — ties directly to the open assumption above, not yet settled here.
+**Process constraint — artefact ownership for story 3:** resolved via /clarify — story 3's artefact lives under this feature's (`incident-triage-and-respond`) chain; initiative 1's future `/definition` builds on top of it rather than recreating it.
 
 **EA registry Path B**, same as initiatives 1–3 — no existing entry for this repo's pipeline tooling.
 
@@ -97,4 +98,13 @@ No time/budget/team-capability constraints identified beyond these.
 
 ---
 
-**Next step:** /clarify
+## Clarification log
+
+[2026-11-08] Clarified via /clarify:
+- Q: Can story 4's post-fix confirmation fall back to a manual confirm step when no automated check exists yet? A: Confirmed by reasoning — initiative 2 hasn't shipped, so this is the only option today, not a convenience shortcut.
+- Q: Will matching a new incident against prior records and `decisions.md` surface genuinely relevant context, not noisy false matches? A: Corrected, not confirmed — checked `drift-comparator.js`'s real Jaccard-similarity usage and found its proven inputs are short column-name lists, not long free prose; `package.json` has no stopword/tokenization tooling. Story 1 now captures a short structured summary/tags field for story 2 to match against; raw `decisions.md` full-text matching is out of scope for this MVP.
+- Q: Does building story 3 under initiative 4's own chain create ownership confusion with initiative 1's future surface work? A: Resolved by decision — story 3's artefact lives under this feature; initiative 1 builds on top of it later, not a competing implementation.
+
+---
+
+**Next step:** /decisions (log the matching-design correction and the story-3 ownership decision), then operator approval → /benefit-metric
