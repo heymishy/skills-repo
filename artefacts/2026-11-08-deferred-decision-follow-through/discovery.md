@@ -1,6 +1,6 @@
 # Discovery: Deferred Decision Follow-Through
 
-**Status:** Draft
+**Status:** Clarified
 **Created:** 2026-11-08
 **Author:** Claude Sonnet 5 (conversational discovery session with operator)
 
@@ -34,7 +34,7 @@ A 5-story MVP, consistent with the widened-slice pattern used throughout this tr
 
 1. **Deferred-item record mechanism** — generalizes initiative 4's incident-record schema (its story 1) with a `type` field (`incident` | `deferred-item`), capturing source (discovery Out-of-Scope, `RISK-ACCEPT`, unmeasured benefit-metric, capture-log entry, backlog thread), the human-readable revisit condition, and linked feature/story. Validated against 2 real cases from this session: the `tfhc-s1` pipeline-integrity failure (still unfixed, deliberately deferred) and the C1-vs-Option-C fork-distribution contradiction (deferred to a future `/product/` refresh), registered as real records rather than synthetic test data. Fixing `tfhc-s1` itself stays out of scope — only correctly registering and surfacing it is in scope.
 2. **Periodic review scan** — bounded, triggered script (same pattern as initiative 3's story 3) that surfaces unresolved deferred-item records for human judgment — not automated trigger-detection, which this discovery confirmed isn't feasible against today's free-text data. Confirmed to correctly surface both seeded real records on its first run.
-3. **Real telemetry signal feed** — pulls PostHog `stage_completed`/`stage_started` (cost, tokens, `featureSlug`) and `artefact_commit_failed`/`succeeded` data into the review as supporting evidence, not as an auto-decision.
+3. **Real telemetry signal feed** — pulls PostHog `stage_completed`/`stage_started` (cost, tokens, `featureSlug`) and `artefact_commit_failed`/`succeeded` data into the review as supporting evidence, not as an auto-decision. Verified real volume during /clarify: this telemetry is sparse today (`stage_completed` fired once in 60 days; `artefact_commit_succeeded`/`failed` once each in 3 months; `kanban_viewed` and `stage_started` had more signal, 55 and 25 events respectively over 3 months, but still thin) — so this story treats PostHog data as supplementary context when present, never a primary or guaranteed source.
 4. **Self-registration at the moment of deferral** — `/discovery`'s Out of Scope, `/decisions`' `RISK-ACCEPT`, and `/benefit-metric`'s still-unmeasured metrics at DoD each write a story-1 record automatically, so this initiative's own future scope (and every other feature's) feeds the same mechanism without anyone needing to remember.
 5. **Web UI rendering** — extends the same surface initiative 4's story 3 builds, rendering deferred-item records alongside incident records as a second record type, not a separate view.
 
@@ -52,11 +52,11 @@ A 5-story MVP, consistent with the widened-slice pattern used throughout this tr
 
 ## Assumptions and Risks
 
-[ASSUMPTION — requires /clarify before scope is locked] Generalizing initiative 4's incident-record schema (adding a `type` field) is additive and won't require reopening initiative 4's already-approved artefact. Needs confirming once both features' schemas are actually designed together at `/definition`.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, by decision] Generalizing initiative 4's incident-record schema (adding a `type` field) is additive and won't require reopening initiative 4's already-approved artefact. Resolved: since neither feature has any implementation yet, doing this now — before either schema is actually built — is additive by construction. There is nothing existing to break.
 
-[ASSUMPTION — requires /clarify before scope is locked] Story 4's self-registration hooks into `/discovery`, `/decisions`, and `/benefit-metric` without changing those skills' existing conversational behavior for the operator — an additive "also write a record" step, not a redesign. Given these are governed files requiring PR review, getting this wrong has real governance cost, not just a rework cost.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, verified in code — CONFIRMED] Story 4's self-registration hooks into `/discovery`, `/decisions`, and `/benefit-metric` without changing those skills' existing conversational behavior for the operator. Verified: all three skill files already contain a standardized `## State update — mandatory final step` section (`skills/discovery/SKILL.md:519`, `skills/decisions/SKILL.md:264`, `skills/benefit-metric/SKILL.md:295`). Story 4 adds "also write a deferred-item record" as a sub-step within that existing, already-standardized section — genuinely additive, not a redesign.
 
-[ASSUMPTION — requires /clarify before scope is locked] PostHog's `stage_completed`/`artefact_commit_*` telemetry has enough real volume/history to be a useful signal, not just a schema that technically exists. Confirmed the events and properties exist; haven't yet confirmed real event counts.
+[ASSUMPTION — RESOLVED 2026-11-08 via /clarify, verified with real data — CORRECTED, not confirmed] PostHog's `stage_completed`/`artefact_commit_*` telemetry has enough real volume/history to be a useful signal, not just a schema that technically exists. Queried real volume: `stage_completed` fired exactly once in the last 60 days; `artefact_commit_succeeded`/`artefact_commit_failed` each fired once in 3 months; `stage_started` had 25 events and `kanban_viewed` 55 events over 3 months — the healthiest of the group, but still thin. The schema and events are real, but this looks like early or partially-wired instrumentation, not mature telemetry. Corrected: story 3 treats PostHog data as supplementary context when present, never a primary or guaranteed source. The sparse firing rate itself is a real candidate for this mechanism's own first deferred-item record once it ships (worth investigating whether the tracking calls are actually wired into real skill execution).
 
 **Known constraint, not an assumption:** story 4 touches three existing governed `SKILL.md` files — each needs its own PR under `CLAUDE.md`'s Platform change policy. Already flagged in the MVP self-check; restated here as locked, not open.
 
@@ -66,7 +66,7 @@ A 5-story MVP, consistent with the widened-slice pattern used throughout this tr
 
 1. **Deferred-item record mechanism (story 1).** Baseline: 0 structured deferred-item records exist today — `tfhc-s1` and the C1-vs-Option-C contradiction are both known but unstructured (a flagged note, not a record). Target: both real cases exist as structured records. Measured via: confirming both seeded cases are present and correctly typed.
 2. **Periodic review scan (story 2).** Baseline: 0% of deferred items have ever been resurfaced for review — `tfhc-s1` has sat unfixed across multiple sessions without once reaching a decision point. Target: 100% of registered records surfaced at least once per scan cycle. Measured via: first scan run includes both seeded real records.
-3. **Real telemetry signal feed (story 3).** Baseline: 0% of any review today includes real cost/commit-reliability data — none exists anywhere in the pipeline. Target: scan output cites real `featureSlug`-keyed `stage_completed`/`artefact_commit_*` data for at least one feature. Measured via: a direct check that the report contains real PostHog-sourced figures, not static placeholder text.
+3. **Real telemetry signal feed (story 3).** Baseline: 0% of any review today includes real cost/commit-reliability data — none exists anywhere in the pipeline. Confirmed during /clarify that real volume is currently sparse (`stage_completed` once in 60 days). Target: scan output cites real `featureSlug`-keyed telemetry when it exists for a given feature, and degrades gracefully (no false "no signal" conclusion) when it doesn't. Measured via: a direct check that the report contains real PostHog-sourced figures when available, not static placeholder text, and doesn't silently fail when volume is zero.
 4. **Self-registration (story 4).** Baseline: 0% of new deferrals automatically become structured records today — every one requires a manual follow-up step that, per this whole initiative's premise, usually never happens. Target: 100% of deferrals created by `/discovery`, `/decisions`, or `/benefit-metric` after this ships register a record with zero manual steps. Measured via: the next real discovery/decisions/DoD cycle after this ships, confirming record creation happened automatically.
 5. **Web UI rendering (story 5).** Baseline: 0 deferred-item records visible anywhere today. Target: deferred-item records render in the shared surface alongside incident records. Measured via: a direct check that the surface renders ≥1 seeded real record without error.
 
@@ -102,4 +102,13 @@ No time/budget/team-capability constraints identified beyond these.
 
 ---
 
-**Next step:** /clarify
+## Clarification log
+
+[2026-11-08] Clarified via /clarify:
+- Q: Is generalizing initiative 4's incident-record schema additive, without reopening its already-approved artefact? A: Resolved by decision — neither feature has any implementation yet, so doing this now is additive by construction.
+- Q: Does story 4's self-registration hook into `/discovery`, `/decisions`, and `/benefit-metric` without changing their existing conversational behavior? A: Confirmed in code — all three already have a standardized `## State update — mandatory final step` section to hook into.
+- Q: Does PostHog's pipeline telemetry have enough real volume to be a useful signal? A: Corrected, not confirmed — queried real event counts and found the telemetry sparse today (e.g. `stage_completed` fired once in 60 days). Story 3 now treats it as supplementary context, not a primary source, and the sparsity itself becomes a candidate first record for this mechanism.
+
+---
+
+**Next step:** /decisions (log the schema-generalization decision and the telemetry-sparsity finding), then operator approval → /benefit-metric
