@@ -45827,6 +45827,19 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": []
+    },
+    {
+      "slug": "2026-11-08-programme-entry-points",
+      "name": "Programme Entry Points",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-11-08T18:01:47.740Z",
+      "discoveryStatus": "draft",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
