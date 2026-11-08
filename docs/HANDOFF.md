@@ -258,7 +258,9 @@ YYYY-MM-DD-descriptive-slug
 
 ## 9b. Notion-calm web UI design port (2026-05-06)
 
-A self-contained design port package for applying the Notion-calm visual redesign to any consumer/enterprise fork of the skills framework web UI. Committed at `858ef37`.
+A self-contained design port package for applying the Notion-calm visual redesign to a consumer/enterprise fork of the skills framework web UI. Committed at `858ef37`.
+
+**Scope caveat (added 2026-11-08):** this literal copy-the-tree-over approach only works for a fork whose `src/web-ui/` has **not** substantially diverged from this repo's own — it's a drop-in visual-shell replacement, not a general model for how an enterprise fork stays current. For a fork that has already diverged for its own needs (the common case once a fork is in real use), do not copy this tree over it. Instead, treat this document and the underlying design artefacts as a reference, and re-derive the equivalent visual change against the fork's own, already-diverged implementation — the same "reference the outer-loop artefacts, then work independently on the fork's own codebase" model that governs the fork relationship generally (see `CLAUDE.md`'s "Skills pipeline maintenance" section).
 
 ### What it contains
 
@@ -274,7 +276,7 @@ A self-contained design port package for applying the Notion-calm visual redesig
 
 ### How to apply in a consumer repo
 
-Point a coding agent at `AGENT-INSTRUCTIONS.md`. The instructions are self-contained — the agent needs no additional context. Four steps: copy the `port/src/web-ui/` tree over the consumer's `src/web-ui/`, update `require` paths per the wiring guide, run `npm test`, run the smoke check.
+Point a coding agent at `AGENT-INSTRUCTIONS.md`. The instructions are self-contained — the agent needs no additional context. Four steps: copy the `port/src/web-ui/` tree over the consumer's `src/web-ui/`, update `require` paths per the wiring guide, run `npm test`, run the smoke check. **Only follow this if the consumer's `src/web-ui/` hasn't meaningfully diverged** — see the scope caveat above.
 
 No new npm dependencies. No build step. All view modules are pure functions (data → HTML string) with no I/O.
 

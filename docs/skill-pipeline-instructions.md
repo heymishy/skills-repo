@@ -92,7 +92,7 @@ rm -rf /tmp/skills-repo
 
 The installer copies all skills, templates, `context.yml`, `pipeline-state.json`, `dashboards/pipeline-viz.html`, and standards domain files (`.github/standards/`) into your repo. It also copies `scripts/sync-from-upstream.ps1` and `sync-from-upstream.sh` for future updates. With `--upstream-strategy remote` or `fork` it also wires a `skills-upstream` git remote.
 
-> **Enterprise fork note:** The org fork (`your-org/sdlc-skills`) is created once by your platform team. All project repos point at it. The platform team controls when upstream changes from `heymishy/skills-repo` are merged in before distributing to teams.
+> **Enterprise fork note:** The org fork (`your-org/sdlc-skills`) is created once by your platform team. All project repos point at it. The platform team controls when upstream changes from `heymishy/skills-repo` are merged in before distributing to teams. This merge-in only ever covers skill/template/script/doc files (`sync_paths` never includes `src/`) — it keeps the fork current on skill updates, not on product capability. Once the fork's own `src/` implementation has diverged for its own needs, new product-capability work isn't pulled through this path at all; the platform team instead references the public repo's outer-loop artefacts for that feature and runs the outer loop independently against the fork's own, already-diverged codebase.
 
 ### 3. Review the four setup questions
 
