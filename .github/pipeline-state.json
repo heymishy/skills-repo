@@ -45840,6 +45840,19 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": []
+    },
+    {
+      "slug": "2026-11-08-incident-triage-and-respond",
+      "name": "Incident Triage and Respond",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-11-08T19:58:19.889Z",
+      "discoveryStatus": "draft",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
