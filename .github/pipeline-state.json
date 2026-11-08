@@ -45853,6 +45853,19 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": []
+    },
+    {
+      "slug": "2026-11-08-deferred-decision-follow-through",
+      "name": "Deferred Decision Follow-Through",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-11-08T21:45:40.767Z",
+      "discoveryStatus": "draft",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
