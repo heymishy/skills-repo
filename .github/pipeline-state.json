@@ -45970,15 +45970,57 @@
     {
       "slug": "2026-11-08-incident-triage-and-respond",
       "name": "Incident Triage and Respond",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-08T20:04:55.750Z",
+      "updatedAt": "2026-11-08T23:15:24.480Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Incident record mechanism adoption",
+          "target": "100% of new production-defect investigations use a structured record",
+          "baseline": "0 structured incident records exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Triage drafting coverage",
+          "target": "100% of new incident records get a drafted triage summary attempt",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Web UI rendering existence",
+          "target": "Incident records render in the extended kanban-view.js surface, >=1 real record",
+          "baseline": "0 incident records visible in any web UI today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Handoff + post-fix confirmation coverage",
+          "target": "100% of incidents reaching a merged fix get a confirmation status recorded",
+          "baseline": "0% of fixes get any post-deploy confirmation today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-11-08-deferred-decision-follow-through",
