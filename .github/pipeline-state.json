@@ -44949,7 +44949,7 @@
       "name": "Inner Loop Cycle Efficiency",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-04T05:56:10.092Z",
+      "updatedAt": "2026-11-08T00:37:26.480Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -45526,7 +45526,7 @@
             {
               "slug": "ilce-s1",
               "name": "Add structured per-skill timing writes to pipeline-timings.jsonl",
-              "stage": "definition-of-done",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -45588,7 +45588,7 @@
             {
               "slug": "ilce-s2",
               "name": "/branch-complete skips the redundant full-suite rerun when a fresh result exists",
-              "stage": "definition-of-done",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -45639,7 +45639,7 @@
             {
               "slug": "ilce-s3",
               "name": "/subagent-execution runs spec-compliance and code-quality review in parallel, with discard-and-re-dispatch on spec failure",
-              "stage": "definition-of-done",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -45696,7 +45696,7 @@
             {
               "slug": "ilce-s4",
               "name": "/workflow reconciles merged-but-no-DoD stories against live GitHub, not just pipeline-state.json",
-              "stage": "definition-of-done",
+              "stage": "trace",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -45751,7 +45751,8 @@
             }
           ]
         }
-      ]
+      ],
+      "traceStatus": "has-findings"
     },
     {
       "slug": "2026-11-06-bcfx-s1",
