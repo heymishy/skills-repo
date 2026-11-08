@@ -46025,15 +46025,67 @@
     {
       "slug": "2026-11-08-deferred-decision-follow-through",
       "name": "Deferred Decision Follow-Through",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-08T21:55:11.495Z",
+      "updatedAt": "2026-11-08T23:16:39.639Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Deferred-item record mechanism existence",
+          "target": "Both seeded real cases exist as structured records",
+          "baseline": "0 structured deferred-item records exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Periodic review scan coverage",
+          "target": "100% of registered records surfaced at least once per scan cycle",
+          "baseline": "0% - never resurfaced by any mechanism",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Real telemetry signal feed quality",
+          "target": "Cites real figures when available, degrades gracefully when not",
+          "baseline": "0% - no review today includes real telemetry data",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Self-registration coverage",
+          "target": "100% of deferrals from /discovery, /decisions, /benefit-metric register automatically",
+          "baseline": "0% - every deferral requires a manual step today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Web UI rendering existence",
+          "target": "Deferred-item records render in the shared surface alongside incident records",
+          "baseline": "0 deferred-item records visible anywhere today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
