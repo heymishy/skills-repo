@@ -1,8 +1,8 @@
 # Discovery: CI/CD, Observability & Hardening Automation
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-11-08
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-11-08
 **Author:** Claude Sonnet 5 (conversational discovery session with operator)
 
 ---
@@ -99,7 +99,7 @@ No time/budget/team-capability constraints identified beyond these.
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-11-08
 
 ---
 
