@@ -68,10 +68,38 @@ Discipline experts own their standards at the relevant tier. The platform delive
 
 ## What the platform is not
 
-- Not a project management tool — it does not replace Jira, track sprint velocity, or generate reports for stakeholders
+<!-- UPDATED 2026-11-08: the visibility/planning boundary (first bullet) is revised to
+     reflect four new initiatives now going into discovery: (1) an agentic patch->build->
+     test->deploy->monitor pipeline with chat notifications, (2) an incident-triage-and-
+     respond agent, (3) a unified kanban/backlog visibility surface spanning reactive +
+     proactive work, extending the existing src/web-ui/views/kanban-view.js rather than
+     building a new UI, and (4) revival of the already-built but never-adopted /programme
+     skill. See each initiative's own discovery.md for full rationale; this file records
+     the resulting mission-level boundary change, not the initiatives' own scope. These
+     are deliberate expansions into new, outward-facing territory, not a continuation of
+     recent delivery — the last several weeks of real shipped work (inner-loop-cycle-
+     efficiency, bcfx-s1, fixture-hardening-fast-follows, test-suite-infra-refactor) has
+     been inward-facing CI/pipeline reliability hardening, not customer-facing incident
+     or deploy-monitoring work. That hardening is why the platform is ready to take this
+     on, not evidence that it has already started. -->
+
+- **Is now a visibility and planning surface for engineering work — reactive and proactive — but still not a general-purpose project management tool.** The platform extends `src/web-ui/views/kanban-view.js` — the real, already-shipped kanban renderer behind `/dashboard?view=board`, `/org/kanban`, and `/products/:id/kanban` (today 100% forward-looking: features, stories, phases, health) — to also surface reactive operational work (incidents, patches, hotfixes) alongside it, in one place, rather than standing up a separate PM system. This is a deliberate reversal of this file's original "not Jira" framing (see the initiative-specific discovery artefacts for rationale). It does **not** take on general sprint-velocity tracking, stakeholder-report generation, or any other Jira capability that isn't grounded in this platform's own governed artefacts (pipeline-state.json, DoD, decisions.md, incident records) — anything shown in the visibility surface must trace back to a real governed artefact, not a freeform ticket field. Discovery for this specific surface decides exactly where that line sits.
 - Not a code generator — it governs what code generation must meet, not what code to generate
 - Not a design tool — it references and validates design artefacts; it does not produce them
 - Not a compliance management system — it produces compliance evidence; it does not manage compliance programmes
-- Not a persistent agent runtime — it uses existing CI/CD infrastructure as the execution environment; it does not require a hosted agent service
+- **Still not a persistent agent runtime** — this constraint is unchanged and is explicitly binding on the new reactive-work initiatives too. The agentic CI/CD pipeline (patch → build → test → deploy → monitor) and the incident-triage-and-respond agent must be designed as CI/CD- or event-triggered executions (a webhook, a scheduled check, a CI job, a chat-command invocation) on top of existing infrastructure — not as a new always-on hosted agent service, listener process, or persistent message queue. "Monitor" and "review telemetry" mean triggered, bounded checks that read existing observability data and exit, not a standing watch process. Any initiative whose design requires a persistent runtime has failed this constraint and must be redesigned, not grandfathered in.
 - Not a second-line control in isolation — the platform provides second-line-style automation; organisational second-line independence requires the risk function to independently review the assurance agent's SKILL.md, not just its outputs
 - Not a Layer 1 AI coding assistant — the platform governs the execution layer (GitHub Copilot, Claude Code, Cursor) rather than replacing it. The three market layers are distinct: Layer 1 (AI coding assistants: Copilot, Claude Code, Cursor, Kiro), Layer 2 (single-project specification frameworks: GitHub Spec Kit, Vistaly), Layer 3 (enterprise fleet governance: this platform, GitLab Duo Agent Platform, Harness.io). The platform operates at Layer 3, layered on top of Layer 1 tools, without requiring a platform migration or commercial runtime subscription.
+
+---
+
+## Reactive and operational work (added 2026-11-08)
+
+Alongside the existing forward-looking outer/inner loop, the platform is extending into reactive operational work — the other half of a daily engineer's actual workload, which the pipeline has not previously modelled at all. The four initiatives below sit at different distances from what already exists in the codebase; each distance is noted so discovery starts from the real baseline, not an assumed one.
+
+- **Patch/deploy/monitor automation:** an agentic flow covering patch announcement, chat notification (Slack/Teams), build, test-environment run, deploy, and post-deploy monitoring — triggered by CI/CD events, not a new runtime. Real scaffolding to extend already exists: `.github/workflows/deploy-group-auto-rerun.yml`, `staging-deploy.yml`, and `e2e.yml`. Chat notification does not yet exist in the outbound direction — `src/approval-channel/adapters/teams-adapter.js` only handles *inbound* Teams webhook clicks (approving a DoR via an Adaptive Card). Sending a chat notification out is new work, not an extension of that adapter, though its HMAC-verification and channel-dispatch pattern (`approval-channel/index.js`) is a reasonable model to follow.
+- **Incident triage and response:** an agent that reviews telemetry and observability data, checks prior incidents and their fixes for a matching pattern, drafts a summary, and posts it to the incident channel — with a human engineer firmly in the loop for the consequential step (promoting an already-lower-environment-tested fix to production and monitoring it). This is second-line-style automation (see "What the platform is not," above) — it drafts and surfaces, a human decides and acts on anything production-facing. This is genuinely greenfield: no incident, error-tracking, or alerting code exists anywhere in `src/` today (PostHog is wired, but for analytics/flags, not incidents), and the monitoring/alerting/log-aggregation rows in this document's "Tool integrations" table are placeholders — those `context.yml` keys are unpopulated in the real config. Discovery for this initiative has to start by choosing a real telemetry/incident source, not by wiring to an existing one.
+- **Unified visibility:** both of the above, plus the existing forward-looking story backlog, surfaced together in one view by extending `src/web-ui/views/kanban-view.js` (see the revised "What the platform is not" entry above) so an engineer's daily reality — a mix of planned story work and reactive operational work — is visible in one place instead of two separate systems. Note `dashboards/pipeline-viz.html` is explicitly deprecated and is not part of this surface; `kanban-view.js` and the separate, simpler static mock in `dashboards/index.html` are the two real candidates, and discovery should confirm which one this initiative targets.
+- **`/programme` revival:** the programme-level navigator (cross-workstream dependencies, phase gates, consumer registries) was already built for exactly this kind of multi-initiative coordination but has seen negligible real adoption. Revisiting *why* it was never used is itself part of this initiative's own discovery, not assumed to be a tooling gap — the skill's own design already respects every constraint in this file.
+
+Each of these is its own `/discovery` artefact; this section records the mission-level "this is now in scope" decision that unlocks them, not their individual design.
