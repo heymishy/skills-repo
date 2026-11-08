@@ -45850,15 +45850,67 @@
     {
       "slug": "2026-11-08-cicd-observability-hardening-automation",
       "name": "CI/CD, Observability & Hardening Automation",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-08T09:10:34.528Z",
+      "updatedAt": "2026-11-08T23:12:56.336Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "CI/CD chain notification coverage",
+          "target": "100% of merges trigger a notification at each defined transition",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Manual CI toil reduction for known-flaky patterns",
+          "target": "Near-zero (0-1) manual reruns per month for already-known-flaky patterns",
+          "baseline": "3 manual interventions this session for actr-s1/s2/s3 pattern",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Vulnerability-finding visibility",
+          "target": "100% CI-run audit-step coverage, 100% notification de-duplication rate",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Production-defect detection latency",
+          "target": "Real first measurement established within month 1",
+          "baseline": "[UNKNOWN BASELINE] - not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5-tier3",
+          "name": "dompurify critical finding resolution (Tier 3)",
+          "target": "Resolved or RISK-ACCEPT re-confirmed by the date story 3 ships",
+          "baseline": "Open RISK-ACCEPT logged 2026-11-08",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-11-08-programme-entry-points",
