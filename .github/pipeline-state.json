@@ -45805,15 +45805,47 @@
     {
       "slug": "2026-11-08-unified-reactive-proactive-visibility",
       "name": "Unified Reactive + Proactive Visibility",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-08T08:11:02.546Z",
+      "updatedAt": "2026-11-08T23:11:03.438Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "track": "standard"
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Reactive-work coverage on the surface",
+          "target": "100% of existing short-track stories and decisions.md RISK-ACCEPT/SCOPE entries rendered",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "EM/team-lead real usage for load visibility",
+          "target": "At least 1 observed instance of the rollup informing a real planning/reporting decision within month 1",
+          "baseline": "[UNKNOWN BASELINE] - not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Rollup completeness (undercount risk)",
+          "target": "Real spot-check completed within month 1 with undercount rate known",
+          "baseline": "[UNKNOWN BASELINE] - not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-11-08-cicd-observability-hardening-automation",
