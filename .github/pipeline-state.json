@@ -45801,6 +45801,19 @@
       ],
       "metrics": [],
       "updatedAt": "2026-11-06T01:24:51.646Z"
+    },
+    {
+      "slug": "2026-11-08-unified-reactive-proactive-visibility",
+      "name": "Unified Reactive + Proactive Visibility",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-11-08T08:08:42.138Z",
+      "discoveryStatus": "clarified",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
