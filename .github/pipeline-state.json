@@ -45915,15 +45915,57 @@
     {
       "slug": "2026-11-08-programme-entry-points",
       "name": "Programme Entry Points",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-11-08T18:14:18.820Z",
+      "updatedAt": "2026-11-08T23:14:18.496Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Qualification-gate fix validated against a real case",
+          "target": "Gate passes phase4 case, still rejects a normal multi-story feature",
+          "baseline": "Gate fails by construction for phase4 today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Routing visibility for a genuine big-bet candidate",
+          "target": "At least 1 routing path surfaces /programme under the right signals",
+          "baseline": "0 routing states mention /programme today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3-meta",
+          "name": "Retrospective dry-run validity (meta)",
+          "target": "Dry-run completes all 7 steps with only targeted, patchable gaps",
+          "baseline": "0 of 342 features ever had /programme Step 0-6 run against them",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4-meta",
+          "name": "Bottom-up detection heuristic validity (meta)",
+          "target": "Script correctly classifies both seeded historical cases",
+          "baseline": "No detection mechanism exists at all today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-11-08-incident-triage-and-respond",
