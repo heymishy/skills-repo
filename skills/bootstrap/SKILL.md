@@ -281,8 +281,16 @@ connected to `heymishy/skills-repo` for future skill updates.
 > Maintain a private fork of `heymishy/skills-repo` (e.g. `your-org/sdlc-skills`)
 > with your own standards, product context, and copilot-instructions pre-loaded.
 > Point the install script at your fork. Project repos pull from the fork, not
-> the public repo. Your fork periodically syncs from the public upstream at its
-> own cadence.
+> the public repo.
+>
+> This `skills_upstream` sync only ever carries skill/template/script/doc files —
+> never product code (`src/`). It keeps your fork current on skill updates, not on
+> product capability. Once your fork's own implementation has diverged for its own
+> needs (expected once it's in real use), new product-capability work isn't pulled
+> through this sync at all — your team instead references the public repo's
+> outer-loop artefacts (discovery, benefit-metric, definition documents) for the
+> feature in question and runs the outer loop independently against your fork's
+> own, already-diverged codebase.
 >
 > Reply: A, B, or C"
 
@@ -371,7 +379,10 @@ git fetch skills-upstream
 
 Confirm:
 > ✅ Fork URL recorded in `context.yml`. `skills-upstream` remote added.
-> Your fork should periodically merge from `heymishy/skills-repo` to stay current.
+> Your fork should periodically merge from `heymishy/skills-repo` to stay current
+> on skill/template/script updates — `sync_paths` never includes `src/`. For new
+> product capability, reference the public repo's outer-loop artefacts for that
+> feature and run the outer loop independently against your fork's own codebase.
 
 ---
 
