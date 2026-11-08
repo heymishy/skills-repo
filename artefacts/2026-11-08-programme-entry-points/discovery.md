@@ -1,7 +1,8 @@
 # Discovery: Programme Entry Points
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-11-08
+**Approved by:** Hamish King — Platform Owner — 2026-11-08
 **Author:** Claude Sonnet 5 (conversational discovery session with operator)
 
 ---
@@ -99,7 +100,7 @@ No time/budget/team-capability constraints identified beyond these.
 
 ## Approved By
 
-[Pending]
+Hamish King — Platform Owner — 2026-11-08
 
 ---
 
@@ -112,4 +113,4 @@ No time/budget/team-capability constraints identified beyond these.
 
 ---
 
-**Next step:** /decisions (log the two material changes above), then operator approval → /benefit-metric
+**Next step:** Human review and approval → /benefit-metric
