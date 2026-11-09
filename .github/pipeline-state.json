@@ -46496,21 +46496,36 @@
           "slug": "coha-s1",
           "name": "Outbound Teams chat-notification adapter",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T07:04:07.519Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 11,
-            "passing": 0
+            "passing": 11
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Build handler, injectable setter, throwing stub (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s1-outbound-teams-notification-adapter-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Wire real implementation at scripts/notify-teams.js (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s1-outbound-teams-notification-adapter-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "coha-s2",
