@@ -47097,7 +47097,7 @@
         {
           "slug": "pep-e1-validate-entry-points",
           "name": "/programme holds up for a real invocation, from either direction",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             "pep-s1",
             "pep-s2",
@@ -47153,21 +47153,50 @@
           "slug": "pep-s3",
           "name": "Bottom-up programme-candidate detection script (epic-count primary signal)",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T17:54:27.806Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 12,
-            "passing": 0
+            "status": "all-passing",
+            "totalTests": 27,
+            "passing": 27,
+            "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s3-bottom-up-detection-script-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "countEpics — flat-lightweight and legacy-nested epics shapes",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s3-bottom-up-detection-script-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "countDependencyMentions + computeSignals (no timeline field, ever)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s3-bottom-up-detection-script-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "isCandidate boundary (>=4 inclusive) + generateReport (disclaimer, zero-candidate case)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s3-bottom-up-detection-script-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "scanPipelineState integration against real pipeline-state.json (AC2/AC3) + CLI wrapper",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s3-bottom-up-detection-script-plan.md"
+            }
+          ],
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1061"
         }
       ],
       "guardrails": [
