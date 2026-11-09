@@ -54,6 +54,22 @@
 ---
 
 ---
+**2026-11-09 | ARCH | definition — _jaccard export gap found**
+**Decision:** `src/modules/drift-comparator.js`'s `_jaccard` function, which the discovery's own `/clarify` correction already verified has the right proven input shape (short arrays, not prose) for this feature's matching need, is not actually exported — `module.exports` lists only `DUPLICATE_SIMILARITY_THRESHOLD`. itar-s2 must either export `_jaccard` (preferred — one function, already correct, no behavioural change) or extract it to a shared utility, rather than assuming import-and-reuse works as the discovery's "reused" language implied.
+**Alternatives considered:** (A) Write a second, independent Jaccard implementation inside the new incident-matching code rather than touching `drift-comparator.js` at all — rejected, this duplicates logic the repo already has correct and tested, against ADR-012's/ADR-013's general preference for shared primitives over parallel reimplementations. (B, chosen) Export the existing function (or extract it to a shared location); defer the exact choice to itar-s2's implementation plan.
+**Rationale:** Found by reading the real `module.exports` block (line 518) while verifying the discovery's own already-corrected Jaccard-reuse claim before writing itar-s2's ACs — a smaller instance of the same "read the real code before building on an assumption" discipline applied repeatedly this session (initiative 1's `kanban-view.js` finding; initiative 3's two unverified-claim corrections).
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None — factual correction of a verifiable code gap, resolved as an explicit AC (itar-s2 AC1's "newly exported" language) rather than left implicit.
+---
+**2026-11-09 | ARCH | definition — stale benefit-metric.md surface citation found**
+**Decision:** Corrected `benefit-metric.md`'s Metric 3 "Target" field, which still read "the extended `kanban-view.js` surface" — the earlier cross-tranche correction (2026-11-09, this feature's own prior `decisions.md` entry) had updated `discovery.md` but missed this duplicate citation in `benefit-metric.md`.
+**Alternatives considered:** None — this is a mechanical consistency fix, not a design choice.
+**Rationale:** Found while re-reading `benefit-metric.md` in full before writing itar-s3's ACs, confirming the surface-correction propagated everywhere it needed to, not just the file it was originally logged against.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None.
+---
+
+---
 
 ## Architecture Decision Records
 

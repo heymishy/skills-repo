@@ -47,7 +47,7 @@ No Tier 3 compliance/risk-reduction obligations apply — no regulatory, audit, 
 |-------|-------|
 | **What we measure** | Whether incident records render in the web UI at all, end-to-end. |
 | **Baseline** | 0 incident records visible in any web UI today — neither the mechanism nor the rendering surface exists yet. |
-| **Target** | Incident records render in the extended `kanban-view.js` surface, confirmed with at least one real record. |
+| **Target** | Incident records render in the extended `_renderConsolidatedFeaturesSection` surface (`src/web-ui/routes/products.js`), confirmed with at least one real record. |
 | **Minimum validation signal** | Same as target — this is a binary existence check, not a graduated metric. |
 | **Measurement method** | A direct check that the extended route renders ≥1 real incident record without error, once story 3 ships. |
 | **Feedback loop** | If this fails, it blocks initiative 1's and initiative 5's later stories that build on this same surface — treat as a hard gate, not a soft miss. |
@@ -69,10 +69,10 @@ No Tier 3 compliance/risk-reduction obligations apply — no regulatory, audit, 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Incident record mechanism adoption | [Populated at /definition] | Gap — stories not yet written |
-| Triage drafting coverage | [Populated at /definition] | Gap — stories not yet written |
-| Web UI rendering existence | [Populated at /definition] | Gap — stories not yet written |
-| Handoff + post-fix confirmation coverage | [Populated at /definition] | Gap — stories not yet written |
+| Incident record mechanism adoption | itar-s1 | Covered |
+| Triage drafting coverage | itar-s2 | Covered |
+| Web UI rendering existence | itar-s3 | Covered |
+| Handoff + post-fix confirmation coverage | itar-s4 | Covered |
 
 ---
 
