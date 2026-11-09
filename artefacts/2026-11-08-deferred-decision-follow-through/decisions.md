@@ -62,6 +62,31 @@
 **Revisit trigger:** None — factual correction of which skill's hook point matches the story's own stated intent, not a new design choice that could independently reverse.
 ---
 
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — products.js pre-existing design-token debt (cross-reference)**
+**Decision:** `ddft-s5`'s H-DESIGN finding against `src/web-ui/routes/products.js` (~40 pre-existing non-token colors, none introduced by this story) is accepted on the same basis as the full RISK-ACCEPT logged in `artefacts/2026-11-08-unified-reactive-proactive-visibility/decisions.md` (2026-11-09).
+**Alternatives considered:** None separately evaluated here — this entry cross-references the full decision and rationale logged where the finding was first evaluated.
+**Rationale:** Same shared file, same pre-existing debt, same operator decision — logging the cross-reference so a future reader of this feature's own decisions.md doesn't need to re-derive it.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** Same as the full entry — resolved when the `products.js` retrofit story referenced there lands.
+---
+
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — verification scripts not independently reviewed (W4)**
+**Decision:** Acknowledge, rather than resolve, W4 ("verification script reviewed by a domain expert") for all 5 of this feature's stories (ddft-s1 through ddft-s5) at DoR sign-off. No independent domain-expert review of the 5 AC verification scripts has happened — Hamish King, as both story author and Platform Owner, is the only available reviewer in this personal-scope project.
+**Alternatives considered:** (A) Block DoR sign-off until an independent reviewer is found — rejected, no second contributor exists in this project to serve that role; blocking on an unavailable resource is not a real resolution. (B, chosen) Acknowledge the risk explicitly, proceed, and set a concrete revisit trigger tied to a real future event rather than an indefinite deferral.
+**Rationale:** Same self-review limitation already acknowledged for benefit-metric ownership (2026-11-09 RISK-ACCEPT, metric owner self-assignment) — the honest constraint of a solo-operator project, not a process failure to paper over.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** If a second contributor ever joins this project, have them formally review these 5 verification scripts before the next time any of these stories' scope changes.
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — ddft-s5 fetch-latency NFR baseline (due now, per nfr-profile.md)**
+**Decision:** `nfr-profile.md`'s own Gaps table flagged the `workspace/incidents.json` web-UI fetch-latency baseline as "Due: Before ddft-s5 reaches /definition-of-ready." At that point now reached, accept the gap rather than inventing a baseline with no real traffic to measure it against.
+**Alternatives considered:** (A) Invent a placeholder latency threshold now so the NFR table shows a number — rejected, this pipeline's own "never invent" discipline (already applied to benefit-metric Reviewers field) rules this out; a fabricated number is worse than an honestly-flagged gap. (B, chosen) Accept explicitly, matching the same treatment already given to the identical gap on `urpv-s3` and `itar-s3`'s own fetch paths.
+**Rationale:** No implementation exists yet for any of the three stories sharing this fetch path (`urpv-s3`, `itar-s3`, `ddft-s5`) — there is no real traffic to measure a baseline against. Setting a number now would be guessing, not measuring.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** Once any of the three stories sharing this fetch path ships and real traffic exists, measure an actual baseline and update all three NFR profiles together (they share one open gap, not three independent ones).
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

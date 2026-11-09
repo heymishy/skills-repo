@@ -45805,9 +45805,9 @@
     {
       "slug": "2026-11-08-unified-reactive-proactive-visibility",
       "name": "Unified Reactive + Proactive Visibility",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T03:51:17.420Z",
+      "updatedAt": "2026-11-09T06:12:02.985Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -45866,10 +45866,10 @@
           "slug": "urpv-s1",
           "name": "Auto-sync a product's pipeline-state.json immediately on repo connection",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": false,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45880,17 +45880,18 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "urpv-s2",
           "slug": "urpv-s2",
           "name": "Tag short-track features as reactive work in the consolidated features view",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45901,17 +45902,18 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "urpv-s3",
           "slug": "urpv-s3",
           "name": "Surface decisions.md RISK-ACCEPT/SCOPE entries as a second reactive-work source",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45922,17 +45924,18 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "urpv-s4",
           "slug": "urpv-s4",
           "name": "Reactive-vs-planned load rollup by pod",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45943,7 +45946,8 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "guardrails": [
@@ -45953,8 +45957,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-SEC-02",
@@ -46052,8 +46056,8 @@
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-001",
@@ -46115,8 +46119,8 @@
           "label": "EA registry surface-type mapping table (technology.hosting -> platform surface type)",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-008",
@@ -46331,8 +46335,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-012",
@@ -46403,17 +46407,17 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         }
       ]
     },
     {
       "slug": "2026-11-08-cicd-observability-hardening-automation",
       "name": "CI/CD, Observability & Hardening Automation",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T03:51:17.420Z",
+      "updatedAt": "2026-11-09T06:12:02.985Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -46492,9 +46496,9 @@
           "slug": "coha-s1",
           "name": "Outbound Teams chat-notification adapter",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46505,16 +46509,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "coha-s2",
           "slug": "coha-s2",
           "name": "CI/CD chain notifications (announce, status, auto-retry visibility)",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46525,16 +46530,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "coha-s3",
           "slug": "coha-s3",
           "name": "Vulnerability-check CI step with de-duplicated notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46545,16 +46551,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "coha-s4",
           "slug": "coha-s4",
           "name": "Bounded production-log scan with pattern-match notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46565,7 +46572,8 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "guardrails": [
@@ -46953,8 +46961,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across coha-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-012",
@@ -47033,9 +47041,9 @@
     {
       "slug": "2026-11-08-programme-entry-points",
       "name": "Programme Entry Points",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T03:51:17.420Z",
+      "updatedAt": "2026-11-09T06:12:02.985Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47103,9 +47111,9 @@
           "slug": "pep-s1",
           "name": "Retrospective dry-run of /programme Steps 0-6 against skills-platform-phase4",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47116,16 +47124,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "pep-s2",
           "slug": "pep-s2",
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47136,16 +47145,17 @@
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "pep-s3",
           "slug": "pep-s3",
           "name": "Bottom-up programme-candidate detection script (epic-count primary signal)",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47156,7 +47166,8 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "guardrails": [
@@ -47247,8 +47258,8 @@
           "label": "Gate add/remove synced with SKILL.md criteria",
           "status": "met",
           "evidence": "No violations found across pep-s1..s3 /review Category E (MC-CONSIST-02: de-duplication design confirmed correct in pep-s2, independent of the AC1 threshold finding), 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-A11Y-01",
@@ -47544,8 +47555,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across pep-s1..s3 /review Category E (MC-CONSIST-02: de-duplication design confirmed correct in pep-s2, independent of the AC1 threshold finding), 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-012",
@@ -47624,9 +47635,9 @@
     {
       "slug": "2026-11-08-incident-triage-and-respond",
       "name": "Incident Triage and Respond",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T03:51:17.420Z",
+      "updatedAt": "2026-11-09T06:12:02.985Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47695,9 +47706,9 @@
           "slug": "itar-s1",
           "name": "Incident record mechanism",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47708,16 +47719,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "itar-s2",
           "slug": "itar-s2",
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47728,17 +47740,18 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "itar-s3",
           "slug": "itar-s3",
           "name": "Web UI rendering -- first slice of initiative 1's visibility surface",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47749,16 +47762,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "itar-s4",
           "slug": "itar-s4",
           "name": "Handoff to short-track pipeline + post-fix confirmation",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47769,7 +47783,8 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "guardrails": [
@@ -47779,8 +47794,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-SEC-02",
@@ -47788,8 +47803,8 @@
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-SEC-03",
@@ -47878,8 +47893,8 @@
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-001",
@@ -48157,8 +48172,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-012",
@@ -48229,17 +48244,17 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         }
       ]
     },
     {
       "slug": "2026-11-08-deferred-decision-follow-through",
       "name": "Deferred Decision Follow-Through",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T03:51:17.420Z",
+      "updatedAt": "2026-11-09T06:12:02.985Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -48319,9 +48334,9 @@
           "slug": "ddft-s1",
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48332,16 +48347,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "ddft-s2",
           "slug": "ddft-s2",
           "name": "Periodic review scan",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48352,16 +48368,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "ddft-s3",
           "slug": "ddft-s3",
           "name": "Real telemetry signal feed",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48372,16 +48389,17 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "ddft-s4",
           "slug": "ddft-s4",
           "name": "Self-registration at the moment of deferral",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48392,17 +48410,18 @@
           "acTotal": 5,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         },
         {
           "id": "ddft-s5",
           "slug": "ddft-s5",
           "name": "Web UI rendering alongside incident records",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T03:51:17.420Z",
+          "updatedAt": "2026-11-09T06:12:02.985Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48413,7 +48432,8 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "guardrails": [
@@ -48423,8 +48443,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No violations found across ddft-s1..s5 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-SEC-02",
@@ -48432,8 +48452,8 @@
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
           "evidence": "No violations found across ddft-s1..s5 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "MC-SEC-03",
@@ -48522,8 +48542,8 @@
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
           "evidence": "No violations found across ddft-s1..s5 /review Category E, 2026-11-09",
-          "assessedBy": "/review",
-          "assessedAt": "2026-11-09T01:41:23.917Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-11-09T06:12:02.985Z"
         },
         {
           "id": "ADR-001",

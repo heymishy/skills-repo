@@ -3114,3 +3114,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "ddft-s3's test plan mocks PostHog event shape throughout (External-dependency gap type). Flagged risk: the mock shape could drift from PostHog's real event schema over time with no automated check to catch it -- candidate for the deferred-decision-follow-through mechanism's own first real deferred-item record once implemented, fitting the epic's own self-application premise (ddft-s3 AC4)."
   source: agent-auto
+
+- date: 2026-11-09
+  session-phase: definition-of-ready
+  signal-type: gap
+  signal-text: "H-DESIGN (scripts/check-design-tokens.js) scans the whole declared touched file, not a story's own diff. Run directly against src/web-ui/routes/products.js it found ~40 pre-existing non-token colors unrelated to any of urpv-s2/s3/s4, itar-s3, or ddft-s5 -- the five stories in this tranche that declare it as touched. RISK-ACCEPTed per operator decision (logged in urpv's decisions.md with cross-references in itar's and ddft's), with an explicit follow-up: run a dedicated retrofit story to bring products.js's existing inline colors into DESIGN.md's token table once this tranche's five stories ship. Do not let this get lost -- it is real, confirmed, pre-existing debt on a shared, heavily-touched file, not a one-off."
+  source: agent-auto

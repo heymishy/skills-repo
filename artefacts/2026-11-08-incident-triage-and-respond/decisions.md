@@ -80,6 +80,24 @@
 **Revisit trigger:** Once implementation has run the Jaccard primitive against a handful of real or fixture incident tag/summary sets, pin the threshold to a concrete value backed by that evidence, and update itar-s2's AC1/AC3 accordingly before considering the story's test plan complete.
 ---
 
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — products.js pre-existing design-token debt (cross-reference)**
+**Decision:** `itar-s3`'s H-DESIGN finding against `src/web-ui/routes/products.js` (~40 pre-existing non-token colors, none introduced by this story) is accepted on the same basis as the full RISK-ACCEPT logged in `artefacts/2026-11-08-unified-reactive-proactive-visibility/decisions.md` (2026-11-09).
+**Alternatives considered:** None separately evaluated here — this entry cross-references the full decision and rationale logged where the finding was first evaluated.
+**Rationale:** Same shared file, same pre-existing debt, same operator decision — logging the cross-reference so a future reader of this feature's own decisions.md doesn't need to re-derive it.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** Same as the full entry — resolved when the `products.js` retrofit story referenced there lands.
+---
+
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — verification scripts not yet reviewed by a domain expert (W4, all 4 stories)**
+**Decision:** Acknowledge, rather than resolve, Warning W4 ("verification script reviewed by a domain expert") for all 4 stories in this feature (itar-s1, itar-s2, itar-s3, itar-s4) with a single shared entry rather than four duplicate ones.
+**Alternatives considered:** (A) Block DoR sign-off until a formal domain-expert review happens — rejected, since no second contributor exists in this personal-scope project to perform an independent review distinct from the story's own author. (B) Fabricate a reviewer role or skip the warning silently — rejected, contradicts this pipeline's "never invent" discipline and W4's own explicit acknowledgement requirement. (C, chosen) Acknowledge explicitly: Hamish King, as story author and Platform Owner, is the only available reviewer today; log the gap honestly with a concrete revisit trigger rather than pretending independent review happened.
+**Rationale:** Consistent with the same self-assignment reasoning already applied to this feature's own benefit-metric owner/reviewer decision (2026-11-09 RISK-ACCEPT entry above) — an honest acknowledgement of a real solo-operator constraint, not a process failure to paper over.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** If a second contributor joins this project, have them formally review these 4 stories' verification scripts before the next time any of these stories' scope changes.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

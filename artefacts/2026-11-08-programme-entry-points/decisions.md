@@ -71,6 +71,15 @@
 **Revisit trigger:** If `pep-s1`'s dry-run or a future third historical case shows ≥4 produces a false positive or false negative, revisit the exact cutoff — the number itself was never validated against more than the 2 known cases.
 ---
 
+---
+**2026-11-09 | RISK-ACCEPT | definition-of-ready — W4 verification-script review, all 3 stories**
+**Decision:** Acknowledge, rather than resolve, DoR Warning W4 ("verification script reviewed by a domain expert") for `pep-s1`, `pep-s2`, and `pep-s3` together, in a single shared entry. No second contributor has independently reviewed any of the 3 AC verification scripts in `artefacts/2026-11-08-programme-entry-points/verification-scripts/`.
+**Alternatives considered:** (A) Block DoR sign-off on all 3 stories until an independent review happens — rejected, since no second contributor exists in this personal-scope project; blocking on a review role that cannot be filled would stall delivery indefinitely rather than manage a real, bounded risk. (B, chosen) Acknowledge explicitly, as W4's own stated option 2 allows, with a concrete revisit trigger.
+**Rationale:** Hamish King, as the story author and Platform Owner, is the only available reviewer. This is the same honest-gap pattern already applied to the benefit-metric Reviewers field (2026-11-09, this feature's own earlier decisions.md entry) — leaving a role unfilled rather than fabricating a second sign-off.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition-of-ready, 2026-11-09
+**Revisit trigger:** If a second contributor joins this project, have them formally review these 3 verification scripts before the next time any of these stories' scope changes.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
