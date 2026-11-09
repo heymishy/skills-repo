@@ -159,7 +159,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 | # | Status | Title | Constrains |
 |---|---|---|---|
-| ADR-001 | Active | Single-file viz, no build step | `dashboards/pipeline-viz.html` architecture |
+| ADR-001 | Superseded | Single-file viz, no build step | `dashboards/pipeline-viz.html` architecture (superseded by the web-ui product-sync surface, `_renderConsolidatedFeaturesSection`) |
 | ADR-002 | Active | Gates must use evidence fields, not stage-proxy | All `evaluateGate()` implementations |
 | ADR-003 | Active | Schema-first: fields defined before use | `pipeline-state.schema.json` evolution |
 | ADR-004 | Active | `context.yml` is the single config source of truth | Skill files, viz config reading |
@@ -185,7 +185,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 ### ADR-001: Single-file viz, no build step
 
-**Status:** Active
+**Status:** Superseded (2026-11-09) — see Supersession note below
 **Date:** 2026-03-22
 **Decided by:** Repo owner
 
@@ -202,6 +202,9 @@ The viz tool needs to be usable by anyone with a browser and a local clone — n
 
 #### Revisit trigger
 If the viz grows beyond ~3000 lines and maintainability is significantly impacted, introduce a simple build step that still produces a single deployable `.html` output.
+
+#### Supersession note (2026-11-09)
+`dashboards/pipeline-viz.html` is no longer this platform's single-repo delivery tracker in practice — that role is now served by the multi-tenant web-ui's product-sync surface (`_renderConsolidatedFeaturesSection`, `src/web-ui/routes/products.js:496`, inside `_renderProductView`), which pulls a connected repo's `.github/pipeline-state.json` via GitHub's API and renders health/coverage/stage/module grouping per feature. This repo is itself connected as a dogfooded product (`platform-self-registration.js`). The decision and constraints recorded above (single-file, no build step, no npm runtime deps) are still accurate as a historical record of `pipeline-state.html`'s own design and remain true of that file if it is ever opened directly — only its role as the platform's *primary* delivery-tracking surface is superseded. The file is not deleted; no story currently removes it. See `artefacts/2026-11-08-unified-reactive-proactive-visibility/decisions.md` (2026-11-09, ARCH) for the full discovery-time finding that prompted this correction.
 
 ---
 

@@ -45869,13 +45869,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": false,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s1-auto-sync-on-repo-connect-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -45891,13 +45892,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s2-tag-short-track-as-reactive-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -45913,13 +45915,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s3-decisions-md-as-reactive-source-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -45935,13 +45938,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s4-reactive-planned-rollup-by-pod-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -46504,7 +46508,8 @@
           "testPlan": {
             "status": "all-passing",
             "totalTests": 11,
-            "passing": 11
+            "passing": 11,
+            "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s1-outbound-teams-notification-adapter-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 4,
@@ -46534,13 +46539,14 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 10,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s2-ci-cd-chain-notifications-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -46555,13 +46561,14 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 11,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s3-vulnerability-check-ci-step-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -46576,13 +46583,14 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s4-bounded-production-log-scan-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47128,13 +47136,14 @@
           "epic": "pep-e1-validate-entry-points",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s1-retrospective-dry-run-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47149,13 +47158,14 @@
           "epic": "pep-e1-validate-entry-points",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 10,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s2-patch-programme-and-workflow-test-plan.md"
           },
           "acTotal": 6,
           "acVerified": 0,
@@ -47170,13 +47180,14 @@
           "epic": "pep-e1-validate-entry-points",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s3-bottom-up-detection-script-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47723,13 +47734,14 @@
           "epic": "itar-e1-triage-and-respond",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s1-incident-record-mechanism-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47744,13 +47756,14 @@
           "epic": "itar-e1-triage-and-respond",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 11,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s2-triage-drafting-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47766,13 +47779,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s3-web-ui-rendering-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -47787,13 +47801,14 @@
           "epic": "itar-e1-triage-and-respond",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s4-handoff-and-post-fix-confirmation-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -48351,13 +48366,14 @@
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s1-deferred-item-record-mechanism-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -48372,13 +48388,14 @@
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s2-periodic-review-scan-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -48393,13 +48410,14 @@
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s3-real-telemetry-signal-feed-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
@@ -48414,13 +48432,14 @@
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s4-self-registration-at-deferral-test-plan.md"
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -48436,13 +48455,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:02:27.345Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 0,
+            "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s5-web-ui-rendering-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 0,
