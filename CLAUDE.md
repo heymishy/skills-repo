@@ -39,6 +39,16 @@ git remote add skills-upstream https://github.com/heymishy/skills-repo.git
 ```
 Then update `skills_upstream.remote` and `skills_upstream.strategy` in `context.yml`.
 
+**Scope note (added 2026-11-08):** this sync mechanism covers `skills/`, `templates/`,
+`scripts/`, and `docs/skill-pipeline-instructions.md` only — it never includes `src/`.
+This is the whole relationship for a fork that only needs skill/standards updates. For an
+enterprise fork whose own `src/` implementation has substantially diverged for its own
+needs, this sync mechanism is not how that fork stays current with new product capability
+— the fork maintainer instead references this repo's own outer-loop artefacts (discovery,
+benefit-metric, definition documents) and runs the outer loop independently against the
+fork's own, already-diverged codebase, re-deriving the equivalent implementation rather
+than inheriting code through this channel.
+
 ---
 
 ## Product context
