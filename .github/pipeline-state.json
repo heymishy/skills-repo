@@ -45822,8 +45822,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "urpv-s1 ships only the backend auto-sync trigger; the feature's benefit metrics (reactive-work coverage, EM/team-lead usage) require urpv-s2/s3/s4's rendering work, not yet implemented.",
+          "contributingStories": [
+            "urpv-s1"
+          ]
         },
         {
           "id": "m2",
@@ -45851,7 +45853,7 @@
         {
           "slug": "urpv-e1-reactive-work-visibility",
           "name": "Engineers and team leads see reactive work alongside planned work, not just half the picture",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             "urpv-s1",
             "urpv-s2",
@@ -45866,10 +45868,10 @@
           "slug": "urpv-s1",
           "name": "Auto-sync a product's pipeline-state.json immediately on repo connection",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "hasDesignSystemTrack": false,
-          "updatedAt": "2026-11-09T07:01:35.901Z",
+          "updatedAt": "2026-11-09T19:40:43.659Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45883,7 +45885,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1059",
           "tasks": [
             {
@@ -45916,7 +45918,10 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "AC4 live-verify gap: end-to-end data-appears-without-refresh claim needs a real GitHub OAuth session to confirm live; cannot be performed by an unsupervised agent."
         },
         {
           "id": "urpv-s2",
@@ -45995,8 +46000,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "MC-SEC-02",
@@ -46094,8 +46099,8 @@
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-001",
@@ -46157,8 +46162,8 @@
           "label": "EA registry surface-type mapping table (technology.hosting -> platform surface type)",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-008",
@@ -46373,8 +46378,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-012",
@@ -46445,8 +46450,8 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "No violations found across urpv-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         }
       ]
     },
@@ -46470,8 +46475,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "coha-s1 ships only the outbound adapter; no story yet calls it on a real CI/CD event (coha-s2 not yet implemented).",
+          "contributingStories": [
+            "coha-s1"
+          ]
         },
         {
           "id": "m2",
@@ -46519,7 +46526,7 @@
         {
           "slug": "coha-e1-detect-and-alert",
           "name": "The engineer who merges is never blind to what happens next",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             "coha-s1",
             "coha-s2",
@@ -46534,9 +46541,9 @@
           "slug": "coha-s1",
           "name": "Outbound Teams chat-notification adapter",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "verify-completion",
-          "health": "green",
-          "updatedAt": "2026-11-09T07:04:07.519Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-09T19:40:43.659Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46564,7 +46571,11 @@
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s1-outbound-teams-notification-adapter-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": false,
+          "blocker": "Real Teams channel delivery not live-verified: no TEAMS_WEBHOOK_URL configured in this environment; needs a human-supplied real/test webhook URL."
         },
         {
           "id": "coha-s2",
@@ -47018,8 +47029,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across coha-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-012",
@@ -47133,20 +47144,24 @@
           "name": "Retrospective dry-run validity (meta)",
           "target": "Dry-run completes all 7 steps with only targeted, patchable gaps",
           "baseline": "0 of 342 features ever had /programme Step 0-6 run against them",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-11-09T19:40:43.659Z",
+          "evidence": "pep-s1's retrospective dry-run artefact is itself the metric's stated measurement method (per benefit-metric.md) and is complete, substantive, and names a concrete finding.",
+          "contributingStories": [
+            "pep-s1"
+          ]
         },
         {
           "id": "m4-meta",
           "name": "Bottom-up detection heuristic validity (meta)",
           "target": "Script correctly classifies both seeded historical cases",
           "baseline": "No detection mechanism exists at all today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-11-09T19:40:43.659Z",
+          "evidence": "pep-s3's script was run against both known historical cases (skills-platform-phase4, team-identity-roles) per benefit-metric.md's stated measurement method, with correct results on both.",
+          "contributingStories": [
+            "pep-s3"
+          ]
         }
       ],
       "slicingStrategy": "risk-first",
@@ -47154,7 +47169,7 @@
         {
           "slug": "pep-e1-validate-entry-points",
           "name": "/programme holds up for a real invocation, from either direction",
-          "status": "complete",
+          "status": "in-progress",
           "stories": [
             "pep-s1",
             "pep-s2",
@@ -47168,9 +47183,9 @@
           "slug": "pep-s1",
           "name": "Retrospective dry-run of /programme Steps 0-6 against skills-platform-phase4",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "verify-completion",
-          "health": "green",
-          "updatedAt": "2026-11-09T18:02:34.187Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-09T19:40:43.659Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47210,7 +47225,11 @@
               "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s1-retrospective-dry-run-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": false,
+          "blocker": "Findings write-up names a Step 3 workstream-schema gap needing a human scope decision (fold into pep-s2 or track separately) before pep-s2 ships; also a cosmetic stale path in the \"Generated by\" line."
         },
         {
           "id": "pep-s2",
@@ -47239,9 +47258,9 @@
           "slug": "pep-s3",
           "name": "Bottom-up programme-candidate detection script (epic-count primary signal)",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-11-09T17:54:27.806Z",
+          "updatedAt": "2026-11-09T19:40:43.659Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47281,8 +47300,10 @@
               "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s3-bottom-up-detection-script-plan.md"
             }
           ],
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1061"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1061",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": [
@@ -47373,8 +47394,8 @@
           "label": "Gate add/remove synced with SKILL.md criteria",
           "status": "met",
           "evidence": "No violations found across pep-s1..s3 /review Category E (MC-CONSIST-02: de-duplication design confirmed correct in pep-s2, independent of the AC1 threshold finding), 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "MC-A11Y-01",
@@ -47670,8 +47691,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across pep-s1..s3 /review Category E (MC-CONSIST-02: de-duplication design confirmed correct in pep-s2, independent of the AC1 threshold finding), 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-012",
@@ -47767,8 +47788,10 @@
           "baseline": "0 structured incident records exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "itar-s1 ships only the incident-record storage mechanism; the feature's benefit metrics require itar-s2 (triage matching), itar-s3 (rendering), and itar-s4 (handoff/confirmation), none yet implemented.",
+          "contributingStories": [
+            "itar-s1"
+          ]
         },
         {
           "id": "m2",
@@ -47806,7 +47829,7 @@
         {
           "slug": "itar-e1-triage-and-respond",
           "name": "An incident goes from first signal to a confirmed fix, with context attached the whole way",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             "itar-s1",
             "itar-s2",
@@ -47821,9 +47844,9 @@
           "slug": "itar-s1",
           "name": "Incident record mechanism",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:14.796Z",
+          "updatedAt": "2026-11-09T19:40:43.659Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47837,8 +47860,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1062"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1062",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "itar-s2",
@@ -47915,8 +47940,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "MC-SEC-02",
@@ -47924,8 +47949,8 @@
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "MC-SEC-03",
@@ -48014,8 +48039,8 @@
           "label": "Colour not sole indicator of gate status (icons/labels present)",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-001",
@@ -48293,8 +48318,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         },
         {
           "id": "ADR-012",
@@ -48365,8 +48390,8 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "No violations found across itar-s1..s4 /review Category E, 2026-11-09",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-11-09T06:12:02.985Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-11-09T19:40:43.659Z"
         }
       ]
     },

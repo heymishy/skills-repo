@@ -3120,3 +3120,14 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "H-DESIGN (scripts/check-design-tokens.js) scans the whole declared touched file, not a story's own diff. Run directly against src/web-ui/routes/products.js it found ~40 pre-existing non-token colors unrelated to any of urpv-s2/s3/s4, itar-s3, or ddft-s5 -- the five stories in this tranche that declare it as touched. RISK-ACCEPTed per operator decision (logged in urpv's decisions.md with cross-references in itar's and ddft's), with an explicit follow-up: run a dedicated retrofit story to bring products.js's existing inline colors into DESIGN.md's token table once this tranche's five stories ship. Do not let this get lost -- it is real, confirmed, pre-existing debt on a shared, heavily-touched file, not a one-off."
   source: agent-auto
+
+- date: 2026-11-09
+  session-phase: definition-of-done
+  signal-type: gap
+  signal-text: "/benefit-metric's own State-update section never populates metrics[].contributingStories, even though benefit-metric.md's own Metric Coverage Matrix already names which stories move which metric -- found during urpv-s1's DoD (all 3 of urpv's metrics had empty contributingStories arrays despite the matrix being fully populated). Same class of gap as the earlier testPlan.artefact finding (/test-plan). Fixed ad-hoc per-story at DoD time for urpv-s1/coha-s1/pep-s1/pep-s3/itar-s1's own metrics as each DoD ran, but the root cause (the skill itself) is unfixed -- a real /improve candidate: amend /benefit-metric's State-update section to populate this field from the Coverage Matrix it already writes."
+  source: agent-auto
+- date: 2026-11-09
+  session-phase: definition-of-done
+  signal-type: pattern
+  signal-text: "Two of five Wave-1 DoDs (pep-s1, pep-s3) correctly overrode this session's own dispatch-brief assumption that their metrics were 'not yet measured' -- after reading the real benefit-metric.md directly, both found the metric's own stated measurement method was exactly what that story's ACs had just done (a retrospective write-up; a script run against 2 known historical cases), and marked them on-track instead, with the correction explicitly noted in the DoD artefact rather than silently followed or silently overridden. Worth reinforcing as the right failure mode: read the real artefact before accepting an upstream instruction's framing, even when that instruction comes from the orchestrating session itself."
+  source: agent-auto
