@@ -47706,21 +47706,22 @@
           "slug": "itar-s1",
           "name": "Incident record mechanism",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T06:12:02.985Z",
+          "updatedAt": "2026-11-09T18:00:31.544Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         },
         {
           "id": "itar-s2",
