@@ -66,9 +66,9 @@ Not applicable — no meta-benefit flag (see Tier Classification above).
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Reactive-work coverage on the surface | [Populated at /definition] | Gap — stories not yet written |
-| EM/team-lead real usage for load visibility | [Populated at /definition] | Gap — stories not yet written |
-| Rollup completeness (undercount risk) | [Populated at /definition] | Gap — stories not yet written |
+| Reactive-work coverage on the surface | urpv-s1 (makes real data reachable), urpv-s2 (short-track tagging), urpv-s3 (decisions.md entries) | Covered |
+| EM/team-lead real usage for load visibility | urpv-s4 (ships the rollup this metric measures usage of) | Covered |
+| Rollup completeness (undercount risk) | urpv-s4 (the prerequisite the post-ship spot-check compares against — the spot-check itself is an operator measurement action, not a coding story) | Covered (enabling story; measurement is a post-ship operational action, not further code) |
 
 ---
 
