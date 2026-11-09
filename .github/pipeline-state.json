@@ -45805,9 +45805,9 @@
     {
       "slug": "2026-11-08-unified-reactive-proactive-visibility",
       "name": "Unified Reactive + Proactive Visibility",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-11-09T01:41:23.917Z",
+      "updatedAt": "2026-11-09T03:51:17.420Z",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
@@ -45866,48 +45866,84 @@
           "slug": "urpv-s1",
           "name": "Auto-sync a product's pipeline-state.json immediately on repo connection",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": false,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "urpv-s2",
           "slug": "urpv-s2",
           "name": "Tag short-track features as reactive work in the consolidated features view",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "urpv-s3",
           "slug": "urpv-s3",
           "name": "Surface decisions.md RISK-ACCEPT/SCOPE entries as a second reactive-work source",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "urpv-s4",
           "slug": "urpv-s4",
           "name": "Reactive-vs-planned load rollup by pod",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [
@@ -46375,9 +46411,9 @@
     {
       "slug": "2026-11-08-cicd-observability-hardening-automation",
       "name": "CI/CD, Observability & Hardening Automation",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-11-09T01:41:23.917Z",
+      "updatedAt": "2026-11-09T03:51:17.420Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -46456,44 +46492,80 @@
           "slug": "coha-s1",
           "name": "Outbound Teams chat-notification adapter",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "coha-s2",
           "slug": "coha-s2",
           "name": "CI/CD chain notifications (announce, status, auto-retry visibility)",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "coha-s3",
           "slug": "coha-s3",
           "name": "Vulnerability-check CI step with de-duplicated notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "coha-s4",
           "slug": "coha-s4",
           "name": "Bounded production-log scan with pattern-match notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [
@@ -46961,9 +47033,9 @@
     {
       "slug": "2026-11-08-programme-entry-points",
       "name": "Programme Entry Points",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-11-09T02:01:23.330Z",
+      "updatedAt": "2026-11-09T03:51:17.420Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47031,33 +47103,60 @@
           "slug": "pep-s1",
           "name": "Retrospective dry-run of /programme Steps 0-6 against skills-platform-phase4",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "pep-s2",
           "slug": "pep-s2",
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "pep-s3",
           "slug": "pep-s3",
           "name": "Bottom-up programme-candidate detection script (epic-count primary signal)",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [
@@ -47525,9 +47624,9 @@
     {
       "slug": "2026-11-08-incident-triage-and-respond",
       "name": "Incident Triage and Respond",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-11-09T03:43:11.859Z",
+      "updatedAt": "2026-11-09T03:51:17.420Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47596,45 +47695,81 @@
           "slug": "itar-s1",
           "name": "Incident record mechanism",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "itar-s2",
           "slug": "itar-s2",
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T03:43:11.859Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "itar-s3",
           "slug": "itar-s3",
           "name": "Web UI rendering -- first slice of initiative 1's visibility surface",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "itar-s4",
           "slug": "itar-s4",
           "name": "Handoff to short-track pipeline + post-fix confirmation",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [
@@ -48102,9 +48237,9 @@
     {
       "slug": "2026-11-08-deferred-decision-follow-through",
       "name": "Deferred Decision Follow-Through",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-11-09T02:01:23.330Z",
+      "updatedAt": "2026-11-09T03:51:17.420Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -48184,56 +48319,101 @@
           "slug": "ddft-s1",
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "ddft-s2",
           "slug": "ddft-s2",
           "name": "Periodic review scan",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "ddft-s3",
           "slug": "ddft-s3",
           "name": "Real telemetry signal feed",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "ddft-s4",
           "slug": "ddft-s4",
           "name": "Self-registration at the moment of deferral",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "id": "ddft-s5",
           "slug": "ddft-s5",
           "name": "Web UI rendering alongside incident records",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T01:41:23.917Z",
+          "updatedAt": "2026-11-09T03:51:17.420Z",
           "reviewStatus": "passed",
-          "highFindings": 0
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [

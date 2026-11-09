@@ -3103,3 +3103,14 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "ddft-s4 AC3 named /benefit-metric's 'State update -- mandatory final step' section as its hook point, but its trigger condition ('a metric still shows not-yet-measured at the point the feature reaches DoD') can only be observed at /definition-of-done time -- a different skill the discovery's own MVP scope never named as a 4th hook (it named exactly 3: /discovery, /decisions, /benefit-metric). /benefit-metric's own State-update section runs once, at authoring time, when every metric is always not-yet-measured by construction -- it structurally cannot know what will be true later at DoD. Caught during /review, not /definition, because single-pass story drafting treated 'cite the real, verified hook-point line number' as sufficient without separately checking that the specific trigger condition in each AC is something that hook point can actually observe at its own run time. Flagged HIGH with two concrete fix options (retarget to a real 4th /definition-of-done hook, or redesign the AC around something /benefit-metric's own section can observe) rather than silently picking one, since it's a real design decision for a human or /definition to make."
   source: agent-auto
+
+- date: 2026-11-09
+  session-phase: test-plan
+  signal-type: pattern
+  signal-text: "pep-s3's test plan adds a standing unit test asserting the bottom-up detection script never computes a timeline-span field at all (not just 'unused') -- the story's own AC explicitly excludes timeline-span as a signal because the real historical data showed it inverted (a longer span was the normal case, not the programme-scale one). Worth a standing regression test rather than a one-time check, since a future maintainer could wire it back in by habit."
+  source: agent-auto
+- date: 2026-11-09
+  session-phase: test-plan
+  signal-type: gap
+  signal-text: "ddft-s3's test plan mocks PostHog event shape throughout (External-dependency gap type). Flagged risk: the mock shape could drift from PostHog's real event schema over time with no automated check to catch it -- candidate for the deferred-decision-follow-through mechanism's own first real deferred-item record once implemented, fitting the epic's own self-application premise (ddft-s3 AC4)."
+  source: agent-auto
