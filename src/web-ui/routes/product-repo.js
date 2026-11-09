@@ -16,6 +16,8 @@ var _posthog = require('../modules/posthog-server');
 var _repoAdapterModule = require('../adapters/repo-adapter');
 var _repoRootAdapter = require('../adapters/repo-root'); // das-s3 -- tenant-scoped local disk root for resolving each stage's artefactPath
 var _artefactBackfill = require('../adapters/artefact-backfill'); // das-s3
+var _productRollup = require('../modules/product-rollup'); // urpv-s1
+var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // urpv-s1
 
 /**
  * Read + parse the request body. Mirrors routes/products.js's own
@@ -103,6 +105,24 @@ async function _applyRepoChange(pool, productId, tenantId, owner, repo, accessTo
     'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
     ['github', owner, repo, productId]
   );
+
+  // urpv-s1 (AC1-AC3): auto-trigger a sync of this product's pipeline-state.json
+  // immediately on connect, so the consolidated features section has real data
+  // without waiting for a manual Refresh click. Fire-and-forget, mirroring the
+  // exact pattern already used by the manual Refresh endpoint
+  // (handlePostProductSync, products.js:3066) -- never awaited inline, since
+  // the GitHub fetch + rollup computation can exceed the platform's reverse-
+  // proxy timeout for large repos (pst-s1). isSyncInProgress is enforced
+  // inside triggerProductSync itself (AC2) -- this call site does not
+  // duplicate that guard.
+  _productRollup.triggerProductSync(pool, _pipelineStateFetchAdapter, {
+    productId: productId,
+    repoOwner: owner,
+    repoName: repo,
+    accessToken: accessToken
+  }).catch(function(err) {
+    console.error('[product-sync] auto-triggered sync on connect failed for product ' + productId + ':', err.message);
+  });
 
   // das-s3 (AC1, AC2, AC3, AC4): backfill already-completed stages, still
   // present on local disk, to the repo that was just connected -- this is

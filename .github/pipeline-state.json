@@ -45866,23 +45866,57 @@
           "slug": "urpv-s1",
           "name": "Auto-sync a product's pipeline-state.json immediately on repo connection",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "hasDesignSystemTrack": false,
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-09T07:01:35.901Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
             "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s1-auto-sync-on-repo-connect-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1059",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1: trigger sync on connect, scoped correctly",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2: respect isSyncInProgress guard on re-connect",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3: log sync failure without rolling back the connection",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC4: product page reflects real data after connect",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "NFR-Performance: response not blocked by the sync",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s1-auto-sync-on-repo-connect-plan.md"
+            }
+          ]
         },
         {
           "id": "urpv-s2",
