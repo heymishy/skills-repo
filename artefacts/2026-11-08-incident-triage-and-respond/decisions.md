@@ -38,6 +38,13 @@
 ---
 
 ---
+**2026-11-09 | ARCH | definition — surface correction (cross-reference)**
+**Decision:** Story 3's "extends `kanban-view.js` (or the equivalent route)" target is corrected to `_renderConsolidatedFeaturesSection` (`src/web-ui/routes/products.js:496`, inside `_renderProductView`/`handleGetProductView`) — the real per-product detail page that merges a connected repo's `pipeline-state.json` taxonomy with journeys. `kanban-view.js` is confirmed 100% journeys-table-driven with no path to pipeline-state.json data at all.
+**Alternatives considered:** None separately evaluated here — this entry cross-references the full ARCH decision and rationale logged in `artefacts/2026-11-08-unified-reactive-proactive-visibility/decisions.md` (2026-11-09), where the code-level audit was actually performed, since this story depends on that initiative's surface.
+**Rationale:** Story 3 was explicitly designed as "the first real slice of initiative 1's visibility surface" — when initiative 1's own discovery was corrected to the real surface during /definition, this story's target correspondingly changes, since it was never meant to be a second, independent surface.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None — this is a factual correction propagated from initiative 1's own decision, not a new design choice that could independently reverse.
+---
 **2026-11-09 | RISK-ACCEPT | benefit-metric**
 **Decision:** Metric owner on `benefit-metric.md` is self-assigned to Hamish King (Platform Owner). Reviewers remains `[Pending]` rather than self-assigned.
 **Alternatives considered:** (A) Self-assign Hamish King as both owner and reviewer — rejected, since the point of an independent reviewer is a second perspective on whether a metric is honest and measurable, which self-review cannot provide. (B) Fabricate a placeholder reviewer role to satisfy the skill's completion check — rejected, contradicts this pipeline's "never invent" discipline for unfilled fields.

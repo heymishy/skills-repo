@@ -38,6 +38,13 @@
 ---
 
 ---
+**2026-11-09 | ARCH | definition — surface correction (cross-reference)**
+**Decision:** Story 5's "the shared surface alongside incident records" is confirmed to mean `_renderConsolidatedFeaturesSection` (`src/web-ui/routes/products.js:496`) — the surface initiative 4's story 3 builds against, itself corrected from an original (incorrect) `kanban-view.js` citation inherited from initiative 1.
+**Alternatives considered:** None separately evaluated here — this entry cross-references the full ARCH decision and rationale logged in `artefacts/2026-11-08-unified-reactive-proactive-visibility/decisions.md` (2026-11-09), where the code-level audit was actually performed.
+**Rationale:** This story was never designed against a named file directly — it inherits "the shared surface" from initiative 4's story 3. Logging this cross-reference so a future reader of this decisions.md doesn't need to independently re-derive which surface that phrase actually resolves to.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None — factual cross-reference, not an independent design choice.
+---
 **2026-11-09 | RISK-ACCEPT | benefit-metric**
 **Decision:** Metric owner on `benefit-metric.md` is self-assigned to Hamish King (Platform Owner). Reviewers remains `[Pending]` rather than self-assigned.
 **Alternatives considered:** (A) Self-assign Hamish King as both owner and reviewer — rejected, since the point of an independent reviewer is a second perspective on whether a metric is honest and measurable, which self-review cannot provide. (B) Fabricate a placeholder reviewer role to satisfy the skill's completion check — rejected, contradicts this pipeline's "never invent" discipline for unfilled fields.
