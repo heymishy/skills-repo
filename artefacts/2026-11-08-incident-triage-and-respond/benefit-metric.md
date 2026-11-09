@@ -2,7 +2,7 @@
 
 **Discovery reference:** artefacts/2026-11-08-incident-triage-and-respond/discovery.md
 **Date defined:** 2026-11-08
-**Metric owner:** [Pending — no non-engineering role exists in this personal-scope team (`context.yml`: `meta.scope: personal`). Hamish King (Platform Owner) may self-assign, but this is flagged rather than silently filled in.]
+**Metric owner:** Hamish King (Platform Owner)
 **Reviewers:** [Pending — at least one non-engineering reviewer is required for Tier 1 product metrics by this skill's own completion check; no such role exists in this personal-scope team.]
 
 ---
