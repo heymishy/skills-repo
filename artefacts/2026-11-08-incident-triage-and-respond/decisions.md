@@ -71,6 +71,15 @@
 
 ---
 
+---
+**2026-11-09 | ASSUMPTION | review — itar-s2 Jaccard threshold acknowledgement**
+**Decision:** Acknowledge, rather than resolve, `/review` Run 1 finding `1-M1` on `itar-s2`: AC1 and AC3 both reference a "domain-tuned threshold" for structured-field Jaccard matching without stating a value. The threshold is deliberately left for empirical determination during implementation, not pinned now at /definition.
+**Alternatives considered:** (A) Pin an arbitrary number now (e.g. 0.5, matching `drift-comparator.js`'s own `DUPLICATE_SIMILARITY_THRESHOLD`) — rejected, since that constant is proven only against short column-name arrays, not incident tag/summary sets, and copying it across domains without evidence would repeat the same "assumed-shape" mistake already caught once in this feature (the `_jaccard` export gap) and once in `team-identity-roles` (`tir-s5`). (B, chosen) Leave the threshold open, explicitly flagged as implementation-deferred, with a concrete revisit trigger — distinguished from `pep-s2`/`pep-s3`'s HIGH finding because there, the deciding data (phase4: 5 epics, team-identity-roles: 1 epic) already existed and simply wasn't pinned; here, no comparable historical dataset of incident-tag Jaccard scores exists yet to pin a number against.
+**Rationale:** `/review` itself distinguished this case from the epic-count threshold defect — scoring it MEDIUM/PASS rather than HIGH/FAIL — because the AC's own Architecture Constraints text already defers the value to "determined empirically against real/fixture incident data during implementation." Acknowledging it here closes the loop the review report asked for ("resolve or acknowledge in /decisions... before /test-plan") without inventing a number that has no evidentiary basis yet.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /decisions acknowledgement pass, 2026-11-09
+**Revisit trigger:** Once implementation has run the Jaccard primitive against a handful of real or fixture incident tag/summary sets, pin the threshold to a concrete value backed by that evidence, and update itar-s2's AC1/AC3 accordingly before considering the story's test plan complete.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
