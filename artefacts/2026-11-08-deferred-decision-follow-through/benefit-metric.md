@@ -80,11 +80,11 @@ No Tier 3 compliance/risk-reduction obligations apply — this is internal pipel
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Deferred-item record mechanism existence | [Populated at /definition] | Gap — stories not yet written |
-| Periodic review scan coverage | [Populated at /definition] | Gap — stories not yet written |
-| Real telemetry signal feed quality | [Populated at /definition] | Gap — stories not yet written |
-| Self-registration coverage | [Populated at /definition] | Gap — stories not yet written |
-| Web UI rendering existence | [Populated at /definition] | Gap — stories not yet written |
+| Deferred-item record mechanism existence | ddft-s1 | Covered |
+| Periodic review scan coverage | ddft-s2 | Covered |
+| Real telemetry signal feed quality | ddft-s3 | Covered |
+| Self-registration coverage | ddft-s4 | Covered |
+| Web UI rendering existence | ddft-s5 | Covered |
 
 ---
 
