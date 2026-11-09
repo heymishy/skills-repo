@@ -47,6 +47,22 @@
 ---
 
 ---
+**2026-11-09 | ARCH | definition — Step 0 mechanism correction**
+**Decision:** Correct the discovery's claim that `/programme`'s Step 0 gate automatically fails by reading `context.yml`'s `meta.scope`/`scaling.target_team_count` fields. It does not — Step 0 is a conversational Q1–Q4 Q&A (team count, cross-team dependencies, phase gates, consumer migration); `skills/programme/SKILL.md` never references `context.yml` anywhere (confirmed by direct grep). Answered honestly against phase4's real history, it still fails every scoring signal — a correct outcome for a genuinely single-team effort, not a bug caused by a config read. Reframe story 2's fix target accordingly: add an epic-count-based signal to Step 0's scoring table (reusing story 3's own validated primary signal) so a single-team, programme-scale-by-epic-count effort has a structured qualification path, rather than "fix a context.yml read" that doesn't exist to fix.
+**Alternatives considered:** (A) Leave the discovery's mechanism claim uncorrected and have story 2 "fix" a context.yml-reading behaviour that was never real — rejected, this would produce a story whose AC set targets nonexistent code. (B, chosen) Correct the record and retarget the fix at the real gap (no structured single-team escape hatch), unifying it with story 3's own epic-count signal for internal consistency.
+**Rationale:** Verified directly by reading `skills/programme/SKILL.md` Step 0 (lines 37–98) in full before writing story 2 — the same "read the real code before building on an assumption" discipline applied throughout this session (see initiative 1's `kanban-view.js` correction, logged 2026-11-09 in that feature's own `decisions.md`, for the precedent this follows).
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None — factual correction of a verifiable code claim, not a design choice that could later reverse.
+---
+**2026-11-09 | ARCH | definition — routing-visibility premise correction**
+**Decision:** Correct the discovery's claim that "0 routing states mention `/programme` today... confirmed by reading `/orient` and `/workflow` directly." `/workflow` (`skills/workflow/SKILL.md`) already has substantial `/programme` routing: a route-selector option 5, a Complex-track signal, and an informal Q1–Q4-equivalent pre-check (lines ~164–189) that duplicates Step 0's own gate logic almost exactly. Only `/orient` genuinely has 0 mentions, confirmed by direct grep. Retarget story 2's routing-visibility work at the real gap: make `/workflow`'s pre-check defer to `/programme`'s Step 0 rather than duplicating its questions (a duplication-drift consistency risk, the same hazard `MC-CONSIST-02` names for gate logic generally), and add the missing cross-reference to `/orient`.
+**Alternatives considered:** (A) Leave the false "0 routing states" baseline uncorrected and have story 2 "add" a routing path that already exists in `/workflow` — rejected, this would either produce a no-op story or an unintentional duplicate of existing routing logic. (B, chosen) Correct the baseline and retarget at the real, verified gap (duplication risk + `/orient`'s missing cross-reference).
+**Rationale:** Verified directly by reading `skills/workflow/SKILL.md` lines 95–194 in full before writing story 2, rather than trusting the discovery's own "confirmed by reading both skills" claim at face value — the second such correction found in this initiative's discovery during this same /definition session, both from the same root cause: a discovery-time claim stated as verified that wasn't actually checked against the real file content.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /definition session, 2026-11-09
+**Revisit trigger:** None — factual correction of a verifiable code claim, not a design choice that could later reverse.
+---
+
+---
 
 ## Architecture Decision Records
 
