@@ -47153,22 +47153,49 @@
           "slug": "pep-s1",
           "name": "Retrospective dry-run of /programme Steps 0-6 against skills-platform-phase4",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-09T18:02:34.187Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 7,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 9,
+            "passing": 9,
             "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s1-retrospective-dry-run-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Compute phase4 real profile (git + internal Date fields)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s1-retrospective-dry-run-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Score Step 0, walk Steps 1-6",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s1-retrospective-dry-run-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Generate write-up artefact",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s1-retrospective-dry-run-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Fix artefact-coverage slug match",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s1-retrospective-dry-run-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "pep-s2",
