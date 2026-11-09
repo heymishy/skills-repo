@@ -83,11 +83,11 @@ This initiative delivers direct capability (notification adapter, CI/CD alerts, 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| CI/CD chain notification coverage | [Populated at /definition] | Gap — stories not yet written |
-| Manual CI toil reduction for known-flaky patterns | [Populated at /definition] | Gap — stories not yet written |
-| Vulnerability-finding visibility | [Populated at /definition] | Gap — stories not yet written |
-| Production-defect detection latency | [Populated at /definition] | Gap — stories not yet written |
-| `dompurify` critical finding resolution (Tier 3) | [Populated at /definition] | Gap — stories not yet written |
+| CI/CD chain notification coverage | coha-s1 (adapter), coha-s2 (CI/CD hooks) | Covered |
+| Manual CI toil reduction for known-flaky patterns | coha-s2 (auto-retry visibility) | Covered |
+| Vulnerability-finding visibility | coha-s3 | Covered |
+| Production-defect detection latency | coha-s4 | Covered |
+| `dompurify` critical finding resolution (Tier 3) | coha-s3 (its first real run re-surfaces this exact finding; DoR sign-off gate confirms status) | Covered |
 
 ---
 
