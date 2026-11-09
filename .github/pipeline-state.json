@@ -47778,22 +47778,24 @@
           "slug": "itar-s1",
           "name": "Incident record mechanism",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-09T18:02:14.796Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s1-incident-record-mechanism-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1062"
         },
         {
           "id": "itar-s2",
