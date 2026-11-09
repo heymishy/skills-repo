@@ -47708,7 +47708,7 @@
           "epic": "itar-e1-triage-and-respond",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:00:31.544Z",
+          "updatedAt": "2026-11-09T18:02:14.796Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47721,7 +47721,8 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1062"
         },
         {
           "id": "itar-s2",
