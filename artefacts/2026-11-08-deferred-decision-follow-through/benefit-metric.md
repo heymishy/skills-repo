@@ -56,11 +56,11 @@ No Tier 3 compliance/risk-reduction obligations apply — this is internal pipel
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Whether deferrals created by `/discovery`, `/decisions`, or `/benefit-metric` automatically register a deferred-item record, with zero manual steps. |
+| **What we measure** | Whether deferrals created by `/discovery`, `/decisions`, or `/definition-of-done` (corrected at /review 2026-11-09 from `/benefit-metric` — see `decisions.md`) automatically register a deferred-item record, with zero manual steps. |
 | **Baseline** | 0% of new deferrals automatically become structured records today — every one requires a manual follow-up step that, per this whole initiative's own premise, usually never happens. |
 | **Target** | 100% of deferrals created by all three skills after this ships register a record automatically. |
-| **Minimum validation signal** | At least 1 of the 3 hooked skills (`/discovery`, `/decisions`, or `/benefit-metric`) correctly self-registers in its next real run — a graduated rollout bar below full 3-skill coverage, given this is the most structurally invasive story in the whole tranche (3 separate governed-file PRs). |
-| **Measurement method** | The next real `/discovery`, `/decisions`, or `/benefit-metric` cycle after this ships, confirmed by checking whether a record was created without a manual step. |
+| **Minimum validation signal** | At least 1 of the 3 hooked skills (`/discovery`, `/decisions`, or `/definition-of-done`) correctly self-registers in its next real run — a graduated rollout bar below full 3-skill coverage, given this is the most structurally invasive story in the whole tranche (3 separate governed-file PRs). |
+| **Measurement method** | The next real `/discovery`, `/decisions`, or `/definition-of-done` cycle after this ships, confirmed by checking whether a record was created without a manual step. |
 | **Feedback loop** | If one hooked skill's self-registration works but another's doesn't, that isolates the defect to a specific skill's final-step implementation, not the record mechanism itself. |
 
 ### Metric 5: Web UI rendering existence

@@ -54,6 +54,13 @@
 ---
 
 ---
+**2026-11-09 | ARCH | review — ddft-s4 hook-point correction**
+**Decision:** Swap `ddft-s4`'s third self-registration hook from `/benefit-metric` to `/definition-of-done` (Step 6, "Metric signal"). The hook count stays at 3; only which third skill is hooked changes.
+**Alternatives considered:** (A) Keep `/benefit-metric` as the third hook and redesign its AC around something that skill's own State-update section can observe at authoring time (e.g. a metric defined with no baseline or measurement plan at all) — rejected for this fix pass: it would answer a narrower question than the story's own stated intent ("still-unmeasured metrics at DoD"), and introducing it alongside the DoD hook would be scope expansion during a fix, not a fix. (B, chosen) Retarget to `/definition-of-done`'s Step 6, which already determines and records exactly the "still not-yet-measured at DoD" condition this story's intent describes, confirmed by reading `skills/definition-of-done/SKILL.md:184-288` in full.
+**Rationale:** `/review` (2026-11-09, finding 1-H1 on `ddft-s4`) found AC3's named hook point could not structurally observe its own stated trigger condition — `/benefit-metric`'s State-update section runs once, at authoring time, when every metric is unmeasured by construction. `/definition-of-done`'s own Step 6 is the real, already-standardized place this fact becomes knowable.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /review fix-and-rerun, 2026-11-09
+**Revisit trigger:** None — factual correction of which skill's hook point matches the story's own stated intent, not a new design choice that could independently reverse.
+---
 
 ## Architecture Decision Records
 

@@ -7,20 +7,20 @@
 ## User Story
 
 As a **delivery engineer / platform owner reviewing what's been deferred**,
-I want to **have `/discovery`, `/decisions`, and `/benefit-metric` automatically register a deferred-item record the moment they defer something**,
+I want to **have `/discovery`, `/decisions`, and `/definition-of-done` automatically register a deferred-item record the moment they defer something**,
 So that **this mechanism's own future scope — and every other feature's — feeds itself without anyone needing to remember a manual follow-up step that, per this whole initiative's premise, usually never happens**.
 
 ## Benefit Linkage
 
 **Metric moved:** Self-registration coverage
-**How:** This story is the only mechanism that can deliver "100% of deferrals from all 3 hooked skills register automatically, zero manual steps" — ddft-s1's schema and ddft-s2's scan both depend on records actually existing, and without this story, every record still requires someone to remember to create one manually.
+**How:** This story is the only mechanism that can deliver "100% of deferrals from all hooked skills register automatically, zero manual steps" — ddft-s1's schema and ddft-s2's scan both depend on records actually existing, and without this story, every record still requires someone to remember to create one manually.
 
 ## Architecture Constraints
 
-- **Three separate governed-file PRs, not one** — `skills/discovery/SKILL.md`, `skills/decisions/SKILL.md`, and `skills/benefit-metric/SKILL.md` are three independent files with independent review surfaces; per CLAUDE.md's Platform change policy, each gets its own branch + PR, even though the implementation plan may group the underlying work.
-- **Hook points already verified real** (not assumed): `skills/discovery/SKILL.md:519`, `skills/decisions/SKILL.md:264`, `skills/benefit-metric/SKILL.md:295` each already contain a standardized `## State update — mandatory final step` section. This story adds "also write a deferred-item record (if applicable)" as a sub-step within that existing section — it does not restructure or redesign any of the three skills' existing conversational flow.
-- `product/constraints.md` #13: a test must verify a record was actually created after a real `/decisions` `RISK-ACCEPT` entry or `/discovery` Out-of-Scope write — not just that the SKILL.md instruction text was added.
-- Per the benefit-metric's own graduated minimum validation signal: at least 1 of 3 hooked skills correctly self-registering in its next real run is the accepted rollout floor, given this is the most structurally invasive story in the tranche — this is not a reason to under-scope the AC set below, but it is the honest bar this story's DoR should hold itself to if full 3-skill coverage doesn't land in a single pass.
+- **`[CORRECTED 2026-11-09 at /review, see decisions.md]` Three separate governed-file PRs — the third skill changed, the count didn't.** `skills/discovery/SKILL.md`, `skills/decisions/SKILL.md`, and `skills/definition-of-done/SKILL.md` (swapped in for the originally-named `skills/benefit-metric/SKILL.md`) are three independent files with independent review surfaces; per CLAUDE.md's Platform change policy, each gets its own branch + PR. `/review` found AC3 (below) described a condition (`not-yet-measured` *at DoD time*) that `/benefit-metric`'s own hook point cannot observe, since that section runs once at authoring time when every metric is unmeasured by construction. The real hook for that condition is `/definition-of-done`'s own Step 6 ("Metric signal") / State-update section, confirmed by reading `skills/definition-of-done/SKILL.md:184-288`: Step 6 is exactly where, at DoD time, a metric's signal is determined and recorded as `not-yet-measured` (with an operator-supplied evidence note) when measurement isn't yet possible — this already-standardized flow is the real, correct trigger point this AC needs. `/benefit-metric` is dropped from this story's hook set entirely, not added to it.
+- **Hook points already verified real** (not assumed): `skills/discovery/SKILL.md:519`, `skills/decisions/SKILL.md:264`, and `skills/definition-of-done/SKILL.md:274` each already contain a standardized `## State update — mandatory final step` section. This story adds "also write a deferred-item record (if applicable)" as a sub-step within each existing section — it does not restructure or redesign any of the three skills' existing conversational flow.
+- `product/constraints.md` #13: a test must verify a record was actually created after a real `/decisions` `RISK-ACCEPT` entry, `/discovery` Out-of-Scope write, or `/definition-of-done` `not-yet-measured` signal — not just that the SKILL.md instruction text was added.
+- Per the benefit-metric's own graduated minimum validation signal (updated — see `decisions.md`): at least 1 of the 3 hooked skills correctly self-registering in its next real run is the accepted rollout floor, given this is the most structurally invasive story in the tranche — this is not a reason to under-scope the AC set below, but it is the honest bar this story's DoR should hold itself to if full 3-skill coverage doesn't land in a single pass.
 
 ## Dependencies
 
@@ -33,7 +33,7 @@ So that **this mechanism's own future scope — and every other feature's — fe
 
 **AC2:** Given `/decisions`' "State update — mandatory final step" section runs after a `RISK-ACCEPT` entry is logged, When the skill completes, Then a deferred-item record is automatically created (`source: "risk-accept"`) linking to that decision entry.
 
-**AC3:** Given `/benefit-metric`'s "State update — mandatory final step" section runs and a Tier 1 or Tier 2 metric is left with `signal: "not-yet-measured"` at the point the feature later reaches DoD, When this condition is detected, Then a deferred-item record is automatically created (`source: "unmeasured-benefit-metric"`) — this AC's trigger point is DoD-time measurement status, not benefit-metric authoring time, since a metric is expected to be unmeasured when first defined.
+**AC3:** Given `/definition-of-done`'s Step 6 ("Metric signal") records a metric's signal as `not-yet-measured` (with its required operator-supplied evidence note) for a story reaching DoD, When that section's own State-update write happens, Then a deferred-item record is automatically created (`source: "unmeasured-benefit-metric"`) carrying the metric name and the evidence note as the record's `revisitCondition` — this is the real DoD-time trigger point `/definition-of-done`'s own Step 6 already provides, corrected from the original (incorrect) `/benefit-metric`-hook design. `/benefit-metric`'s own hook is dropped from this story entirely — its State-update section runs at authoring time, when every metric is unmeasured by construction, so it has no condition of its own this story's intent needs it to detect.
 
 **AC4:** Given any of the three hooks fires, When the record is created, Then it is written via the same `workspace/incidents.json` mechanism ddft-s1 established — no skill invents its own separate storage path.
 

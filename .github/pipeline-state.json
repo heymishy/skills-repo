@@ -46962,8 +46962,8 @@
       "slug": "2026-11-08-programme-entry-points",
       "name": "Programme Entry Points",
       "stage": "definition",
-      "health": "red",
-      "updatedAt": "2026-11-09T01:41:23.917Z",
+      "health": "green",
+      "updatedAt": "2026-11-09T02:01:23.330Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47043,10 +47043,10 @@
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
           "stage": "review",
-          "health": "red",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
-          "reviewStatus": "has-findings",
-          "highFindings": 1
+          "health": "green",
+          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "reviewStatus": "passed",
+          "highFindings": 0
         },
         {
           "id": "pep-s3",
@@ -47054,10 +47054,10 @@
           "name": "Bottom-up programme-candidate detection script (epic-count primary signal)",
           "epic": "pep-e1-validate-entry-points",
           "stage": "review",
-          "health": "red",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
-          "reviewStatus": "has-findings",
-          "highFindings": 1
+          "health": "green",
+          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "reviewStatus": "passed",
+          "highFindings": 0
         }
       ],
       "guardrails": [
@@ -48103,8 +48103,8 @@
       "slug": "2026-11-08-deferred-decision-follow-through",
       "name": "Deferred Decision Follow-Through",
       "stage": "definition",
-      "health": "red",
-      "updatedAt": "2026-11-09T01:41:23.917Z",
+      "health": "green",
+      "updatedAt": "2026-11-09T02:01:23.330Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -48218,10 +48218,10 @@
           "name": "Self-registration at the moment of deferral",
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "review",
-          "health": "red",
-          "updatedAt": "2026-11-09T01:41:23.917Z",
-          "reviewStatus": "has-findings",
-          "highFindings": 1
+          "health": "green",
+          "updatedAt": "2026-11-09T02:01:23.330Z",
+          "reviewStatus": "passed",
+          "highFindings": 0
         },
         {
           "id": "ddft-s5",

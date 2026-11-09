@@ -63,6 +63,13 @@
 ---
 
 ---
+**2026-11-09 | ARCH | review — epic-count threshold pinned**
+**Decision:** Pin the epic-count threshold both `pep-s2` (AC1) and `pep-s3` (AC1-AC3) reference at **≥4 epics within a single feature**.
+**Alternatives considered:** (A) Leave it as "a defined threshold" for the implementation plan to invent — rejected by `/review` (findings 1-H1 on both stories): both comparison data points (`skills-platform-phase4`: 5 epics; `team-identity-roles`: 1 epic) were already known at /definition time, so deferring the number served no real purpose and left both ACs untestable. (B) Pin the minimum possible separating value (≥2) — rejected, too tight against the one known normal-complexity case with no margin. (C, chosen) ≥4 — strictly between 1 and 5, a round and defensible cutoff with margin on both sides, not merely "whatever number happens to separate these two specific cases."
+**Rationale:** `/review` (2026-11-09) found both stories referenced the same unpinned value, and that `pep-s2` explicitly inherits it from `pep-s3`, compounding into neither AC set being independently testable. Fixed together so both stories state the identical number.
+**Made by:** Claude Sonnet 5, confirmed by Hamish King (Platform Owner), during /review fix-and-rerun, 2026-11-09
+**Revisit trigger:** If `pep-s1`'s dry-run or a future third historical case shows ≥4 produces a false positive or false negative, revisit the exact cutoff — the number itself was never validated against more than the 2 known cases.
+---
 
 ## Architecture Decision Records
 
