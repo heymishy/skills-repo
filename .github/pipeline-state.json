@@ -47773,7 +47773,7 @@
       "name": "Incident Triage and Respond",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T06:12:02.985Z",
+      "updatedAt": "2026-11-10T22:38:43.933Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47870,22 +47870,68 @@
           "slug": "itar-s2",
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:38:43.933Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 11,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 15,
+            "passing": 15,
             "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s2-triage-drafting-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1066",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Export jaccardSimilarity from drift-comparator.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Add loadIncidentRecords/saveIncidentRecords to incident-store.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "triage-drafter.js: AC4 cannot-score case",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "triage-drafter.js: AC1 match + rank, AC3 no-match",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "triage-drafter.js: AC2 narrative summary content",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Integration test: persistence to real file",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR-AUDIT-1 confirmation",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            }
+          ]
         },
         {
           "id": "itar-s3",
