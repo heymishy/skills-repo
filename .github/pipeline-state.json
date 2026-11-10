@@ -46582,22 +46582,68 @@
           "slug": "coha-s2",
           "name": "CI/CD chain notifications (announce, status, auto-retry visibility)",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T17:31:39.912Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 10,
-            "passing": 0,
+            "passing": 10,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s2-ci-cd-chain-notifications-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "notifyPatchAnnounce (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "notifyStatus (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "notifyRetryIfEviction (AC3/AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Integration tests (AC1-AC4 end-to-end)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "NFR tests (performance, audit)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "CLI wiring (scripts/notify-ci-chain.js)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Workflow wiring (staging-deploy.yml, ci-chain-status-notify.yml, deploy-group-auto-rerun.yml)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            }
+          ],
+          "prStatus": "draft",
+          "prUrl": null
         },
         {
           "id": "coha-s3",

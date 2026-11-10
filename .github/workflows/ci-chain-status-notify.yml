@@ -1,0 +1,49 @@
+name: CI Chain Status Notify
+
+# coha-s2 (AC2): exactly one status notification per completed run of
+# either deploy-group-scoped workflow (Staging Deploy, E2E Tests), never
+# zero, never more than one. Uses the same safe workflow_run pattern as
+# deploy-group-auto-rerun.yml -- triggered once per completed run, reads
+# the real conclusion from the event payload, and never re-runs or
+# otherwise touches the triggering workflow itself.
+#
+# See artefacts/2026-11-08-cicd-observability-hardening-automation/
+#     stories/coha-s2-ci-cd-chain-notifications.md (AC2).
+
+on:
+  workflow_run:
+    workflows: ["E2E Tests (Playwright)", "Staging Deploy"]
+    types: [completed]
+
+jobs:
+  notify-status:
+    name: Send status notification
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      # continue-on-error so a notification failure never surfaces as a
+      # failed required check on an unrelated workflow's own run -- see
+      # coha-s1's DoD Follow-up Action (no TEAMS_WEBHOOK_URL configured
+      # yet in this environment).
+      - name: Send status notification (coha-s2)
+        continue-on-error: true
+        env:
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node -e "
+            const path = require('path');
+            const { notifyStatus } = require(path.join(process.cwd(), 'scripts', 'lib', 'ci-chain-notify.js'));
+            const {
+              setTeamsNotifyAdapter,
+              realTeamsNotifyAdapter
+            } = require(path.join(process.cwd(), 'src', 'approval-channel', 'adapters', 'teams-outbound-adapter.js'));
+            setTeamsNotifyAdapter(realTeamsNotifyAdapter);
+            const outcome = process.env.CONCLUSION === 'success' ? 'success' : 'failure';
+            notifyStatus({ workflow: process.env.WORKFLOW_NAME, outcome: outcome, commit: process.env.HEAD_SHA })
+              .then((r) => { console.log('[ci-chain-status-notify]', JSON.stringify(r)); })
+              .catch((e) => { console.error('[ci-chain-status-notify] failed:', e.message); process.exitCode = 1; });
+          "

@@ -132,6 +132,35 @@ jobs:
           echo "Deploy-group eviction confirmed -- rerunning run ${{ github.event.workflow_run.id }}"
           gh run rerun ${{ github.event.workflow_run.id }}
 
+      # coha-s2 (AC3): visibility notification for the rerun just fired above
+      # -- deliberately gated on the exact same `if:` condition as the rerun
+      # step itself, so this notification can never fire independently of a
+      # real rerun actually happening (AC4's negative-space guarantee: no
+      # step at all runs on the "not an eviction" path below, so nothing can
+      # notify about a retry that didn't happen). continue-on-error so a
+      # notification failure never masks the real rerun having already
+      # succeeded above.
+      - name: Notify auto-retry occurred (coha-s2)
+        if: steps.decide.outputs.is_eviction == 'true'
+        continue-on-error: true
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          node -e "
+            const path = require('path');
+            const { notifyRetryIfEviction } = require(path.join(process.cwd(), 'scripts', 'lib', 'ci-chain-notify.js'));
+            const {
+              setTeamsNotifyAdapter,
+              realTeamsNotifyAdapter
+            } = require(path.join(process.cwd(), 'src', 'approval-channel', 'adapters', 'teams-outbound-adapter.js'));
+            setTeamsNotifyAdapter(realTeamsNotifyAdapter);
+            const fs = require('fs');
+            const annotationText = fs.readFileSync('annotations.txt', 'utf8');
+            notifyRetryIfEviction({ annotationText: annotationText, runId: process.env.RUN_ID, rerunFired: true })
+              .then((r) => { console.log('[deploy-group-auto-rerun] retry notification:', JSON.stringify(r)); })
+              .catch((e) => { console.error('[deploy-group-auto-rerun] retry notification failed:', e.message); process.exitCode = 1; });
+          "
+
       - name: No action (not a deploy-group eviction)
         if: steps.decide.outputs.is_eviction != 'true'
         run: |
