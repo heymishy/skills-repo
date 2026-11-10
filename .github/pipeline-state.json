@@ -48480,22 +48480,73 @@
           "slug": "ddft-s1",
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T04:39:31.293Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0,
+            "passing": 7,
             "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s1-deferred-item-record-mechanism-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add backward-compatible type field + deferred-item fields to createIncidentRecord",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Add validateRecord (type-conditional required fields)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Add withDefaultType migration helper + loadRecords, refactor shared read path",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Add createDeferredItemRecord and register the real tfhc-s1 finding (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Register the real C1-vs-Option-C contradiction (AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Confirm both seeded records found and correctly typed (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR: no credential-shaped content in record fields",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Backward-compatibility regression: itar-s1 existing callers unaffected",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "ddft-s2",
