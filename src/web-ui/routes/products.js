@@ -445,6 +445,19 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot sw-pill--neutral" title="' + _escapeHtml(_sobMeta.label) + '" aria-label="' + _escapeHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
     : '';
 
+  // urpv-s2 (AC3, AC4, MC-A11Y-02): a visible text label distinguishing
+  // reactive (short-track) from planned (standard-or-other-track) work.
+  // A genuinely absent track (a pure journey-only item with no corresponding
+  // pipeline-state.json feature yet -- Out of Scope) stays untagged rather
+  // than defaulted either way. Colour uses a DESIGN.md token (var(--...))
+  // only, never a hardcoded hex value -- the text label itself (not colour)
+  // is what satisfies MC-A11Y-02.
+  var trackTagHtml = item.track === 'short'
+    ? ' <span data-urpv-track="reactive" style="font-size:12px;color:var(--warn)">Reactive</span>'
+    : item.track
+      ? ' <span data-urpv-track="planned" style="font-size:12px;color:var(--muted)">Planned</span>'
+      : '';
+
   var innerHtml =
     '<a class="pvc-item-link" href="/features/' + _escapeHtml(linkSlug) + '" ' +
       'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
@@ -455,6 +468,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
       '</div>' +
       '<div style="display:flex;align-items:center;gap:12px">' +
         '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+        trackTagHtml +
         '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
         sessionOriginHtml +
       '</div>' +
