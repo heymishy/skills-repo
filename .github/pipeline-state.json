@@ -45928,23 +45928,45 @@
           "slug": "urpv-s2",
           "name": "Tag short-track features as reactive work in the consolidated features view",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:39:01.536Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 9,
+            "passing": 9,
             "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s2-tag-short-track-as-reactive-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1070",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write implementation plan",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Carry feature.track through computeTaxonomyRollup and mergeFeatureSources (AC1, AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Render Reactive/Planned text label per MC-A11Y-02 (AC3, AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            }
+          ]
         },
         {
           "id": "urpv-s3",
