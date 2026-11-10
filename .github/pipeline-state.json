@@ -46604,22 +46604,54 @@
           "slug": "coha-s3",
           "name": "Vulnerability-check CI step with de-duplicated notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T04:39:37.585Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 11,
-            "passing": 0,
+            "passing": 11,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s3-vulnerability-check-ci-step-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "De-dup store module",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Audit-result parsing and severity filtering",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Command-error detection (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Notification dispatch + de-dup integration",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "CI workflow wiring",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            }
+          ]
         },
         {
           "id": "coha-s4",
