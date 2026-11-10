@@ -525,5 +525,8 @@ module.exports = {
   buildDriftSignalCanvasBlock,
   setLogger,
   // exported for focused unit testing only
-  DUPLICATE_SIMILARITY_THRESHOLD
+  DUPLICATE_SIMILARITY_THRESHOLD,
+  // itar-s2: exported for cross-module reuse (structured-field incident-tag
+  // matching) -- same primitive, no behavioural change
+  jaccardSimilarity: _jaccard
 };

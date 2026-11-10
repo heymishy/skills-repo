@@ -50,9 +50,28 @@ function appendIncidentRecord(record, filePath) {
   return records;
 }
 
+// itar-s2: additive read/write helpers for stories that need to load the
+// full record set (to match against) or persist mutations to existing
+// records (e.g. attaching a triage summary) -- distinct from
+// appendIncidentRecord, which only ever adds a new record.
+function loadIncidentRecords(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  const raw = fs.readFileSync(filePath, 'utf8');
+  return raw.trim().length > 0 ? JSON.parse(raw) : [];
+}
+
+function saveIncidentRecords(records, filePath) {
+  fs.writeFileSync(filePath, JSON.stringify(records, null, 2) + '\n');
+  return records;
+}
+
 module.exports = {
   createIncidentRecord,
   appendIncidentRecord,
+  loadIncidentRecords,
+  saveIncidentRecords,
   MAX_TAG_FIELD_LENGTH,
   IncidentTagFieldTooLongError,
 };
