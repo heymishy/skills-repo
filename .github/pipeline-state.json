@@ -47268,22 +47268,56 @@
           "slug": "pep-s2",
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:37:09.387Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17,
             "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s2-patch-programme-and-workflow-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1065",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1: add epic-count signal to programme/SKILL.md Step 0 scoring table + unify Q1 flow",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2/AC3: step0-scorer.js module + real phase4/team-identity-roles verification",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC4: patch workflow/SKILL.md \"If 5\" branch to defer to /programme Step 0",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC5: add /programme cross-reference to orient/SKILL.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "AC6: log pep-s1 Step 3 finding as RISK-ACCEPT/new-discovery referral in decisions.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            }
+          ]
         },
         {
           "id": "pep-s3",

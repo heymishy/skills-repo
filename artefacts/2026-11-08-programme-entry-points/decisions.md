@@ -80,6 +80,15 @@
 **Revisit trigger:** If a second contributor joins this project, have them formally review these 3 verification scripts before the next time any of these stories' scope changes.
 ---
 
+---
+**2026-11-10 | RISK-ACCEPT | implementation (pep-s2, AC6)**
+**Decision:** `pep-s1`'s real write-up (`artefacts/2026-11-08-programme-entry-points/reference/pep-s1-dry-run-findings.md`, Step 3) names one additional, concrete gap beyond the two already-known patches: `templates/programme.md`'s workstream entry has no representation for a single-operator, multi-epic programme — it implicitly assumes team-level separation. `pep-s1`'s own write-up explicitly judges this "logged here as a new finding for a future patch, not folded into pep-s2's already-defined AC1-AC3." Per AC6, this is logged as a new-discovery referral here rather than silently absorbed into this story or silently dropped. No patch to `templates/programme.md` or `skills/programme/SKILL.md`'s Step 3 is made by `pep-s2`.
+**Alternatives considered:** (A) Fold a fix into `pep-s2` anyway, since it's a small, related change — rejected: the story's own Out of Scope section explicitly excludes any patch not traceable to pep-s1's findings or the two discovery-time corrections, and a Step 3 schema change is a different concern (workstream representation) than Step 0 (qualification) or the `/workflow`/`/orient` routing patches this story actually makes. Pulling it in here would be exactly the "freelance additional improvement" AC6 forbids. (B, chosen) Log it as a bounded, named referral for a future story/discovery, consistent with pep-s1's own judgment that it doesn't belong in pep-s2.
+**Rationale:** AC6 requires either a traced patch or an explicit RISK-ACCEPT/new-discovery referral — never silent absorption or silent dropping. The finding is real (confirmed directly in `pep-s1-dry-run-findings.md`'s Step 3 section) and will recur for any future single-operator, multi-epic retrospective or live case that reaches `/programme`'s Step 3.
+**Made by:** Claude Sonnet 5, during pep-s2 implementation, 2026-11-10
+**Revisit trigger:** The next time a single-operator, multi-epic effort reaches `/programme`'s Step 3 in practice (not just retrospectively), or when capacity exists to scope a small follow-up story: add either an explicit `team: null` / "single-operator" convention to `templates/programme.md`'s workstream entry, or have Step 3's own prompt ask whether workstreams share an operator before recording team names.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

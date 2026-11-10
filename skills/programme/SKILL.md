@@ -44,13 +44,13 @@ Before setting up a programme, confirm the overhead is justified. Ask the follow
 >
 > Reply: number of teams
 
-If the answer is **1 team**:
-> The standard pipeline with multiple epics handles single-team work well.
-> Programme overhead (workstream coordination, dependency mapping, phase gates) is
-> unlikely to add value here.
->
-> **Recommend:** use the standard pipeline. Run /discovery to begin.
-> If you still want programme structure for governance reasons, reply: proceed anyway
+If the answer is **1 team**, do not stop here — continue to Q2. A single-team
+effort can still qualify via the epic-count signal below (pep-s2, 2026-11-09):
+before this patch, a genuinely single-team, high-epic-count effort had no
+structured path to programme-track qualification other than an unguided
+"proceed anyway" override. Continue through Q2-Q4 and the scoring table —
+"Multiple teams" will simply read false for this case, same as any other
+signal that doesn't apply.
 
 If the answer is **2 or more teams**, continue.
 
@@ -83,6 +83,7 @@ If the answer is **2 or more teams**, continue.
 | Formal phase gates | Required by stakeholder, governance, or regulatory process |
 | Consumer migration | Any downstream consumers who must absorb breaking changes |
 | Timeline | Multi-phase delivery spanning more than one quarter |
+| Epic count within a single feature | ≥4 epics (pep-s2, 2026-11-09 — pinned against two real cases: `skills-platform-phase4`'s 5 epics qualifies, `team-identity-roles`' 1 epic does not; see `scripts/detect-programme-candidates.js`'s `EPIC_COUNT_THRESHOLD`) |
 
 If **none** of these apply:
 > This looks like a single-team feature with multiple epics — the standard pipeline
