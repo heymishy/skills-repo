@@ -48480,9 +48480,9 @@
           "slug": "ddft-s1",
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T04:39:31.293Z",
+          "updatedAt": "2026-11-10T22:38:18.697Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48546,7 +48546,9 @@
               "file": "artefacts/2026-11-08-deferred-decision-follow-through/plans/ddft-s1-deferred-item-record-mechanism-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1067"
         },
         {
           "id": "ddft-s2",
