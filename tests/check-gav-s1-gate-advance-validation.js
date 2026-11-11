@@ -360,6 +360,66 @@ console.log('\n[gav-s1] IT4 — gateAdvance end-to-end for definition-of-done');
   }
 }
 
+// ── U26-U28 — short-track carve-out for H7 (gstc2) ────────────────────────────
+// smt-s1 (2026-11-11): validate()'s H7 check hard-requires a **Review
+// artefact:** reference -- but short-track stories skip /review entirely by
+// design (same gap class as the sequencing fix in PR #1074, this time in the
+// content-validation layer, which has no access to pipeline-state.json's
+// feature.track at all -- validate(artefactPath, gateName, repoRoot) takes no
+// feature/story params). The fix is a content-only marker the DoR artefact
+// itself can declare: **Track:** short.
+console.log('\n[gav-s1] U26-U28 — short-track carve-out for H7 (gstc2)');
+{
+  const storyPath = writeFixture('u26/story.md', [
+    '## User Story', '',
+    '## Acceptance Criteria',
+    '**AC1:** Given a, When b, Then c.',
+    '**AC2:** Given a, When b, Then c.',
+    '**AC3:** Given a, When b, Then c.',
+    '', '## Out of Scope', 'Widget X is excluded.',
+    '', '## Benefit Linkage', 'M1 — test metric.',
+    '', '## Complexity Rating', '**Rating:** 2', '**Scope stability:** Stable',
+    '', '## Architecture Constraints', 'ADR-011 applies.',
+  ].join('\n'));
+  const tpPath = writeFixture('u26/tp.md', ['## AC Coverage', 'AC1 AC2 AC3'].join('\n'));
+
+  // U26: no **Track:** marker at all, no review artefact -- H7 must still
+  // fail exactly as it does today. The carve-out is opt-in, not a blanket
+  // relaxation of H7 for every DoR missing a review reference.
+  const noTrackDorPath = writeFixture('u26/dor.md', [
+    `**Story reference:** ${storyPath}`,
+    `**Test plan reference:** ${tpPath}`,
+  ].join('\n'));
+  const r26 = validate(noTrackDorPath, 'dor-signed-off', ROOT);
+  assert(r26.exitCode !== 0, 'U26: no Track marker and no review artefact still fails H7');
+  assert(/H7 FAIL/.test(r26.stderr), 'U26: failure is specifically H7');
+
+  // U27: **Track:** short marker present, still no review artefact -- H7
+  // must now pass, and the whole dor-signed-off validation succeeds.
+  const shortTrackDorPath = writeFixture('u27/dor.md', [
+    `**Story reference:** ${storyPath}`,
+    `**Test plan reference:** ${tpPath}`,
+    '**Track:** short',
+  ].join('\n'));
+  const r27 = validate(shortTrackDorPath, 'dor-signed-off', ROOT);
+  assert(r27.exitCode === 0, `U27: Track: short marker with no review artefact passes dor-signed-off (got stderr: ${r27.stderr})`);
+
+  // U28: **Track:** short marker present, but a review artefact IS also
+  // referenced and DOES contain an unresolved HIGH finding -- H7 must still
+  // fire. The short-track carve-out only covers the "no review ran at all"
+  // case; it must never become a way to bypass a real HIGH finding.
+  const rvWithHighPath = writeFixture('u28/rv.md', ['| Finding | Severity |', '| something | HIGH |'].join('\n'));
+  const trackWithBadReviewDorPath = writeFixture('u28/dor.md', [
+    `**Story reference:** ${storyPath}`,
+    `**Test plan reference:** ${tpPath}`,
+    `**Review artefact:** ${rvWithHighPath}`,
+    '**Track:** short',
+  ].join('\n'));
+  const r28 = validate(trackWithBadReviewDorPath, 'dor-signed-off', ROOT);
+  assert(r28.exitCode !== 0, 'U28: Track: short does not bypass a real unresolved HIGH finding when a review artefact IS referenced');
+  assert(/H7 FAIL/.test(r28.stderr), 'U28: failure is specifically H7');
+}
+
 // ── Cleanup ───────────────────────────────────────────────────────────────────
 try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
 
