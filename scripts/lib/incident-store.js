@@ -24,9 +24,11 @@ function createIncidentRecord(input) {
   }
 
   const now = new Date().toISOString();
+  const type = input.type || 'incident';
 
-  return {
+  const record = {
     id: crypto.randomUUID(),
+    type: type,
     trigger: input.trigger,
     summary: input.summary || '',
     tags: normalizedTags,
@@ -37,14 +39,61 @@ function createIncidentRecord(input) {
     createdAt: now,
     updatedAt: now,
   };
+
+  // ddft-s1: deferred-item-specific fields only apply when type is
+  // 'deferred-item' -- never leak onto an 'incident' record, so existing
+  // itar-s1 callers that never pass `type` see no new keys at all.
+  if (type === 'deferred-item') {
+    record.source = input.source || null;
+    record.revisitCondition = input.revisitCondition || null;
+    record.linkedFeature = input.linkedFeature || null;
+    record.linkedStory = input.linkedStory || null;
+  }
+
+  return record;
+}
+
+// ddft-s1: generalized schema's type-conditional required-field check.
+// An 'incident' record is never required to supply source/revisitCondition/
+// linkedFeature/linkedStory; a 'deferred-item' record must supply `source`.
+function validateRecord(record) {
+  if (record.type === 'deferred-item' && !record.source) {
+    throw new Error('Deferred-item record missing required field: source');
+  }
+}
+
+// ddft-s1: convenience wrapper for the deferred-item case, always
+// validating before returning so a caller never silently ships an
+// incomplete deferred-item record.
+function createDeferredItemRecord(input) {
+  const record = createIncidentRecord(Object.assign({}, input, { type: 'deferred-item' }));
+  validateRecord(record);
+  return record;
+}
+
+// ddft-s1: migration helper for a record written to disk before this
+// generalization existed -- defaults a missing `type` key to 'incident'
+// without altering any other field.
+function withDefaultType(record) {
+  return Object.assign({}, record, { type: record.type || 'incident' });
+}
+
+function _readRecords(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  const raw = fs.readFileSync(filePath, 'utf8');
+  return raw.trim().length > 0 ? JSON.parse(raw) : [];
+}
+
+// ddft-s1: generic read primitive shared with appendIncidentRecord --
+// extracted rather than duplicated, so both paths stay in sync.
+function loadRecords(filePath) {
+  return _readRecords(filePath);
 }
 
 function appendIncidentRecord(record, filePath) {
-  let records = [];
-  if (fs.existsSync(filePath)) {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    records = raw.trim().length > 0 ? JSON.parse(raw) : [];
-  }
+  const records = _readRecords(filePath);
   records.push(record);
   fs.writeFileSync(filePath, JSON.stringify(records, null, 2) + '\n');
   return records;
@@ -70,6 +119,10 @@ function saveIncidentRecords(records, filePath) {
 module.exports = {
   createIncidentRecord,
   appendIncidentRecord,
+  createDeferredItemRecord,
+  validateRecord,
+  withDefaultType,
+  loadRecords,
   loadIncidentRecords,
   saveIncidentRecords,
   MAX_TAG_FIELD_LENGTH,
