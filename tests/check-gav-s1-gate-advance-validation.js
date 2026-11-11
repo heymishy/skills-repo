@@ -285,7 +285,11 @@ console.log('\n[gav-s1] IT2 — gateAdvance end-to-end for test-plan-complete');
   const gaDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gav-s1-it2-'));
   try {
     fs.mkdirSync(path.join(gaDir, '.github'), { recursive: true });
-    fs.writeFileSync(path.join(gaDir, '.github', 'pipeline-state.json'), JSON.stringify({ schemaVersion: '1', features: [{ slug: 'f1', stories: [{ id: 's1' }] }] }, null, 2));
+    // fsae-s1: test-plan-complete's own sequencing predecessor is
+    // reviewStatus === 'passed' (/review must pass before /test-plan) —
+    // set here since this test exercises the artefact-content check, not
+    // sequencing, and needs to get past the sequencing check to reach it.
+    fs.writeFileSync(path.join(gaDir, '.github', 'pipeline-state.json'), JSON.stringify({ schemaVersion: '1', features: [{ slug: 'f1', stories: [{ id: 's1', reviewStatus: 'passed' }] }] }, null, 2));
 
     fs.mkdirSync(path.join(gaDir, 'artefacts', 'f1'), { recursive: true });
     fs.writeFileSync(path.join(gaDir, 'artefacts', 'f1', 'story.md'), [

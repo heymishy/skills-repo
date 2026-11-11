@@ -97,7 +97,14 @@ const { gateAdvance } = require('../src/enforcement/cli-gate-advance');
   const T = 'U4-gate-advance-story-field-leaves-feature-updatedAt';
   const tmpDir = makeTempDir('pcr-s1-u4');
   try {
-    writePipelineState(tmpDir, makeFixtureState());
+    const fixtureState = makeFixtureState();
+    // fsae-s1: definition-of-ready's own sequencing predecessor is
+    // reviewStatus === 'passed' plus a test plan already written — set
+    // here since this test exercises the feature.updatedAt invariant, not
+    // sequencing, and needs to get past the sequencing check to reach it.
+    fixtureState.features[0].stories[0].reviewStatus = 'passed';
+    fixtureState.features[0].stories[0].testPlan = { status: 'written' };
+    writePipelineState(tmpDir, fixtureState);
     writeFile(tmpDir, 'artefacts/feat/dor/story-dor.md', 'Gate confirmed.');
     const result = await gateAdvance('test-feat', 's1', 'definition-of-ready', 'artefacts/feat/dor/story-dor.md', ['dorStatus=signed-off'], tmpDir);
     assert(T + '-exit0', result.exitCode === 0, `Expected exitCode 0, got ${result.exitCode}: ${result.stderr}`);

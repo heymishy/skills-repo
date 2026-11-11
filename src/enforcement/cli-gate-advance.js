@@ -25,6 +25,68 @@ if (process.env.NODE_ENV !== 'test') {
 
 var USAGE = 'Usage: skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]';
 
+// fsae-s1: cross-gate sequencing enforcement. Found during
+// artefacts/2026-11-11-framework-scaling-and-architecture-evolution's own
+// ideation (Lens B data-proxy check, 2026-11-11) — validate() checks each
+// gate's artefact content in total isolation, with nothing anywhere
+// preventing an out-of-order call (e.g. definition-of-done before
+// test-plan-complete has ever run for that story). This covers the 4
+// story-scoped late gates only — discovery-approved, benefit-metric-active,
+// and definition-complete are feature-level artefact checks with no
+// per-story predecessor concept (their own validate*() functions take only
+// the resolved artefact path, no feature/story lookup), so they are
+// deliberately left out of this check rather than guessed at. Each
+// predecessor condition below is taken directly from the real entry
+// condition documented in that gate's own downstream skill (not reverse-
+// engineered from the story.stage string, which is a looser signal some
+// skills don't even set consistently):
+//   - test-plan-complete  requires /test-plan's own entry condition: a PASS
+//     review report, i.e. story.reviewStatus === 'passed'
+//   - dor-signed-off / definition-of-ready requires /definition-of-ready's
+//     own entry condition: review PASS + a test plan already written
+//   - branch-complete requires /branch-setup's own entry condition: a DoR
+//     artefact with Proceed: Yes, i.e. story.dorStatus === 'signed-off'
+//   - definition-of-done requires its own entry condition verbatim: "PR has
+//     been merged (not just opened or approved)", i.e. story.prStatus === 'merged'
+function checkGateSequencing(featureSlug, storyId, gateName, repoRoot) {
+  var stateFile = path.join(repoRoot, '.github', 'pipeline-state.json');
+  var state;
+  try {
+    state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+  } catch (_) {
+    // No state file yet, or unreadable — nothing to sequence-check against;
+    // let validate() run and report its own, more specific failure.
+    return null;
+  }
+
+  var feature = (state.features || []).find(function(f) { return f.slug === featureSlug || f.id === featureSlug; });
+  if (!feature) { return null; }
+  var story = findStory(feature, storyId);
+  if (!story) { return null; }
+
+  if (gateName === 'test-plan-complete') {
+    if (story.reviewStatus !== 'passed') {
+      return 'SEQUENCING FAIL: test-plan-complete requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /test-plan.';
+    }
+  } else if (gateName === 'dor-signed-off' || gateName === 'definition-of-ready') {
+    if (story.reviewStatus !== 'passed') {
+      return 'SEQUENCING FAIL: ' + gateName + ' requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /definition-of-ready.';
+    }
+    if (!story.testPlan || !story.testPlan.status) {
+      return 'SEQUENCING FAIL: ' + gateName + ' requires a test plan to already exist (story.testPlan.status unset) — /test-plan must run before /definition-of-ready.';
+    }
+  } else if (gateName === 'branch-complete') {
+    if (story.dorStatus !== 'signed-off') {
+      return 'SEQUENCING FAIL: branch-complete requires story.dorStatus === "signed-off" (got "' + story.dorStatus + '") — /definition-of-ready must sign off before the inner coding loop.';
+    }
+  } else if (gateName === 'definition-of-done') {
+    if (story.prStatus !== 'merged') {
+      return 'SEQUENCING FAIL: definition-of-done requires story.prStatus === "merged" (got "' + story.prStatus + '") — the PR must actually be merged, not just opened or approved.';
+    }
+  }
+  return null;
+}
+
 /**
  * Validate an artefact against a gate, then advance pipeline-state fields.
  * If validate() returns a non-zero exit code, the state file is not modified.
@@ -46,6 +108,14 @@ async function gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFiel
       stderr: 'Missing required argument(s). ' + USAGE +
         '\nRequired positional args: feature-slug, story-id, gate-name, artefact-path',
     };
+  }
+
+  // fsae-s1: cross-gate sequencing check — runs before validate() so an
+  // out-of-order call fails on the real reason, not an unrelated artefact-
+  // content check that happened to also be missing.
+  var seqError = checkGateSequencing(featureSlug, storyId, gateName, repoRoot);
+  if (seqError) {
+    return { exitCode: 8, stdout: '', stderr: seqError };
   }
 
   // AC1: run the gate validation — if non-zero, propagate and do not touch state
