@@ -49374,7 +49374,7 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:40:41.946Z",
+          "updatedAt": "2026-11-11T17:57:23.026Z",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49392,7 +49392,7 @@
           ],
           "acVerified": 6,
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1076"
         }
       ],
