@@ -61,7 +61,6 @@
     "tests/check-sec3-return-to.js",
     "tests/check-sec5-session-rotation.js",
     "tests/check-sfa1-state-schema.js",
-    "tests/check-smt-s1-migration-tracker.js",
     "tests/check-spc2-capture-block-template.js",
     "tests/check-sro1-skill-routing.js",
     "tests/check-srt1-status-report-template.js",

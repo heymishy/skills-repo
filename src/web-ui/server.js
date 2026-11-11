@@ -88,6 +88,7 @@ const { setPasswordAdapter }                                         = require('
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
+const { runMigrationOnce } = require('./modules/migration-tracker'); // smt-s1
 const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { createSettingsHandlers, handlePostThemeToggleClicked } = require('./routes/settings'); // c1 / si-s1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
@@ -764,12 +765,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // creation AND the arl-s4 admin seeding settle, so the backfill picks up
     // admin-seeded rows too.
     _userRolesMigrationPromise.then(function() {
-      return migrateTeamSchema(_userRolesPool);
+      return runMigrationOnce(_userRolesPool, 'migrateTeamSchema', function() { return migrateTeamSchema(_userRolesPool); });
     }).then(function() {
       // tir-s2 — Auto-migrate person_identities schema. Chained after
       // people/team_memberships exists (FK dependency: person_identities.person_id
       // references people(id)).
-      return migrateIdentityLinksSchema(_userRolesPool);
+      return runMigrationOnce(_userRolesPool, 'migrateIdentityLinksSchema', function() { return migrateIdentityLinksSchema(_userRolesPool); });
     }).catch(function(err) { console.error('[tir-s1] people/team_memberships migration failed:', err.message); });
 
     // story-1-organisation-entity — Auto-migrate the organisations table (AC1),
@@ -779,7 +780,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // pool into auth.js's OAuth-callback resolution step (AC3). Reuses
     // _userRolesPool (same reuse pattern as tir-s2/c1 above) rather than
     // opening a new Postgres connection.
-    migrateOrganisationsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateOrganisationsSchema', function() { return migrateOrganisationsSchema(_userRolesPool); }).then(function() {
       console.log('[story-1-organisation-entity] organisations table ready');
       return getValidTenantIds();
     }).then(function(tenantIds) {
@@ -803,7 +804,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // this table's own writes always happen alongside a team_memberships
     // write in the SAME transaction (bootstrapTenantAdminIfNeeded), so it
     // must be the same pool/database as team_memberships.
-    migrateTenantAdminBootstrapSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateTenantAdminBootstrapSchema', function() { return migrateTenantAdminBootstrapSchema(_userRolesPool); }).then(function() {
       console.log('[tab-s1] tenant_admin_bootstrap table ready');
       setTenantAdminBootstrapPool(_userRolesPool);
       console.log('[tab-s1] tenant admin bootstrap pool wired to auth.js OAuth-callback bootstrap step');
@@ -814,22 +815,22 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     });
 
     // ep1-s1 — Auto-migrate pods/pod_members schema.
-    migratePodsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migratePodsSchema', function() { return migratePodsSchema(_userRolesPool); }).then(function() {
       console.log('[ep1-s1] pods/pod_members schema ready');
     }).catch(function(err) { console.error('[ep1-s1] pods schema migration failed:', err.message); });
 
     // ep1-s2 — Auto-migrate pod_assignments schema.
-    migratePodAssignmentsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migratePodAssignmentsSchema', function() { return migratePodAssignmentsSchema(_userRolesPool); }).then(function() {
       console.log('[ep1-s2] pod_assignments schema ready');
     }).catch(function(err) { console.error('[ep1-s2] pod_assignments schema migration failed:', err.message); });
 
     // ep1-s3 — Auto-migrate feature_collaborators schema.
-    migrateFeatureCollaboratorsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateFeatureCollaboratorsSchema', function() { return migrateFeatureCollaboratorsSchema(_userRolesPool); }).then(function() {
       console.log('[ep1-s3] feature_collaborators schema ready');
     }).catch(function(err) { console.error('[ep1-s3] feature_collaborators schema migration failed:', err.message); });
 
     // ep4-s1 — Auto-migrate feature_collaborator_removals schema.
-    migrateFeatureCollaboratorRemovalsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateFeatureCollaboratorRemovalsSchema', function() { return migrateFeatureCollaboratorRemovalsSchema(_userRolesPool); }).then(function() {
       console.log('[ep4-s1] feature_collaborator_removals schema ready');
     }).catch(function(err) { console.error('[ep4-s1] feature_collaborator_removals schema migration failed:', err.message); });
 
@@ -855,14 +856,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // decisions.md) -- Story 3/4 own the real user-facing routes; this
     // wiring only ensures the tables exist so the data model + grant-check
     // adapter are usable once those stories land.
-    migrateAgencyClientGrantsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateAgencyClientGrantsSchema', function() { return migrateAgencyClientGrantsSchema(_userRolesPool); }).then(function() {
       console.log('[story-2-relationship-grants-enforcement] agency_client_relationships / shared_access_grants tables ready');
     }).catch(function(err) {
       console.error('[story-2-relationship-grants-enforcement] schema migration failed:', err.message);
     });
 
     // dsa-s1 -- Auto-migrate artefact_comments schema.
-    migrateArtefactCommentsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateArtefactCommentsSchema', function() { return migrateArtefactCommentsSchema(_userRolesPool); }).then(function() {
       console.log('[dsa-s1] artefact_comments schema ready');
     }).catch(function(err) { console.error('[dsa-s1] artefact_comments schema migration failed:', err.message); });
 
@@ -875,7 +876,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // setVerifyCallback() rather than calling registerMagicLinkStrategy()
     // again (see decisions.md 2026-07-31 ARCH entry, and
     // auth/magic-link-strategy.js's own module header for the full writeup).
-    migrateClientInvitationsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateClientInvitationsSchema', function() { return migrateClientInvitationsSchema(_userRolesPool); }).then(function() {
       console.log('[story-3-self-service-provisioning] client_invitations table ready');
 
       _agencyProvisioningHandlers = createAgencyProvisioningHandlers(_userRolesPool);
@@ -996,7 +997,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       setVerifyCallback(_combinedMagicLinkVerify);
       console.log('[story-4-dual-path-authentication] combined verify() dispatcher wired via setVerifyCallback() (Story 3 invitation redemption + Story 4 Client-org login), extending the shared strategy -- never re-registering it');
 
-      clientLoginModule.migrateClientLoginTokensSchema(_userRolesPool).then(function() {
+      runMigrationOnce(_userRolesPool, 'migrateClientLoginTokensSchema', function() { return clientLoginModule.migrateClientLoginTokensSchema(_userRolesPool); }).then(function() {
         console.log('[story-4-dual-path-authentication] client_login_tokens table ready');
         _clientLoginHandlers = createClientLoginHandlers(_userRolesPool);
         console.log('[story-4-dual-path-authentication] client-login handlers wired');
@@ -1012,7 +1013,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // handler that writes to this table is wired below as part of
     // _teamManagementHandlers (tir-s3's factory, extended with
     // handleCreateInvite), so no separate handler-wiring step is needed here.
-    migrateTeamInvitationsSchema(_userRolesPool).then(function() {
+    runMigrationOnce(_userRolesPool, 'migrateTeamInvitationsSchema', function() { return migrateTeamInvitationsSchema(_userRolesPool); }).then(function() {
       console.log('[wsi-s1] team_invitations table ready');
     });
 
@@ -1101,7 +1102,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     });
 
     // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
-    migrateProductRepoColumns(_creditsPool).catch(function(err) {
+    runMigrationOnce(_creditsPool, 'migrateProductRepoColumns', function() { return migrateProductRepoColumns(_creditsPool); }).catch(function(err) {
       console.error('[prc-s1.1] products repo-column migration failed:', err.message);
     });
 

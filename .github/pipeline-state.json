@@ -49370,11 +49370,11 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:20:15.762Z",
+          "updatedAt": "2026-11-11T09:28:58.126Z",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49386,7 +49386,7 @@
             {
               "id": "task-2",
               "name": "Wire 14 call sites in server.js through runMigrationOnce",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
             }
           ]
