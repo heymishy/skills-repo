@@ -49333,10 +49333,10 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "ideationPath": "artefacts/2026-11-11-framework-scaling-and-architecture-evolution/research/ideation.md",
-      "ideationSignal": "proceed",
+      "ideationSignal": "defer",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-11-11T04:58:46.981Z"
+      "updatedAt": "2026-11-11T05:08:20.097Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

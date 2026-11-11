@@ -4,7 +4,7 @@
 **Date:** 2026-11-11
 **Artefact path:** `artefacts/2026-11-11-framework-scaling-and-architecture-evolution/research/ideation.md`
 **Lenses run:** D, A, B
-**Pipeline state signal:** in-progress (D → PROCEED on a narrowed scope; A seeds three candidate follow-up initiatives, none yet validated; B surfaces one 🔴 assumption that should be resolved before the POC is written at all)
+**Pipeline state signal:** defer (D → originally PROCEED on a narrowed scope; B's own data-proxy check then falsified the one assumption that scope depended on — see "Data-proxy check result" under Lens B. Revised conclusion: do not write the LangGraph POC. The two schema-drift bugs are fixed directly (PR #1071); the sequencing-enforcement gap found during the check is a small, separate, direct fix, logged below and in `decisions.md`.)
 
 ---
 
@@ -156,6 +156,20 @@ Outcome: Reduce governance drift and parallel-wave friction, without unscoped co
 
 **Decision:** Run the data-proxy check (cheap, ~1 hour) before writing any POC code at all. If it comes back favourable, proceed exactly as Lens D's MVP bar describes. If it comes back unfavourable, stop — the two known bugs still get fixed directly (that part of the recommendation doesn't depend on this test), but the POC itself is not worth writing, and this should be logged as a `/decisions` entry on whichever future artefact this ideation feeds, not silently dropped.
 
+### Data-proxy check result (2026-11-11)
+
+**Outcome: unfavourable for the broader port — assumption `gate-logic-portable` is FALSE as stated, with a sharper finding underneath.**
+
+Read `src/enforcement/gate-map.js` in full (13 lines — a frozen lookup table mapping 7 stage names to themselves; not itself the validation logic) and `src/enforcement/cli-outer-loop.js`'s real `validate()` dispatcher plus two representative gate-validators (`validateTestPlanComplete`, the `dor-signed-off`/H1–H9 embedded-scan fall-through).
+
+**Finding 1 — most of the governance logic is markdown-prose parsing, not typed-state validation.** `validateTestPlanComplete` reads a test-plan `.md` file, regexes out a `**Story reference:**` header line, reads *that* file, regexes every `**AC(\d+):**` marker out of it, and cross-checks each appears in the test plan too. The H1–H9 fall-through does the equivalent: regex-scanning prose for embedded file references, then checking those files exist on disk and re-scanning their own headers. None of this is "does this state object conform to a schema" — it is "does this free-form document correctly reference that free-form document." LangGraph's `StateSchema`/typed-state primitives have no bearing on this class of check at all. Porting it would not eliminate the code; it would move the exact same `regex` + `fs.readFileSync` logic behind a node-function call, with real migration cost and no reduction in the surface area the maintainer has to keep correct.
+
+**Finding 2 — a genuine, confirmed structural gap exists, but it is unrelated to the prose-parsing logic and does not require LangGraph to fix.** `validate()` checks each gate's artefact against that gate's own rules in total isolation — there is no check anywhere in this dispatcher (confirmed by grep: no `previousGate`/ordering/sequence logic exists) that a story's current `stage` is actually at the expected predecessor before allowing a gate call. Nothing today would stop calling `gate-advance ... definition-of-done ...` before `test-plan-complete` has ever run for that story. This is exactly the shape of problem a graph's conditional edges solve natively — but it is also a handful of lines (an expected-predecessor map checked against `story.stage` before calling `validate()` in `cli-gate-advance.js`) to fix directly, with no framework adoption needed.
+
+**Revised conclusion: do not write the LangGraph POC.** The one real structural gap found is cheaper to fix directly than to use as justification for a framework migration; the rest of the governance logic is prose-parsing that porting to LangGraph would not meaningfully simplify — it would add migration cost while leaving the actual complexity (the regex/cross-reference rules themselves) exactly where it is today, just relocated. This assumption test is the main decision driver of this whole ideation, and it resolved cleanly in one read-through — no further investigation needed before closing this thread.
+
+**New, smaller finding worth its own follow-up:** the sequencing-enforcement gap (Finding 2) is real and worth a short, direct fix on its own — independent of anything else in this ideation.
+
 ---
 
 ## How this feeds the pipeline
@@ -175,4 +189,5 @@ Outcome: Reduce governance drift and parallel-wave friction, without unscoped co
 | Is parallel-wave load of this session's scale (12 stories across 2 waves) typical going forward, or a one-off burst? | Yes, for Cluster 2 specifically | Operator | Observe over the next few tranches before investing in scheduler/scaling work |
 | Should Cluster 3 (web-ui/application complexity) become its own ideation/discovery initiative? | No — explicitly out of scope here | Operator | Run a separate `/ideate` or go directly to `/discovery` when there's bandwidth; not blocked on this initiative's outcome |
 | If the narrow LangGraph POC is run, who owns evaluating whether its result justifies further investment? | Yes, if the POC proceeds | Operator | A human judgment call at the end of the POC — this ideation does not pre-commit to a verdict |
-| Does `gate-map.js`'s governance logic actually map cleanly onto LangGraph's primitives? (Lens B's one 🔴 assumption) | Yes — blocks writing any POC code at all | Operator | Run the ~1-hour data-proxy check (read `gate-map.js` + 2–3 hard blocks against LangGraph's real `StateSchema`/conditional-edge API) before the POC itself is written |
+| Does `gate-map.js`'s governance logic actually map cleanly onto LangGraph's primitives? (Lens B's one 🔴 assumption) | Resolved 2026-11-11 | — | Data-proxy check run — see result under Lens B. Answer: no, most of the real validation logic is markdown-prose parsing, not typed-state validation. LangGraph POC will not be written. |
+| Should the sequencing-enforcement gap found during the data-proxy check (no gate-ordering check exists in `validate()`/`gateAdvance()`) be fixed directly? | No — but recommended, independent of this ideation's main thread | Operator | A short, direct fix to `cli-gate-advance.js`: check `story.stage` against an expected-predecessor map before calling `validate()`. Does not need `/discovery`. |
