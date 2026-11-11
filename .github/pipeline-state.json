@@ -49358,14 +49358,14 @@
       "slug": "2026-11-11-schema-migration-tracking",
       "name": "Skip already-applied schema migrations on server boot via a tracking table",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "smt-s1",
           "slug": "smt-s1",
           "name": "Skip already-applied schema migrations on server boot via a tracking table",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49374,13 +49374,27 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:01:24.297Z",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-11-11T09:13:57.571Z",
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Build migration-tracker.js",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Wire 14 call sites in server.js through runMigrationOnce",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-11T09:01:35.042Z"
+      "updatedAt": "2026-11-11T09:11:11.103Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
