@@ -49353,6 +49353,33 @@
       "stories": [],
       "metrics": [],
       "updatedAt": "2026-11-11T07:28:11.795Z"
+    },
+    {
+      "slug": "2026-11-11-schema-migration-tracking",
+      "name": "Skip already-applied schema migrations on server boot via a tracking table",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "smt-s1",
+          "slug": "smt-s1",
+          "name": "Skip already-applied schema migrations on server boot via a tracking table",
+          "stage": "test-plan",
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "updatedAt": "2026-11-11T07:53:53.540Z"
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-11T07:53:53.540Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
