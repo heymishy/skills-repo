@@ -17,6 +17,8 @@ triggers:
 
 # Verify Completion Skill
 
+**Timing capture:** Note the current time (ISO 8601) as `startedAt` before doing anything else below — pass it through to the `appendTimingRecord` call in this skill's State-update step so `durationMs` reflects this skill's own elapsed time.
+
 ## The Iron Law
 
 ```
@@ -231,7 +233,7 @@ If `check-trace-commit.js` exits 1 with a stale message, the hours-elapsed value
 
 ## State update — mandatory final step
 
-**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill: 'verify-completion', featureSlug, storySlug, stage: 'verify-completion', fullSuite})` — `fullSuite` is `true` if Step 1 ran the complete test suite, `false` if it ran a targeted/partial subset. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately.
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill: 'verify-completion', featureSlug, storySlug, stage: 'verify-completion', fullSuite, startedAt})` — `fullSuite` is `true` if Step 1 ran the complete test suite, `false` if it ran a targeted/partial subset, `startedAt` is the time captured at the top of this skill. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
