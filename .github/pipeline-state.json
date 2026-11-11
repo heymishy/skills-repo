@@ -49321,6 +49321,22 @@
           "assessedAt": "2026-11-09T01:41:23.917Z"
         }
       ]
+    },
+    {
+      "slug": "2026-11-11-framework-scaling-and-architecture-evolution",
+      "name": "Framework scaling and architecture evolution (LangGraph/Aegra assessment, inner-loop scaling, governance drift)",
+      "track": "standard",
+      "stage": "ideation",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "ideationPath": "artefacts/2026-11-11-framework-scaling-and-architecture-evolution/research/ideation.md",
+      "ideationSignal": "proceed",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-11-11T04:34:57.364Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
