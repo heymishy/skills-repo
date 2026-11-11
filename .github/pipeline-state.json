@@ -46726,22 +46726,62 @@
           "slug": "coha-s4",
           "name": "Bounded production-log scan with pattern-match notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:38:25.951Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 9,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 12,
+            "passing": 12,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s4-bounded-production-log-scan-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Pattern-match scan logic (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "flyctl command-runner wiring (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Notification content + single-notification guarantee (AC2, AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "NFR tests (timeout, token secrecy, audit)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "AC4 baseline-gap arithmetic (synthetic timestamps)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Scheduled GitHub Actions workflow",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
+            }
+          ],
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1069"
         }
       ],
       "guardrails": [
