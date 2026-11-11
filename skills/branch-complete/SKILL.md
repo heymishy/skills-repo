@@ -17,6 +17,8 @@ triggers:
 
 # Branch Complete Skill
 
+**Timing capture:** Note the current time (ISO 8601) as `startedAt` before doing anything else below — pass it through to the `appendTimingRecord` call in this skill's State-update step so `durationMs` reflects this skill's own elapsed time.
+
 ## Entry condition
 
 /verify-completion must have passed in this session.
@@ -261,7 +263,7 @@ git worktree remove [worktree-path]
 
 ## State update - mandatory final step
 
-**Timing instrumentation:** Append exactly one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, skipped})` — `skill` is this skill's own name, `stage` matches this skill's stage value, and `skipped` carries the `{skipped: true|false}` decision computed by Step 1's `decideSkipOrRun` call. This is the one-and-only timing record written for this skill run — Step 1 only computes and holds the decision; it does not append anything itself. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. The timing record's `stage` is always the literal `'branch-complete'`, regardless of what value this skill writes to `pipeline-state.json`'s own `stage` field in the discard-without-PR case — these are two different concepts that happen to usually match.
+**Timing instrumentation:** Append exactly one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, skipped, startedAt})` — `skill` is this skill's own name, `stage` matches this skill's stage value, `skipped` carries the `{skipped: true|false}` decision computed by Step 1's `decideSkipOrRun` call, and `startedAt` is the time captured at the top of this skill. This is the one-and-only timing record written for this skill run — Step 1 only computes and holds the decision; it does not append anything itself. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately. The timing record's `stage` is always the literal `'branch-complete'`, regardless of what value this skill writes to `pipeline-state.json`'s own `stage` field in the discard-without-PR case — these are two different concepts that happen to usually match.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 

@@ -50,6 +50,51 @@ test('appendTimingRecord creates the log file fresh when it does not exist', () 
   fs.unlinkSync(logPath);
 });
 
+test('appendTimingRecord computes durationMs from startedAt and timestamp', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  const startedAt = '2026-11-11T10:00:00.000Z';
+  const timestamp = '2026-11-11T10:05:30.000Z';
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup', startedAt, timestamp }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.strictEqual(lines[0].startedAt, startedAt, 'startedAt must be persisted as given');
+  assert.strictEqual(lines[0].timestamp, timestamp, 'an explicitly passed timestamp must not be overwritten by the default');
+  assert.strictEqual(lines[0].durationMs, 330000, 'durationMs must be the millisecond difference between timestamp and startedAt');
+  fs.unlinkSync(logPath);
+});
+
+test('appendTimingRecord omits durationMs when startedAt is not provided', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup' }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.ok(!('startedAt' in lines[0]), 'no startedAt field when not provided');
+  assert.ok(!('durationMs' in lines[0]), 'no durationMs when startedAt was never provided');
+  fs.unlinkSync(logPath);
+});
+
+test('appendTimingRecord omits durationMs when startedAt is unparseable, without throwing', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  assert.doesNotThrow(() => {
+    appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup', startedAt: 'not-a-real-timestamp' }, logPath);
+  });
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.strictEqual(lines[0].startedAt, 'not-a-real-timestamp', 'the raw startedAt value is still persisted even if unparseable');
+  assert.ok(!('durationMs' in lines[0]), 'an unparseable startedAt must not produce a durationMs value');
+  fs.unlinkSync(logPath);
+});
+
+test('appendTimingRecord omits durationMs when startedAt is after timestamp (clock skew), without producing a negative value', () => {
+  const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
+  const logPath = tempLogPath();
+  const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  appendTimingRecord({ skill: 'branch-setup', featureSlug: 'test-feat', storySlug: 'test-s1', stage: 'branch-setup', startedAt: future }, logPath);
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').map(JSON.parse);
+  assert.ok(!('durationMs' in lines[0]), 'a startedAt later than timestamp must not produce a negative or nonsensical durationMs');
+  fs.unlinkSync(logPath);
+});
+
 test('appendTimingRecord includes dispatchCount only when provided, for any stage', () => {
   const { appendTimingRecord } = require('../scripts/lib/pipeline-timings');
   const logPath = tempLogPath();
@@ -143,6 +188,71 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
     assert.ok(stateUpdateIndex !== -1, relPath + ' must have a "## State update" heading');
     assert.ok(timingsRefIndex !== -1, relPath + ' must reference pipeline-timings.jsonl');
     assert.ok(timingsRefIndex > stateUpdateIndex, relPath + ' must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
+  });
+});
+
+test('outer-loop SKILL.md files (discovery through trace, plus ideate) reference pipeline-timings after their State update heading', () => {
+  // fsae-2 (2026-11-11): closes the gap found during the framework-scaling
+  // ideation's stand-back re-assessment -- appendTimingRecord was documented
+  // as mandatory in only 5 of ~50 skills, all inner-loop, so
+  // .github/pipeline-timings.jsonl had never recorded a single line despite
+  // dozens of qualifying invocations across this repo's history. This covers
+  // the core outer-loop pipeline stages named in CLAUDE.md's pipeline table
+  // (steps 1-6.5, 8, 9) plus /ideate, which precedes /discovery. /design is
+  // deliberately excluded -- it has no "## State update" section at all, so
+  // bolting on a timing write with no surrounding state-bookkeeping would be
+  // inconsistent with every other instrumented skill.
+  const skillFiles = [
+    'skills/discovery/SKILL.md',
+    'skills/benefit-metric/SKILL.md',
+    'skills/definition/SKILL.md',
+    'skills/review/SKILL.md',
+    'skills/test-plan/SKILL.md',
+    'skills/definition-of-ready/SKILL.md',
+    'skills/decisions/SKILL.md',
+    'skills/definition-of-done/SKILL.md',
+    'skills/trace/SKILL.md',
+    'skills/ideate/SKILL.md',
+  ];
+  skillFiles.forEach(relPath => {
+    const content = fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+    const stateUpdateIndex = content.indexOf('## State update');
+    const timingsRefIndex = content.indexOf('pipeline-timings.jsonl');
+    assert.ok(stateUpdateIndex !== -1, relPath + ' must have a "## State update" heading');
+    assert.ok(timingsRefIndex !== -1, relPath + ' must reference pipeline-timings.jsonl');
+    assert.ok(timingsRefIndex > stateUpdateIndex, relPath + ' must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
+  });
+});
+
+test('all 15 timing-instrumented skills reference startedAt after their State update heading', () => {
+  // fsae-3 (2026-11-11): companion to durationMs support in appendTimingRecord
+  // -- a skill that never captures startedAt can never produce a duration,
+  // so this is the other half of actually closing the duration gap, not
+  // just making the library capable of it.
+  const skillFiles = [
+    'skills/branch-setup/SKILL.md',
+    'skills/implementation-plan/SKILL.md',
+    'skills/subagent-execution/SKILL.md',
+    'skills/verify-completion/SKILL.md',
+    'skills/branch-complete/SKILL.md',
+    'skills/discovery/SKILL.md',
+    'skills/benefit-metric/SKILL.md',
+    'skills/definition/SKILL.md',
+    'skills/review/SKILL.md',
+    'skills/test-plan/SKILL.md',
+    'skills/definition-of-ready/SKILL.md',
+    'skills/decisions/SKILL.md',
+    'skills/definition-of-done/SKILL.md',
+    'skills/trace/SKILL.md',
+    'skills/ideate/SKILL.md',
+  ];
+  skillFiles.forEach(relPath => {
+    const content = fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+    const stateUpdateIndex = content.indexOf('## State update');
+    assert.ok(stateUpdateIndex !== -1, relPath + ' must have a "## State update" heading');
+    const appendCallIndex = content.indexOf('appendTimingRecord', stateUpdateIndex);
+    assert.ok(content.includes('startedAt'), relPath + ' must reference startedAt (either as an early per-run/per-task/per-story capture instruction, or in its appendTimingRecord call)');
+    assert.ok(appendCallIndex !== -1 && content.slice(appendCallIndex, appendCallIndex + 200).includes('startedAt'), relPath + "'s appendTimingRecord call within its State update section must include startedAt in its argument object");
   });
 });
 

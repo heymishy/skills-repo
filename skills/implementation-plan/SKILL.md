@@ -18,6 +18,8 @@ triggers:
 
 # Implementation Plan Skill
 
+**Timing capture:** Note the current time (ISO 8601) as `startedAt` before doing anything else below — pass it through to the `appendTimingRecord` call in this skill's State-update step so `durationMs` reflects this skill's own elapsed time.
+
 ## Entry condition
 
 1. DoR artefact at `artefacts/[feature]/dor/[story-slug]-dor.md` with `Proceed: Yes`
@@ -166,7 +168,7 @@ The visualiser shows tasks as soon as the plan is saved; if you skip this write,
 
 ## State update — mandatory final step
 
-**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is this skill's own name, `stage` matches this skill's stage value. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately.
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, startedAt})` — `skill` is this skill's own name, `stage` matches this skill's stage value, `startedAt` is the time captured at the top of this skill. A write failure here is non-fatal and must not block this skill's own completion. `featureSlug`/`storySlug` are the same `[feature]`/`[story-slug]` values already used throughout this skill's own artefact path references — known from the active story/worktree this session is executing, not something this skill resolves separately.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 

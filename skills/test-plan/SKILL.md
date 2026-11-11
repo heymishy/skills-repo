@@ -373,6 +373,8 @@ Write it so it works equally well for all three without modification:
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** Note the current time (ISO 8601) as `startedAt` before beginning work on each story — not once for the whole run. For each story, append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, startedAt})` — `skill` is `"test-plan"`, `stage` is `"test-plan"`, `storySlug` is that story's own slug, `startedAt` is that story's own capture from the top of this paragraph. A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 When the test plan is saved, for each story update `.github/pipeline-state.json` in the **project repository**:

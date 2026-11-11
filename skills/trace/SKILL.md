@@ -17,6 +17,8 @@ triggers:
 
 # Trace Skill
 
+**Timing capture:** Note the current time (ISO 8601) as `startedAt` before doing anything else below — pass it through to the `appendTimingRecord` call in this skill's State-update step so `durationMs` reflects this skill's own elapsed time.
+
 ## Entry condition
 
 None. Can run at any pipeline stage — running on an incomplete pipeline surfaces
@@ -280,6 +282,8 @@ If `npm test` fails with a stale-traces error, the traces branch has not receive
 ---
 
 ## State update — mandatory final step
+
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage, startedAt})` — `skill` is `"trace"`, `stage` is `"trace"`, `storySlug` is `null` (one record per `/trace` run, covering the whole feature's chain), `startedAt` is the time captured at the top of this skill. A write failure here is non-fatal and must not block this skill's own completion.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
