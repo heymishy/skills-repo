@@ -45928,23 +45928,45 @@
           "slug": "urpv-s2",
           "name": "Tag short-track features as reactive work in the consolidated features view",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:39:01.536Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 9,
+            "passing": 9,
             "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s2-tag-short-track-as-reactive-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1070",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write implementation plan",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Carry feature.track through computeTaxonomyRollup and mergeFeatureSources (AC1, AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Render Reactive/Planned text label per MC-A11Y-02 (AC3, AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
+            }
+          ]
         },
         {
           "id": "urpv-s3",
@@ -46582,44 +46604,122 @@
           "slug": "coha-s2",
           "name": "CI/CD chain notifications (announce, status, auto-retry visibility)",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T17:31:39.912Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 10,
-            "passing": 0,
+            "passing": 10,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s2-ci-cd-chain-notifications-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "notifyPatchAnnounce (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "notifyStatus (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "notifyRetryIfEviction (AC3/AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Integration tests (AC1-AC4 end-to-end)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "NFR tests (performance, audit)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "CLI wiring (scripts/notify-ci-chain.js)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Workflow wiring (staging-deploy.yml, ci-chain-status-notify.yml, deploy-group-auto-rerun.yml)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
+            }
+          ],
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1068"
         },
         {
           "id": "coha-s3",
           "slug": "coha-s3",
           "name": "Vulnerability-check CI step with de-duplicated notification",
           "epic": "coha-e1-detect-and-alert",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T04:39:37.585Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 11,
-            "passing": 0,
+            "passing": 11,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s3-vulnerability-check-ci-step-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "De-dup store module",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Audit-result parsing and severity filtering",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Command-error detection (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Notification dispatch + de-dup integration",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "CI workflow wiring",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
+            }
+          ]
         },
         {
           "id": "coha-s4",
@@ -47276,22 +47376,56 @@
           "slug": "pep-s2",
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:37:09.387Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17,
             "artefact": "artefacts/2026-11-08-programme-entry-points/test-plans/pep-s2-patch-programme-and-workflow-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1065",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1: add epic-count signal to programme/SKILL.md Step 0 scoring table + unify Q1 flow",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2/AC3: step0-scorer.js module + real phase4/team-identity-roles verification",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC4: patch workflow/SKILL.md \"If 5\" branch to defer to /programme Step 0",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC5: add /programme cross-reference to orient/SKILL.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "AC6: log pep-s1 Step 3 finding as RISK-ACCEPT/new-discovery referral in decisions.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
+            }
+          ]
         },
         {
           "id": "pep-s3",
@@ -47813,7 +47947,7 @@
       "name": "Incident Triage and Respond",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-11-09T06:12:02.985Z",
+      "updatedAt": "2026-11-10T22:38:43.933Z",
       "discoveryStatus": "approved",
       "track": "standard",
       "regulated": false,
@@ -47910,22 +48044,68 @@
           "slug": "itar-s2",
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-10T22:38:43.933Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 11,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 15,
+            "passing": 15,
             "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s2-triage-drafting-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1066",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Export jaccardSimilarity from drift-comparator.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Add loadIncidentRecords/saveIncidentRecords to incident-store.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "triage-drafter.js: AC4 cannot-score case",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "triage-drafter.js: AC1 match + rank, AC3 no-match",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "triage-drafter.js: AC2 narrative summary content",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Integration test: persistence to real file",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR-AUDIT-1 confirmation",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
+            }
+          ]
         },
         {
           "id": "itar-s3",
