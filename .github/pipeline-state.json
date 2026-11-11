@@ -45931,7 +45931,7 @@
           "stage": "branch-complete",
           "health": "green",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-10T22:39:01.536Z",
+          "updatedAt": "2026-11-11T19:00:12.686Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45945,7 +45945,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1070",
           "tasks": [
             {
@@ -46606,7 +46606,7 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T17:31:39.912Z",
+          "updatedAt": "2026-11-11T19:00:03.539Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46664,7 +46664,7 @@
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s2-ci-cd-chain-notifications-plan.md"
             }
           ],
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1068"
         },
         {
@@ -46674,7 +46674,7 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T04:39:37.585Z",
+          "updatedAt": "2026-11-11T19:00:03.817Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46719,7 +46719,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s3-vulnerability-check-ci-step-plan.md"
             }
-          ]
+          ],
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1064"
         },
         {
           "id": "coha-s4",
@@ -46728,7 +46730,7 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T22:38:25.951Z",
+          "updatedAt": "2026-11-11T19:00:04.085Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46780,7 +46782,7 @@
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s4-bounded-production-log-scan-plan.md"
             }
           ],
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1069"
         }
       ],
@@ -47378,7 +47380,7 @@
           "epic": "pep-e1-validate-entry-points",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T22:37:09.387Z",
+          "updatedAt": "2026-11-11T19:00:12.255Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47392,7 +47394,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1065",
           "tasks": [
             {
@@ -48046,7 +48048,7 @@
           "epic": "itar-e1-triage-and-respond",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T22:38:43.933Z",
+          "updatedAt": "2026-11-11T19:00:12.401Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48060,7 +48062,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1066",
           "tasks": [
             {
@@ -48702,7 +48704,7 @@
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-10T22:38:18.697Z",
+          "updatedAt": "2026-11-11T19:00:12.540Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48767,7 +48769,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1067"
         },
         {
