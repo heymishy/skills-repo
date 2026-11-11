@@ -378,7 +378,7 @@ Write it so it works equally well for all three without modification:
 When the test plan is saved, for each story update `.github/pipeline-state.json` in the **project repository**:
 
 - Set `stage: "test-plan"`, `updatedAt: [now]`
-- Set `testPlan: { status: "written", totalTests: [count], passing: 0 }`
+- Set `testPlan: { status: "written", totalTests: [count], passing: 0, artefact: "artefacts/[feature]/test-plans/[story-slug]-test-plan.md" }` — `artefact` is the same path Output 1 just saved to; `scripts/validate-trace.sh`'s `test_plan_coverage` check reads `story.testPlan.artefact` first and only falls back to a bare `story.id`-derived filename if it is absent, so omitting it here causes a false MISSING finding whenever the saved filename includes more than the bare story id (the common case).
 - Set `acTotal: [count of ACs in the story]`, `acVerified: 0`
 - Set `health: "green"`
 - Set `hasLayoutDependentGaps: true` if any AC was classified `CSS-layout-dependent`; `false` otherwise
