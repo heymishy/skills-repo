@@ -1,6 +1,6 @@
 ## Test Plan: Skip already-applied schema migrations on server boot via a tracking table
 
-**Story reference:** `artefacts/2026-11-11-schema-migration-tracking/stories/smt-s1-schema-migration-tracking-table.md`
+**Story reference:** artefacts/2026-11-11-schema-migration-tracking/stories/smt-s1-schema-migration-tracking-table.md
 **Epic reference:** None — short-track
 **Test plan author:** Claude Sonnet 5 (Copilot)
 **Date:** 2026-11-11
