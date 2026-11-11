@@ -278,6 +278,14 @@ function computeAcCoverageRollup(pipelineState) {
  * @param {object} pipelineState - parsed pipeline-state.json content
  * @returns {{groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string}>}>, ungrouped: Array<{slug: string, name: string|undefined, discoveryArtefact: string|undefined}>, totalCount: number}}
  */
+// urpv-s2 (AC1): the feature's real `track` value, defaulting to "standard"
+// only when the key is genuinely absent -- a present-but-falsy value (e.g.
+// "") is passed through unchanged, never coerced, since this function's job
+// is pass-through, not validation.
+function _resolveTrack(feature) {
+  return Object.prototype.hasOwnProperty.call(feature, 'track') ? feature.track : 'standard';
+}
+
 function computeTaxonomyRollup(pipelineState) {
   var features = (pipelineState && pipelineState.features) || [];
   var groups = [];
@@ -285,6 +293,7 @@ function computeTaxonomyRollup(pipelineState) {
   var totalCount = 0;
 
   features.forEach(function(feature) {
+    var track = _resolveTrack(feature);
     if (Array.isArray(feature.epics) && feature.epics.length > 0) {
       feature.epics.forEach(function(epic) {
         var items = (epic.stories || []).map(function(story) {
@@ -300,13 +309,19 @@ function computeTaxonomyRollup(pipelineState) {
           // pefl-s1: also carry the parent feature's own display name, so a
           // By-Phase-grouped row can show "which feature is this" instead of
           // repeating the epic name already shown in that group's own header.
-          return { slug: typeof story === 'string' ? story : (story.slug || story.id), featureSlug: feature.slug, featureName: feature.name };
+          // urpv-s2 (AC1): carry the parent feature's track onto each
+          // epic-nested story item too -- track is a feature-level field,
+          // same inheritance reasoning as featureSlug/featureName above.
+          return { slug: typeof story === 'string' ? story : (story.slug || story.id), featureSlug: feature.slug, featureName: feature.name, track: track };
         });
         groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
       });
     } else {
       totalCount++;
-      ungrouped.push({ slug: feature.slug, name: feature.name, discoveryArtefact: feature.discoveryArtefact });
+      // urpv-s2 (AC1): carry the feature's real track value through to the
+      // ungrouped item -- this is the half of the coverage gap the discovery
+      // found already-available but dropped before rendering.
+      ungrouped.push({ slug: feature.slug, name: feature.name, discoveryArtefact: feature.discoveryArtefact, track: track });
     }
   });
 
@@ -414,6 +429,10 @@ function mergeFeatureSources(taxonomy, journeyFeatures) {
       epicName: item.epicName,
       discoveryArtefact: item.discoveryArtefact,
       featureSlug: item.featureSlug,
+      // urpv-s2 (AC2): track resolves from the taxonomy source on overlap,
+      // same reasoning as name/epicName above -- the taxonomy item is the
+      // richer, GitHub-synced record.
+      track: item.track,
       source: 'taxonomy'
     };
     order.push(item.slug);

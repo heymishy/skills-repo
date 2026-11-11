@@ -163,6 +163,8 @@ The right first step is a retrospective `/discovery` run to document what was bu
 > **Why:** `/discovery` structures your idea or problem into the first discovery artefact, which is the entry point for the entire governed delivery pipeline.
 >
 > **Run:** `/discovery`
+>
+> **If this is large-scale** ÔÇö multiple teams, multiple phases, or a transformative/migration-scale initiative ÔÇö consider `/programme` instead of `/discovery` directly. `/programme`'s own Step 0 will confirm whether the coordination overhead is actually justified before you commit to it. (pep-s2, 2026-11-09)
 
 ---
 

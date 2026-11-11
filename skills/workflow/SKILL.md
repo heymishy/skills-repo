@@ -162,19 +162,12 @@ Before confirming short-track, verify it actually qualifies:
 > investigation starts. Ready to run /spike? Reply: yes
 
 **If 5 — Programme track:**
-> Before confirming the programme track, let's check the overhead is justified.
-> Answer these quickly:
->
-> - **How many teams** are doing the delivery work?
-> - Are there **hard dependencies** between teams (one team blocked on another's output)?
-> - Are there **formal phase gates** (stakeholder sign-off, regulatory approval)?
-> - Does this involve **consumer migration** (replacing a shared library/service with downstream adopters)?
->
-> If the answer to all of these is "one team / no / no / no" — the standard pipeline
-> with multiple epics is simpler and sufficient. Reply: standard pipeline
->
-> If any signal applies — programme track is confirmed. /programme will ask these
-> questions in detail during setup and record the qualifying signals.
+> Don't re-qualify here — run /programme's own Step 0 qualification now. It asks
+> the team-count, cross-team-dependency, phase-gate, and consumer-migration
+> questions (plus an epic-count signal) and computes the one verdict this repo
+> uses for programme-track qualification. Re-asking the same questions here would
+> create two independently-computed answers to the same question (MC-CONSIST-02) —
+> fixed pep-s2, 2026-11-09.
 >
 > Check for an existing programme artefact at
 > `artefacts/[programme-slug]/programme.md`.
