@@ -49365,17 +49365,35 @@
           "id": "smt-s1",
           "slug": "smt-s1",
           "name": "Skip already-applied schema migrations on server boot via a tracking table",
-          "stage": "branch-setup",
+          "stage": "branch-complete",
           "health": "green",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:11:10.897Z",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-11-11T09:40:41.946Z",
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Build migration-tracker.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Wire 14 call sites in server.js through runMigrationOnce",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
+            }
+          ],
+          "acVerified": 6,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1076"
         }
       ],
       "metrics": [],
