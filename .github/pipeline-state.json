@@ -49421,6 +49421,35 @@
       "guardrails": [],
       "updatedAt": "2026-11-11T18:41:37.753Z",
       "traceStatus": "has-findings"
+    },
+    {
+      "slug": "2026-11-12-ddft-seed-records-fix",
+      "name": "Persist the two seeded deferred-item records that ddft-s1 promised but never shipped",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "dsrf-s1",
+          "slug": "dsrf-s1",
+          "name": "Persist the two seeded deferred-item records that ddft-s1 promised but never shipped",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-12-ddft-seed-records-fix/test-plans/dsrf-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-11T21:23:46.439Z",
+          "dorStatus": "signed-off"
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-11T21:23:14.341Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
