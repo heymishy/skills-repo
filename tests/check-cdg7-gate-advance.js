@@ -502,6 +502,79 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   } finally { rmDir(tmpDir); }
 }
 
+// ── T19-T20 — Short-track carve-out for the T15/T16 sequencing checks (gstc) ────
+//
+// Found 2026-11-11 while creating smt-s1 (a genuine new short-track story):
+// T15/T16 above correctly require story.reviewStatus === 'passed' before
+// test-plan-complete/dor-signed-off -- but CLAUDE.md's own short-track path
+// ("/test-plan -> /definition-of-ready -> coding agent") explicitly skips
+// /review (steps 1-4) entirely, so a short-track story's reviewStatus is
+// never set at all. Without this carve-out, every future short-track story
+// would be permanently blocked from the sanctioned bin/skills gate-advance
+// path at these two gates -- a real regression in the T15-T18 fix itself,
+// caught before it blocked real work, not a pre-existing gap.
+
+{
+  const T = 'T19-seq-short-track-test-plan-complete-skips-review-requirement';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    state.features[0].track = 'short';
+    // reviewStatus deliberately left unset -- /review is architecturally
+    // skipped for short-track; this must NOT block the gate.
+    writePipelineState(tmpDir, state);
+    writeFile(tmpDir, 'artefacts/f1/story.md', ['## Acceptance Criteria', '**AC1:** Given a, When b, Then c.'].join('\n'));
+    writeFile(tmpDir, 'artefacts/f1/tp.md', ['**Story reference:** artefacts/f1/story.md', '## AC Coverage', 'AC1 — T1'].join('\n'));
+
+    const result = await gateAdvance('f1', 's1', 'test-plan-complete', 'artefacts/f1/tp.md', ['testPlanWritten=true'], tmpDir);
+    assert(T, result.exitCode === 0, `Expected exitCode 0 for a short-track feature with no reviewStatus, got ${result.exitCode}: ${result.stderr}`);
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T20-seq-short-track-dor-signed-off-skips-review-but-still-requires-test-plan';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    state.features[0].track = 'short';
+    // reviewStatus still deliberately unset (short-track). testPlan.status
+    // IS set -- /test-plan is NOT skipped by short-track, so this
+    // predecessor condition still applies equally to both tracks.
+    state.features[0].stories[0].testPlan = { status: 'written' };
+    writePipelineState(tmpDir, state);
+    writeFile(tmpDir, 'artefacts/f1/story.md', [
+      '## User Story', '',
+      '## Acceptance Criteria',
+      '**AC1:** Given a, When b, Then c.',
+      '**AC2:** Given a, When b, Then c.',
+      '**AC3:** Given a, When b, Then c.',
+      '', '## Out of Scope', 'Widget X is excluded.',
+      '', '## Benefit Linkage', 'M1 — test metric.',
+      '', '## Complexity Rating', '**Rating:** 2', '**Scope stability:** Stable',
+      '', '## Architecture Constraints', 'ADR-011 applies.',
+    ].join('\n'));
+    writeFile(tmpDir, 'artefacts/f1/tp.md', ['## AC Coverage', 'AC1 AC2 AC3'].join('\n'));
+    writeFile(tmpDir, 'artefacts/f1/rv.md', ['| Finding | Severity |', '| none | LOW |'].join('\n'));
+    writeFile(tmpDir, 'artefacts/f1/dor.md', [
+      '**Story reference:** artefacts/f1/story.md',
+      '**Test plan reference:** artefacts/f1/tp.md',
+      '**Review artefact:** artefacts/f1/rv.md',
+    ].join('\n'));
+
+    const result = await gateAdvance('f1', 's1', 'definition-of-ready', 'artefacts/f1/dor.md', ['dorStatus=signed-off'], tmpDir);
+    assert(T + '-succeeds', result.exitCode === 0, `Expected exitCode 0 for a short-track feature with testPlan set but no reviewStatus, got ${result.exitCode}: ${result.stderr}`);
+
+    // Negative half: testPlan still required even for short-track.
+    const state2 = makeMinimalPipelineState('f1', 's2', false);
+    state2.features[0].track = 'short';
+    // testPlan deliberately left unset this time.
+    writePipelineState(tmpDir, state2);
+    const result2 = await gateAdvance('f1', 's2', 'definition-of-ready', 'artefacts/f1/dor.md', ['dorStatus=signed-off'], tmpDir);
+    assert(T + '-still-requires-testplan', result2.exitCode !== 0, `Expected a non-zero exit when testPlan is unset even for short-track, got ${result2.exitCode}`);
+    assert(T + '-still-requires-testplan-message', /testPlan/i.test(result2.stderr || ''), `Expected stderr to mention testPlan, got: ${result2.stderr}`);
+  } finally { rmDir(tmpDir); }
+}
+
 // ── Report ─────────────────────────────────────────────────────────────────────
 
 if (totalFailed > 0) {

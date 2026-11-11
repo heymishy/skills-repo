@@ -64,13 +64,21 @@ function checkGateSequencing(featureSlug, storyId, gateName, repoRoot) {
   var story = findStory(feature, storyId);
   if (!story) { return null; }
 
+  // gstc (2026-11-11): short-track features (CLAUDE.md's "/test-plan ->
+  // /definition-of-ready -> coding agent" path) skip /review entirely by
+  // design (steps 1-4) -- their stories never set reviewStatus at all, so
+  // requiring it here would permanently block every short-track story from
+  // the sanctioned gate-advance path. The testPlan requirement below still
+  // applies equally to both tracks -- /test-plan is never skipped.
+  var isShortTrack = feature.track === 'short';
+
   if (gateName === 'test-plan-complete') {
-    if (story.reviewStatus !== 'passed') {
-      return 'SEQUENCING FAIL: test-plan-complete requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /test-plan.';
+    if (!isShortTrack && story.reviewStatus !== 'passed') {
+      return 'SEQUENCING FAIL: test-plan-complete requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /test-plan. (Short-track features skip /review entirely — set feature.track to "short" if this is a short-track story.)';
     }
   } else if (gateName === 'dor-signed-off' || gateName === 'definition-of-ready') {
-    if (story.reviewStatus !== 'passed') {
-      return 'SEQUENCING FAIL: ' + gateName + ' requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /definition-of-ready.';
+    if (!isShortTrack && story.reviewStatus !== 'passed') {
+      return 'SEQUENCING FAIL: ' + gateName + ' requires story.reviewStatus === "passed" (got "' + story.reviewStatus + '") — /review must pass before /definition-of-ready. (Short-track features skip /review entirely — set feature.track to "short" if this is a short-track story.)';
     }
     if (!story.testPlan || !story.testPlan.status) {
       return 'SEQUENCING FAIL: ' + gateName + ' requires a test plan to already exist (story.testPlan.status unset) — /test-plan must run before /definition-of-ready.';
