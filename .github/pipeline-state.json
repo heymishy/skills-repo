@@ -49358,14 +49358,14 @@
       "slug": "2026-11-11-schema-migration-tracking",
       "name": "Skip already-applied schema migrations on server boot via a tracking table",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "smt-s1",
           "slug": "smt-s1",
           "name": "Skip already-applied schema migrations on server boot via a tracking table",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49374,13 +49374,13 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:01:24.297Z",
+          "updatedAt": "2026-11-11T09:11:10.897Z",
           "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-11T09:01:35.042Z"
+      "updatedAt": "2026-11-11T09:11:11.103Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
