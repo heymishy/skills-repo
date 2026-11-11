@@ -3,8 +3,8 @@
 **Feature:** 2026-11-11-framework-scaling-and-architecture-evolution
 **Date:** 2026-11-11
 **Artefact path:** `artefacts/2026-11-11-framework-scaling-and-architecture-evolution/research/ideation.md`
-**Lenses run:** D, A
-**Pipeline state signal:** in-progress (D → PROCEED on a narrowed scope; A seeds three candidate follow-up initiatives, none yet validated)
+**Lenses run:** D, A, B
+**Pipeline state signal:** in-progress (D → PROCEED on a narrowed scope; A seeds three candidate follow-up initiatives, none yet validated; B surfaces one 🔴 assumption that should be resolved before the POC is written at all)
 
 ---
 
@@ -117,6 +117,47 @@ Outcome: Reduce governance drift and parallel-wave friction, without unscoped co
 
 ---
 
+## Lens B — Assumption inventory
+
+*Framework: Teresa Torres — assumption mapping*
+
+### Assumptions extracted
+
+| Assumption | Type | Risk if wrong | Known-ness | Priority |
+|-----------|------|--------------|------------|----------|
+| `gate-map.js`'s domain-specific governance logic (D37, H-DESIGN, H-GOV, H1–H13) can be carried across to a typed-state-graph model without losing fidelity — it's "structurally close" to a graph's node/edge/state shape | Feasibility | High — if this is wrong, the whole premise that a narrow POC is cheap collapses; the real cost would be in re-implementing dozens of hand-specific checks, not in the graph's control-flow shape, which is the opposite of what the recommendation assumes | Guess — asserted by pattern-matching in this ideation, never confirmed by actually reading `gate-map.js` against LangGraph's real `StateSchema`/conditional-edge API | 🔴 Test first |
+| Parallel-wave load of this session's scale (12 stories across 2 waves) is typical going forward, not a one-off burst | Viability | Medium — drives whether Cluster 2 (scheduler work) is worth any investment at all; already flagged as an open question in Lens D/A, now formalised here | Guess — one data point (this session) | 🟡 Test before build |
+| Fixing the two known schema-drift bugs removes the *most urgent* pressure, even though it doesn't make the pipeline schema-enforced in general | Desirability | Low-medium — if wrong (more undiscovered drift bugs exist beyond these two), the fix is still correct, just insufficient on its own; doesn't invalidate the recommendation, only its completeness | Guess — found incidentally during active work this session, not via a systematic audit of every skill's State-update section | 🟡 Test before build |
+| A pre-commit hook or CI check making `bin/skills advance`/`gate-advance` the *only* write path for `pipeline-state.json` won't conflict with CLAUDE.md's own explicitly-sanctioned "bulk repairs via an explicitly named one-off script" exception (`cdg.6`) — the same exception class this session's own bypass fell under | Feasibility | Medium — if wrong, the cheapest-looking seeded solution (Lens A, solution 3) either has to carve out the same exception that caused the original bug, or becomes more friction than it's worth | Inference — reasoned directly from CLAUDE.md's own stated exception text, not yet tested against a real enforcement implementation | 🟡 Test before build |
+| The narrow POC (model the inner loop's gate sequence as a typed-state graph, test against the two real historical bugs) will produce a clean, legible pass/fail signal rather than an ambiguous one | Feasibility | Medium — if the result is ambiguous (e.g. "would have caught it only if implemented a specific way"), the POC doesn't actually resolve the strategic question it was scoped to answer | Inference — reasoned from how typed schemas generally behave, not yet tested | 🟡 Test before build |
+| The maintainer will have the bandwidth to actually run the POC and evaluate it against its own stated falsifiable bar, rather than defaulting to the familiar hand-rolled system out of inertia regardless of the result | Desirability | Low — worst case, nothing changes; no harm done to a non-mission-critical internal tool | Guess | 🟢 Accept |
+
+---ASSUMPTION-JSON: {"id":"gate-logic-portable","text":"gate-map.js's domain-specific governance logic can be carried across to a typed-state-graph model without losing fidelity.","type":"feasibility","risk":"high","knowness":"unknown-unknown"}---
+
+---ASSUMPTION-JSON: {"id":"parallel-load-typical","text":"Parallel-wave load of 12 stories across 2 waves is typical going forward, not a one-off burst.","type":"viability","risk":"medium","knowness":"unknown-unknown"}---
+
+---ASSUMPTION-JSON: {"id":"two-bugs-sufficient","text":"Fixing the two known schema-drift bugs removes the most urgent governance-drift pressure.","type":"desirability","risk":"low","knowness":"unknown-unknown"}---
+
+---ASSUMPTION-JSON: {"id":"enforcement-no-conflict","text":"A bin/skills advance-only enforcement mechanism will not conflict with CLAUDE.md's own sanctioned bulk-repair exception.","type":"feasibility","risk":"medium","knowness":"known-unknown"}---
+
+---ASSUMPTION-JSON: {"id":"poc-signal-clean","text":"The narrow LangGraph POC will produce a clean pass/fail signal rather than an ambiguous one.","type":"feasibility","risk":"medium","knowness":"known-unknown"}---
+
+---ASSUMPTION-JSON: {"id":"maintainer-follow-through","text":"The maintainer will have bandwidth to run and objectively evaluate the POC.","type":"desirability","risk":"low","knowness":"unknown-unknown"}---
+
+### Test designs (for 🔴 assumptions)
+
+**Assumption:** `gate-map.js`'s domain-specific governance logic can be carried across to a typed-state-graph model without losing fidelity.
+
+| Test approach | Description | What we'd observe if true | What we'd observe if false |
+|--------------|-------------|--------------------------|---------------------------|
+| Data proxy (cheapest, do this first) | Read `src/enforcement/gate-map.js` in full alongside LangGraph's real `StateSchema` / conditional-edge / interrupt API docs (already fetched once this session — re-fetch for the specifics, not just the headline capabilities). Map each of the 7 gate values and 2–3 representative hard blocks (e.g. `H-DESIGN`, `H-GOV`) onto LangGraph primitives by hand, on paper, before writing any code. | A 1:1 or near-1:1 mapping exists for most gates/blocks — the port is mostly mechanical translation | Several gates/blocks need genuinely new logic outside what LangGraph's primitives express natively (e.g. a check that reads a *different file* than the graph's own state, like `scripts/check-design-tokens.js` scanning arbitrary source files) — meaning the POC's "narrow scope" was itself underestimating the real surface area |
+| Prototype test | If the data-proxy check comes back favourable, write the actual narrow POC as originally scoped and see whether `H-GOV`'s four-case branch (`AC1`–`AC5` in `definition-of-ready/SKILL.md`) ports cleanly | The POC's state graph expresses the same four cases without needing escape-hatch custom code outside the graph | The POC needs a large "custom Python/JS function called from a node" escape hatch for most real blocks — meaning the graph is just a thin wrapper, not a real replacement |
+| Interview (n/a — no external customer) | Not applicable — this is a solo-maintainer internal decision, not a customer-validated one | — | — |
+
+**Decision:** Run the data-proxy check (cheap, ~1 hour) before writing any POC code at all. If it comes back favourable, proceed exactly as Lens D's MVP bar describes. If it comes back unfavourable, stop — the two known bugs still get fixed directly (that part of the recommendation doesn't depend on this test), but the POC itself is not worth writing, and this should be logged as a `/decisions` entry on whichever future artefact this ideation feeds, not silently dropped.
+
+---
+
 ## How this feeds the pipeline
 
 | Output | Feeds | Notes |
@@ -134,3 +175,4 @@ Outcome: Reduce governance drift and parallel-wave friction, without unscoped co
 | Is parallel-wave load of this session's scale (12 stories across 2 waves) typical going forward, or a one-off burst? | Yes, for Cluster 2 specifically | Operator | Observe over the next few tranches before investing in scheduler/scaling work |
 | Should Cluster 3 (web-ui/application complexity) become its own ideation/discovery initiative? | No — explicitly out of scope here | Operator | Run a separate `/ideate` or go directly to `/discovery` when there's bandwidth; not blocked on this initiative's outcome |
 | If the narrow LangGraph POC is run, who owns evaluating whether its result justifies further investment? | Yes, if the POC proceeds | Operator | A human judgment call at the end of the POC — this ideation does not pre-commit to a verdict |
+| Does `gate-map.js`'s governance logic actually map cleanly onto LangGraph's primitives? (Lens B's one 🔴 assumption) | Yes — blocks writing any POC code at all | Operator | Run the ~1-hour data-proxy check (read `gate-map.js` + 2–3 hard blocks against LangGraph's real `StateSchema`/conditional-edge API) before the POC itself is written |
