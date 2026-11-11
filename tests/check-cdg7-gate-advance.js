@@ -140,6 +140,11 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   const tmpDir = makeTempDir();
   try {
     const state = makeMinimalPipelineState('test-feat', 's1', false);
+    // fsae-s1: this test exercises validate()'s own H1 check, not sequencing —
+    // satisfy the dor-signed-off predecessor so the sequencing check passes
+    // and the H1 check underneath is what actually fires.
+    state.features[0].stories[0].reviewStatus = 'passed';
+    state.features[0].stories[0].testPlan = { status: 'written' };
     writePipelineState(tmpDir, state);
     // Non-existent artefact → validate exit 1 (H1 fail: file not found)
     const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
@@ -161,6 +166,8 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   try {
     const artefactPath = makeH4FailFixture(tmpDir);
     const state = makeMinimalPipelineState('test-feat', 's1', false);
+    state.features[0].stories[0].reviewStatus = 'passed';
+    state.features[0].stories[0].testPlan = { status: 'written' };
     writePipelineState(tmpDir, state);
     const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       artefactPath, ['stage=dor-signed-off'], tmpDir);
@@ -178,6 +185,8 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
     // Artefact with no story reference header → validate returns exit 0
     writeFile(tmpDir, 'artefacts/feat/dor/gate-ok.md', 'Gate confirmed.');
     const state = makeMinimalPipelineState('test-feat', 's1', false);
+    state.features[0].stories[0].reviewStatus = 'passed';
+    state.features[0].stories[0].testPlan = { status: 'written' };
     writePipelineState(tmpDir, state);
     const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       'artefacts/feat/dor/gate-ok.md', ['stage=dor-signed-off'], tmpDir);
@@ -198,6 +207,8 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   try {
     writeFile(tmpDir, 'artefacts/feat/dor/gate-ok.md', 'Gate confirmed.');
     const state = makeMinimalPipelineState('test-feat', 's1', false);
+    state.features[0].stories[0].reviewStatus = 'passed';
+    state.features[0].stories[0].testPlan = { status: 'written' };
     writePipelineState(tmpDir, state);
     const result = await gateAdvance('test-feat', 's1', 'definition-of-ready',
       'artefacts/feat/dor/gate-ok.md',
@@ -394,6 +405,101 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   assert(T, pkg.scripts.test.includes('node tests/check-cdg7-gate-advance.js') || pkg.scripts.test.includes('run-all-tests.js'),
     'package.json test script does not include "node tests/check-cdg7-gate-advance.js" (directly, or via the pcr-s1 dynamic discovery runner)');
+}
+
+// ── T15-T18 — Cross-gate sequencing enforcement (fsae-s1) ──────────────────────
+//
+// Found during artefacts/2026-11-11-framework-scaling-and-architecture-evolution's
+// own ideation (Lens B data-proxy check, 2026-11-11): gateAdvance() validated each
+// gate's artefact content in total isolation, with no check that the story had
+// actually reached the expected predecessor state first. Nothing stopped calling
+// `gate-advance <feature> <story> definition-of-done <artefact>` before
+// `test-plan-complete` had ever been validated for that story. These 4 tests
+// cover the 4 story-scoped late gates specifically — the first 3 gates
+// (discovery-approved, benefit-metric-active, definition-complete) are
+// feature-level artefact checks with no per-story predecessor concept and are
+// deliberately left out of this fix (see decisions.md's ARCH entry for why).
+
+{
+  const T = 'T15-seq-test-plan-complete-requires-reviewStatus-passed';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    // reviewStatus deliberately left unset — the real predecessor condition
+    // /test-plan's own entry condition requires ("Review report exists
+    // showing PASS") is not met.
+    writePipelineState(tmpDir, state);
+    writeFile(tmpDir, 'artefacts/f1/story.md', ['## Acceptance Criteria', '**AC1:** Given a, When b, Then c.'].join('\n'));
+    writeFile(tmpDir, 'artefacts/f1/tp.md', ['**Story reference:** artefacts/f1/story.md', '## AC Coverage', 'AC1 — T1'].join('\n'));
+
+    const result = await gateAdvance('f1', 's1', 'test-plan-complete', 'artefacts/f1/tp.md', ['testPlanWritten=true'], tmpDir);
+    assert(T + '-blocked', result.exitCode !== 0, `Expected a non-zero exit when reviewStatus is unset, got ${result.exitCode}`);
+    assert(T + '-message', /reviewStatus/i.test(result.stderr || ''), `Expected stderr to mention reviewStatus, got: ${result.stderr}`);
+    const after = readPipelineState(tmpDir);
+    assert(T + '-state-unchanged', after.features[0].stories[0].testPlanWritten === undefined,
+      'State must be left untouched when the sequencing check blocks the gate');
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T16-seq-dor-signed-off-requires-test-plan-and-review';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    state.features[0].stories[0].reviewStatus = 'passed';
+    // testPlan deliberately left unset — DoR's own entry condition requires
+    // "Test plan exists at test-plans/[story-slug]-test-plan.md".
+    writePipelineState(tmpDir, state);
+    const artefactPath = makeH4FailFixture(tmpDir); // reused only for a readable artefact; content irrelevant to this test
+
+    const result = await gateAdvance('f1', 's1', 'definition-of-ready', artefactPath, ['stage=dor-signed-off'], tmpDir);
+    assert(T + '-blocked', result.exitCode !== 0, `Expected a non-zero exit when testPlan is unset, got ${result.exitCode}`);
+    assert(T + '-message', /testPlan/i.test(result.stderr || ''), `Expected stderr to mention testPlan, got: ${result.stderr}`);
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T17-seq-branch-complete-requires-dor-signed-off';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    // dorStatus deliberately left unset — /branch-setup's own entry condition
+    // requires "DoR artefact with Proceed: Yes must exist".
+    writePipelineState(tmpDir, state);
+    writeFile(tmpDir, 'artefacts/f1/state.json', JSON.stringify({ prUrl: 'https://github.com/x/y/pull/1', verifyStatus: 'passed' }));
+
+    const result = await gateAdvance('f1', 's1', 'branch-complete', 'artefacts/f1/state.json', ['prStatus=draft'], tmpDir);
+    assert(T + '-blocked', result.exitCode !== 0, `Expected a non-zero exit when dorStatus is not "signed-off", got ${result.exitCode}`);
+    assert(T + '-message', /dorStatus/i.test(result.stderr || ''), `Expected stderr to mention dorStatus, got: ${result.stderr}`);
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T18-seq-definition-of-done-requires-pr-merged';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('f1', 's1', false);
+    state.features[0].stories[0].prStatus = 'open'; // not 'merged' — the real predecessor /definition-of-done's own entry condition requires
+    writePipelineState(tmpDir, state);
+    writeFile(tmpDir, 'artefacts/f1/dod.md', [
+      '## AC Coverage', '',
+      '| AC | Satisfied? | Evidence | Verification method | Deviation |',
+      '|----|-----------|----------|---------------------|-----------|',
+      '| AC1 | ✅ | Test T1 | automated test | |',
+    ].join('\n'));
+
+    const result = await gateAdvance('f1', 's1', 'definition-of-done', 'artefacts/f1/dod.md', ['dodStatus=complete'], tmpDir);
+    assert(T + '-blocked', result.exitCode !== 0, `Expected a non-zero exit when prStatus is not "merged", got ${result.exitCode}`);
+    assert(T + '-message', /prStatus/i.test(result.stderr || ''), `Expected stderr to mention prStatus, got: ${result.stderr}`);
+
+    // Positive case — once prStatus is genuinely 'merged', the same gate call succeeds.
+    const state2 = makeMinimalPipelineState('f1', 's2', false);
+    state2.features[0].stories[0].prStatus = 'merged';
+    writePipelineState(tmpDir, state2);
+    const result2 = await gateAdvance('f1', 's2', 'definition-of-done', 'artefacts/f1/dod.md', ['dodStatus=complete'], tmpDir);
+    assert(T + '-unblocked-when-merged', result2.exitCode === 0,
+      `Expected exitCode 0 once prStatus is "merged", got ${result2.exitCode}: ${result2.stderr}`);
+  } finally { rmDir(tmpDir); }
 }
 
 // ── Report ─────────────────────────────────────────────────────────────────────
