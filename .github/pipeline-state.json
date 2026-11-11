@@ -49374,13 +49374,13 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:13:57.571Z",
+          "updatedAt": "2026-11-11T09:20:15.762Z",
           "dorStatus": "signed-off",
           "tasks": [
             {
               "id": "task-1",
               "name": "Build migration-tracker.js",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
             },
             {
