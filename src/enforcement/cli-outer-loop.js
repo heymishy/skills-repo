@@ -33,6 +33,11 @@ const STORY_REF_RE = /artefacts\/[^/\s\n]+\/stories\/([^/\s\n.]+)\.md/g;
 const STORY_REF_HEADER_RE    = /\*\*Story reference:\*\*\s+(\S+\.md)/;
 const TESTPLAN_REF_HEADER_RE = /\*\*Test plan reference:\*\*\s+(\S+\.md)/;
 const REVIEW_REF_HEADER_RE   = /\*\*Review artefact:\*\*\s+(\S+\.md)/;
+// smt-s1 (2026-11-11): content-only short-track declaration -- validate()
+// takes no feature/story params and cannot read pipeline-state.json's
+// feature.track, so a short-track DoR must declare this in its own content
+// for H7 (no review artefact required) to recognise it.
+const TRACK_HEADER_RE        = /\*\*Track:\*\*\s+(\S+)/;
 
 // gav-s1: shared heading-body extractor for the 6 new gate validators below.
 // Returns null if the heading itself is not found; returns '' (falsy) if the
@@ -600,35 +605,50 @@ function validate(artefactPath, gateName, repoRoot) {
       }
     }
     if (relRv === null) {
-      return {
-        exitCode: EXIT.H7_THROUGH_H9,
-        stdout: '',
-        stderr: 'H7 FAIL: no review artefact reference found in DoR (**Review artefact:** <path>)',
-      };
-    }
-    const absRv = path.resolve(repoRoot, relRv);
-    if (!absRv.startsWith(rootWithSep)) {
-      return {
-        exitCode: EXIT.SYSTEM,
-        stdout: '',
-        stderr: 'Error: review artefact path resolves outside repository root. Path traversal prevented (OWASP A01).',
-      };
-    }
-    if (!fs.existsSync(absRv)) {
-      return {
-        exitCode: EXIT.H7_THROUGH_H9,
-        stdout: '',
-        stderr: `H7 FAIL: review artefact not found at ${relRv}`,
-      };
-    }
+      // gstc2: short-track stories skip /review entirely by design (CLAUDE.md's
+      // "/test-plan -> /definition-of-ready -> coding agent" path). A DoR that
+      // explicitly declares **Track:** short is treated as having no review to
+      // check -- H7 passes vacuously. This is opt-in (U26 confirms a DoR with
+      // no Track marker and no review artefact still fails exactly as before)
+      // and only covers the "no review ran" case -- if a review artefact IS
+      // referenced, its content is still checked for HIGH findings regardless
+      // of the Track marker (U28).
+      const trackMatch = TRACK_HEADER_RE.exec(content);
+      const isShortTrack = !!(trackMatch && trackMatch[1].toLowerCase() === 'short');
+      if (isShortTrack) {
+        rvContent = '';
+      } else {
+        return {
+          exitCode: EXIT.H7_THROUGH_H9,
+          stdout: '',
+          stderr: 'H7 FAIL: no review artefact reference found in DoR (**Review artefact:** <path>)',
+        };
+      }
+    } else {
+      const absRv = path.resolve(repoRoot, relRv);
+      if (!absRv.startsWith(rootWithSep)) {
+        return {
+          exitCode: EXIT.SYSTEM,
+          stdout: '',
+          stderr: 'Error: review artefact path resolves outside repository root. Path traversal prevented (OWASP A01).',
+        };
+      }
+      if (!fs.existsSync(absRv)) {
+        return {
+          exitCode: EXIT.H7_THROUGH_H9,
+          stdout: '',
+          stderr: `H7 FAIL: review artefact not found at ${relRv}`,
+        };
+      }
 
-    rvContent = fs.readFileSync(absRv, 'utf8');
-    if (/\|\s*HIGH\b/i.test(rvContent)) {
-      return {
-        exitCode: EXIT.H7_THROUGH_H9,
-        stdout: '',
-        stderr: 'H7 FAIL: review artefact contains unresolved HIGH findings',
-      };
+      rvContent = fs.readFileSync(absRv, 'utf8');
+      if (/\|\s*HIGH\b/i.test(rvContent)) {
+        return {
+          exitCode: EXIT.H7_THROUGH_H9,
+          stdout: '',
+          stderr: 'H7 FAIL: review artefact contains unresolved HIGH findings',
+        };
+      }
     }
   }
 
