@@ -98,6 +98,11 @@ reference_dirs:
   # stated purpose, not a workaround. Remove this entry if the initiative
   # is ever actually taken to /discovery.
   - 2026-11-11-framework-scaling-and-architecture-evolution
+  # 2026-11-12: same category as the entry above -- /ideate-only output
+  # (Lens D/A, research/ideation.md only), no discovery.md yet. Proceed signal
+  # is scoped to one cluster pending a /discovery run. Remove this entry once
+  # that /discovery is actually started.
+  - 2026-11-11-web-ui-platform-fit
 tracks_without_discovery:
   - short
   - defect
