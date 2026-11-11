@@ -49365,7 +49365,7 @@
           "id": "smt-s1",
           "slug": "smt-s1",
           "name": "Skip already-applied schema migrations on server boot via a tracking table",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49374,7 +49374,7 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T09:28:58.126Z",
+          "updatedAt": "2026-11-11T09:35:11.476Z",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49389,7 +49389,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-11-schema-migration-tracking/plans/smt-s1-plan.md"
             }
-          ]
+          ],
+          "acVerified": 6,
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
