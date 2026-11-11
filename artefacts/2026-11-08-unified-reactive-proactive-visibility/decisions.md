@@ -81,6 +81,15 @@
 **Revisit trigger:** If the measurement is not recorded in `nfr-profile.md` by the time urpv-s3's PR is opened, `/branch-complete` or `/verify-completion` should block on this explicitly rather than let it slide a second time.
 ---
 
+---
+**2026-11-10 | RISK-ACCEPT | verify-completion — urpv-s2 live browser render check**
+**Decision:** `urpv-s2`'s diff adds new rendered UI output (a "Reactive"/"Planned" text label in `_renderPvcItemRow`), which `/verify-completion`'s mandatory Live browser render check applies to. Neither a real browser check nor Playwright evidence of the label's actual visible state was produced for this story; accepting the gap rather than blocking merge on it.
+**Alternatives considered:** (A) Perform a real browser check — rejected: the only real page that renders this label (`_renderConsolidatedFeaturesSection`, a product's features view) requires an authenticated session, and no GitHub OAuth sign-in should be performed by an unsupervised agent. (B) Write new Playwright E2E coverage asserting the label's visible state — rejected for this story specifically: checked `playwright.config.js` and every existing `tests/e2e/*.spec.js` file; none configure a `storageState`/`globalSetup` session-auth bypass, so adding this coverage would mean building new E2E test infrastructure (an auth bypass for the product view) from scratch, a scope expansion well beyond this story's own 4 ACs. (C, chosen) RISK-ACCEPT the gap now; the existing unit-level evidence (exact text-node assertions, token-colour-usage assertions, confirmed in `tests/check-urpv-s2-tag-short-track-as-reactive.js`) proves the label is correctly generated in the HTML string, but does not prove it is actually visible/legible when a real browser renders that HTML — the remaining gap is specifically "does it look right in a real browser," not "is the logic correct."
+**Rationale:** Per `/verify-completion`'s own stated fallback, an explicit RISK-ACCEPT is the documented path when neither real check is performed in-session. Building E2E auth infrastructure is a real, separate piece of work with its own design questions (how test sessions are issued, whether it's `test`-env-only, how it interacts with real tenant scoping) that deserves its own story rather than being improvised inside urpv-s2.
+**Made by:** Claude Sonnet 5, during /verify-completion, 2026-11-10
+**Revisit trigger:** The first story that genuinely needs authenticated Playwright E2E coverage of the product view (a strong candidate: `urpv-s3` or `urpv-s4`, both rendering further additions to the same page) should build the auth-bypass test infrastructure as part of its own scope, then this story's label can be retroactively covered by the same mechanism. Add a post-deployment smoke-test action item for a human to visually confirm the label once this repo's own connected-product view is checked after this story merges (this repo is itself a real, connected product per `platform-self-registration.js`).
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
