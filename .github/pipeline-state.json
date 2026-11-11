@@ -49365,8 +49365,8 @@
           "id": "smt-s1",
           "slug": "smt-s1",
           "name": "Skip already-applied schema migrations on server boot via a tracking table",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -49374,7 +49374,7 @@
             "artefact": "artefacts/2026-11-11-schema-migration-tracking/test-plans/smt-s1-test-plan.md"
           },
           "acTotal": 6,
-          "updatedAt": "2026-11-11T17:57:23.026Z",
+          "updatedAt": "2026-11-11T18:15:20.673Z",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49393,7 +49393,10 @@
           "acVerified": 6,
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1076"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1076",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Staging boot-log check for AC1/AC2/AC4 not yet run (see dod artefact follow-up 1)"
         }
       ],
       "metrics": [],
