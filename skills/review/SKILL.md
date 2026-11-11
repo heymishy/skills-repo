@@ -293,6 +293,8 @@ comparing this run's findings to the previous run.
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** For each story reviewed, append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"review"`, `stage` is `"review"`, `storySlug` is that story's own slug. Write it in the same per-story loop as the state write below, not batched at the end of the run. A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 **Write per story, not per run.** After writing each story's review report file, immediately update that story's entry in `pipeline-state.json` and `workspace/state.json` — before loading or reading the next story. Do not batch state writes to the end of the review run. Each story's state must be durable before the next story begins. This is a sequenced invariant, not an optional best practice: if the session ends mid-review, all reviewed stories must already be recorded in state.

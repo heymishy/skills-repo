@@ -728,6 +728,8 @@ artefact can be used to revise scope before proceeding to `/definition`.
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"ideate"`, `stage` is `"ideate"`, `storySlug` is `null` (ideation runs before any story exists). A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` in the **project repository** when the ideation artefact is saved:

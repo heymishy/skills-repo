@@ -281,6 +281,8 @@ If `npm test` fails with a stale-traces error, the traces branch has not receive
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"trace"`, `stage` is `"trace"`, `storySlug` is `null` (one record per `/trace` run, covering the whole feature's chain). A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 /trace is read-only and does not update artefacts, but it does update `.github/pipeline-state.json` in the **project repository** to surface findings:

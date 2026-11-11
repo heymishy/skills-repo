@@ -518,6 +518,8 @@ If the operator replies `skip`, write `"e1": null` to `estimate` in `workspace/s
 
 ## State update - mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"discovery"`, `stage` is `"discovery"`, `storySlug` is `null` (no story exists yet at this stage). A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ?."
 
 When the discovery artefact is saved and approved, update `.github/pipeline-state.json` in the **project repository**:

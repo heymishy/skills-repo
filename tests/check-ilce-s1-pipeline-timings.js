@@ -146,6 +146,39 @@ test('branch-setup, implementation-plan, verify-completion, and branch-complete 
   });
 });
 
+test('outer-loop SKILL.md files (discovery through trace, plus ideate) reference pipeline-timings after their State update heading', () => {
+  // fsae-2 (2026-11-11): closes the gap found during the framework-scaling
+  // ideation's stand-back re-assessment -- appendTimingRecord was documented
+  // as mandatory in only 5 of ~50 skills, all inner-loop, so
+  // .github/pipeline-timings.jsonl had never recorded a single line despite
+  // dozens of qualifying invocations across this repo's history. This covers
+  // the core outer-loop pipeline stages named in CLAUDE.md's pipeline table
+  // (steps 1-6.5, 8, 9) plus /ideate, which precedes /discovery. /design is
+  // deliberately excluded -- it has no "## State update" section at all, so
+  // bolting on a timing write with no surrounding state-bookkeeping would be
+  // inconsistent with every other instrumented skill.
+  const skillFiles = [
+    'skills/discovery/SKILL.md',
+    'skills/benefit-metric/SKILL.md',
+    'skills/definition/SKILL.md',
+    'skills/review/SKILL.md',
+    'skills/test-plan/SKILL.md',
+    'skills/definition-of-ready/SKILL.md',
+    'skills/decisions/SKILL.md',
+    'skills/definition-of-done/SKILL.md',
+    'skills/trace/SKILL.md',
+    'skills/ideate/SKILL.md',
+  ];
+  skillFiles.forEach(relPath => {
+    const content = fs.readFileSync(path.join(__dirname, '..', relPath), 'utf8');
+    const stateUpdateIndex = content.indexOf('## State update');
+    const timingsRefIndex = content.indexOf('pipeline-timings.jsonl');
+    assert.ok(stateUpdateIndex !== -1, relPath + ' must have a "## State update" heading');
+    assert.ok(timingsRefIndex !== -1, relPath + ' must reference pipeline-timings.jsonl');
+    assert.ok(timingsRefIndex > stateUpdateIndex, relPath + ' must reference pipeline-timings.jsonl after its "## State update" heading, not merely somewhere in the file');
+  });
+});
+
 test('getMostRecentRecord returns the most recent of several matching records by timestamp', () => {
   const { appendTimingRecord, getMostRecentRecord } = require('../scripts/lib/pipeline-timings');
   const logPath = tempLogPath();

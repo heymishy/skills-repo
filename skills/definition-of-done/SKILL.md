@@ -273,6 +273,8 @@ If a trace report already exists dated on or after this story's own DoD date, st
 
 ## State update - mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"definition-of-done"`, `stage` is `"definition-of-done"`, `storySlug` is that story's own slug. A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` in the **project repository** when the DoD artefact is saved:

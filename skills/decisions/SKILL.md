@@ -263,6 +263,8 @@ Add to the log entry format:
 
 ## State update — mandatory final step
 
+**Timing instrumentation:** Append one record to `.github/pipeline-timings.jsonl` via `scripts/lib/pipeline-timings.js`'s `appendTimingRecord({skill, featureSlug, storySlug, stage})` — `skill` is `"decisions"`, `stage` is `"decisions"`, `storySlug` is that story's own slug if the decision being logged is story-scoped, otherwise `null`. A write failure here is non-fatal and must not block this skill's own completion.
+
 > **Mandatory.** Do not close this skill without completing this write. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` for the relevant feature after each decision is recorded:
