@@ -45929,9 +45929,9 @@
           "name": "Tag short-track features as reactive work in the consolidated features view",
           "epic": "urpv-e1-reactive-work-visibility",
           "stage": "branch-complete",
-          "health": "green",
+          "health": "amber",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-11T19:00:12.686Z",
+          "updatedAt": "2026-11-11T19:49:29.358Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -45966,7 +45966,10 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-unified-reactive-proactive-visibility/plans/urpv-s2-tag-short-track-as-reactive-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "AC3/AC4 visual evidence rests on RISK-ACCEPT 2026-11-10; post-deploy visual smoke test unconfirmed"
         },
         {
           "id": "urpv-s3",
@@ -46605,8 +46608,8 @@
           "name": "CI/CD chain notifications (announce, status, auto-retry visibility)",
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:03.539Z",
+          "health": "red",
+          "updatedAt": "2026-11-11T19:49:27.853Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46665,7 +46668,9 @@
             }
           ],
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1068"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1068",
+          "dodStatus": "not-started",
+          "blocker": "DoD INCOMPLETE: no TEAMS_WEBHOOK_URL mapped in the 3 new workflow steps, so no notification can arrive; status workflow also lacks a branch filter (out-of-scope breach). Needs follow-up story."
         },
         {
           "id": "coha-s3",
@@ -46673,8 +46678,8 @@
           "name": "Vulnerability-check CI step with de-duplicated notification",
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:03.817Z",
+          "health": "red",
+          "updatedAt": "2026-11-11T19:49:28.170Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46721,7 +46726,9 @@
             }
           ],
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1064"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1064",
+          "dodStatus": "not-started",
+          "blocker": "DoD INCOMPLETE: AC2 never satisfied in real runs, TEAMS_WEBHOOK_URL repo secret is empty. Needs the secret configured plus visible send-failure handling."
         },
         {
           "id": "coha-s4",
@@ -46729,8 +46736,8 @@
           "name": "Bounded production-log scan with pattern-match notification",
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:04.085Z",
+          "health": "red",
+          "updatedAt": "2026-11-11T19:49:28.315Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46783,7 +46790,9 @@
             }
           ],
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1069"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1069",
+          "dodStatus": "not-started",
+          "blocker": "DoD INCOMPLETE: scheduled production runs fail every time, flyctl logs has no --since flag and returns only 100 lines; log-source design assumption was wrong. Needs redesign story."
         }
       ],
       "guardrails": [
@@ -47379,8 +47388,8 @@
           "name": "Patch /programme and /workflow for the gaps story 1 found",
           "epic": "pep-e1-validate-entry-points",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:12.255Z",
+          "health": "amber",
+          "updatedAt": "2026-11-11T19:49:29.101Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -47427,7 +47436,10 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-programme-entry-points/plans/pep-s2-patch-programme-and-workflow-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "AC2/AC3 verified only via a JS mirror of the skill; needs a real /programme Step 0 run on both cases (see DoD follow-ups)"
         },
         {
           "id": "pep-s3",
@@ -48047,8 +48059,8 @@
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:12.401Z",
+          "health": "red",
+          "updatedAt": "2026-11-11T19:49:28.604Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48107,7 +48119,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "not-started",
+          "blocker": "DoD INCOMPLETE: draftTriageSummary has no caller, so nothing runs when a record is created. Needs wiring follow-up."
         },
         {
           "id": "itar-s3",
@@ -48703,8 +48717,8 @@
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-11T19:00:12.540Z",
+          "health": "red",
+          "updatedAt": "2026-11-11T19:49:28.458Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48770,7 +48784,9 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1067"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1067",
+          "dodStatus": "not-started",
+          "blocker": "DoD INCOMPLETE: the two seeded deferred-item records are never persisted, workspace/incidents.json does not exist. Needs follow-up to persist and re-check."
         },
         {
           "id": "ddft-s2",
