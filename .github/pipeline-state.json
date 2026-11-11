@@ -49337,6 +49337,22 @@
       "stories": [],
       "metrics": [],
       "updatedAt": "2026-11-11T07:14:21.939Z"
+    },
+    {
+      "slug": "2026-11-11-web-ui-platform-fit",
+      "name": "Web-ui platform fit (migration bookkeeping, adapter-wiring, route sprawl, SSR/BaaS question)",
+      "track": "standard",
+      "stage": "ideation",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "ideationPath": "artefacts/2026-11-11-web-ui-platform-fit/research/ideation.md",
+      "ideationSignal": "proceed",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-11-11T07:28:11.795Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
