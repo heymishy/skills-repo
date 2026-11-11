@@ -15,14 +15,14 @@ Verification-strength tags: `unit` = against the in-memory fake pool; `integrati
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ⚠️ | First run creates the tracking table, runs the migration's DDL, records a row. UT1, UT2, UT3 pass in `tests/check-smt-s1-migration-tracker.js` (9/9 pass, re-run on merged master). Strength: `unit` only — the fake pool simulates SQL shape, not real Postgres. | Automated test `check-smt-s1-migration-tracker` | The claim is about real Postgres tables and rows. The test plan's own Coverage gaps section names a manual staging boot-log check for this, and it has not been run. Not marked ✅ on unit evidence alone, per this skill's verification-strength rule. |
-| AC2 | ⚠️ | Warm boot skips the migration's DDL, no CREATE/ALTER round-trip. UT4 and NFR-PERF1 pass: a warm run issues exactly one tracker query and zero DDL calls. Strength: `unit` only. | Automated test `check-smt-s1-migration-tracker` | Same evidence-class gap as AC1: the real-world effect (no DDL against real Postgres on a warm boot) is unconfirmed against a live instance. |
+| AC1 | ✅ | LIVE-VERIFIED 2026-11-11 on wuce-staging (see Live Verification Addendum): `schema_migrations` exists with 14 rows, one per wrapped migration, each with an `applied_at`. First run creates the tracking table, runs the migration's DDL, records a row. UT1, UT2, UT3 pass in `tests/check-smt-s1-migration-tracker.js` (9/9 pass, re-run on merged master). Strength: `unit` only — the fake pool simulates SQL shape, not real Postgres. | Automated test `check-smt-s1-migration-tracker` | The claim is about real Postgres tables and rows. The test plan's own Coverage gaps section names a manual staging boot-log check for this, and it has not been run. Not marked ✅ on unit evidence alone, per this skill's verification-strength rule. |
+| AC2 | ✅ | LIVE-VERIFIED 2026-11-11 on wuce-staging (see Live Verification Addendum): after a stop/start restart at 18:52Z the table still holds exactly 14 rows, none newer than 18:17:32Z, and no duplicate-key or migration-failure line appears in the logs, so no migration function was re-invoked. Warm boot skips the migration's DDL, no CREATE/ALTER round-trip. UT4 and NFR-PERF1 pass: a warm run issues exactly one tracker query and zero DDL calls. Strength: `unit` only. | Automated test `check-smt-s1-migration-tracker` | Same evidence-class gap as AC1: the real-world effect (no DDL against real Postgres on a warm boot) is unconfirmed against a live instance. |
 | AC3 | ✅ | All 14 call sites wrapped, none left unwrapped. IT1 passes. Independently confirmed on merged master: `server.js` has exactly 14 `runMigrationOnce(...)` call sites at lines 768, 773, 783, 807, 818, 823, 828, 833, 859, 866, 879, 1000, 1016, 1105, covering every function name listed in the AC. Strength: `integration-real-code` (static check of real source). | IT1, plus a direct grep of `server.js` | None |
-| AC4 | ⚠️ | Chained backfill/wiring still runs every boot. IT2 passes: `migrateOrganisationsSchema`'s `backfillStandaloneOrganisations` → `setOrganisationsPool` → `setEmailOrganisationsPool` chain stays in the same `.then()` chain after the wrapped call (read directly at `server.js` lines 783-801; `migrateTenantAdminBootstrapSchema`'s pool wiring likewise). Strength: `integration-real-code` (static structure), not an executed warm boot. | IT2, plus direct read of `server.js` | The test plan's Coverage gaps section names a real-Postgres manual check for this AC (Edge case 1 in the verification script). Static chain structure is confirmed; the live execution is not. |
+| AC4 | ✅ | LIVE-VERIFIED 2026-11-11 on wuce-staging (see Live Verification Addendum): on the warm boot the organisations backfill still ran (`organisations backfill complete (3 row(s) created)`, creating rows for 3 newly seen tenants) and both pool-wiring lines fired, as did the tenant-admin-bootstrap pool wiring. Chained backfill/wiring still runs every boot. IT2 passes: `migrateOrganisationsSchema`'s `backfillStandaloneOrganisations` → `setOrganisationsPool` → `setEmailOrganisationsPool` chain stays in the same `.then()` chain after the wrapped call (read directly at `server.js` lines 783-801; `migrateTenantAdminBootstrapSchema`'s pool wiring likewise). Strength: `integration-real-code` (static structure), not an executed warm boot. | IT2, plus direct read of `server.js` | The test plan's Coverage gaps section names a real-Postgres manual check for this AC (Edge case 1 in the verification script). Static chain structure is confirmed; the live execution is not. |
 | AC5 | ✅ | Tracker failure fires the existing `.catch`, never crashes boot. UT5 passes: a tracker-layer error propagates unchanged to the caller. Every one of the 14 call sites keeps its own existing `.catch(...)` (read in `server.js`). Strength: `unit` — acceptable here because the claim is about promise propagation, which the fake pool exercises faithfully. | UT5, plus direct read of `server.js` | None against the AC as written. See DoD Observation 1 for a behavioural nuance the AC does not cover. |
 | AC6 | ✅ | No `tenant_id` column, no per-tenant rows. UT6 passes; `migration-tracker.js` creates `schema_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())` and inserts only `name`. Strength: `unit`, adequate because the claim is about the DDL text itself, read directly. | UT6, plus direct read of `migration-tracker.js` | None |
 
-**Verification strength summary:** 4 ACs `unit` (AC1, AC2, AC5, AC6, of which AC5 and AC6 are adequate at that strength), 2 `integration-real-code` (AC3, AC4), 0 `live-verified`, 0 `production-observed`.
+**Verification strength summary:** AC1, AC2, AC4 `live-verified` (staging, 2026-11-11, see addendum, upgraded from `unit` / `integration-real-code`); AC3 `integration-real-code`; AC5 and AC6 `unit` (adequate at that strength: promise propagation and the DDL text itself; AC6 also confirmed live, columns are `name,applied_at`); 0 `production-observed`.
 
 ---
 
@@ -75,12 +75,12 @@ None — short-track story with no formal metric (the story's Benefit Linkage st
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-ACs satisfied: 3/6 fully (AC3, AC5, AC6), 3/6 `⚠️` pending live evidence (AC1, AC2, AC4). Nothing is `❌`: the code does what each AC says as far as the available evidence can show.
+ACs satisfied: 6/6. AC1, AC2 and AC4 were first recorded as `⚠️` on unit/static evidence and upgraded to ✅ the same day after the staging check below. Nothing is `❌`. No AC deviations; the behavioural nuance in DoD Observation 1 is not a deviation from any AC as written.
 
 **Follow-up actions:**
-1. **Run the staging boot-log check named in the test plan (Edge case 1 in `verification-scripts/smt-s1-verification.md`).** Confirm against the real staging Postgres that on a first boot after this deploys, `schema_migrations` is created and 14 rows appear, and on the next boot (a restart) no `CREATE TABLE`/`ALTER TABLE` is issued for those 14 and the organisations/tenant-admin-bootstrap chained wiring log lines (`[story-1-organisation-entity] organisations pool wired ...`, `[tab-s1] tenant admin bootstrap pool wired ...`) still appear. Closes AC1, AC2, AC4. Owner: operator, needs staging access. Not yet scheduled.
+1. ~~Run the staging boot-log check~~ **DONE 2026-11-11**, see Live Verification Addendum. Closes AC1, AC2, AC4.
 2. **Decide on Observation 1** (tracker outage now skips that boot's migration). Owner: operator.
 
 ---
@@ -106,3 +106,15 @@ Check:
 5. Is the outcome verdict (COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE) consistent with the AC and deviation rows?
 Report findings as HIGH / MEDIUM / LOW.
 ```
+
+---
+
+## Live Verification Addendum (2026-11-11, same day as the DoD)
+
+Performed against `wuce-staging` (Fly.io app) after the Staging Deploy workflow for master `8b7dd1b3` (which contains the smt-s1 merge `c73131485`) completed with its deploy, @mocked smoke and real-staging E2E jobs all green.
+
+1. **Table and rows (AC1, AC6):** a read-only `SELECT name, applied_at FROM schema_migrations` run on the staging machine returned 14 rows, one for each of the 14 wrapped migrations: 3 recorded at 17:58Z (`migratePodAssignmentsSchema`, `migrateTeamSchema`, `migrateIdentityLinksSchema`) and 11 at 18:17:32Z. The table's columns are exactly `name, applied_at`, so there is no `tenant_id`.
+2. **Warm boot (AC2):** the machine was stopped and started at about 18:52Z, a full process boot, since a Fly "suspended" machine can only be resumed, which would not re-run boot. After it, the table still held exactly 14 rows with no `applied_at` later than 18:17:32Z, and the logs contain no duplicate-key error and no migration-failure line. A re-invoked migration would have attempted a second `INSERT` for an existing primary key, so none was re-invoked.
+3. **Chained steps (AC4):** the same warm-boot logs show `[story-1-organisation-entity] organisations backfill complete (3 row(s) created)` followed by both `organisations pool wired ...` lines, and `[tab-s1] tenant admin bootstrap pool wired ...` for both auth paths. The backfill creating rows for 3 newly seen tenants on a warm boot is direct evidence that it was not gated.
+4. **Not covered by this check:** the first-boot timing was not captured in the log buffer (the deploy's own boot lines had rolled out), so the cold-run DDL was not observed directly, only its recorded result. The 3-versus-11 split in `applied_at` shows the 14 migrations were not all recorded in one boot: at least two boots wrote them. The cause was not investigated (a mid-boot machine suspend or an earlier deploy are both plausible). It does not contradict any AC, since each migration is recorded at most once, but it is noted here rather than explained.
+5. **Production:** the same deploy run is `waiting` on the manual "Promote to production" approval. This DoD says nothing about production behaviour, which remains unverified.
