@@ -129,6 +129,7 @@ async function _bootstrapTenantAdmin(tenantId, identityKey, provider) {
     return !!result.granted;
   } catch (err) {
     _logger.warn('tenant_admin_bootstrap_failed', { tenantId, reason: err.message });
+    try { require('../modules/error-capture').captureServerError(new Error('tenant_admin_bootstrap_failed'), { code: 'tenant_admin_bootstrap_failed', url: '/auth/bootstrap', identity: tenantId }); } catch (_captureErr) { /* capture must never change login */ }
     return false;
   }
 }

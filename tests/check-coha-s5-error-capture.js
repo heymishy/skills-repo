@@ -571,6 +571,161 @@ test('unhandledRejection_withCanaryMessage_neverLeaksCanary', async () => {
   } finally { if (ch) await ch.stop(); await sink.stop(); }
 });
 
+// ---- coha-s5 Task 6: tenant admin bootstrap call sites (AC4/AC5) ----
+// Env the auth modules need at require time (same values as check-tab-s1).
+process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret-minimum32chars!!';
+process.env.GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || 'test-gh-client-id';
+process.env.GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'test-gh-secret';
+process.env.GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || 'http://localhost:3000/auth/github/callback';
+process.env.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'test-google-client-id';
+process.env.GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'test-google-client-secret';
+process.env.GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+const AUTH_PATH = require.resolve('../src/web-ui/routes/auth');
+const AUTH_EMAIL_PATH = require.resolve('../src/web-ui/routes/auth-email');
+function freshRequire(p) { delete require.cache[p]; return require(p); }
+function mockAuthReq(o) { return Object.assign({ session: {}, sessionId: 'test-sid-' + rnd(), query: {}, headers: {} }, o || {}); }
+function mockAuthRes() {
+  const h = {};
+  return { statusCode: null, get headers() { return h; },
+    writeHead(c, x) { this.statusCode = c; if (x) Object.assign(h, x); },
+    setHeader(n, v) { h[n] = v; }, end(b) { this.body = (b != null ? String(b) : ''); this._ended = true; } };
+}
+function mockEmailReq(o) {
+  const req = Object.assign({ session: {}, sessionId: 'test-sid-' + rnd(), headers: {}, connection: { remoteAddress: '127.0.0.1' }, body: undefined }, o || {});
+  if (!req.session.csrfToken) req.session.csrfToken = 'test-csrf-' + rnd();
+  if (req.body && typeof req.body === 'object' && req.body._csrf === undefined) req.body = Object.assign({}, req.body, { _csrf: req.session.csrfToken });
+  return req;
+}
+const STUB_PW = { hash: async () => 'stub-hash', compare: async () => true };
+// Same shape as check-tab-s1's fake pool (query + connect()->client{query,release}); the
+// real code path (resolveOrCreatePersonForIdentity -> pool.query) rejects with the canary.
+function makeFailingPool(canary) {
+  const fail = () => Promise.reject(new Error('db down ' + canary));
+  return { query: fail, connect: () => Promise.resolve({ query: fail, release() {} }) };
+}
+const B_CODE = 'tenant_admin_bootstrap_failed';
+const BOOT_OPTS = { autocapture: false, clientOptions: { flushAt: 1, flushInterval: 20 } };
+const FAKE_PROD_B = 'phc_fake_boot';
+
+async function runBootstrapScenario(kind, tenantKey) {
+  const canary = 'cnry-' + crypto.randomBytes(6).toString('hex');
+  const warns = [];
+  const pool = makeFailingPool(canary);
+  let req, threw = null;
+  const origWarn = console.warn;
+  try {
+    if (kind === 'github') {
+      const auth = freshRequire(AUTH_PATH);
+      auth.setLogger({ info() {}, warn: (m, d) => warns.push({ m, d }) });
+      auth.setTenantAdminBootstrapPool(pool);
+      const oa = require('../src/web-ui/auth/oauth-adapter');
+      oa.setProviderAdapter(oa.gitHubProviderAdapter);
+      const tok = require('./fixtures/github/oauth-token-exchange-success.json');
+      const usr = Object.assign({}, require('./fixtures/github/user-identity.json'), { login: tenantKey });
+      const origFetch = global.fetch;
+      global.fetch = async url => ({ json: async () => (url.includes('access_token') ? tok : url.includes('/user') ? usr : {}) });
+      req = mockAuthReq({ session: { oauthState: 's-gh' }, query: { code: 'c', state: 's-gh' } });
+      try { await auth.handleAuthCallback(req, mockAuthRes()); } catch (e) { threw = e; } finally { global.fetch = origFetch; }
+    } else if (kind === 'google') {
+      const auth = freshRequire(AUTH_PATH);
+      auth.setLogger({ info() {}, warn: (m, d) => warns.push({ m, d }) });
+      auth.setTenantAdminBootstrapPool(pool);
+      const oa = require('../src/web-ui/auth/oauth-adapter');
+      oa.setGoogleUserInfoAdapter(async () => ({ sub: tenantKey, email: tenantKey + '@example.com', accessToken: 'g-tok' }));
+      req = mockAuthReq({ session: { oauthState: 's-g' }, query: { code: 'c', state: 's-g' } });
+      try { await auth.handleAuthGoogleCallback(req, mockAuthRes()); } catch (e) { threw = e; }
+    } else {
+      require('../src/web-ui/modules/password').setPasswordAdapter(STUB_PW);
+      const ae = freshRequire(AUTH_EMAIL_PATH);
+      ae._clearRateLimits();
+      ae.setTenantAdminBootstrapPool(pool);
+      ae.setUserDb({ query: async sql => (/INSERT INTO users/i.test(sql) ? { rows: [{ id: 'uuid-' + rnd() }] } : { rows: [] }) });
+      req = mockEmailReq({ body: { email: tenantKey, password: 'TestPassw0rd!xyz' } });
+      console.warn = (m, d) => warns.push({ m, d });
+      try { await ae.handleEmailSignup(req, mockAuthRes()); } catch (e) { threw = e; } finally { console.warn = origWarn; }
+    }
+  } finally { console.warn = origWarn; }
+  return { warns, req, threw, canary };
+}
+async function withSink(fn) {
+  const sink = await sinkLib.start();
+  ec._resetForTests();
+  try {
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: FAKE_PROD_B, POSTHOG_HOST: sink.url }, BOOT_OPTS);
+    await fn(sink);
+  } finally { try { await ec.flushErrorCapture(); } catch (e) {} ec._resetForTests(); await sink.stop(); }
+}
+async function settle(sink, n) {
+  await waitFor(() => sink.events.length >= n, 3000);
+  await new Promise(r => setTimeout(r, 300));
+}
+function assertFixedOnly(sink, canary, tenantTexts) {
+  assert.strictEqual(sink.events.length, 1, 'expected exactly one sink event, got ' + sink.events.length);
+  const p = sink.events[0].properties;
+  assert.strictEqual(p.code, B_CODE);
+  assert.strictEqual(p.$exception_list[0].value, B_CODE);
+  const s = JSON.stringify(sink.events);
+  assert.ok(!s.includes(canary), 'canary leaked');
+  tenantTexts.forEach(t => assert.ok(!s.includes(t), 'tenant text leaked: ' + t));
+}
+
+test('bootstrapFailure_authJs_capturesFixedCodeOnly', async () => {
+  for (const kind of ['github', 'google']) {
+    await withSink(async sink => {
+      const tenant = 'tnt' + rnd().slice(4);
+      const r = await runBootstrapScenario(kind, tenant);
+      assert.strictEqual(r.threw, null, kind + ' handler threw');
+      assert.ok(r.warns.some(w => w.m === B_CODE), kind + ': existing warn line missing');
+      assert.notStrictEqual(r.req.session.role, 'admin', kind + ': admin must not be granted');
+      await settle(sink, 1);
+      assertFixedOnly(sink, r.canary, [tenant]);
+    });
+  }
+});
+test('bootstrapFailure_authEmailJs_capturesFixedCodeOnly', async () => {
+  await withSink(async sink => {
+    const local = 'tnt' + rnd().slice(4).replace('-', '');
+    const tenant = local + '@example.com';
+    const r = await runBootstrapScenario('email', tenant);
+    assert.strictEqual(r.threw, null, 'email handler threw');
+    assert.ok(r.warns.some(w => w.m === B_CODE), 'existing warn line missing');
+    assert.notStrictEqual(r.req.session.role, 'admin');
+    await settle(sink, 1);
+    assertFixedOnly(sink, r.canary, [tenant, local]);
+  });
+});
+test('bootstrapFailure_e2eIdentity_sendsNothing', async () => {
+  for (const kind of ['google', 'email']) {
+    await withSink(async sink => {
+      const key = kind === 'email' ? 'e2e-test-' + rnd().slice(4) + '@example.com' : 'e2e-test-' + rnd().slice(4);
+      const r = await runBootstrapScenario(kind, key);
+      assert.strictEqual(r.threw, null);
+      assert.ok(r.warns.some(w => w.m === B_CODE), kind + ': existing warn must still fire');
+      await ec.flushErrorCapture();
+      await new Promise(r2 => setTimeout(r2, 300));
+      assert.strictEqual(sink.events.length, 0, kind + ': e2e identity must send nothing, got ' + sink.events.length);
+    });
+  }
+  // positive control: a non-e2e failure through the same path does reach the sink
+  await withSink(async sink => {
+    const tenant = 'tnt' + rnd().slice(4);
+    const r = await runBootstrapScenario('google', tenant);
+    await settle(sink, 1);
+    assertFixedOnly(sink, r.canary, [tenant]);
+  });
+});
+test('bootstrapFailure_captureNotWired_doesNotChangeLogin', async () => {
+  ec._resetForTests();
+  for (const kind of ['google', 'email']) {
+    const key = kind === 'email' ? 'nw' + rnd().slice(4) + '@example.com' : 'nw' + rnd().slice(4);
+    const r = await runBootstrapScenario(kind, key);
+    assert.strictEqual(r.threw, null, kind + ': login must not throw when capture is not wired');
+    assert.ok(r.warns.some(w => w.m === B_CODE), kind + ': warn still fires');
+    assert.notStrictEqual(r.req.session.role, 'admin', kind + ': no admin');
+    assert.ok(r.req.session.tenantId || r.req.session.login, kind + ': login completed (session populated)');
+  }
+});
+
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
   let passed = 0, failed = 0;
