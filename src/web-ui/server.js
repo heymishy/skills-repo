@@ -5238,6 +5238,23 @@ function createApp(options) {
   });
 }
 
+// coha-s5 -- wires production error capture. Same env rule as the flag client at startup.
+// Signal handlers are registered once per process (repeat calls must not stack listeners).
+let _errorCaptureSignalsRegistered = false;
+function wireErrorCapture(env, deps) {
+  const envName = env.NODE_ENV === 'staging' ? 'staging' : 'production';
+  const result = _errorCapture.initErrorCapture(envName, env, deps);
+  if (!_errorCaptureSignalsRegistered) {
+    _errorCaptureSignalsRegistered = true;
+    const onSignal = (code) => {
+      Promise.resolve(_errorCapture.flushErrorCapture(2000)).catch(() => {}).then(() => process.exit(code));
+    };
+    process.on('SIGTERM', () => onSignal(143));
+    process.on('SIGINT', () => onSignal(130));
+  }
+  return result;
+}
+
 if (require.main === module) {
   process.on('unhandledRejection', function(reason) {
     console.error('[unhandledRejection]', reason && reason.stack ? reason.stack : reason);
@@ -5254,6 +5271,8 @@ if (require.main === module) {
   }
   // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
   warnOnOptionalEnvVars(process.env, console);
+  // coha-s5 -- must stay AFTER the uncaughtException handler above (posthog-node exits the process otherwise).
+  wireErrorCapture(process.env);
   // psrc-verify-s3 — never throws, only logs; catches a governance-critical
   // skill (design/definition/review/test-plan/definition-of-ready) silently
   // resolving to a Haiku model, e.g. an accidentally-removed
@@ -5276,6 +5295,7 @@ if (require.main === module) {
 
 module.exports = {
   createApp,
+  wireErrorCapture,
   router,
   // dss-s1: exported for direct unit testing of the gate logic itself
   _isTestEndpointAllowed,

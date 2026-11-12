@@ -10,14 +10,18 @@ process.on('uncaughtException', (err) => { console.error('[uncaughtException]', 
 process.on('unhandledRejection', (reason) => { console.error('[unhandledRejection]', reason && reason.message ? reason.message : reason); });
 
 if (process.env.CHILD_SKIP_WIRING !== '1') {
-  // Task 4 will swap this direct call for the real server.wireErrorCapture(process.env).
-  const envName = process.env.CHILD_ENV_NAME || 'production';
-  require('../../src/web-ui/modules/error-capture').initErrorCapture(envName, process.env, { clientOptions: { flushAt: 1, flushInterval: 20 } });
+  // The process stays NODE_ENV=test (staging would connect real adapters); the wiring function sees the derived env.
+  const derivedEnv = Object.assign({}, process.env, { NODE_ENV: process.env.CHILD_ENV_NAME === 'staging' ? 'staging' : process.env.NODE_ENV });
+  const clientOptions = { flushAt: Number(process.env.CHILD_FLUSH_AT) || 1, flushInterval: Number(process.env.CHILD_FLUSH_INTERVAL) || 20 };
+  server.wireErrorCapture(derivedEnv, { clientOptions });
+  if (process.env.CHILD_WIRE_TWICE === '1') server.wireErrorCapture(derivedEnv, { clientOptions });
 }
 
 const router = async (req, res) => {
   const u = req.url || '';
   if (u.startsWith('/ok')) { res.end('ok'); return; }
+  if (u.startsWith('/shutdown')) { res.end('bye'); setImmediate(() => process.emit('SIGTERM')); return; }
+  if (u.startsWith('/listeners')) { res.end(JSON.stringify({ SIGTERM: process.listenerCount('SIGTERM'), SIGINT: process.listenerCount('SIGINT') })); return; }
   if (u.startsWith('/reject')) { Promise.reject(new Error('unhandled ' + u)); res.end('queued'); return; }
   throw new Error('route failed for ' + decodeURIComponent(u));
 };

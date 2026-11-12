@@ -346,7 +346,7 @@ function spawnChild(envOverrides) {
     child.stdout.on('data', d => {
       out += d; buf += d;
       const m = buf.match(/^\{"port":(\d+)\}\s*$/m);
-      if (m && !done) { done = true; clearTimeout(timer); resolve({ port: Number(m[1]), output: () => out, stop }); }
+      if (m && !done) { done = true; clearTimeout(timer); resolve({ port: Number(m[1]), output: () => out, stop, exitCode: () => child.exitCode, waitExit: ms => new Promise(r => { if (child.exitCode !== null) return r(child.exitCode); child.once('exit', c => r(c)); setTimeout(() => r(null), ms).unref(); }) }); }
     });
     child.once('exit', code => { if (done) return; clearTimeout(timer); reject(new Error('child exited early (' + code + '): ' + out.slice(0, 300))); });
   });
@@ -459,6 +459,79 @@ test('unwiredCapture_isContained_requestStill500_andLoggedWithoutKey', async () 
     assert.ok(!o.includes(FAKE_PROD));
     assert.strictEqual((await get(ch.port, '/ok')).status, 200);
   } finally { if (ch) await ch.stop(); }
+});
+
+// ---- Task 4: startup wiring (real wireErrorCapture via the harness) ----
+const FAKE_STAGING = 'phc_fake_staging';
+test('wireErrorCapture_isCalledInStartupBlock_afterUncaughtExceptionHandler', () => {
+  const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'web-ui', 'server.js'), 'utf8');
+  const start = src.indexOf('if (require.main === module) {');
+  assert.ok(start > 0, 'startup block not found');
+  const block = src.slice(start);
+  const iUnc = block.indexOf("process.on('uncaughtException'");
+  const iWarn = block.indexOf('warnOnOptionalEnvVars(process.env, console)');
+  const iWire = block.indexOf('wireErrorCapture(process.env)');
+  assert.ok(iUnc > 0 && iWarn > iUnc && iWire > iWarn, 'wiring must follow the uncaughtException handler and warnOnOptionalEnvVars');
+  assert.strictEqual(block.split('wireErrorCapture(process.env)').length, 2);
+});
+test('realStartup_wiresCapture_andEventCarriesKey', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    assert.strictEqual((await get(ch.port, '/boom')).status, 500);
+    assert.ok(await waitFor(() => sink.events.length === 1, 5000), 'no event reached the sink');
+    assert.strictEqual(sink.events[0].properties.environment, 'production');
+    assert.ok(sink.keys.includes(FAKE_PROD));
+    assert.ok(!ch.output().includes(FAKE_PROD));
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('unsetKey_startupLogsClearly_requestStill500', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_HOST: sink.url });
+    assert.strictEqual((await get(ch.port, '/boom')).status, 500);
+    await new Promise(r => setTimeout(r, 400));
+    const o = ch.output();
+    assert.ok(o.includes('POSTHOG_KEY_PROD'), o.slice(0, 300));
+    assert.ok(!o.includes('phc_'));
+    assert.strictEqual(sink.events.length, 0);
+    assert.strictEqual(sink.requests, 0);
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('stagingRun_labelsStaging_neverProduction', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ CHILD_ENV_NAME: 'staging', POSTHOG_KEY_STAGING: FAKE_STAGING, POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    assert.strictEqual((await get(ch.port, '/boom')).status, 500);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no event reached the sink');
+    await new Promise(r => setTimeout(r, 300));
+    sink.events.forEach(e => assert.strictEqual(e.properties.environment, 'staging'));
+    assert.ok(sink.keys.includes(FAKE_STAGING));
+    assert.ok(!sink.keys.includes(FAKE_PROD));
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('shutdownSignal_flushesLastBatch', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url, CHILD_FLUSH_AT: '100', CHILD_FLUSH_INTERVAL: '60000' });
+    assert.strictEqual((await get(ch.port, '/boom')).status, 500);
+    await new Promise(r => setTimeout(r, 500));
+    assert.strictEqual(sink.events.length, 0, 'event was sent before shutdown, so the test proves nothing');
+    await get(ch.port, '/shutdown');
+    assert.strictEqual(await ch.waitExit(6000), 143);
+    assert.strictEqual(sink.events.length, 1);
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('wireErrorCapture_registersSignalHandlersOnce', async () => {
+  let a, b;
+  try {
+    a = await spawnChild({ CHILD_SKIP_WIRING: '1' });
+    b = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, CHILD_WIRE_TWICE: '1' });
+    const base = JSON.parse((await get(a.port, '/listeners')).body);
+    const wired = JSON.parse((await get(b.port, '/listeners')).body);
+    assert.strictEqual(wired.SIGTERM, base.SIGTERM + 1);
+    assert.strictEqual(wired.SIGINT, base.SIGINT + 1);
+  } finally { if (a) await a.stop(); if (b) await b.stop(); }
 });
 
 // ---- runner (supports async tests; runs sequentially) ----
