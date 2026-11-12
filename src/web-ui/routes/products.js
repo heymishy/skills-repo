@@ -554,20 +554,83 @@ function _renderIncidentsSection(incidents) {
 // fetchRepoPath adapter. Silent fallback on every failure mode (not found,
 // network/API error, empty, null, invalid JSON) -- always resolves an array.
 // The 3s timeout bounds the added page latency (NFR: unmeasured baseline).
-async function _fetchIncidentRecords(owner, repo, token) {
-  if (!owner || !repo || !token) { return []; }
+// ddft-s5: the single bounded fetch of the shared store, returning the raw
+// text (or null). Both the incidents section and the deferred-items section
+// are derived from this ONE request -- no second fetch of incidents.json.
+async function _fetchIncidentStoreRaw(owner, repo, token) {
+  if (!owner || !repo || !token) { return null; }
   var timer;
   try {
     // The fetchRepoPath wrapper takes 4 args only (its own 10s timeout is not
     // overridable through it), so the 3s bound is applied here via a race.
     var timeout = new Promise(function(resolve) { timer = setTimeout(function() { resolve(null); }, 3000); });
-    var raw = await Promise.race([_artefactFetcher.fetchRepoPath(owner, repo, 'workspace/incidents.json', token), timeout]);
-    return _parseIncidentRecords(raw);
+    return await Promise.race([_artefactFetcher.fetchRepoPath(owner, repo, 'workspace/incidents.json', token), timeout]);
   } catch (_) {
-    return [];
+    return null;
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function _fetchIncidentRecords(owner, repo, token) {
+  return _parseIncidentRecords(await _fetchIncidentStoreRaw(owner, repo, token));
+}
+
+// ddft-s5 -- deferred-item records (type 'deferred-item') from the same
+// mixed-type store. Strictly the complement of _parseIncidentRecords: an
+// untyped record is an incident (default type, mirroring incident-store's
+// withDefaultType -- inlined because scripts/ is not in the production image),
+// so it never renders here. Never throws; bad input yields [].
+function _parseDeferredItemRecords(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') { return []; }
+  var parsed;
+  try { parsed = JSON.parse(raw); } catch (_) { return []; }
+  if (!Array.isArray(parsed)) { return []; }
+  return parsed
+    .filter(function(r) { return r && typeof r === 'object' && r.type === 'deferred-item'; })
+    .sort(function(a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+}
+
+// ddft-s5 (AC1, MC-A11Y-02): the record type is always a literal text label.
+function _recordTypeLabel(type) {
+  return type === 'deferred-item' ? 'Deferred' : 'Incident';
+}
+
+// ddft-s5 (AC1, AC2, MC-A11Y-02, MC-SEC-01): one item per deferred record.
+// Type ("Deferred") and status are visible text, never colour alone; the
+// revisitCondition renders inline (no link/click-through). Every record string
+// is untrusted and passes through _escapeHtml. Only DESIGN.md tokens.
+function _renderDeferredItem(record) {
+  var tags = Array.isArray(record.tags) ? record.tags : [];
+  var linked = [record.linkedFeature, record.linkedStory].filter(Boolean).map(function(v) { return _escapeHtml(v); }).join(' / ');
+  var revisitHtml = record.revisitCondition
+    ? '<div data-deferred-revisit style="margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;font-size:13px;color:var(--ink)">' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Revisit when</div>' +
+        _escapeHtml(record.revisitCondition) +
+      '</div>'
+    : '';
+  return '<li data-deferred-item style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+    '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">' +
+      '<span data-deferred-type style="font-size:12.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:0 6px">' + _recordTypeLabel('deferred-item') + '</span>' +
+      '<span data-deferred-status style="font-size:12.5px;font-weight:600;color:var(--warn)">Status: ' + _escapeHtml(record.status || 'unknown') + '</span>' +
+      '<span style="font-size:14px;color:var(--ink)">' + _escapeHtml(record.trigger || '') + '</span>' +
+    '</div>' +
+    (record.summary ? '<div style="margin-top:4px;font-size:13px;color:var(--muted)">' + _escapeHtml(record.summary) + '</div>' : '') +
+    '<div style="margin-top:4px;font-size:12px;color:var(--muted)">ID: ' + _escapeHtml(record.id || '') +
+      (record.source ? ' &middot; Source: ' + _escapeHtml(record.source) : '') +
+      (linked ? ' &middot; Linked: ' + linked : '') +
+      (tags.length > 0 ? ' &middot; Tags: ' + tags.map(function(t) { return _escapeHtml(t); }).join(', ') : '') +
+    '</div>' +
+    revisitHtml +
+  '</li>';
+}
+
+function _renderDeferredItemsSection(deferredItems) {
+  if (!Array.isArray(deferredItems) || deferredItems.length === 0) { return ''; }
+  return '<section data-deferred-section aria-label="Deferred items" style="margin-bottom:24px">' +
+    '<h2 style="margin:0 0 8px;font-size:16px;color:var(--ink)">Deferred items (' + deferredItems.length + ')</h2>' +
+    '<ul style="list-style:none;padding:0;margin:0">' + deferredItems.map(_renderDeferredItem).join('') + '</ul>' +
+  '</section>';
 }
 
 // pvc-s1 (AC1, AC4-AC9) -- the single consolidated features section,
@@ -606,11 +669,11 @@ function _renderDecisionsReactiveSection(decisionsItems) {
   '</section>';
 }
 
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext) {
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext, deferredItems) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   // itar-s3: '' when there are zero incidents, so output is byte-identical
   // to before this story for every product without incident records.
-  var incidentsHtml = _renderIncidentsSection(incidents);
+  var incidentsHtml = _renderIncidentsSection(incidents) + _renderDeferredItemsSection(deferredItems); // ddft-s5: sibling section, same surface
   // ppg-s1: previously, modules.length === 0 skipped the entire tabbed/
   // grouped/collapsed UI (pdt-s1) and fell back to one flat, ungrouped <ul>
   // -- a product with zero custom Modules never benefited from any of that
@@ -1241,7 +1304,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
 // positional arguments, and JS does not enforce arity, so inserting this
 // argument mid-signature would silently misalign every one of those calls'
 // existing arguments onto the wrong parameters.
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext, deferredItems) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1351,7 +1414,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health-filter chip bar inside _renderConsolidatedFeaturesSection,
   // which now carries real counts (AC4) and, after this story's own Task 1,
   // renders on every product page regardless of module count.
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext, deferredItems);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -3146,10 +3209,13 @@ async function handleGetProductView(req, res, _next, pool) {
     // "Pod & Team" section's initial (non-AJAX) render.
     var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
     // itar-s3: incident records from the connected repo (silent fallback to []).
-    var incidents = await _fetchIncidentRecords(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken);
+    // ddft-s5: ONE fetch of the shared store feeds both the incidents and deferred-items sections.
+    var incidentStoreRaw = await _fetchIncidentStoreRaw(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken);
+    var incidents = _parseIncidentRecords(incidentStoreRaw);
+    var deferredItems = _parseDeferredItemRecords(incidentStoreRaw);
     // urpv-s4: pod attribution for the reactive-vs-planned rollup. Reuses the default pod read above (no second read).
     var podContext = await _reactivePodRollup.resolvePodContext(_pool, tenantId, features.map(function(f) { return f.journey_id; }), defaultPod);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext, deferredItems);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -4983,6 +5049,11 @@ module.exports = {
   _renderIncidentsSection,
   _parseIncidentRecords,
   _fetchIncidentRecords,
+  _fetchIncidentStoreRaw,
+  _parseDeferredItemRecords,
+  _recordTypeLabel,
+  _renderDeferredItem,
+  _renderDeferredItemsSection,
   // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
   _renderEpicRow,
   _aggregateJourneysByStage,
