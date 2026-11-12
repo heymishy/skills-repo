@@ -48903,23 +48903,29 @@
           "slug": "ddft-s5",
           "name": "Web UI rendering alongside incident records",
           "epic": "ddft-e1-follow-through-mechanism",
-          "stage": "definition-of-ready",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-12T08:56:43.624Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
-            "passing": 0,
+            "totalTests": 16,
+            "passing": 16,
             "artefact": "artefacts/2026-11-08-deferred-decision-follow-through/test-plans/ddft-s5-web-ui-rendering-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 1,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1086",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Deferred items in a sibling section not one shared list; page not seen in a browser; see DoD follow-ups"
         }
       ],
       "guardrails": [
