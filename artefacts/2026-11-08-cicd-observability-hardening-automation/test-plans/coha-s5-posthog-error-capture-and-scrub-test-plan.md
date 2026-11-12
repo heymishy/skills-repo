@@ -73,7 +73,7 @@ All unit tests exercise the new module `src/web-ui/modules/error-capture.js` dir
 - **Verifies:** AC1, AC3
 - **Precondition:** an SDK-shaped `$exception` event carrying extra properties `tenantId` and `reason` and a caller-supplied `distinct_id`
 - **Action:** pass it to the `before_send` hook
-- **Expected result:** properties are exactly `$exception_list`, `$exception_level`, `$exception_fingerprint` (if present), `$lib`, `$lib_version`, `$is_server`, `$geoip_disable`, `environment`, `route`, `code`; `distinct_id` is `server-error-capture`; person processing is off
+- **Expected result:** properties are exactly `$exception_list`, `$exception_level`, `$exception_fingerprint` (if present), `$lib`, `$lib_version`, `$is_server`, `$geoip_disable`, `$process_person_profile` (false), `environment`, `route`, `code`; `distinct_id` is `server-error-capture`; person processing is off
 - **Edge case:** Yes, event without a fingerprint
 
 ### scrubEvent_removesTenantShapes_fromMessage
@@ -260,7 +260,7 @@ All run the real `createApp()` from `src/web-ui/server.js`, started once in a ch
 ### Performance: shutdown flushes the last batch
 
 - **NFR addressed:** Performance
-- **Measurement method:** raise an error, then send the process the existing shutdown signal immediately
+- **Measurement method:** raise an error, then send the process `SIGTERM` (or `SIGINT`) immediately; the handler under test is the one this story adds, since the app had none
 - **Pass threshold:** the sink still receives the event before exit
 - **Tool:** Node check script
 
@@ -281,4 +281,4 @@ All run the real `createApp()` from `src/web-ui/server.js`, started once in a ch
 |-----|--------|------------|
 | The real PostHog service is never contacted by the automated tests | Tests must not send traffic to the shared project (staging and production are assumed to share one key; the operator stated this on 2026-11-13) | Local sink with a fake key; one manual smoke scenario after deploy; AC3 tagged `integration-real-code` |
 | Installed `posthog-node` version could change which keys the SDK adds | Property list was read from version 5.40.0 | The AC1 exact-keys assertion fails loudly on an upgrade, which is intended |
-| Choice of throwing route in the real server | Which route to force is an implementation detail | The plan requires a real route with an injected failing adapter; the test records which one |
+| Choice of throwing route in the real server | No route in the real router can be made to throw from outside (115 routes probed at planning) | `createApp(options)` takes an optional `options.router`; tests inject a throwing router so the real production `.catch` block is the code under test |
