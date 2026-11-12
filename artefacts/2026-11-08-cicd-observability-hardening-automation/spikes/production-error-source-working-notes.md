@@ -75,3 +75,14 @@ Figures below come from vendor pages and search summaries, and the pages disagre
 - OTel to PostHog is feasible with documented packages and no new vendor. Its unknowns are alert delivery, retention (7 or 14 days, both enough for a 6-hour interval), PII scrubbing, and whether `console.warn` call sites need moving to pino.
 - Grafana Cloud is comparable on volume and retention but adds a vendor, an account and a privacy review. Honeycomb is weaker for logs and unconfirmed.
 - None of the hosted options removes the need for something to poll or alert and then record an incident; the app-side database table does not either, but it keeps everything inside systems we already run.
+
+---
+
+## Step 6 result (production read, approved by the operator, 2026-11-13)
+
+- Two read-only calls against the production PostHog project, no log content involved: the list of service names in resource attributes returned nothing, and the count of all log entries over the last 7 days returned 0.
+- So PostHog Logs holds no logs for this project today. Nothing in it can be used as a detection source until the app sends logs there. Whether the product is enabled for the project (or needs enabling in settings) is still unconfirmed; an empty result does not distinguish "not enabled" from "enabled but nothing sent".
+
+## Step 8: skipped (operator agreed, 2026-11-13)
+
+The Fly HTTP Logs API test was not run. The earlier steps point away from log polling (CLI buffer of about one second; the API is documented as unsupported for external use), and running it needs a deliberately prepared token. It stays recorded as untested, not as ruled out on evidence.
