@@ -80,7 +80,10 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const call = callMatch[0];
     // The new argument must be the LAST one before the closing paren, not
     // inserted mid-call (which would silently misalign all 17 other args).
-    assert.ok(/,\s*\w*[Jj]ourney\w*\s*\)\s*;\s*$/.test(call), 'expected the new journey-id argument to be the LAST positional argument passed to _renderProductView, got: ' + call.slice(-80));
+    // itar-s3: `incidents` is now appended after firstJourneyId (still a
+    // trailing optional param, so every earlier positional arg is unaffected);
+    // the journey-id must be the last arg or be followed only by `incidents`.
+    assert.ok(/,\s*\w*[Jj]ourney\w*\s*(,\s*incidents\s*)?\)\s*;\s*$/.test(call), 'expected the new journey-id argument to be the LAST positional argument passed to _renderProductView, got: ' + call.slice(-80));
     pass('(wiring shape): handleGetProductView wires the new query and passes its result through correctly');
   } catch (e) { fail('(wiring shape): handleGetProductView wires the new query and passes its result through correctly', e); }
 

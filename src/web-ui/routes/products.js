@@ -499,6 +499,75 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
   '</li>';
 }
 
+// itar-s3 -- incident records (workspace/incidents.json) on the product page.
+// workspace/incidents.json is a mixed-type store: it also holds
+// 'deferred-item' records (rendered by another story, not here). Only
+// 'incident' records render; a record with no `type` predates the
+// generalization and counts as an incident. Never throws -- bad/empty/null
+// input yields [] so the page always renders normally (AC3).
+function _parseIncidentRecords(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') { return []; }
+  var parsed;
+  try { parsed = JSON.parse(raw); } catch (_) { return []; }
+  if (!Array.isArray(parsed)) { return []; }
+  return parsed
+    .filter(function(r) { return r && typeof r === 'object' && (r.type || 'incident') === 'incident'; })
+    .sort(function(a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+}
+
+// itar-s3 (AC1, AC2, MC-A11Y-02, MC-SEC-01): one distinct item per record.
+// Status is a visible text label, never colour alone. The triage summary
+// renders inline in the same block (no link / click-through). Every record
+// string is untrusted and passes through _escapeHtml. Only DESIGN.md tokens.
+function _renderIncidentItem(record) {
+  var tags = Array.isArray(record.tags) ? record.tags : [];
+  var triageHtml = record.triageSummary
+    ? '<div data-incident-triage style="margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;font-size:13px;color:var(--ink)">' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Triage summary</div>' +
+        _escapeHtml(record.triageSummary) +
+      '</div>'
+    : '';
+  return '<li data-incident-item style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+    '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">' +
+      '<span data-incident-status style="font-size:12.5px;font-weight:600;color:var(--warn)">Status: ' + _escapeHtml(record.status || 'unknown') + '</span>' +
+      '<span style="font-size:14px;color:var(--ink)">' + _escapeHtml(record.trigger || '') + '</span>' +
+    '</div>' +
+    (record.summary ? '<div style="margin-top:4px;font-size:13px;color:var(--muted)">' + _escapeHtml(record.summary) + '</div>' : '') +
+    '<div style="margin-top:4px;font-size:12px;color:var(--muted)">ID: ' + _escapeHtml(record.id || '') +
+      (tags.length > 0 ? ' &middot; Tags: ' + tags.map(function(t) { return _escapeHtml(t); }).join(', ') : '') +
+    '</div>' +
+    triageHtml +
+  '</li>';
+}
+
+function _renderIncidentsSection(incidents) {
+  if (!Array.isArray(incidents) || incidents.length === 0) { return ''; }
+  return '<section data-incidents-section aria-label="Incidents" style="margin-bottom:24px">' +
+    '<h2 style="margin:0 0 8px;font-size:16px;color:var(--ink)">Incidents (' + incidents.length + ')</h2>' +
+    '<ul style="list-style:none;padding:0;margin:0">' + incidents.map(_renderIncidentItem).join('') + '</ul>' +
+  '</section>';
+}
+
+// itar-s3: fetch workspace/incidents.json via the existing, already-wired
+// fetchRepoPath adapter. Silent fallback on every failure mode (not found,
+// network/API error, empty, null, invalid JSON) -- always resolves an array.
+// The 3s timeout bounds the added page latency (NFR: unmeasured baseline).
+async function _fetchIncidentRecords(owner, repo, token) {
+  if (!owner || !repo || !token) { return []; }
+  var timer;
+  try {
+    // The fetchRepoPath wrapper takes 4 args only (its own 10s timeout is not
+    // overridable through it), so the 3s bound is applied here via a race.
+    var timeout = new Promise(function(resolve) { timer = setTimeout(function() { resolve(null); }, 3000); });
+    var raw = await Promise.race([_artefactFetcher.fetchRepoPath(owner, repo, 'workspace/incidents.json', token), timeout]);
+    return _parseIncidentRecords(raw);
+  } catch (_) {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // pvc-s1 (AC1, AC4-AC9) -- the single consolidated features section,
 // replacing both the old a4 journeys-module section and the tmc-s1
 // taxonomy-module section. Zero modules (AC9) renders the pre-existing
@@ -507,8 +576,11 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
 // (By Module / By Phase / All) plus health-filter chips and a search input,
 // all operating client-side over the same rendered item rows (data-health/
 // data-search attributes read by one small vanilla-JS filter function).
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId) {
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, incidents) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
+  // itar-s3: '' when there are zero incidents, so output is byte-identical
+  // to before this story for every product without incident records.
+  var incidentsHtml = _renderIncidentsSection(incidents);
   // ppg-s1: previously, modules.length === 0 skipped the entire tabbed/
   // grouped/collapsed UI (pdt-s1) and fell back to one flat, ungrouped <ul>
   // -- a product with zero custom Modules never benefited from any of that
@@ -524,7 +596,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // this story, and still does -- this condition must not (and does not)
   // apply to that case.
   if (modules.length === 0 && items.length === 0 && !healthCounts) {
-    return '<p style="color:var(--muted);font-size:14px">No features yet.</p>';
+    return incidentsHtml + '<p style="color:var(--muted);font-size:14px">No features yet.</p>';
   }
   var noFeaturesInnerHtml = items.length === 0 ? '<p style="color:var(--muted);font-size:14px;padding:8px 0">No features yet.</p>' : '';
 
@@ -761,6 +833,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
     '</script>';
 
   return (
+    incidentsHtml +
     '<style>' +
       '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
       '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
@@ -1133,7 +1206,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
 // positional arguments, and JS does not enforce arity, so inserting this
 // argument mid-signature would silently misalign every one of those calls'
 // existing arguments onto the wrong parameters.
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, incidents) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1243,7 +1316,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health-filter chip bar inside _renderConsolidatedFeaturesSection,
   // which now carries real counts (AC4) and, after this story's own Task 1,
   // renders on every product page regardless of module count.
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, incidents);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -3021,7 +3094,9 @@ async function handleGetProductView(req, res, _next, pool) {
     // ep1-s2 (Task 6, 3d): fetch the product's current default pod for the
     // "Pod & Team" section's initial (non-AJAX) render.
     var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId);
+    // itar-s3: incident records from the connected repo (silent fallback to []).
+    var incidents = await _fetchIncidentRecords(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, incidents);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -4851,6 +4926,10 @@ module.exports = {
   _renderPvcItemRow,
   // sob-s1: exported for direct unit testing of the session-origin indicator threading (AC4, AC5, AC7, AC8)
   _renderConsolidatedFeaturesSection,
+  _renderIncidentItem,
+  _renderIncidentsSection,
+  _parseIncidentRecords,
+  _fetchIncidentRecords,
   // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
   _renderEpicRow,
   _aggregateJourneysByStage,
