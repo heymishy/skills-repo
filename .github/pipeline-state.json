@@ -46005,23 +46005,29 @@
           "slug": "urpv-s4",
           "name": "Reactive-vs-planned load rollup by pod",
           "epic": "urpv-e1-reactive-work-visibility",
-          "stage": "definition-of-ready",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "updatedAt": "2026-11-12T08:40:34.520Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 7,
-            "passing": 0,
+            "totalTests": 17,
+            "passing": 17,
             "artefact": "artefacts/2026-11-08-unified-reactive-proactive-visibility/test-plans/urpv-s4-reactive-planned-rollup-by-pod-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 1,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1084",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "By Pod tab not seen in a browser; per-feature pod query accepted by merge only (no RISK-ACCEPT); see DoD follow-ups"
         }
       ],
       "guardrails": [
@@ -48164,22 +48170,28 @@
           "slug": "itar-s4",
           "name": "Handoff to short-track pipeline + post-fix confirmation",
           "epic": "itar-e1-triage-and-respond",
-          "stage": "definition-of-ready",
-          "health": "green",
-          "updatedAt": "2026-11-09T18:02:27.345Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-12T08:40:34.669Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
-            "passing": 0,
+            "totalTests": 20,
+            "passing": 20,
             "artefact": "artefacts/2026-11-08-incident-triage-and-respond/test-plans/itar-s4-handoff-and-post-fix-confirmation-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 2,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1085",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Handoff does not create a story; no real incident run through the chain; automated re-check registry empty; see DoD follow-ups"
         }
       ],
       "guardrails": [
