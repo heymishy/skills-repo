@@ -17,12 +17,19 @@ if (process.env.CHILD_SKIP_WIRING !== '1') {
   if (process.env.CHILD_WIRE_TWICE === '1') server.wireErrorCapture(derivedEnv, { clientOptions });
 }
 
+// NFR routes: markerThrower puts a distinctive marker on a source line the SDK can read as context.
+function markerThrower() {
+  // SRC_LINE_MARKER_7f3a91c2 (must never reach a sink payload)
+  throw new Error('boom');
+}
 const router = async (req, res) => {
   const u = req.url || '';
   if (u.startsWith('/ok')) { res.end('ok'); return; }
   if (u.startsWith('/shutdown')) { res.end('bye'); setImmediate(() => process.emit('SIGTERM')); return; }
   if (u.startsWith('/listeners')) { res.end(JSON.stringify({ SIGTERM: process.listenerCount('SIGTERM'), SIGINT: process.listenerCount('SIGINT') })); return; }
   if (u.startsWith('/reject')) { Promise.reject(new Error('unhandled ' + u)); res.end('queued'); return; }
+  if (u.startsWith('/marker')) { markerThrower(); }
+  if (u.startsWith('/keyerr')) { throw new Error('leak ' + process.env.POSTHOG_KEY_PROD); }
   throw new Error('route failed for ' + decodeURIComponent(u));
 };
 const app = server.createApp({ router });

@@ -294,13 +294,16 @@ test('flushErrorCapture_thenCapture_isExplicitNoOp', async () => {
 });
 test('flushErrorCapture_hangingSink_returnsWithinTimeoutPlusSlack', async () => {
   const sink = await sinkLib.start({ hang: true });
+  // Aborting the in-flight request when the sink closes makes the SDK log 'Error while flushing PostHog'; swallow only that line.
+  const origErr = console.error;
+  console.error = function () { if (String(arguments[0]).includes('Error while flushing PostHog')) return; return origErr.apply(console, arguments); };
   try {
     ec._resetForTests();
-    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, { clientOptions: { flushAt: 1, flushInterval: 20, fetchRetryCount: 0 } });
     ec.captureServerError(new Error('a'), { url: '/a' });
     const t0 = Date.now(); await ec.flushErrorCapture(400); const ms = Date.now() - t0;
     assert.ok(ms <= 700, 'took ' + ms);
-  } finally { await sink.stop(); }
+  } finally { await sink.stop(); await new Promise(r => setTimeout(r, 300)); console.error = origErr; }
 });
 test('captureServerError_oddErrorValues_doNotThrow_andAreScrubbed', async () => {
   const sink = await sinkLib.start();
@@ -724,6 +727,49 @@ test('bootstrapFailure_captureNotWired_doesNotChangeLogin', async () => {
     assert.notStrictEqual(r.req.session.role, 'admin', kind + ': no admin');
     assert.ok(r.req.session.tenantId || r.req.session.login, kind + ': login completed (session populated)');
   }
+});
+
+// ---- Task 7: NFR - no key, tenant text, or source lines in child output or sink payloads ----
+test('nfr_noKeyOrSourceLinesInChildOutputOrSinkPayloads', async () => {
+  const MARKER = 'SRC_LINE_MARKER_7f3a91c2';
+  const canary = 'tnt-nfr-' + crypto.randomBytes(6).toString('hex');
+  const runScenarios = async (reqs, rejectCanary) => {
+    const sink = await sinkLib.start(); let ch;
+    try {
+      ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+      let expected = 0;
+      for (const p of reqs) {
+        const r = await get(ch.port, p);
+        assert.strictEqual(r.status, 500, p);
+        expected++;
+        assert.ok(await waitFor(() => sink.events.length >= expected, 8000), 'no event reached the sink for ' + p.split('?')[0]);
+      }
+      if (rejectCanary) {
+        await get(ch.port, '/reject/' + canary);
+        expected++;
+        assert.ok(await waitFor(() => sink.events.length >= expected, 8000), 'no event for the rejection scenario');
+      }
+      await new Promise(r => setTimeout(r, 300));
+      return { payload: JSON.stringify(sink.events), events: sink.events, output: ch.output() };
+    } finally { if (ch) await ch.stop(); await sink.stop(); }
+  };
+  const noSourceKeys = pl => ['context_line', 'pre_context', 'post_context'].forEach(k => assert.ok(!pl.includes('"' + k + '"'), 'source context key in payload: ' + k));
+  // Child A: throwing request, canary in URL and query, source-line marker, rejection with canary message. Output must be key-free.
+  const a = await runScenarios(['/boom/x', '/products/' + canary + '?q=' + canary, '/marker'], true);
+  assert.ok(a.events.length >= 4, 'expected one event per scenario, got ' + a.events.length);
+  assert.ok(a.output.includes('[router error]'), 'child output must contain the router error log line (was output really captured?)');
+  assert.ok(!a.output.includes(FAKE_PROD), 'key leaked to child output');
+  assert.ok(!a.payload.includes(FAKE_PROD), 'key leaked to sink payload');
+  assert.ok(!a.payload.includes(canary), 'canary leaked to sink payload');
+  assert.ok(!a.payload.includes(MARKER), 'source line marker leaked to sink payload');
+  noSourceKeys(a.payload);
+  a.events.forEach(e => e.properties.$exception_list.forEach(x => assert.ok(!String(x.value).includes(canary) && !String(x.value).includes(FAKE_PROD))));
+  // Child B: the error message embeds the key itself. The app's own router log prints err.message (existing behaviour, not capture),
+  // so the key assertion here is on the sink payload only.
+  const b = await runScenarios(['/keyerr'], false);
+  assert.ok(b.events.length >= 1 && b.output.includes('[router error]'));
+  assert.ok(!b.payload.includes(FAKE_PROD), 'key embedded in an error message reached the sink');
+  noSourceKeys(b.payload);
 });
 
 // ---- runner (supports async tests; runs sequentially) ----
