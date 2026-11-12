@@ -189,6 +189,44 @@ test('scrubEvent_protoKeys_doNotPolluteOrAppear', () => {
   assert.strictEqual({}.polluted, undefined);
 });
 
+const sinkLib = require('./helpers/error-capture-sink');
+const OPTS = { clientOptions: { flushAt: 1, flushInterval: 20 } };
+
+test('captureServerError_beforeInit_throwsNotWiredMessage', () => {
+  const fresh = require('../src/web-ui/modules/error-capture');
+  fresh._resetForTests();
+  assert.throws(() => fresh.captureServerError(new Error('x'), {}), e => e.message === fresh.NOT_WIRED);
+});
+test('initErrorCapture_unsetKey_returnsNotWired_andNoOps', () => {
+  ec._resetForTests();
+  const logs = []; const r = ec.initErrorCapture('production', {}, { logger: { error: m => logs.push(m) } });
+  assert.strictEqual(r.wired, false);
+  assert.ok(logs.join(' ').includes('POSTHOG_KEY_PROD') && !logs.join(' ').includes('phc_'));
+  assert.doesNotThrow(() => ec.captureServerError(new Error('x'), {}));
+});
+test('initErrorCapture_resolvesStagingAndProductionKeys_neverFallsBack', () => {
+  ec._resetForTests();
+  const r = ec.initErrorCapture('staging', { POSTHOG_KEY_PROD: 'phc_prod_fake' }, { logger: { error: () => {} } });
+  assert.strictEqual(r.wired, false);
+});
+test('captureServerError_suppressesE2eIdentity', async () => {
+  const sink = await sinkLib.start(); ec._resetForTests();
+  ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+  ec.captureServerError(new Error('x'), { identity: 'e2e-test-user', url: '/a' });
+  await ec.flushErrorCapture(1500); assert.strictEqual(sink.events.length, 0); await sink.stop();
+});
+test('captureServerError_setsEnvironmentProperty', async () => {
+  const sink = await sinkLib.start(); ec._resetForTests();
+  ec.initErrorCapture('staging', { POSTHOG_KEY_STAGING: 'phc_stg_fake', POSTHOG_HOST: sink.url }, OPTS);
+  ec.captureServerError(new Error('x'), { url: '/a/b' });
+  await ec.flushErrorCapture(1500);
+  assert.strictEqual(sink.events.length, 1);
+  assert.strictEqual(sink.events[0].properties.environment, 'staging');
+  assert.strictEqual(sink.events[0].properties.route, '/:p/:p');
+  assert.ok(sink.keys.includes('phc_stg_fake'));  // sink records the key it received; never printed
+  await sink.stop();
+});
+
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
   let passed = 0, failed = 0;

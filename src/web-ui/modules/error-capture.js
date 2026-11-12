@@ -100,4 +100,42 @@ function scrubEvent(ev, environment) {
   } catch (e) { return null; }  // fail closed: a scrub error drops the event
 }
 
-module.exports = { NOT_WIRED, FIXED_DISTINCT_ID, KEPT_KEYS, routeLabel, scrubEvent };
+const { resolvePostHogApiKey } = require('./posthog-config');
+const { isE2ETestIdentity } = require('./posthog-server');
+
+let _state = { wired: false, disabled: false, client: null, environment: null };
+function _resetForTests() { _state = { wired: false, disabled: false, client: null, environment: null }; }
+
+function initErrorCapture(envName, env, deps) {
+  deps = deps || {}; env = env || {};
+  const log = deps.logger || console;
+  let key;
+  try { key = resolvePostHogApiKey(envName, env); }
+  catch (err) { log.error('[error-capture] disabled: ' + err.message); _state = { wired: false, disabled: true, client: null, environment: envName }; return { wired: false, error: err }; }
+  const Ctor = deps.PostHogClient || require('posthog-node').PostHog;
+  const client = new Ctor(key, Object.assign({
+    host: env.POSTHOG_HOST || 'https://us.i.posthog.com',
+    enableExceptionAutocapture: true,
+    before_send: (ev) => scrubEvent(ev, envName)
+  }, deps.clientOptions || {}));
+  _state = { wired: true, disabled: false, client, environment: envName };
+  return { wired: true };
+}
+
+function captureServerError(err, context) {
+  if (!_state.wired && !_state.disabled) throw new Error(NOT_WIRED);
+  if (!_state.client) return;  // initialised without a key: deliberate no-op
+  context = context || {};
+  if (isE2ETestIdentity(context.identity)) return;
+  _state.client.captureException(err, FIXED_DISTINCT_ID, {
+    code: context.code || 'request_error', route: routeLabel(context.url),
+    environment: _state.environment, $process_person_profile: false
+  });
+}
+
+async function flushErrorCapture(timeoutMs) {
+  if (!_state.client) return;
+  await Promise.race([_state.client.shutdown(), new Promise(r => setTimeout(r, timeoutMs || 2000))]);
+}
+
+module.exports = { NOT_WIRED, FIXED_DISTINCT_ID, KEPT_KEYS, routeLabel, scrubEvent, initErrorCapture, captureServerError, flushErrorCapture, _resetForTests };
