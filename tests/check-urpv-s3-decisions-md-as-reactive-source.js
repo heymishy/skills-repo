@@ -211,10 +211,14 @@ function logCapture() { const calls = []; const fn = (m) => calls.push(m); fn.ca
   });
 
   await test('NFR authorisation (real route): the handler fetches with the product\'s own owner/repo and session accessToken, once per feature', async () => {
-    const calls = [];
-    fetcher.setFetchRepoPath(async (o, r, p, t) => { calls.push([o, r, p, t]); throw new fetcher.ArtefactNotFoundError(o + '/' + r, p); });
+    const allCalls = [];
+    fetcher.setFetchRepoPath(async (o, r, p, t) => { allCalls.push([o, r, p, t]); throw new fetcher.ArtefactNotFoundError(o + '/' + r, p); });
     await renderProduct(makePool('tenantA-org', 'prodA-repo', ['feat-a', 'feat-b']), 'tokenA');
+    // itar-s3: the page now also fetches workspace/incidents.json through the same adapter;
+    // this test is about the per-feature decisions.md fetches only.
+    const calls = allCalls.filter(c => /decisions\.md$/.test(c[2]));
     assert.strictEqual(calls.length, 2);
+    allCalls.forEach(c => { assert.strictEqual(c[0], 'tenantA-org'); assert.strictEqual(c[1], 'prodA-repo'); assert.strictEqual(c[3], 'tokenA'); });
     calls.forEach(c => { assert.strictEqual(c[0], 'tenantA-org'); assert.strictEqual(c[1], 'prodA-repo'); assert.strictEqual(c[3], 'tokenA'); });
     assert.deepStrictEqual(calls.map(c => c[2]).sort(), ['artefacts/feat-a/decisions.md', 'artefacts/feat-b/decisions.md']);
   });
