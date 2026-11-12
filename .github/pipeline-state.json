@@ -46815,10 +46815,10 @@
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
           "stage": "review",
-          "health": "red",
-          "updatedAt": "2026-11-12T18:13:09.800Z",
-          "reviewStatus": "has-findings",
-          "highFindings": 2
+          "health": "green",
+          "updatedAt": "2026-11-12T18:19:00.664Z",
+          "reviewStatus": "passed",
+          "highFindings": 0
         },
         {
           "id": "coha-s6",
