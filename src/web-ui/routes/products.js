@@ -22,6 +22,7 @@ var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
 var _decisionsReactiveSource = require('../modules/decisions-reactive-source'); // urpv-s3 -- live decisions.md RISK-ACCEPT/SCOPE reactive-work source
+var _reactivePodRollup = require('../modules/reactive-pod-rollup'); // urpv-s4 -- reactive-vs-planned rollup by pod
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
@@ -605,7 +606,7 @@ function _renderDecisionsReactiveSection(decisionsItems) {
   '</section>';
 }
 
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents) {
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   // itar-s3: '' when there are zero incidents, so output is byte-identical
   // to before this story for every product without incident records.
@@ -705,6 +706,9 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRowPlain).join('') + '</ul>' +
       noFeaturesInnerHtml +
     '</div>';
+
+  // urpv-s4: reactive-vs-planned by pod, as one extra tab in the existing tab bar.
+  var podRollupTab = podContext ? _reactivePodRollup.renderPodRollupTab(_reactivePodRollup.computePodRollup(items, decisionsReactiveItems, podContext), podContext) : null;
 
   var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
     // ppg-s1 (AC4): icon-prefixed labels preserved from the removed
@@ -891,13 +895,14 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '<button type="button" class="pvc-tab' + (defaultTab === 'module' ? ' pvc-tab--active' : '') + '" id="pvc-tab-module" role="tab" aria-selected="' + (defaultTab === 'module' ? 'true' : 'false') + '" onclick="pvcShowTab(\'module\')">By Module</button>' +
       '<button type="button" class="pvc-tab' + (defaultTab === 'phase' ? ' pvc-tab--active' : '') + '" id="pvc-tab-phase" role="tab" aria-selected="' + (defaultTab === 'phase' ? 'true' : 'false') + '" onclick="pvcShowTab(\'phase\')">By Phase</button>' +
       '<button type="button" class="pvc-tab" id="pvc-tab-all" role="tab" aria-selected="false" onclick="pvcShowTab(\'all\')">All</button>' +
+      (podRollupTab ? podRollupTab.tabButtonHtml : '') +
     '</div>' +
     '<div class="pvc-filter-bar">' +
       healthChips +
       '<input type="text" class="pvc-search" placeholder="Search features…" oninput="pvcFilterBySearch(this.value)">' +
       activeOnlyHtml +
     '</div>' +
-    byModuleHtml + byPhaseHtml + allHtml +
+    byModuleHtml + byPhaseHtml + allHtml + (podRollupTab ? podRollupTab.panelHtml : '') +
     _renderDecisionsReactiveSection(decisionsReactiveItems) +
     '<script>' +
       'function a4ToggleModule(btn){' +
@@ -1236,7 +1241,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
 // positional arguments, and JS does not enforce arity, so inserting this
 // argument mid-signature would silently misalign every one of those calls'
 // existing arguments onto the wrong parameters.
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1346,7 +1351,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health-filter chip bar inside _renderConsolidatedFeaturesSection,
   // which now carries real counts (AC4) and, after this story's own Task 1,
   // renders on every product page regardless of module count.
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems, incidents, podContext);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -3142,7 +3147,9 @@ async function handleGetProductView(req, res, _next, pool) {
     var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
     // itar-s3: incident records from the connected repo (silent fallback to []).
     var incidents = await _fetchIncidentRecords(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents);
+    // urpv-s4: pod attribution for the reactive-vs-planned rollup. Reuses the default pod read above (no second read).
+    var podContext = await _reactivePodRollup.resolvePodContext(_pool, tenantId, features.map(function(f) { return f.journey_id; }), defaultPod);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems, incidents, podContext);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
