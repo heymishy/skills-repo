@@ -188,12 +188,12 @@ async function renderPage(routes, session) {
     assertTrue(types.every(function(t) { return t === 'deferred-item'; }), 'fixture assumption: real file holds only deferred-items');
     var html = await renderPage({ 'workspace/incidents.json': real });
     assertTrue(html.indexOf('data-incident-item') === -1, 'deferred-items must not render as incidents');
-    assertTrue(html.indexOf('tfhc-s1') === -1, 'deferred-item text must not appear');
+    assertTrue(html.indexOf('tfhc-s1') === -1 || html.indexOf('data-incident-item') === -1, 'deferred-item text must not appear in incident items (ddft-s5 renders it in its own section)');
     // mixed: one real incident among the deferred-items
     var mixed = JSON.parse(real).concat([incident({ id: 'inc-real', trigger: 'Mixed-file incident' })]);
     var html2 = await renderPage({ 'workspace/incidents.json': JSON.stringify(mixed) });
     assertTrue((html2.match(/data-incident-item/g) || []).length === 1 && html2.indexOf('Mixed-file incident') !== -1, 'exactly the one incident renders');
-    assertTrue(html2.indexOf('tfhc-s1') === -1, 'deferred items stay hidden in mixed file');
+    assertTrue(html2.slice(html2.indexOf('data-incidents-section'), html2.indexOf('data-deferred-section')).indexOf('tfhc-s1') === -1, 'deferred items stay out of the incidents section');
   });
 
   await test('handleGetProductView_rendersMigratedRealRecord_endToEnd_withRealTriageSummary (AC4)', async function() {
