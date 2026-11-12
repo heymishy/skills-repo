@@ -3,7 +3,7 @@
 **Feature:** 2026-11-08-cicd-observability-hardening-automation
 **Discovery reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/discovery.md
 **Date:** 2026-11-12
-**Status:** DRAFT. The questions below were proposed by Claude and are not yet confirmed by the operator. Do not start the investigation until the operator confirms or adjusts the brief.
+**Status:** CONFIRMED by the operator (Hamish King) on 2026-11-12 ("Looks good"), unchanged from the draft. Steps 1 and 3 (production reads) still need the operator's approval at the time they run.
 
 ---
 
