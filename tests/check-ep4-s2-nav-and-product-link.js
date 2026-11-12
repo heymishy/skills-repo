@@ -83,7 +83,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     // urpv-s3 / itar-s3: decisionsReactiveItems and incidents are now
     // legitimately appended after the journey-id argument, in either order,
     // either or both or neither (still appended, never inserted mid-call).
-    assert.ok(/,\s*\w*[Jj]ourney\w*\s*(,\s*(decisionsReactiveItems|incidents)\s*){0,2}\)\s*;\s*$/.test(call), 'expected the new journey-id argument to be the LAST positional argument passed to _renderProductView, got: ' + call.slice(-80));
+    assert.ok(/,\s*\w*[Jj]ourney\w*\s*(,\s*(decisionsReactiveItems|incidents|podContext)\s*){0,3}\)\s*;\s*$/.test(call), 'expected the new journey-id argument to be the LAST positional argument passed to _renderProductView, got: ' + call.slice(-80));
     pass('(wiring shape): handleGetProductView wires the new query and passes its result through correctly');
   } catch (e) { fail('(wiring shape): handleGetProductView wires the new query and passes its result through correctly', e); }
 
