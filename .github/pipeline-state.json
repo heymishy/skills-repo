@@ -46815,9 +46815,9 @@
           "name": "Production error capture to PostHog with tenant text scrubbed",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
-          "updatedAt": "2026-11-12T18:43:45.554Z",
+          "updatedAt": "2026-11-12T19:00:35.847Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
