@@ -46815,19 +46815,19 @@
           "name": "Production error capture to PostHog with tenant text scrubbed",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-12T19:10:46.684Z",
+          "updatedAt": "2026-11-12T20:16:11.878Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 26,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 77,
+            "passing": 77,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s5-posthog-error-capture-and-scrub-test-plan.md"
           },
           "acTotal": 9,
-          "acVerified": 0,
+          "acVerified": 9,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "blocker": "",
@@ -46836,46 +46836,48 @@
             {
               "id": "task-1",
               "name": "Scrubbing functions (AC1, AC3)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-2",
               "name": "Client lifecycle, suppression, unwired stub (AC5, AC6, AC7, AC9 stub)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-3",
               "name": "Catch-block call and createApp router seam (AC1, AC3 URL case, AC8)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-4",
               "name": "Startup wiring and signal-time flush, separate from the handler (AC9)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-5",
               "name": "Unhandled rejection captured, process survives (AC2)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-6",
               "name": "The two bootstrap call sites in auth.js and auth-email.js (AC4)",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             },
             {
               "id": "task-7",
               "name": "NFR checks and final verification",
-              "tddState": "not-started",
+              "tddState": "done",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             }
-          ]
+          ],
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1087"
         },
         {
           "id": "coha-s6",
