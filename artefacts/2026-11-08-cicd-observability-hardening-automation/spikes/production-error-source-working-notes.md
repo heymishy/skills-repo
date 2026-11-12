@@ -28,3 +28,17 @@
 1. Step 1 (production read): how far back the real app's logs go through the CLI, and whether the Logs API returns more than the CLI does. Needs a one-off, read-only call against the production app; asks first.
 2. Step 3 (production read): whether PostHog holds any `$exception` events for production. Read-only query; asks first.
 3. Whether `FLY_API_TOKEN` in the repo's secrets has read access to the app's logs (checked by the scan's own earlier runs? no: those failed before the request). Can be tested in step 1.
+
+---
+
+## Step 1 result (production read, approved by the operator, 2026-11-12)
+
+- `fly logs -a skills-framework --no-tail` returned exactly 100 lines, with the first at 09:03:57Z and the last at 09:03:58Z: the whole buffer the CLI exposes spans about one second. There were no lines containing `tenant_admin_bootstrap_failed`, and no warn or error lines. So the CLI cannot be used to scan for errors on any interval, which confirms the fault in the scan script goes deeper than the missing `--since` flag.
+- The HTTP Logs API (the candidate that pages with `next_token` and holds about 7 days) was NOT successfully tested. Two attempts with the token from `fly auth token` failed (a malformed-header error on the first, a status 0 on the second). Whether the existing `FLY_API_TOKEN` secret can read logs, and how far back the API goes, remain UNKNOWN. Needs a deliberately prepared token and a call that cannot echo it.
+- **Incident during this step:** the first failed attempt printed an error message that contained the beginning of the operator's Fly auth token into the session transcript. The operator was told and should treat that token as exposed (revoke or rotate it). No token text is recorded in this file.
+
+## Step 3 result (production read, approved by the operator, 2026-11-12)
+
+- PostHog holds `$exception` events, but only 3 in the last 30 days: 1 on 2026-10-27 and 2 on 2026-10-25, all "Error: Contents API content truncated" (from `product-rollup.js`, one of the two places in the app that call `captureException`).
+- So PostHog sees only errors the code chooses to capture. `tenant_admin_bootstrap_failed` and every other `warn`-level line are invisible to it. Using PostHog as the detection source means adding capture calls in the app, which is the "app-side recording" candidate by another route.
+- `artefact_commit_failed` also exists as a PostHog event (a deliberate failure signal already emitted), a pattern the redesign could reuse.
