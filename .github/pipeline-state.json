@@ -46568,7 +46568,9 @@
             "coha-s1",
             "coha-s2",
             "coha-s3",
-            "coha-s4"
+            "coha-s4",
+            "coha-s5",
+            "coha-s6"
           ]
         }
       ],
@@ -46749,7 +46751,7 @@
           "epic": "coha-e1-detect-and-alert",
           "stage": "branch-complete",
           "health": "red",
-          "updatedAt": "2026-11-11T19:49:28.315Z",
+          "updatedAt": "2026-11-12T18:11:34.161Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46804,7 +46806,27 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1069",
           "dodStatus": "not-started",
-          "blocker": "DoD INCOMPLETE: scheduled production runs fail every time, flyctl logs has no --since flag and returns only 100 lines; log-source design assumption was wrong. Needs redesign story."
+          "blocker": "SUPERSEDED 2026-11-13: log scanning ruled out by the production-error-source spike; replaced by coha-s5 (capture and scrub) and coha-s6 (alert-to-GitHub-issue bridge). DoD stays incomplete; workflow disabled."
+        },
+        {
+          "id": "coha-s5",
+          "slug": "coha-s5",
+          "name": "Production error capture to PostHog with tenant text scrubbed",
+          "epic": "coha-e1-detect-and-alert",
+          "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
+          "stage": "definition",
+          "health": "green",
+          "updatedAt": "2026-11-12T18:11:33.732Z"
+        },
+        {
+          "id": "coha-s6",
+          "slug": "coha-s6",
+          "name": "Alert-to-GitHub-issue bridge for new production error issues",
+          "epic": "coha-e1-detect-and-alert",
+          "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
+          "stage": "definition",
+          "health": "green",
+          "updatedAt": "2026-11-12T18:11:33.732Z"
         }
       ],
       "guardrails": [
