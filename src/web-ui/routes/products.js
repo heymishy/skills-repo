@@ -21,6 +21,7 @@ var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CR
 var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
+var _decisionsReactiveSource = require('../modules/decisions-reactive-source'); // urpv-s3 -- live decisions.md RISK-ACCEPT/SCOPE reactive-work source
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
@@ -507,7 +508,35 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
 // (By Module / By Phase / All) plus health-filter chips and a search input,
 // all operating client-side over the same rendered item rows (data-health/
 // data-search attributes read by one small vanilla-JS filter function).
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId) {
+// urpv-s3 (AC1): renders the decisions.md-sourced RISK-ACCEPT/SCOPE entries
+// as reactive-work items. Every repo-sourced string goes through
+// _escapeHtml (MC-SEC-01); colours are DESIGN.md tokens only. Empty list
+// renders nothing at all (AC4) -- never an error or placeholder banner.
+function _renderDecisionsReactiveSection(decisionsItems) {
+  if (!Array.isArray(decisionsItems) || decisionsItems.length === 0) { return ''; }
+  var rows = decisionsItems.map(function(d) {
+    var slug = d.featureSlug || '';
+    var featureHtml = slug
+      ? ' <a href="/features/' + _escapeHtml(slug) + '" style="font-size:12px;color:var(--muted)">' + _escapeHtml(slug) + '</a>'
+      : '';
+    return '<li class="urpv-decision-item" data-urpv-source="decisions" data-urpv-code="' + _escapeHtml(d.code) + '" style="padding:10px 0;border-bottom:1px solid var(--line)">' +
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px">' +
+        '<span data-urpv-track="reactive" style="color:var(--warn)">Reactive</span>' +
+        '<span style="color:var(--muted)">' + _escapeHtml(d.code) + '</span>' +
+        '<span style="color:var(--muted)">' + _escapeHtml(d.date) + '</span>' +
+        featureHtml +
+      '</div>' +
+      '<div style="font-size:14px;margin-top:2px">' + _escapeHtml(d.title) + '</div>' +
+    '</li>';
+  }).join('');
+  return '<section class="urpv-decisions-reactive" aria-label="Reactive decisions" style="margin-top:24px">' +
+    '<h3 style="font-size:14px;font-weight:600;margin:0 0 4px">Reactive decisions <span style="color:var(--muted);font-weight:400">(' + decisionsItems.length + ')</span></h3>' +
+    '<div style="font-size:12px;color:var(--muted)">RISK-ACCEPT and SCOPE entries logged in each feature&#39;s decisions.md</div>' +
+    '<ul style="list-style:none;padding:0;margin:8px 0 0">' + rows + '</ul>' +
+  '</section>';
+}
+
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   // ppg-s1: previously, modules.length === 0 skipped the entire tabbed/
   // grouped/collapsed UI (pdt-s1) and fell back to one flat, ungrouped <ul>
@@ -796,6 +825,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       activeOnlyHtml +
     '</div>' +
     byModuleHtml + byPhaseHtml + allHtml +
+    _renderDecisionsReactiveSection(decisionsReactiveItems) +
     '<script>' +
       'function a4ToggleModule(btn){' +
         'var body=document.getElementById(btn.getAttribute("aria-controls"));' +
@@ -1133,7 +1163,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
 // positional arguments, and JS does not enforce arity, so inserting this
 // argument mid-signature would silently misalign every one of those calls'
 // existing arguments onto the wrong parameters.
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1243,7 +1273,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health-filter chip bar inside _renderConsolidatedFeaturesSection,
   // which now carries real counts (AC4) and, after this story's own Task 1,
   // renders on every product page regardless of module count.
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId, decisionsReactiveItems);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -3003,6 +3033,22 @@ async function handleGetProductView(req, res, _next, pool) {
     } catch (_) {
       sessionOriginByJourneyId = {};
     }
+    // urpv-s3 (AC1-AC4): live per-request decisions.md fetch for every
+    // distinct feature on the page, via the existing fetchRepoPath adapter
+    // with this product's own repo_owner/repo_name and the session's own
+    // accessToken (ADR-025). Done here (async) so the render path stays
+    // synchronous. Any failure degrades to [] -- never blocks the page.
+    var decisionsReactiveItems = [];
+    try {
+      var _drToken = req.session && req.session.accessToken;
+      if (prodRow.repo_owner && prodRow.repo_name && _drToken) {
+        var _drTaxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
+        var _drSlugs = _productRollup.mergeFeatureSources(_drTaxonomy, features).map(function(item) { return item.featureSlug || item.slug; });
+        decisionsReactiveItems = await _decisionsReactiveSource.fetchReactiveDecisionsForFeatures(prodRow.repo_owner, prodRow.repo_name, _drSlugs, _drToken);
+      }
+    } catch (_) {
+      decisionsReactiveItems = [];
+    }
     var navSummary = await getProductsNavSummary(_pool, tenantId);
     // mtrr-s2 (AC1/AC3): only attempt the picker when there's no repo
     // connected yet and the session actually has a GitHub accessToken --
@@ -3021,7 +3067,7 @@ async function handleGetProductView(req, res, _next, pool) {
     // ep1-s2 (Task 6, 3d): fetch the product's current default pod for the
     // "Pod & Team" section's initial (non-AJAX) render.
     var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod, firstJourneyId, decisionsReactiveItems);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
