@@ -70,6 +70,7 @@ const _gcwCsrf                                                       = require('
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
+const _errorCapture                                                   = require('./modules/error-capture'); // coha-s5
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { setPipelineStateFetchAdapter, realFetchPipelineState, setPipelineStateBlobFetchAdapter, realFetchBlobBySha } = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2, psbf-s1
 const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
@@ -5224,10 +5225,13 @@ async function router(req, res) {
 }
 
 /** Create and return the HTTP server instance. */
-function createApp() {
+function createApp(options) {
+  const _router = (options && options.router) || router; // coha-s5: test seam, defaults to the real router
   return http.createServer((req, res) => {
-    router(req, res).catch((err) => {
+    _router(req, res).catch((err) => {
       console.error('[router error]', err.message, err.stack);
+      try { _errorCapture.captureServerError(err, { url: req.url, identity: req.headers['x-test-identity'] }); } // coha-s5
+      catch (captureErr) { console.error('[error-capture] capture failed:', captureErr.message); } // never changes the 500
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
     });

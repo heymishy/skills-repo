@@ -316,6 +316,115 @@ test('captureServerError_oddErrorValues_doNotThrow_andAreScrubbed', async () => 
   } finally { await sink.stop(); }
 });
 
+// ---- Task 3: catch-block call through a real child process running createApp ----
+const _cp = require('child_process');
+const _http = require('http');
+const _harness = require('path').join(__dirname, 'helpers', 'error-capture-child.js');
+const FAKE_PROD = 'phc_fake_prod';
+
+function spawnChild(envOverrides) {
+  const env = Object.assign({}, process.env);
+  Object.keys(env).forEach(k => { if (/^POSTHOG_|^CHILD_/.test(k)) delete env[k]; });
+  Object.assign(env, { NODE_ENV: 'test' }, envOverrides || {});
+  const child = _cp.spawn(process.execPath, [_harness], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  let out = '';
+  child.stderr.on('data', d => { out += d; });
+  const stop = () => new Promise(r => {
+    if (child.exitCode !== null || child.signalCode) return r();
+    child.once('exit', () => r()); child.kill();
+    setTimeout(r, 3000).unref();
+  });
+  return new Promise((resolve, reject) => {
+    let buf = '';
+    const timer = setTimeout(() => { stop().then(() => reject(new Error('child startup timeout; output: ' + out.slice(0, 300)))); }, 20000);
+    let done = false;
+    child.stdout.on('data', d => {
+      out += d; buf += d;
+      const m = buf.match(/^\{"port":(\d+)\}\s*$/m);
+      if (m && !done) { done = true; clearTimeout(timer); resolve({ port: Number(m[1]), output: () => out, stop }); }
+    });
+    child.once('exit', code => { if (done) return; clearTimeout(timer); reject(new Error('child exited early (' + code + '): ' + out.slice(0, 300))); });
+  });
+}
+function get(port, p, headers) {
+  return new Promise((resolve, reject) => {
+    const rq = _http.get({ host: '127.0.0.1', port, path: p, headers: headers || {}, agent: false }, rs => {
+      let b = ''; rs.on('data', d => { b += d; }); rs.on('end', () => resolve({ status: rs.statusCode, body: b }));
+    });
+    rq.setTimeout(10000, () => rq.destroy(new Error('request timeout')));
+    rq.on('error', reject);
+  });
+}
+async function waitFor(pred, ms) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { if (pred()) return true; await new Promise(r => setTimeout(r, 25)); }
+  return pred();
+}
+async function timedFailingRequest(opts) {
+  const ch = await spawnChild(opts.capture ? { POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: opts.host } : {});
+  try {
+    const t0 = Date.now(); const r = await get(ch.port, '/boom/' + seed); const ms = Date.now() - t0;
+    return { status: r.status, ms, output: ch.output() };
+  } finally { await ch.stop(); }
+}
+
+test('throwingRequest_producesExactlyOneEvent_andReturns500', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/boom/' + seed);
+    assert.strictEqual(r.status, 500);
+    assert.strictEqual(r.body, 'Internal Server Error');
+    await waitFor(() => sink.events.length >= 1, 5000);
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1);  // cost NFR: exactly one event per error
+    const p = sink.events[0].properties;
+    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].filter(k => k !== '$exception_fingerprint').sort());
+    assert.strictEqual(p.route, '/:p/:p');
+    assert.strictEqual(p.environment, 'production');
+    assert.ok(!JSON.stringify(sink.events).includes(seed));
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('urlWithTenantSlug_reportsOnlyRoutePattern', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/products/' + seed + '?x=' + seed);
+    assert.strictEqual(r.status, 500);
+    await waitFor(() => sink.events.length >= 1, 5000);
+    assert.ok(sink.events.length >= 1);
+    assert.ok(!JSON.stringify(sink.events).includes(seed));
+    assert.strictEqual(sink.events[0].properties.route, '/products/:p');
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('unreachableOrSlowEndpoint_doesNotBreakOrSlowRequest', async () => {
+  const hang = await sinkLib.start({ hang: true }); const slow = await sinkLib.start({ delayMs: 2000 });
+  try {
+    const runs = [];
+    for (let i = 0; i < 3; i++) runs.push((await timedFailingRequest({ capture: false })).ms);
+    const base = runs.sort((a, b) => a - b)[1];
+    for (const s of [hang, slow]) {
+      const t = await timedFailingRequest({ capture: true, host: s.url });
+      assert.strictEqual(t.status, 500);
+      assert.ok(t.ms <= base + 200, 'took ' + t.ms + ' vs baseline ' + base);
+      assert.ok(!t.output.includes(FAKE_PROD), 'key leaked to output');
+    }
+  } finally { await hang.stop(); await slow.stop(); }
+});
+test('unwiredCapture_isContained_requestStill500_andLoggedWithoutKey', async () => {
+  let ch;
+  try {
+    ch = await spawnChild({ CHILD_SKIP_WIRING: '1', POSTHOG_KEY_PROD: FAKE_PROD });
+    const r = await get(ch.port, '/boom/' + seed);
+    assert.strictEqual(r.status, 500);
+    assert.strictEqual(r.body, 'Internal Server Error');
+    const o = ch.output();
+    assert.ok(o.includes('Adapter not wired: error-capture') || o.includes('[error-capture] capture failed'), o.slice(0, 300));
+    assert.ok(!o.includes(FAKE_PROD));
+    assert.strictEqual((await get(ch.port, '/ok')).status, 200);
+  } finally { if (ch) await ch.stop(); }
+});
+
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
   let passed = 0, failed = 0;
