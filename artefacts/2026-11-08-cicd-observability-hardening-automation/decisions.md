@@ -75,6 +75,15 @@
 **Revisit trigger:** If the recorder cannot cover the failure patterns that matter, or a second tenant-facing team needs searchable logs, re-open the OTel route and check PostHog Logs retention, alert delivery and PII scrubbing first. If the Fly HTTP Logs API is ever needed, test it with an operator-prepared token that cannot echo.
 ---
 
+---
+**2026-11-13 | ARCH | amends the entry above — production error detection uses PostHog error capture plus a bridge, not a custom database recorder**
+**Decision:** Replace the hand-built database recorder with PostHog Error Tracking, fed by the app's existing `posthog-node` client: exception autocapture, one `captureException` at the single catch point in `createApp()`, explicit capture for warn-level cases such as `tenant_admin_bootstrap_failed`, and a `before_send` scrubber that rewrites tenant text and removes stack-frame source lines. A PostHog new-issue alert (webhook destination) calls a bridge in the app that opens a GitHub issue and, subject to the open question in the story, creates the incident record. The old Production Log Scan approach stays abandoned.
+**Alternatives considered:** (A) Custom database recorder — rejected: would rebuild grouping, counts, alert rules and delivery that PostHog already provides. (B) Sentry free plan — rejected: new vendor and privacy review, 5,000 errors per month, and GitHub issue sync appears to be on paid plans. (C) Grafana Cloud — kept as a later portability target through OTel, not now: new vendor and privacy review, free webhook alerts unconfirmed. (D) OTel logs to PostHog — deferred: whole log lines would leave the app and PostHog's scrubbing for logs is undescribed.
+**Rationale:** No new vendor or secret; the app already holds the project token and a client. Local proof of concept (2026-11-13, installed `posthog-node` 5.40.0 against a local sink) showed a thrown request error captured at the one catch point, an unhandled rejection captured by autocapture, warn lines not captured without an explicit call, tenant text removable from the message and stack-frame source lines through `before_send`, and that the app has no Express so `setupExpressErrorHandler` does not apply. Documentation shows the webhook destination accepts custom headers; the live round trip is the story's first acceptance test. Free allowance of 100,000 exceptions per month is far above this app's volume. Light production traffic does not affect the choice.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If the live webhook check (AC6 of coha-s5) fails or cannot carry a secret header, fall back to a scheduled job reading PostHog's API. If metrics or tracing are wanted, add OTel through the same client, or move to Grafana Cloud, without changing the capture calls. If PostHog retention for exceptions proves shorter than a month, re-check.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
