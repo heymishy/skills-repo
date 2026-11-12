@@ -70,6 +70,7 @@ const _gcwCsrf                                                       = require('
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
+const _errorCapture                                                   = require('./modules/error-capture'); // coha-s5
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { setPipelineStateFetchAdapter, realFetchPipelineState, setPipelineStateBlobFetchAdapter, realFetchBlobBySha } = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2, psbf-s1
 const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
@@ -5224,14 +5225,34 @@ async function router(req, res) {
 }
 
 /** Create and return the HTTP server instance. */
-function createApp() {
+function createApp(options) {
+  const _router = (options && options.router) || router; // coha-s5: test seam, defaults to the real router
   return http.createServer((req, res) => {
-    router(req, res).catch((err) => {
+    _router(req, res).catch((err) => {
       console.error('[router error]', err.message, err.stack);
+      try { _errorCapture.captureServerError(err, { url: req.url }); } // coha-s5
+      catch (captureErr) { console.error('[error-capture] capture failed:', captureErr.message); } // never changes the 500
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
     });
   });
+}
+
+// coha-s5 -- wires production error capture. Same env rule as the flag client at startup.
+// Signal handlers are registered once per process (repeat calls must not stack listeners).
+let _errorCaptureSignalsRegistered = false;
+function wireErrorCapture(env, deps) {
+  const envName = env.NODE_ENV === 'staging' ? 'staging' : 'production';
+  const result = _errorCapture.initErrorCapture(envName, env, deps);
+  if (!_errorCaptureSignalsRegistered) {
+    _errorCaptureSignalsRegistered = true;
+    const onSignal = (code) => {
+      Promise.resolve(_errorCapture.flushErrorCapture(2000)).catch(() => {}).then(() => process.exit(code));
+    };
+    process.on('SIGTERM', () => onSignal(143));
+    process.on('SIGINT', () => onSignal(130));
+  }
+  return result;
 }
 
 if (require.main === module) {
@@ -5250,6 +5271,8 @@ if (require.main === module) {
   }
   // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
   warnOnOptionalEnvVars(process.env, console);
+  // coha-s5 -- must stay AFTER the uncaughtException handler above (posthog-node exits the process otherwise).
+  try { wireErrorCapture(process.env); } catch (e) { console.error('[error-capture] wiring failed:', e.message); } // never abort startup
   // psrc-verify-s3 — never throws, only logs; catches a governance-critical
   // skill (design/definition/review/test-plan/definition-of-ready) silently
   // resolving to a Haiku model, e.g. an accidentally-removed
@@ -5272,6 +5295,7 @@ if (require.main === module) {
 
 module.exports = {
   createApp,
+  wireErrorCapture,
   router,
   // dss-s1: exported for direct unit testing of the gate logic itself
   _isTestEndpointAllowed,

@@ -70,9 +70,17 @@ const GRANDFATHER_LIST = [
 // Run sequentially (concurrency: 1), in their own phase, rather than in the
 // main concurrent pool. This is a maintained, explicit list, like
 // GRANDFATHER_LIST -- not a dynamically-detected one.
+//
+// Second kind of member (2026-11-13, coha-s5): a CPU-heavy file that starts
+// real server child processes. Run beside tests/check-cat-s1-core-trace-builder.js
+// on a 2-slot pool it pushed that file's hard 50ms directory-walk assertion
+// to 52-56ms (reproduced 3 of 4 runs on 2 CPUs; the same file alone is
+// 28ms), failing PR Checks. Running it in this phase keeps it from sharing
+// the machine with timing-sensitive files in the pool.
 const SEQUENTIAL_EXCLUSIVE_LIST = [
   'tests/check-lcdf-s1-build-time-learnings-count.js',
-  'tests/check-lccf-s1-fail-open-learnings-count.js'
+  'tests/check-lccf-s1-fail-open-learnings-count.js',
+  'tests/check-coha-s5-error-capture.js'
 ];
 
 /**
