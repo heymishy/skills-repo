@@ -15,7 +15,7 @@ Verification-strength tags: `unit` = against fixtures or mocks only; `integratio
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ❌ | AC1 (Acceptance Criterion 1: score a new record's tags against every existing record with the newly exported Jaccard primitive and attach above-threshold matches as prior-incident links). Tests pass on merged master: `jaccardSimilarity_isExportedAndCallable_fromDriftComparator`, `attachesMatch_whenScoreAtOrAboveThreshold`, `excludesMatch_whenScoreBelowThreshold`, `attachesMultipleMatches_...`, `rankMatchesByScoreDescending_...`, plus `persistsSummaryOnRecordInStore_whenRunAgainstRealIncidentsFile`. Strength: `integration-real-code` with synthetic tag fixtures only. | Automated test `tests/check-itar-s2-triage-drafting.js` (15 passed, 0 failed), plus direct read of `triage-drafter.js` and the `drift-comparator.js` diff | Two gaps. (1) The AC says the function runs when a record is created, but a repo-wide search finds no caller of `draftTriageSummary` outside its own test, so nothing triggers it on record creation: it is callable but not wired. (2) `INCIDENT_JACCARD_THRESHOLD` is 0.3, chosen from reasoning about small tag sets, not tuned against real incident data (no `workspace/incidents.json` exists on master, so there is no real record to match against). decisions.md's 2026-11-09 revisit trigger to pin it from real or fixture evidence is still open. Follow-ups 1 and 2. |
+| AC1 | ⚠️ | AC1 (Acceptance Criterion 1: score a new record's tags against every existing record with the newly exported Jaccard primitive and attach above-threshold matches as prior-incident links). Tests pass on merged master: `jaccardSimilarity_isExportedAndCallable_fromDriftComparator`, `attachesMatch_whenScoreAtOrAboveThreshold`, `excludesMatch_whenScoreBelowThreshold`, `attachesMultipleMatches_...`, `rankMatchesByScoreDescending_...`, plus `persistsSummaryOnRecordInStore_whenRunAgainstRealIncidentsFile`. Strength: `integration-real-code` with synthetic tag fixtures only. | Automated test `tests/check-itar-s2-triage-drafting.js` (15 passed, 0 failed), plus direct read of `triage-drafter.js` and the `drift-comparator.js` diff | Gap 1 (no creation-time caller) is resolved by iwf-s1 (PR #1078, merged 2026-11-12): `recordIncident` and the `create-incident` command now run `draftTriageSummary` whenever a record is created through them. Gap 2 remains: `INCIDENT_JACCARD_THRESHOLD` is 0.3, chosen by reasoning about small tag sets, and cannot be tuned because no real `type: "incident"` record exists yet. See Re-grade Addendum. |
 | AC2 | ⚠️ | AC2 (Acceptance Criterion 2: a matched summary includes what is known, what was tried before, and a suggested next step, not a bare score). `draftTriageSummary_includesKnownTriedBeforeAndNextStep_whenMatchFound` passes: the persisted text contains all three components. Strength: `integration-real-code`. | Automated test `tests/check-itar-s2-triage-drafting.js`, plus direct read of `buildMatchedSummary` | The structure is verified, not usefulness. The "next step" is a fixed template ("review incident X's own triage notes and prior-incident links before investigating from scratch") for every match, and "what's been tried" only restates the matched record's `status` and prior `triageSummary`. Whether a delivery engineer finds these drafts actually helpful is a real-world claim with no live or real-data evidence. Follow-up 3. |
 | AC3 | ✅ | AC3 (Acceptance Criterion 3: no match above threshold still attaches an explicit "no relevant prior incident found" summary, never skipped or fabricated). `statesNoRelevantPriorIncidentFound_whenNoMatchAboveThreshold` and `distinguishesCannotScoreFromGenuineNoMatch` pass; code sets `triageSummary` to "No relevant prior incident was found..." with empty `priorIncidentLinks` and persists it. A first-ever record (no other records) takes the same branch by construction. Strength: `integration-real-code`. | Automated test `tests/check-itar-s2-triage-drafting.js`, plus direct read of `draftTriageSummary` | None. The claim is about a field written by the code, which the test reads back from disk. |
 | AC4 | ✅ | AC4 (Acceptance Criterion 4: empty or malformed tags produce an explicit "cannot score" result, distinct from the no-match case, with no unhandled error). `returnsCannotScoreResult_whenTagsFieldEmpty` and `..._whenTagsFieldMalformed` (null and a string) pass, and the distinguishing test confirms status `cannot-score` differs from `no-match`; summary text is "Cannot score — no tags present on this record." Strength: `integration-real-code`. | Automated test `tests/check-itar-s2-triage-drafting.js`, plus direct read of `draftTriageSummary` | None |
@@ -86,20 +86,33 @@ Housekeeping: m2's `contributingStories` should list itar-s2.
 
 ## Outcome
 
-**INCOMPLETE**
+**COMPLETE WITH DEVIATIONS**
 
-Re-graded 2026-11-12 from COMPLETE WITH DEVIATIONS to INCOMPLETE by the operator-approved review of the wave 2 DoDs: the originally recorded warning status understated these gaps. AC1 claims a new record is scored and a summary attached, but draftTriageSummary has no caller anywhere in src, scripts or bin (confirmed by search; it appears only in its own module and test), so nothing runs when a record is created. Follow-up story required before this story can be marked done.
+Re-graded 2026-11-12 from INCOMPLETE to COMPLETE WITH DEVIATIONS after iwf-s1 (PR #1078, merge commit 7d95fae62) wired `draftTriageSummary` to incident creation. The INCOMPLETE grade rested on one fact: nothing called the drafter. That is closed. What remains is a recorded deviation, not a missing deliverable: the threshold is unpinned because no real incident data exists.
 
-ACs satisfied: 2/4 fully (AC3, AC4); 2/4 marked ⚠️ (AC1, AC2) on evidence-class grounds. Nothing is ❌. Deviations: 2 recorded (no creation-time wiring; threshold not tuned on real data). Test gaps: None. Verification strength: 0 unit-only / 4 integration-real-code / 0 live-verified / 0 production-observed.
+ACs satisfied: 4/4 in substance. AC3 and AC4 are ✅; AC1 and AC2 stay ⚠️ on evidence-class grounds (AC1: threshold unpinned; AC2: usefulness of the drafted text unjudged). Nothing is ❌. Verification strength: 4 `integration-real-code`, 0 `live-verified`, 0 `production-observed`.
 
 **Follow-up actions:**
-1. Wire `draftTriageSummary` to run when an incident record is created (or record that itar-s4 or a later story owns this), so AC1's "when a new record is created" and metric m2's 100% target can be met. Owner: operator to decide which story carries it.
-2. Pin `INCIDENT_JACCARD_THRESHOLD` (currently 0.3) against real incident tag data once `workspace/incidents.json` has real records, per decisions.md's 2026-11-09 revisit trigger, and update AC1 and AC3 text to the pinned value.
-3. Run `draftTriageSummary` against real incident records (including the itar-s1 migrated production-error record) and have a delivery engineer judge whether the drafts are useful; this upgrades AC2 to a real-world check.
-4. Add itar-s2 to m2's `contributingStories` in the feature's metrics.
+1. Record the first real incident with `node scripts/create-incident.js`, then pin `INCIDENT_JACCARD_THRESHOLD` (currently 0.3) against real tag data per decisions.md's 2026-11-09 revisit trigger, and update AC1 and AC3 text to the pinned value. Owner: operator, when a real incident next occurs.
+2. Have a delivery engineer judge whether the drafted summaries for real incidents are useful, which upgrades AC2 to a real-world check.
+3. Add itar-s2 to metric m2's `contributingStories` in the feature's metrics.
 
 ---
 
+## Re-grade Addendum (2026-11-12)
+
+| Item | Before | After |
+|------|--------|-------|
+| Caller of `draftTriageSummary` | none anywhere in src, scripts or bin | `recordIncident` (`src/modules/incident-recorder.js`) and `node scripts/create-incident.js` |
+| Any production path that creates an incident record | none (found while scoping iwf-s1) | the same command |
+| Records the drafter treats as prior incidents | every record in the file, including `deferred-item` | only `incident` records; an untyped record counts as `incident` |
+| `workspace/incidents.json` | absent | tracked since dsrf-s1, holds 2 `deferred-item` records and no incidents |
+| Threshold `INCIDENT_JACCARD_THRESHOLD` | 0.3, provisional | 0.3, still provisional: no real incident record exists to tune against |
+| Metric m2 Triage drafting coverage | not-yet-measurable | measurable for records created through the command; no real incident recorded yet, so still not measured |
+
+Verified by re-running `node tests/check-iwf-s1-incident-recording.js` (11 passed, 0 failed) and `node tests/check-itar-s2-triage-drafting.js` (15 passed, 0 failed) on merged master. itar-s2's own tests are unchanged. Anything that writes a record directly with `appendIncidentRecord`, rather than through `recordIncident`, still bypasses drafting.
+
+---
 ## DoD Observations
 
 1. **`workspace/incidents.json` does not exist on master.** itar-s1 shipped a migration function for the real capture-log finding, but the file itself is not committed, so the "real incidents file" in the integration test name is a temp fixture. This is why no AC can be real-data verified yet. Tag: `/improve` candidate.

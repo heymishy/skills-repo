@@ -48059,8 +48059,8 @@
           "name": "Triage drafting via structured-field Jaccard matching",
           "epic": "itar-e1-triage-and-respond",
           "stage": "branch-complete",
-          "health": "red",
-          "updatedAt": "2026-11-11T19:49:28.604Z",
+          "health": "amber",
+          "updatedAt": "2026-11-12T05:19:44.809Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48120,8 +48120,9 @@
               "file": "artefacts/2026-11-08-incident-triage-and-respond/plans/itar-s2-triage-drafting-plan.md"
             }
           ],
-          "dodStatus": "not-started",
-          "blocker": "DoD INCOMPLETE: draftTriageSummary has no caller, so nothing runs when a record is created. Needs wiring follow-up."
+          "dodStatus": "complete",
+          "blocker": "Threshold INCIDENT_JACCARD_THRESHOLD (0.3) unpinned: needs a real incident record recorded via create-incident, then tuned",
+          "releaseReady": false
         },
         {
           "id": "itar-s3",
@@ -49469,18 +49470,24 @@
           "id": "iwf-s1",
           "slug": "iwf-s1",
           "name": "Wire triage drafting to incident creation, so a created incident gets a triage summary",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "testPlan": {
             "status": "written",
             "totalTests": 11,
-            "passing": 0,
+            "passing": 11,
             "artefact": "artefacts/2026-11-12-itar-wiring-fix/test-plans/iwf-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-12T05:01:12.383Z",
-          "dorStatus": "signed-off"
+          "acVerified": 5,
+          "updatedAt": "2026-11-12T05:19:44.554Z",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1078",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "blocker": ""
         }
       ],
       "metrics": [],
