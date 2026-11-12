@@ -9,6 +9,7 @@ function test(name, fn) { tests.push({ name, fn }); }
 
 const ec = require('../src/web-ui/modules/error-capture');
 const rnd = () => 'tnt-' + crypto.randomBytes(6).toString('hex');
+// KEPT_KEYS is a documentation export that the scrubber does not read; tests comparing against it fail loudly if the scrubber's keys drift.
 const seed = rnd();  // printed on failure
 
 function sdkEvent(msg, extra) {
@@ -395,7 +396,7 @@ test('throwingRequest_producesExactlyOneEvent_andReturns500', async () => {
     await new Promise(r2 => setTimeout(r2, 300));
     assert.strictEqual(sink.events.length, 1);  // cost NFR: exactly one event per error
     const p = sink.events[0].properties;
-    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].filter(k => k !== '$exception_fingerprint').sort());
+    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].sort());
     assert.strictEqual(p.route, '/:p/:p');
     assert.strictEqual(p.environment, 'production');
     assert.ok(!JSON.stringify(sink.events).includes(seed));
@@ -476,6 +477,8 @@ test('wireErrorCapture_isCalledInStartupBlock_afterUncaughtExceptionHandler', ()
   const iWire = block.indexOf('wireErrorCapture(process.env)');
   assert.ok(iUnc > 0 && iWarn > iUnc && iWire > iWarn, 'wiring must follow the uncaughtException handler and warnOnOptionalEnvVars');
   assert.strictEqual(block.split('wireErrorCapture(process.env)').length, 2);
+  // guard: the call sits inside a try whose catch logs and continues (static check only; the real startup block needs require.main)
+  assert.ok(block.includes("try { wireErrorCapture(process.env); } catch (e) { console.error('[error-capture] wiring failed:', e.message); }"), 'wiring must be wrapped in try/catch that logs and continues');
 });
 test('realStartup_wiresCapture_andEventCarriesKey', async () => {
   const sink = await sinkLib.start(); let ch;
@@ -555,7 +558,7 @@ test('unhandledRejection_isCaptured_processKeepsRunning', async () => {
     assert.strictEqual(p.route, '/process');
     assert.strictEqual(p.environment, 'production');
     assert.strictEqual(ev.distinct_id, 'server-error-capture');
-    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].filter(k => k !== '$exception_fingerprint').sort());
+    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].sort());
     assert.ok(!JSON.stringify(sink.events).includes('unhandled /reject'), 'request text leaked into payload');
     const ok = await get(ch.port, '/ok');
     assert.strictEqual(ok.status, 200);
@@ -672,6 +675,26 @@ function assertFixedOnly(sink, canary, tenantTexts) {
   tenantTexts.forEach(t => assert.ok(!s.includes(t), 'tenant text leaked: ' + t));
 }
 
+test('uncaughtException_isCaptured_processKeepsRunning', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const c = rnd();
+    const r = await get(ch.port, '/uncaught/' + c);
+    assert.strictEqual(r.status, 200);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no uncaught-exception event reached the sink within 5s');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1, 'expected exactly one event, got ' + sink.events.length);
+    const p = sink.events[0].properties;
+    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception');
+    assert.strictEqual(p.code, 'unhandled_exception');
+    assert.strictEqual(p.route, '/process');
+    assert.ok(!JSON.stringify(sink.events).includes(c), 'canary leaked');
+    assert.strictEqual(ch.exitCode(), null, 'child died');
+    const ok = await get(ch.port, '/ok');
+    assert.strictEqual(ok.status, 200);
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
 test('bootstrapFailure_authJs_capturesFixedCodeOnly', async () => {
   for (const kind of ['github', 'google']) {
     await withSink(async sink => {

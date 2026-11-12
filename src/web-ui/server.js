@@ -5272,7 +5272,7 @@ if (require.main === module) {
   // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
   warnOnOptionalEnvVars(process.env, console);
   // coha-s5 -- must stay AFTER the uncaughtException handler above (posthog-node exits the process otherwise).
-  wireErrorCapture(process.env);
+  try { wireErrorCapture(process.env); } catch (e) { console.error('[error-capture] wiring failed:', e.message); } // never abort startup
   // psrc-verify-s3 — never throws, only logs; catches a governance-critical
   // skill (design/definition/review/test-plan/definition-of-ready) silently
   // resolving to a Haiku model, e.g. an accidentally-removed

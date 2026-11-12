@@ -28,6 +28,7 @@ const router = async (req, res) => {
   if (u.startsWith('/shutdown')) { res.end('bye'); setImmediate(() => process.emit('SIGTERM')); return; }
   if (u.startsWith('/listeners')) { res.end(JSON.stringify({ SIGTERM: process.listenerCount('SIGTERM'), SIGINT: process.listenerCount('SIGINT') })); return; }
   if (u.startsWith('/reject')) { Promise.reject(new Error('unhandled ' + u)); res.end('queued'); return; }
+  if (u.startsWith('/uncaught')) { res.end('queued'); const c = decodeURIComponent(u.slice('/uncaught/'.length)); setTimeout(() => { throw new Error('canary ' + c); }, 0); return; }
   if (u.startsWith('/marker')) { markerThrower(); }
   if (u.startsWith('/keyerr')) { throw new Error('leak ' + process.env.POSTHOG_KEY_PROD); }
   throw new Error('route failed for ' + decodeURIComponent(u));
