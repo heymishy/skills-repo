@@ -322,10 +322,15 @@ const _http = require('http');
 const _harness = require('path').join(__dirname, 'helpers', 'error-capture-child.js');
 const FAKE_PROD = 'phc_fake_prod';
 
+// Minimal child environment: only what Node needs to run; nothing secret or service-related is inherited.
+const CHILD_ENV_ALLOW = ['PATH', 'Path', 'SystemRoot', 'SYSTEMROOT', 'windir', 'TEMP', 'TMP', 'TMPDIR', 'HOME', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'ProgramData', 'ComSpec', 'COMSPEC', 'PATHEXT', 'OS'];
+function buildChildEnv(envOverrides) {
+  const env = {};
+  CHILD_ENV_ALLOW.forEach(k => { if (process.env[k] !== undefined) env[k] = process.env[k]; });
+  return Object.assign(env, { NODE_ENV: 'test' }, envOverrides || {});
+}
 function spawnChild(envOverrides) {
-  const env = Object.assign({}, process.env);
-  Object.keys(env).forEach(k => { if (/^POSTHOG_|^CHILD_/.test(k)) delete env[k]; });
-  Object.assign(env, { NODE_ENV: 'test' }, envOverrides || {});
+  const env = buildChildEnv(envOverrides);
   const child = _cp.spawn(process.execPath, [_harness], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   child.stderr.on('data', d => { out += d; });
@@ -360,11 +365,19 @@ async function waitFor(pred, ms) {
   while (Date.now() < end) { if (pred()) return true; await new Promise(r => setTimeout(r, 25)); }
   return pred();
 }
+// Sends n failing requests to one child and returns the best (lowest) elapsed time. If a sink is given, waits until
+// it has really received something before stopping the child, so the timing is never measured against a capture that did not happen.
 async function timedFailingRequest(opts) {
   const ch = await spawnChild(opts.capture ? { POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: opts.host } : {});
   try {
-    const t0 = Date.now(); const r = await get(ch.port, '/boom/' + seed); const ms = Date.now() - t0;
-    return { status: r.status, ms, output: ch.output() };
+    let best = Infinity, status = 500;
+    for (let i = 0; i < (opts.n || 1); i++) {
+      const t0 = Date.now(); const r = await get(ch.port, '/boom/' + seed); const ms = Date.now() - t0;
+      if (r.status !== 500) status = r.status;
+      best = Math.min(best, ms);
+    }
+    if (opts.sink) assert.ok(await waitFor(() => opts.sink.requests >= 1, 8000), 'sink never received a request');
+    return { status, ms: best, output: ch.output() };
   } finally { await ch.stop(); }
 }
 
@@ -375,7 +388,7 @@ test('throwingRequest_producesExactlyOneEvent_andReturns500', async () => {
     const r = await get(ch.port, '/boom/' + seed);
     assert.strictEqual(r.status, 500);
     assert.strictEqual(r.body, 'Internal Server Error');
-    await waitFor(() => sink.events.length >= 1, 5000);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no event reached the sink within 5s');
     await new Promise(r2 => setTimeout(r2, 300));
     assert.strictEqual(sink.events.length, 1);  // cost NFR: exactly one event per error
     const p = sink.events[0].properties;
@@ -391,8 +404,7 @@ test('urlWithTenantSlug_reportsOnlyRoutePattern', async () => {
     ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
     const r = await get(ch.port, '/products/' + seed + '?x=' + seed);
     assert.strictEqual(r.status, 500);
-    await waitFor(() => sink.events.length >= 1, 5000);
-    assert.ok(sink.events.length >= 1);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no event reached the sink within 5s');
     assert.ok(!JSON.stringify(sink.events).includes(seed));
     assert.strictEqual(sink.events[0].properties.route, '/products/:p');
   } finally { if (ch) await ch.stop(); await sink.stop(); }
@@ -404,12 +416,36 @@ test('unreachableOrSlowEndpoint_doesNotBreakOrSlowRequest', async () => {
     for (let i = 0; i < 3; i++) runs.push((await timedFailingRequest({ capture: false })).ms);
     const base = runs.sort((a, b) => a - b)[1];
     for (const s of [hang, slow]) {
-      const t = await timedFailingRequest({ capture: true, host: s.url });
+      const t = await timedFailingRequest({ capture: true, host: s.url, sink: s, n: 3 });
       assert.strictEqual(t.status, 500);
+      assert.ok(s.requests >= 1, 'capture never reached this sink, so the timing proves nothing');
       assert.ok(t.ms <= base + 200, 'took ' + t.ms + ' vs baseline ' + base);
       assert.ok(!t.output.includes(FAKE_PROD), 'key leaked to output');
     }
+    assert.ok(slow.events.length >= 1, 'slow sink received no event');
   } finally { await hang.stop(); await slow.stop(); }
+});
+test('requestWithE2eIdentityHeader_isStillCaptured_headerCannotSuppress', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/boom/' + seed, { 'x-test-identity': 'e2e-test-x' });
+    assert.strictEqual(r.status, 500);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'event was suppressed by a request header');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1);
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('spawnChildEnv_isMinimal_noInheritedSecretsOrServiceUrls', () => {
+  const names = ['DATABASE_URL', 'REDIS_URL', 'WIRE_X', 'GITHUB_TOKEN', 'STRIPE_SECRET_KEY', 'SESSION_SECRET', 'POSTHOG_KEY_PROD', 'POSTHOG_HOST'];
+  const saved = {}; names.forEach(n => { saved[n] = process.env[n]; process.env[n] = 'parent-' + n; });
+  try {
+    const env = buildChildEnv({});
+    names.forEach(n => assert.ok(!(n in env), n + ' leaked into the child env'));
+    assert.strictEqual(env.NODE_ENV, 'test');
+    assert.ok(env.PATH || env.Path, 'PATH is needed');
+    assert.strictEqual(buildChildEnv({ POSTHOG_HOST: 'h' }).POSTHOG_HOST, 'h');
+  } finally { names.forEach(n => { if (saved[n] === undefined) delete process.env[n]; else process.env[n] = saved[n]; }); }
 });
 test('unwiredCapture_isContained_requestStill500_andLoggedWithoutKey', async () => {
   let ch;

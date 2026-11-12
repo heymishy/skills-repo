@@ -1,10 +1,11 @@
 'use strict';
 const http = require('http'); const zlib = require('zlib');
 async function start(opts) {
-  opts = opts || {}; const events = []; const keys = [];
+  opts = opts || {}; const events = []; const keys = []; let requests = 0;
   const srv = http.createServer((rq, rs) => {
     const ch = []; rq.on('data', c => ch.push(c));
     rq.on('end', () => {
+      requests++;  // counted even when the sink hangs
       if (opts.hang) return;  // never answers
       const reply = () => { rs.writeHead(200, { 'content-type': 'application/json' }); rs.end('{"status":1}'); };
       try {
@@ -16,6 +17,6 @@ async function start(opts) {
     });
   });
   await new Promise(r => srv.listen(0, '127.0.0.1', r));
-  return { url: 'http://127.0.0.1:' + srv.address().port, events, keys, stop: () => new Promise(r => { srv.closeAllConnections && srv.closeAllConnections(); srv.close(r); }) };
+  return { get requests() { return requests; }, url: 'http://127.0.0.1:' + srv.address().port, events, keys, stop: () => new Promise(r => { srv.closeAllConnections && srv.closeAllConnections(); srv.close(r); }) };
 }
 module.exports = { start };

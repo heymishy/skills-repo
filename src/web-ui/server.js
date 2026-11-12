@@ -5230,7 +5230,7 @@ function createApp(options) {
   return http.createServer((req, res) => {
     _router(req, res).catch((err) => {
       console.error('[router error]', err.message, err.stack);
-      try { _errorCapture.captureServerError(err, { url: req.url, identity: req.headers['x-test-identity'] }); } // coha-s5
+      try { _errorCapture.captureServerError(err, { url: req.url }); } // coha-s5
       catch (captureErr) { console.error('[error-capture] capture failed:', captureErr.message); } // never changes the 500
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
