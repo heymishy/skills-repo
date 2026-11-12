@@ -84,6 +84,15 @@
 **Revisit trigger:** If the live webhook check (AC3 of coha-s6) fails or cannot carry a secret header, fall back to a scheduled job reading PostHog's API. If metrics or tracing are wanted, add OTel through the same client, or move to Grafana Cloud, without changing the capture calls. If PostHog retention for exceptions proves shorter than a month, re-check.
 ---
 
+---
+**2026-11-13 | ARCH | coha-s7 — incident record is written by a GitHub Actions workflow (option A)**
+**Decision:** The incident record for each production error GitHub issue is created by a workflow triggered when an issue labelled `production-error` is opened, running the existing incident store from `scripts/`, not by the running app writing through the GitHub Contents API.
+**Alternatives considered:** (B) The app writes the record through the Contents API as the pipeline-state writer does — rejected: `scripts/` is not in the image, so the store's rules would be re-implemented in `src/`, and the app would gain a repository write it does not otherwise perform.
+**Rationale:** Reuses the store and its tests unchanged and keeps the app out of repository writes. Cost: committing to the default branch needs the repo ruleset to allow the bookkeeping path (`workspace/**`), which is an operator action recorded as a coha-s7 DoR prerequisite.
+**Made by:** Claude Sonnet 5.5, chosen by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If the ruleset bypass cannot be granted, fall back to option B or to a pull request opened by the workflow.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

@@ -2,7 +2,7 @@
 
 **Feature:** 2026-11-08-cicd-observability-hardening-automation
 **Created:** 2026-11-09
-**Last updated:** 2026-11-09
+**Last updated:** 2026-11-13
 **Status:** Active
 
 ---
@@ -73,3 +73,21 @@
 ## Gaps and open questions
 
 No further NFR gaps identified at 2026-11-09, beyond the Tier 3 sign-off requirement already captured above.
+
+---
+
+## Additions 2026-11-13 (coha-s5, coha-s6, coha-s7; coha-s4 superseded)
+
+Added after the production-error-source spike replaced the log scan with PostHog error capture, an alert-to-issue bridge and an incident record. The coha-s4 rows above (log-scan duration, Fly.io API token) no longer apply to a live story.
+
+| Category | NFR | Requirement | Applies to story |
+|----------|-----|-------------|-----------------|
+| Privacy | No tenant or customer data, and no source code lines, leave the app in an error event | Allow-list scrubbing in the capture hook, fail-closed, tested with generated values on every run | coha-s5 |
+| Privacy | Issue content is public | The target GitHub repo is public; issue bodies carry only the fixed error code, first-seen time, count, environment and a link | coha-s6, coha-s7 |
+| Isolation | Test and staging traffic cannot create production issues | `e2e-test-` identities send nothing; every event carries `environment`; the bridge acts only on production (staging and production share one PostHog key, as stated by the operator on 2026-11-13) | coha-s5, coha-s6 |
+| Performance | Capture never slows or fails a request | A slow or unreachable PostHog adds at most 200 ms to a failing request and never crashes the process | coha-s5 |
+| Reliability | One issue per error, never lost or duplicated | Unique-key table with a claim window and a take-over rule; retry-safe on GitHub failure | coha-s6 |
+| Security | Bridge authenticated and bounded | Shared secret compared in constant time, 16 KB body limit, own verification because the route is exempt from the CSRF guard | coha-s6 |
+| Cost | Within PostHog's free allowance | 100,000 exceptions per month; one event per error is asserted | coha-s5 |
+
+**Data classification (unchanged):** Internal. Raw error text may contain tenant data inside the running app; the stories require it to be removed before anything leaves the app.

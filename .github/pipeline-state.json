@@ -46817,7 +46817,7 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
           "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-12T18:28:00.322Z",
+          "updatedAt": "2026-11-12T18:41:42.799Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46829,7 +46829,8 @@
           "acTotal": 9,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "blocker": "DoR artefact written 2026-11-13; awaiting operator sign-off (Medium oversight) and W4 acknowledgement before dorStatus can be signed-off"
         },
         {
           "id": "coha-s6",

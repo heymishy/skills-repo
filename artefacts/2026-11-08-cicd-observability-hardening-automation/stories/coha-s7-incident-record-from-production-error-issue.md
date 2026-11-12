@@ -20,7 +20,7 @@ So that **the incident-triage feature has a real recorded incident to work from,
 
 ## Architecture Constraints
 
-- **Open decision to settle at DoR: where the record is written.** (A) A GitHub Actions workflow triggered when an issue with the `production-error` label is opened, running the existing `scripts/lib/incident-store.js` (the store stays in `scripts/`, which the workflow can use) and committing the record. (B) The running app writes the record through the GitHub Contents API, as `pipeline-state-github-writer.js` does for pipeline state, which needs the store's rules re-implemented in `src/` because `scripts/` is not in the image. Recommendation: (A), because it reuses the store and its tests unchanged and keeps the app free of repository writes it does not otherwise perform; its cost is that committing to the default branch needs the repo's ruleset to allow the bookkeeping path (CLAUDE.md describes a path-based bypass for `workspace/**`).
+- **Decision made 2026-11-13 (operator): option A, a workflow writes the record** (see `decisions.md`). The options considered were: (A) A GitHub Actions workflow triggered when an issue with the `production-error` label is opened, running the existing `scripts/lib/incident-store.js` (the store stays in `scripts/`, which the workflow can use) and committing the record. (B) The running app writes the record through the GitHub Contents API, as `pipeline-state-github-writer.js` does for pipeline state, which needs the store's rules re-implemented in `src/` because `scripts/` is not in the image. Chosen: (A), because it reuses the store and its tests unchanged and keeps the app free of repository writes it does not otherwise perform; its cost is that committing to the default branch needs the repo's ruleset to allow the bookkeeping path (CLAUDE.md describes a path-based bypass for `workspace/**`).
 - **The record is created from issue fields only** (the fixed code, first seen, count, environment, link), never from the exception message or stack, because the source is a public issue.
 - **Idempotent:** one record per PostHog issue id (carried in the issue body or a label); a re-run of the workflow must not create a second record.
 - **Triggered and bounded, never a standing process** (`product/constraints.md` #11): the workflow runs and exits.
@@ -60,15 +60,15 @@ So that **the incident-triage feature has a real recorded incident to work from,
 ## Complexity Rating
 
 **Rating:** 2
-**Scope stability:** Unstable until the write-path decision (A or B) is made at DoR.
+**Scope stability:** Stable, subject to the ruleset bypass for `workspace/**` being granted.
 
 ## Definition of Ready Pre-check
 
-- [ ] ACs are testable without ambiguity (depends on the A or B decision)
+- [ ] ACs are testable without ambiguity
 - [ ] Out of scope is declared
 - [ ] Benefit linkage is written
 - [ ] Complexity rated
 - [ ] No dependency on an incomplete upstream story (coha-s6)
 - [ ] NFRs identified
 - [ ] Human oversight level confirmed from parent epic
-- [ ] Write path decided and, for (A), the ruleset path bypass confirmed by the operator
+- [ ] Ruleset path bypass for `workspace/**` confirmed by the operator (option A needs it)
