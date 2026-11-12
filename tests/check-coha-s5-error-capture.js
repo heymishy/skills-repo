@@ -534,6 +534,43 @@ test('wireErrorCapture_registersSignalHandlersOnce', async () => {
   } finally { if (a) await a.stop(); if (b) await b.stop(); }
 });
 
+test('unhandledRejection_isCaptured_processKeepsRunning', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/reject');
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.body, 'queued');
+    const got = await waitFor(() => sink.events.length >= 1, 5000);
+    assert.ok(got, 'no unhandled-rejection event reached the sink within 5s');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1, 'expected exactly one event, got ' + sink.events.length);
+    const ev = sink.events[0]; const p = ev.properties;
+    assert.strictEqual(ev.event, '$exception');
+    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception');
+    assert.strictEqual(p.code, 'unhandled_exception');
+    assert.strictEqual(p.route, '/process');
+    assert.strictEqual(p.environment, 'production');
+    assert.strictEqual(ev.distinct_id, 'server-error-capture');
+    assert.deepStrictEqual(Object.keys(p).sort(), [...ec.KEPT_KEYS].filter(k => k !== '$exception_fingerprint').sort());
+    assert.ok(!JSON.stringify(sink.events).includes('unhandled /reject'), 'request text leaked into payload');
+    const ok = await get(ch.port, '/ok');
+    assert.strictEqual(ok.status, 200);
+    assert.strictEqual(ch.exitCode(), null, 'child exited after unhandled rejection');
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+test('unhandledRejection_withCanaryMessage_neverLeaksCanary', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/reject?msg=' + seed);
+    assert.strictEqual(r.status, 200);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no unhandled-rejection event reached the sink within 5s');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.ok(!JSON.stringify(sink.events).includes(seed), 'canary leaked into payload');
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
   let passed = 0, failed = 0;
