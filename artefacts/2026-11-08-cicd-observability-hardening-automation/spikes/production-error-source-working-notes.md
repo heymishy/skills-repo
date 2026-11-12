@@ -42,3 +42,36 @@
 - PostHog holds `$exception` events, but only 3 in the last 30 days: 1 on 2026-10-27 and 2 on 2026-10-25, all "Error: Contents API content truncated" (from `product-rollup.js`, one of the two places in the app that call `captureException`).
 - So PostHog sees only errors the code chooses to capture. `tenant_admin_bootstrap_failed` and every other `warn`-level line are invisible to it. Using PostHog as the detection source means adding capture calls in the app, which is the "app-side recording" candidate by another route.
 - `artefact_commit_failed` also exists as a PostHog event (a deliberate failure signal already emitted), a pattern the redesign could reuse.
+
+---
+
+## Steps 5 to 7: documentation checks (2026-11-12, web search and page fetches only; no accounts, no production access)
+
+Figures below come from vendor pages and search summaries, and the pages disagree in places. They are inputs to the comparison, to be re-checked on the live pricing pages before anything is built.
+
+### Step 5: OpenTelemetry (OTel) route for pino logs
+
+- **Packages** (PostHog's own pino guide, posthog.com/docs/logs/installation/pino): `@opentelemetry/sdk-node`, `@opentelemetry/exporter-logs-otlp-http`, `@opentelemetry/sdk-logs`, `@opentelemetry/resources`, `@opentelemetry/instrumentation-pino`; for ES modules also `@opentelemetry/instrumentation`. Five or six new packages. An alternative is the single package `pino-opentelemetry-transport`, which sends pino output to an OTLP collector without the instrumentation.
+- **How it works:** the pino instrumentation hands each log event to the OTel Logs SDK while pino keeps writing JSON to stdout. So the existing Fly stdout logging stays as it is, and the OTLP export is added alongside it.
+- **Setup shape:** one init file creating a `NodeSDK` with a `BatchLogRecordProcessor` wrapping an `OTLPLogExporter` and `PinoInstrumentation`, loaded before the app (`node --require ./instrumentation.js`, or `--import` with a `.mjs` file for ES modules). Endpoint and headers can come from environment variables (`OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_HEADERS`).
+- **Caveats:** the instrumentation must load before `pino` is imported, or nothing is sent; pino v7 to v10 only; batching can drop the last batch on shutdown unless `shutdown()` runs; the app already handles `SIGTERM`, so the shutdown call must go inside the existing handler. Package versions vary across guides, so check current versions before pinning.
+- **Open for this app:** the app's `_logger` is injected in some places and `console.warn` is used in others (for example `auth-email.js:91`), so a caught error logged with `console.warn` would not be forwarded unless it is moved to pino.
+
+### Step 6 (documentation part): PostHog Logs as an OTLP destination
+
+- **Ingestion:** a plain OTLP receiver. URL `https://us.i.posthog.com/i/v1/logs` (EU: `eu.i.posthog.com`), header `Authorization: Bearer <project token>` (the `phc_` token, not a personal API key). The project token is the same kind of write-only key the app already uses for event capture, so no new read secret is needed for sending.
+- **Free tier:** the first 50 GB per month is free; afterwards $0.25 per GB up to 300 GB, then $0.15 per GB. One older blog figure says 10 GB, which appears to refer to tracing.
+- **Retention:** conflicting. The pricing docs say 14 days by default; the GA announcement says 7 days. Longer retention is a paid add-on at $0.05 per GB per month, with no free tier.
+- **Alerting and querying:** the docs say alerts can be set up in the web app and that the API can "query logs and manage alerts, saved views, and sampling rules programmatically". They do not say what triggers an alert on log matches, how notifications are delivered, or whether queries can be scheduled. This session also has a `query-logs` tool and a `logs` table in the PostHog connection, which suggests the product is enabled for the account; that has NOT been checked (it is a production read, pending the operator's approval).
+- **Privacy:** the page mentions PII scrubbing but gives no detail on how it works. Whether tenant data in log attributes would be scrubbed is unknown.
+
+### Step 7: other hosted OTLP backends
+
+- **Grafana Cloud free plan:** 50 GB of logs per month, 14 days of retention, 3 monthly active users. Over the limit, new log samples are dropped for that month rather than billed. Paid plans start at 30 days.
+- **Honeycomb free plan:** up to 20 million events per month and 2 triggers; retention and users not stated on the page; the pricing page lists OpenTelemetry support but does not state logs over OTLP, so its fit for logs is unconfirmed.
+
+### What steps 5 to 7 change in the comparison
+
+- OTel to PostHog is feasible with documented packages and no new vendor. Its unknowns are alert delivery, retention (7 or 14 days, both enough for a 6-hour interval), PII scrubbing, and whether `console.warn` call sites need moving to pino.
+- Grafana Cloud is comparable on volume and retention but adds a vendor, an account and a privacy review. Honeycomb is weaker for logs and unconfirmed.
+- None of the hosted options removes the need for something to poll or alert and then record an incident; the app-side database table does not either, but it keeps everything inside systems we already run.
