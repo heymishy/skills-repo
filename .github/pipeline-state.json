@@ -46815,9 +46815,9 @@
           "name": "Production error capture to PostHog with tenant text scrubbed",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-12T20:16:11.878Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-12T22:29:33.668Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46830,7 +46830,7 @@
           "acVerified": 9,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "blocker": "",
+          "blocker": "Post-merge: staging smoke scenario 10 not yet run; Fly capture keys unconfirmed; frame-function-name RISK-ACCEPT not logged",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -46876,8 +46876,10 @@
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
             }
           ],
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1087"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1087",
+          "dodStatus": "complete",
+          "releaseReady": false
         },
         {
           "id": "coha-s6",
