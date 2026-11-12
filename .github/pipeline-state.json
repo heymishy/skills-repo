@@ -46884,12 +46884,12 @@
         {
           "id": "coha-s6",
           "slug": "coha-s6",
-          "name": "Alert-to-GitHub-issue bridge for new production error issues",
+          "name": "GitHub issue opened by PostHog for each new production error issue (native destination)",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
           "stage": "review",
           "health": "green",
-          "updatedAt": "2026-11-12T18:32:32.045Z",
+          "updatedAt": "2026-11-12T23:53:17.354Z",
           "reviewStatus": "passed",
           "highFindings": 0
         },

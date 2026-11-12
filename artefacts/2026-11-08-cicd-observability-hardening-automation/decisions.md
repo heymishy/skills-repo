@@ -102,6 +102,15 @@
 **Revisit trigger:** If a second contributor joins, have them review these verification scripts before any of these stories' scope next changes.
 ---
 
+---
+**2026-11-13 | ARCH | coha-s6 — use PostHog's native GitHub destination, not a custom bridge**
+**Decision:** coha-s6 opens production error issues with PostHog's built-in `template-github` destination on an error-tracking alert (trigger "issue created", filter `environment = production`), through a GitHub App the operator installs on the single target repo. The custom bridge route, `production_error_issues` table, shared secret and GitHub token of the run-3 design are not built.
+**Alternatives considered:** (B) Custom bridge as written (webhook destination calling a route in the app) — kept as the fallback, not chosen first: it adds a route, a table, two secrets and eight acceptance criteria to duplicate what PostHog does natively, and needed a public receiver for the payload capture that the operator had not named. (C) Hybrid, native issue plus a webhook for coha-s7 — rejected for now: coha-s7 can trigger from the issue itself.
+**Rationale:** Much less code and no new secret or token held by us. Known losses, accepted: PostHog applies no label (coha-s7's workflow adds `production-error`), the issue body carries up to 5 in-app stack frames and the message rather than "fixed fields only" (acceptable because coha-s5's scrub leaves a fixed code and `src/` frames only, in a repo whose source is public), the environment rule becomes an alert filter instead of a check in code, and duplicate suppression is PostHog's and unproven until the first real production error. Evidence: PostHog template `template-github` read 2026-11-13; integrations listing for project 10908 held 0 entries.
+**Made by:** Claude Sonnet 5.5, chosen by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If the live check shows tenant text or anything beyond the fixed code and `src/` frames in the issue, if the environment filter cannot be enforced, or if duplicates appear, disable the alert and reinstate the run-3 bridge design (git commit 6e16356c7) through `/definition` and `/review`. The earlier revisit trigger tied to "AC3 of coha-s6" (webhook secret header) is superseded by this entry.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

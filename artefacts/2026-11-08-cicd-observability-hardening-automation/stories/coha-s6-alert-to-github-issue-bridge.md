@@ -1,6 +1,6 @@
-## Story: Alert-to-GitHub-issue bridge for new production error issues
+## Story: GitHub issue opened by PostHog for each new production error issue (native destination)
 
-**Status:** DRAFT run 3, awaiting re-review. Revised 2026-11-13 after `review/coha-s6-review-1.md` (2 HIGH, 4 MEDIUM, 2 LOW) and `review/coha-s6-review-2.md` (1 HIGH, 1 MEDIUM, 1 LOW). Second half of the split of the 2026-11-13 draft; the first half is coha-s5 (capture and scrub). The incident record that was AC4 moved to coha-s7. Replaces the notification half of coha-s4 (bounded production-log scan), which is superseded per the 2026-11-13 decision in `decisions.md`.
+**Status:** DRAFT run 4, awaiting re-review. Rewritten 2026-11-13 after the operator chose the native route (decision entry "coha-s6 — use PostHog's native GitHub destination, not a custom bridge" in `decisions.md`). The run-3 version, a custom bridge route in the app with its own database table, shared secret and GitHub token (reviewed PASS), is in git at commit 6e16356c7 and is the fallback design. Second half of the split of the 2026-11-13 draft; the first half is coha-s5 (capture and scrub, merged). Replaces the notification half of coha-s4 (bounded production-log scan), which is superseded.
 **Epic reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/epics/coha-e1-detect-and-alert.md
 **Discovery reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/discovery.md
 **Benefit-metric reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/benefit-metric.md
@@ -20,63 +20,60 @@ So that **a captured error is queued for a fix without anyone having to notice t
 
 ## Architecture Constraints
 
-- **First task, before `/test-plan`: capture one real PostHog payload.** The operator approved (2026-11-13) creating one PostHog webhook destination on the live project pointing at a throwaway receiver, and running its test function once. The scrubbed sample is committed as the fixture used by every test below (mock-shape rule). No test may use an invented payload shape. Exit condition for this task: the captured payload is confirmed to contain the fixed error code, first-seen time, occurrence count, the PostHog issue id and URL, and `environment`. If `environment` is absent, the decision between filtering in the PostHog alert only and having the bridge read the issue from the PostHog API is made before `/test-plan`. The destination is deleted or repointed to the real bridge afterwards. The issue body also carries the PostHog issue id as a marker line, used by the take-over rule above.
-- **The bridge is a route in the running app** that PostHog's webhook destination calls; it runs only when called, never as a standing watcher (`product/mission.md`, `product/constraints.md` #11). It follows the existing `/webhook/stripe` route (`server.js` around line 4236): no user session, its own verification, exempt from the CSRF guard that mutating routes use, registered in `server.js` and wired at startup.
-- **Request limits:** non-POST requests return 405; a body over 16 KB returns 413 and is rejected before it is parsed; an unparseable or wrongly shaped body returns 400.
-- **Authentication:** a shared secret in a request header, compared in constant time (`crypto.timingSafeEqual`), supplied as a Fly secret. A missing or wrong secret returns 401 and does nothing else.
-- **Duplicate state is a database table with a unique key.** The app creates `production_error_issues` at boot, as it does for `credit_audit_log` and the other tables; columns include the PostHog issue id (unique), a status (`pending` or `created`), the GitHub issue number and timestamps. The handler inserts the row with status `pending` and a claim time, creates the GitHub issue, then marks the row `created`. Rules for a row that already exists: status `created` is a duplicate (return 200, do nothing); status `pending` younger than a claim window of 2 minutes is in flight (return 200, do nothing); status `pending` older than the claim window is taken over with a single conditional update that only one caller can win, and the winner first searches the target repo for an existing issue whose body carries the PostHog issue id marker (so a crash between creating the issue and marking the row cannot produce a second issue), and creates one only if none exists. This survives restarts and a second Fly machine, and two simultaneous deliveries cannot both create an issue.
-- **Injectable adapter rule (D37):** the GitHub issue creation is an injectable adapter whose stub throws. The plan names the production wiring as its own task and the wiring test asserts an observable outcome against a local fake GitHub API (the request has the right path, the token in the `Authorization` header, and the exact title and body), not that a function reference was assigned.
-- **Credentials (`product/constraints.md` #12):** the webhook shared secret and a GitHub token with issue-write access on the target repo are Fly secrets, never tracked files, never logged. The existing app's GitHub writes use a per-user session token; this bridge has no session, so it uses its own server-owned token.
-- **Target repo from configuration, not code:** the repo comes from an environment variable. It is `heymishy/skills-repo` today, which is a PUBLIC repository, so every issue is public.
-- **Issue content is fixed fields only:** title is the fixed error code from the payload; the body holds first-seen time, occurrence count, `environment`, and a link to the PostHog issue. No exception message, no stack frame, no file path, no property from the payload beyond those fields. A label `production-error` is applied.
-- **Environment filter:** coha-s5 events carry `environment`, and staging and production share one PostHog key. The bridge acts only on `environment = production`. The PostHog alert should also filter on it; the bridge check is the guarantee.
+- **Configuration, not code.** PostHog's built-in `template-github` destination on an error-tracking alert opens the issue itself, through a GitHub App that the operator installs. No route, database table, shared secret or GitHub token is added to the app, and nothing under `src/` changes. If a gap in the native destination forces code, the story stops and the run-3 bridge design (commit 6e16356c7) is reinstated through `/definition` and `/review`, not improvised here.
+- **Operator prerequisite, in the browser:** connect PostHog's GitHub integration on the project (PostHog project settings, integrations) and install the PostHog GitHub App on the single target repo only, with issue write access and nothing broader. PostHog's integrations list for project 10908 held 0 entries on 2026-11-13, so this is not yet done. The agent does not do this step.
+- **Alert shape:** one error-tracking alert, trigger "issue created" only (not reopened, not spiking), a filter `environment = production`, destination `template-github` pointing at the configured repo. coha-s5 events carry `environment`, and staging and production share one PostHog key (operator statement, unverified), so the filter is what keeps staging out. Created through the PostHog tools (`error-tracking-alerts-create` and `cdp-functions-create`), and its configuration is recorded without secrets as `reference/coha-s6-alert-configuration.md` so it is reviewable outside PostHog.
+- **Issue content is what the template produces, and it is not "fixed fields only".** Title defaults to the exception type and message (the message is a fixed code such as `tenant_admin_bootstrap_failed`, coha-s5 AC3), body holds the message in a code block, up to 5 in-app stack frames (file, line, function name) and a "View in PostHog" link. This is acceptable because coha-s5's allow-list scrub guarantees the message is a fixed code and keeps only `src/` or `node_modules/` frames with no source lines, and because the repo is public and its source is already public. The live checks (AC3, AC4) prove this on a real issue; if the template leaks anything else, the alert is disabled and the fallback applies.
+- **No label from PostHog.** The template applies none. The label `production-error` that coha-s7 keys on moves into coha-s7: its workflow adds the label to a PostHog-created issue as its first step. This story's job is to capture a real created issue as a fixture so coha-s7 can state exactly how to recognise one (author login of the GitHub App, title shape, the PostHog link in the body).
+- **Outward-facing steps need explicit approval each time.** Running the destination's test function opens a real issue in a public repo. Approval is asked for immediately before that run and covers one run; the resulting test issue is closed by the operator afterwards and is not counted as an incident.
+- **Platform-agnostic guardrail (ADR-012):** this route is vendor-specific on purpose (PostHog is already the chosen capture vendor and GitHub is the repository platform), so it is the adapter-shaped edge, not core. Nothing in `src/` or `scripts/` depends on it; the run-3 bridge or any other alert destination can replace it without touching the pipeline.
+- **Credentials (`product/constraints.md` #12):** the GitHub App installation is held by PostHog. No credential is created, printed, written or committed by this story.
+- **Duplicate suppression is PostHog's:** a given error issue fires "issue created" once. There is no table of ours; the claim is checked at first real occurrence (AC6).
 
 ## Dependencies
 
-- **Upstream:** coha-s5 (errors must be captured for there to be an issue to report). The bridge is built and tested against the captured fixture before coha-s5 ships, but the live check (AC6) needs both.
-- **Operator prerequisites:** approval already given for the throwaway-receiver payload capture and one PostHog webhook destination on the live project; a shared secret and a GitHub token set as Fly secrets.
-- **Downstream:** coha-s7 (incident record for each bridge-opened issue), and the incident-triage feature's first real recorded incident.
+- **Upstream:** coha-s5 (merged, PR #1087). Its operator follow-ups matter here: the Fly capture keys must exist and scenario 10 (a deliberate staging error) must be run, because the staging error is also this story's negative test (AC5).
+- **Operator prerequisites:** the GitHub App installation above; approval for the single test-function run; one deliberate staging error (shared with coha-s5 scenario 10).
+- **Downstream:** coha-s7 (label and incident record for each created issue; its trigger and the "carried in the issue body or a label" rule need revising to match the real issue, at its own `/review`), and the incident-triage feature's first real recorded incident.
 
 ## Acceptance Criteria
 
-**AC1:** Given PostHog calls the bridge with a new-issue alert payload for a production error and the correct shared secret, When the bridge handles it, Then exactly one GitHub issue is opened in the configured repo with the `production-error` label, a title equal to the fixed error code, and a body containing only first-seen time, occurrence count, environment and a link to the PostHog issue, and no exception message or stack content.
+**AC1:** Given the operator has connected the PostHog GitHub integration, When the project's integrations are listed, Then one GitHub integration is present and the repos it can reach are exactly the single target repo, and the installation's permission for issues is write with no broader scope. Evidence: the integrations listing and the repo list from PostHog, plus the operator's statement of the permissions shown in GitHub's installation page.
 
-**AC2:** Given a PostHog issue id that already has an issue, When the same payload arrives again, or two copies arrive at the same moment, or the handler is restarted between deliveries, Then no second GitHub issue is opened, each tested through the real route handler against the `production_error_issues` table. Given a row stuck in `pending` older than the claim window because the process stopped after the insert, When the payload is delivered again, Then exactly one issue exists afterwards, whether or not the first attempt had already created it on GitHub.
+**AC2:** Given the alert has been created, When its stored configuration is read back from PostHog, Then it has trigger "issue created" only, a filter of `environment = production`, destination `template-github` aimed at the target repo, and is enabled. The read-back is recorded in `reference/coha-s6-alert-configuration.md`.
 
-**AC3:** Given a request with a missing or wrong shared secret, When the bridge handles it, Then nothing is created or inserted and it returns 401; a non-POST request returns 405; a body over 16 KB returns 413 without being parsed; a malformed body returns 400.
+**AC3:** Given the alert exists, When its destination test function is run once with operator approval, Then exactly one issue appears in the target repo with the template's title and body shape and a "View in PostHog" link, and the issue's author, title shape and link pattern are recorded as the fixture for coha-s7. This is `live-verified` evidence for delivery only.
 
-**AC4:** Given a payload whose `environment` is `staging` or is missing, When the bridge handles it, Then no GitHub issue is opened and no row is inserted, and it returns 200 so PostHog does not retry.
+**AC4:** Given the AC3 sample cannot show whether tenant text is excluded (the sample event is not a real scrubbed event), When a real scrubbed staging event is routed through a temporary copy of the alert that does not filter on environment, with separate operator approval for that one extra public issue, Then the resulting issue's title and body contain only the fixed code and at most 5 frames each under `src/` or `node_modules/` with no source lines, and the temporary alert is deleted and the issue closed afterwards. This AC applies only if AC3's sample is judged insufficient; the judgement and its reason are written in the DoD.
 
-**AC5:** Given GitHub rejects or does not answer the issue creation, When the bridge handles a new payload, Then it returns 503, the row is not left marked `created`, and a later delivery of the same payload opens exactly one issue.
+**AC5:** Given a staging error is raised (coha-s5 scenario 10) and PostHog shows the event in this same project, When the production-only alert has had time to fire, Then no issue is opened in the target repo for it. This proves the environment filter. If the staging event does not appear in this project, the AC is not satisfied and the shared-project assumption is re-opened.
 
-**AC6:** Given the alert destination exists on the live PostHog project, When its test function is run against the bridge, Then the request arrives with the secret header intact and the payload parses into the same fixture shape the tests use. This is `live-verified` evidence and is recorded in the DoD. If the header cannot be sent, the story falls back to a scheduled job reading PostHog's API, per the decision's revisit trigger.
+**AC6:** Given a real production error issue is first seen, When PostHog raises "issue created", Then exactly one GitHub issue opens, and further occurrences of the same error do not open another. This is `production-observed` evidence and may legitimately be absent at merge. DoR classifies it explicitly: a RISK-ACCEPT entry in `decisions.md` and a post-merge action in `workspace/state.json` naming who confirms it at the first real production error; until then the DoD records COMPLETE WITH DEVIATIONS, not complete.
 
-**AC7:** Given the real server startup path runs with test environment variables and a local fake GitHub API, When a valid production payload is posted, Then the fake GitHub API receives one request with the right path, the token in the `Authorization` header and the expected title and body.
-
-**AC8:** Given the issue-creating adapter has not been wired, When a valid production payload is posted, Then the bridge returns 503 and logs a "not wired" error rather than crashing, and no row is left marked `created`.
+**AC7:** Given the story is finished, When the repository diff is examined, Then it contains only artefacts and bookkeeping (nothing under `src/`, `scripts/` or `.github/workflows/`), and no credential, installation id or token appears in any committed file.
 
 ## Out of Scope
 
 - Capturing or scrubbing errors (coha-s5).
-- Creating incident records from the opened issue (coha-s7).
+- Labelling the issue and creating incident records from it (coha-s7).
 - Any remediation or auto-fix; issue creation only.
 - Teams notification (on hold until Teams is in use).
-- Changing PostHog's alert rules beyond creating the one destination.
+- A custom webhook receiver, shared secret, database table or GitHub token (the run-3 design, kept only as the fallback).
+- Alerts other than this one new-issue alert; spiking, reopened, comment and close behaviour.
 - OpenTelemetry (OTel) logs, traces or metrics, and any second vendor.
-- Comment, close or reopen of issues when an error recurs or is fixed.
 
 ## NFRs
 
-- **Performance:** the route answers within 2 seconds under normal conditions and does not block on anything but the database insert and one GitHub call.
-- **Security:** shared-secret authentication in constant time, request size limit, payload validation, no secrets in logs or issues, issue content limited to the fixed fields (the repo is public).
-- **Audit:** every bridge call (created, duplicate, wrong environment, rejected, failed) is logged without the secret and without payload content beyond the PostHog issue id.
-- **Reliability:** duplicate and concurrent delivery cannot create duplicate issues (AC2); a GitHub failure can be retried safely (AC5). PostHog's own retry behaviour is undocumented; the bridge returns 503 for retryable failures and 200 for deliberate ignores.
+- **Performance:** not applicable; PostHog delivers asynchronously and the app is not in the path.
+- **Security:** least-privilege installation scoped to one repo with issue write only; issue content limited to what coha-s5's scrub leaves (a fixed code and `src/` frames) in a public repo; no credential handled by us; staging excluded by the environment filter.
+- **Audit:** the alert configuration read-back, the integrations listing and the real created-issue fixture are recorded in artefacts; PostHog's own destination invocation logs are the delivery record.
+- **Reliability:** duplicate suppression and retry behaviour are PostHog's and are treated as unproven until AC6; a failed delivery (for example the App uninstalled) is visible only in PostHog's destination logs, which the verification script names as the place to look.
 - **Accessibility:** not applicable.
 
 ## Complexity Rating
 
-**Rating:** 2
-**Scope stability:** Unstable until the real payload is captured and the live webhook check (AC6) is done.
+**Rating:** 1
+**Scope stability:** Unstable until the first real created issue is seen (AC3), because the issue body and author are template-defined and not yet observed (AC3).
 
 ## Definition of Ready Pre-check
 
@@ -84,8 +81,10 @@ So that **a captured error is queued for a fix without anyone having to notice t
 - [ ] Out of scope is declared
 - [ ] Benefit linkage is written
 - [ ] Complexity rated
-- [ ] No dependency on an incomplete upstream story (coha-s5 must be merged before the live check)
+- [ ] No dependency on an incomplete upstream story
 - [ ] NFRs identified
 - [ ] Human oversight level confirmed from parent epic
-- [ ] Real payload fixture captured and committed (first task)
-- [ ] Operator prerequisites (shared secret, GitHub token, webhook destination) confirmed
+- [ ] GitHub integration connected and installation scope confirmed (operator, AC1)
+- [ ] Approval for the single test-function run recorded (and, if AC4 applies, for the one extra issue)
+- [ ] AC6 (production-observed) classified at DoR with a RISK-ACCEPT and a post-merge action
+- [ ] coha-s7 revision for the label and trigger noted as a downstream action
