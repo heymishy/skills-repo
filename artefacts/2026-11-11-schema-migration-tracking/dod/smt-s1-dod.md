@@ -118,3 +118,22 @@ Performed against `wuce-staging` (Fly.io app) after the Staging Deploy workflow 
 3. **Chained steps (AC4):** the same warm-boot logs show `[story-1-organisation-entity] organisations backfill complete (3 row(s) created)` followed by both `organisations pool wired ...` lines, and `[tab-s1] tenant admin bootstrap pool wired ...` for both auth paths. The backfill creating rows for 3 newly seen tenants on a warm boot is direct evidence that it was not gated.
 4. **Not covered by this check:** the first-boot timing was not captured in the log buffer (the deploy's own boot lines had rolled out), so the cold-run DDL was not observed directly, only its recorded result. The 3-versus-11 split in `applied_at` shows the 14 migrations were not all recorded in one boot: at least two boots wrote them. The cause was not investigated (a mid-boot machine suspend or an earlier deploy are both plausible). It does not contradict any AC, since each migration is recorded at most once, but it is noted here rather than explained.
 5. **Production:** the same deploy run is `waiting` on the manual "Promote to production" approval. This DoD says nothing about production behaviour, which remains unverified.
+
+---
+
+## Production Observation Addendum (2026-11-12)
+
+smt-s1 was promoted to production (`skills-framework`) on 2026-11-11 at about 18:59 UTC, release v177 (run 43080234359, job "Promote to production" succeeded). A later release, v178, booted at 2026-11-12 05:53 UTC. A read-only `SELECT name, applied_at FROM schema_migrations` on production returned **14 rows** with the columns `name, applied_at` and no tenant column, matching AC6 and the staging result.
+
+| Rows | `applied_at` | Boot that wrote them |
+|------|--------------|----------------------|
+| 3 (`migrateArtefactCommentsSchema`, `migrateTeamSchema`, `migrateIdentityLinksSchema`) | 2026-11-11 18:59:37 | v177 (the smt-s1 promotion) |
+| 11 (the other migrations) | 2026-11-12 05:53:26 | v178 |
+
+What this supports: the table exists in production with the right shape, and all 14 migrations are now recorded. The 3 rows from v177 kept their original timestamps through the v178 boot, so those 3 were skipped, not re-recorded, on the second boot. That is production evidence for AC2 (warm boot skips) on 3 of the 14 migrations. The recent `fly logs` lines for the v178 boot show the server listening and no errors.
+
+What it does not support, and is **unexplained**: on staging a single cold boot recorded all 14. On production the v177 boot recorded only 3, and the other 11 were first recorded by v178, 11 hours later. The cause is not known. `fly logs --no-tail` returns only 100 lines and the v177 boot is no longer in it, and the machine's event log starts at the v178 launch, so the evidence needed to explain it was gone before this check ran. Consistent with the design's known failure mode (Observation 1: a tracker failure skips that boot's migration, which is then retried and recorded at the next boot), but that is a hypothesis, not a finding. It is self-healing and cost nothing visible, because every one of those tables already existed from earlier boots.
+
+Strength: AC6 `production-observed`; AC2 `production-observed` for 3 of 14 migrations; AC1 and AC4 stay `live-verified` on staging only. The outcome stays COMPLETE.
+
+**Follow-up:** next time a production deploy happens, capture the boot logs immediately (`fly logs -a skills-framework --no-tail` within a minute of the deploy) and compare with `schema_migrations`, to see whether the first boot again records only some migrations. Owner: operator.
