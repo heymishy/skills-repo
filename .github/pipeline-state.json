@@ -48717,8 +48717,8 @@
           "name": "Deferred-item record mechanism (generalized schema)",
           "epic": "ddft-e1-follow-through-mechanism",
           "stage": "branch-complete",
-          "health": "red",
-          "updatedAt": "2026-11-11T19:49:28.458Z",
+          "health": "green",
+          "updatedAt": "2026-11-12T04:33:58.530Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -48785,8 +48785,9 @@
           "verifyStatus": "passed",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1067",
-          "dodStatus": "not-started",
-          "blocker": "DoD INCOMPLETE: the two seeded deferred-item records are never persisted, workspace/incidents.json does not exist. Needs follow-up to persist and re-check."
+          "dodStatus": "complete",
+          "blocker": "",
+          "releaseReady": true
         },
         {
           "id": "ddft-s2",
@@ -49433,18 +49434,24 @@
           "id": "dsrf-s1",
           "slug": "dsrf-s1",
           "name": "Persist the two seeded deferred-item records that ddft-s1 promised but never shipped",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "testPlan": {
             "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "totalTests": 9,
+            "passing": 9,
             "artefact": "artefacts/2026-11-12-ddft-seed-records-fix/test-plans/dsrf-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-11T21:23:46.439Z",
-          "dorStatus": "signed-off"
+          "acVerified": 5,
+          "updatedAt": "2026-11-12T04:33:22.654Z",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1077",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "blocker": ""
         }
       ],
       "metrics": [],
