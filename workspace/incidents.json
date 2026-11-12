@@ -1,0 +1,44 @@
+[
+  {
+    "id": "e53471ef-43af-4823-9eab-c6e1a25d6072",
+    "type": "deferred-item",
+    "trigger": "Pipeline-state integrity check C3 fails on master for story tfhc-s1",
+    "summary": "scripts/check-pipeline-state-integrity.js rule C3 fails for tfhc-s1 (feature 2026-10-30-test-fixture-hardening-continuation): prStatus is \"merged\" but testPlan.passing (4) is below testPlan.totalTests (5). The story was merged with one test unaccounted for and the state was never corrected. Knowingly left unfixed; this is the only failure the integrity check reports on master.",
+    "tags": [
+      "pipeline-state",
+      "integrity-check",
+      "tfhc-s1"
+    ],
+    "priorIncidentLinks": [],
+    "status": "open",
+    "triageSummary": null,
+    "confirmationStatus": null,
+    "createdAt": "2026-11-11T23:04:34.608Z",
+    "updatedAt": "2026-11-11T23:04:34.608Z",
+    "source": "risk-accept",
+    "revisitCondition": "Act when testPlan.passing for tfhc-s1 is corrected to the confirmed passing count in a post-merge pipeline-state commit, or when the C3 check itself is changed to tolerate it.",
+    "linkedFeature": "2026-10-30-test-fixture-hardening-continuation",
+    "linkedStory": "tfhc-s1"
+  },
+  {
+    "id": "67a32c28-1a24-4040-8865-f8d222e4c01a",
+    "type": "deferred-item",
+    "trigger": "Governed documents disagree on whether an enterprise fork is a supported distribution path",
+    "summary": "Architecture guardrails constraint C1 (the update channel must never be severed; fork-requiring distribution is off the table) contradicts skills/bootstrap/SKILL.md Step 3d Option C (\"Enterprise fork\") and the \"Enterprise with org fork\" flow in docs/skill-pipeline-instructions.md, which offer an org-level fork as a first-class onboarding path. Found by a read-only audit on 2026-11-08 and deliberately not resolved at the time.",
+    "tags": [
+      "governed-documents",
+      "constraint-c1",
+      "bootstrap-option-c"
+    ],
+    "priorIncidentLinks": [],
+    "status": "open",
+    "triageSummary": null,
+    "confirmationStatus": null,
+    "createdAt": "2026-11-11T23:04:34.615Z",
+    "updatedAt": "2026-11-11T23:04:34.615Z",
+    "source": "backlog-thread",
+    "revisitCondition": "deferred to a broader `product/` refresh later",
+    "linkedFeature": null,
+    "linkedStory": null
+  }
+]
