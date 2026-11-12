@@ -4,7 +4,7 @@
 
 const NOT_WIRED = 'Adapter not wired: error-capture. Call initErrorCapture() with a real implementation before use.';
 const FIXED_DISTINCT_ID = 'server-error-capture';
-const KEPT_KEYS = ['$exception_list', '$exception_level', '$exception_fingerprint', '$lib', '$lib_version',
+const KEPT_KEYS = ['$exception_list', '$exception_level', '$lib', '$lib_version',
   '$is_server', '$geoip_disable', '$process_person_profile', 'environment', 'route', 'code'];
 const ALLOW_LISTED_MESSAGES = new Set(['tenant_admin_bootstrap_failed']);
 
@@ -108,14 +108,20 @@ function _resetForTests() { _state = { wired: false, disabled: false, client: nu
 
 function initErrorCapture(envName, env, deps) {
   deps = deps || {}; env = env || {};
+  if (_state.wired) return { wired: true, alreadyWired: true };  // idempotent: never a second client or extra listeners
   const log = deps.logger || console;
   let key;
   try { key = resolvePostHogApiKey(envName, env); }
   catch (err) { log.error('[error-capture] disabled: ' + err.message); _state = { wired: false, disabled: true, client: null, environment: envName }; return { wired: false, error: err }; }
+  // RISK: posthog-node 5.40.0 registers its own uncaughtException handler for autocapture and calls
+  // process.exit(1) from it when no OTHER uncaughtException listener exists. So autocapture defaults on only
+  // if a listener is already present at init time. The server.js startup block registers log-and-swallow
+  // handlers, and they must exist BEFORE wireErrorCapture runs. deps.autocapture (boolean) overrides.
+  const autocapture = typeof deps.autocapture === 'boolean' ? deps.autocapture : process.listenerCount('uncaughtException') > 0;
   const Ctor = deps.PostHogClient || require('posthog-node').PostHog;
   const client = new Ctor(key, Object.assign({
     host: env.POSTHOG_HOST || 'https://us.i.posthog.com',
-    enableExceptionAutocapture: true,
+    enableExceptionAutocapture: autocapture,
     before_send: (ev) => scrubEvent(ev, envName)
   }, deps.clientOptions || {}));
   _state = { wired: true, disabled: false, client, environment: envName };
@@ -133,9 +139,21 @@ function captureServerError(err, context) {
   });
 }
 
+// Flushes AND shuts down the client (intended for process exit). Afterwards captureServerError is an explicit no-op.
 async function flushErrorCapture(timeoutMs) {
-  if (!_state.client) return;
-  await Promise.race([_state.client.shutdown(), new Promise(r => setTimeout(r, timeoutMs || 2000))]);
+  const client = _state.client;
+  if (!client) return;
+  const ms = timeoutMs || 2000;
+  let timer;
+  try {
+    await Promise.race([
+      client.shutdown(ms),
+      new Promise(r => { timer = setTimeout(r, ms); if (timer.unref) timer.unref(); })
+    ]);
+  } finally {
+    clearTimeout(timer);
+    _state.client = null; _state.disabled = true;
+  }
 }
 
 module.exports = { NOT_WIRED, FIXED_DISTINCT_ID, KEPT_KEYS, routeLabel, scrubEvent, initErrorCapture, captureServerError, flushErrorCapture, _resetForTests };

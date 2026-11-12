@@ -210,21 +210,110 @@ test('initErrorCapture_resolvesStagingAndProductionKeys_neverFallsBack', () => {
   assert.strictEqual(r.wired, false);
 });
 test('captureServerError_suppressesE2eIdentity', async () => {
-  const sink = await sinkLib.start(); ec._resetForTests();
-  ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
-  ec.captureServerError(new Error('x'), { identity: 'e2e-test-user', url: '/a' });
-  await ec.flushErrorCapture(1500); assert.strictEqual(sink.events.length, 0); await sink.stop();
+  const sink = await sinkLib.start();
+  try {
+    ec._resetForTests();
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+    ec.captureServerError(new Error('x'), { identity: 'e2e-test-user', url: '/a' });
+    ec.captureServerError(new Error('y'), { identity: 'real-user', url: '/b' });  // positive control
+    await ec.flushErrorCapture(1500);
+    assert.strictEqual(sink.events.length, 1);
+    assert.strictEqual(sink.events[0].properties.route, '/:p');
+  } finally { await sink.stop(); }
 });
 test('captureServerError_setsEnvironmentProperty', async () => {
-  const sink = await sinkLib.start(); ec._resetForTests();
-  ec.initErrorCapture('staging', { POSTHOG_KEY_STAGING: 'phc_stg_fake', POSTHOG_HOST: sink.url }, OPTS);
-  ec.captureServerError(new Error('x'), { url: '/a/b' });
-  await ec.flushErrorCapture(1500);
-  assert.strictEqual(sink.events.length, 1);
-  assert.strictEqual(sink.events[0].properties.environment, 'staging');
-  assert.strictEqual(sink.events[0].properties.route, '/:p/:p');
-  assert.ok(sink.keys.includes('phc_stg_fake'));  // sink records the key it received; never printed
-  await sink.stop();
+  const sink = await sinkLib.start();
+  try {
+    ec._resetForTests();
+    ec.initErrorCapture('staging', { POSTHOG_KEY_STAGING: 'phc_stg_fake', POSTHOG_HOST: sink.url }, OPTS);
+    ec.captureServerError(new Error('x'), { url: '/a/b' });
+    await ec.flushErrorCapture(1500);
+    assert.strictEqual(sink.events.length, 1);
+    assert.strictEqual(sink.events[0].properties.environment, 'staging');
+    assert.strictEqual(sink.events[0].properties.route, '/:p/:p');
+    assert.ok(sink.keys.includes('phc_stg_fake'));  // sink records the key it received; never printed
+  } finally { await sink.stop(); }
+});
+test('initErrorCapture_twice_isIdempotent_oneClientAndBoundedListeners', async () => {
+  const sink = await sinkLib.start();
+  try {
+    ec._resetForTests();
+    const env = { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url };
+    const u0 = process.listenerCount('uncaughtException'), r0 = process.listenerCount('unhandledRejection');
+    const Real = require('posthog-node').PostHog; let made = 0;
+    const Counting = function (k, o) { made++; return new Real(k, o); };
+    const o = { PostHogClient: Counting, autocapture: true, clientOptions: OPTS.clientOptions };
+    const first = ec.initErrorCapture('production', env, o);
+    const second = ec.initErrorCapture('production', env, o);
+    assert.strictEqual(first.wired, true);
+    assert.deepStrictEqual(second, { wired: true, alreadyWired: true });
+    assert.strictEqual(made, 1);
+    assert.ok(process.listenerCount('uncaughtException') - u0 <= 1);
+    assert.ok(process.listenerCount('unhandledRejection') - r0 <= 1);
+    await ec.flushErrorCapture(1500);
+  } finally { await sink.stop(); }
+});
+function recordingCtor(box) { return function (k, o) { box.opts = o; this.captureException = () => {}; this.shutdown = async () => {}; }; }
+test('initErrorCapture_autocapture_defaultsToFalseWithoutUncaughtListener', () => {
+  const saved = process.listeners('uncaughtException'); saved.forEach(l => process.removeListener('uncaughtException', l));
+  try {
+    ec._resetForTests(); const box = {};
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake' }, { PostHogClient: recordingCtor(box) });
+    assert.strictEqual(box.opts.enableExceptionAutocapture, false);
+  } finally { saved.forEach(l => process.on('uncaughtException', l)); }
+});
+test('initErrorCapture_autocapture_trueWithUncaughtListener_andOverridable', () => {
+  const l = () => {}; process.on('uncaughtException', l);
+  try {
+    ec._resetForTests(); let box = {};
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake' }, { PostHogClient: recordingCtor(box) });
+    assert.strictEqual(box.opts.enableExceptionAutocapture, true);
+    ec._resetForTests(); box = {};
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake' }, { PostHogClient: recordingCtor(box), autocapture: false });
+    assert.strictEqual(box.opts.enableExceptionAutocapture, false);
+  } finally { process.removeListener('uncaughtException', l); }
+  const saved = process.listeners('uncaughtException'); saved.forEach(x => process.removeListener('uncaughtException', x));
+  try {
+    ec._resetForTests(); const box = {};
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake' }, { PostHogClient: recordingCtor(box), autocapture: true });
+    assert.strictEqual(box.opts.enableExceptionAutocapture, true);
+  } finally { saved.forEach(x => process.on('uncaughtException', x)); }
+});
+test('flushErrorCapture_thenCapture_isExplicitNoOp', async () => {
+  const sink = await sinkLib.start();
+  try {
+    ec._resetForTests();
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+    ec.captureServerError(new Error('a'), { url: '/a' });
+    await ec.flushErrorCapture(1500);
+    assert.strictEqual(sink.events.length, 1);
+    assert.doesNotThrow(() => ec.captureServerError(new Error('b'), { url: '/a' }));
+    await ec.flushErrorCapture(500);
+    assert.strictEqual(sink.events.length, 1);
+  } finally { await sink.stop(); }
+});
+test('flushErrorCapture_hangingSink_returnsWithinTimeoutPlusSlack', async () => {
+  const sink = await sinkLib.start({ hang: true });
+  try {
+    ec._resetForTests();
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+    ec.captureServerError(new Error('a'), { url: '/a' });
+    const t0 = Date.now(); await ec.flushErrorCapture(400); const ms = Date.now() - t0;
+    assert.ok(ms <= 700, 'took ' + ms);
+  } finally { await sink.stop(); }
+});
+test('captureServerError_oddErrorValues_doNotThrow_andAreScrubbed', async () => {
+  const sink = await sinkLib.start();
+  try {
+    ec._resetForTests();
+    ec.initErrorCapture('production', { POSTHOG_KEY_PROD: 'phc_fake', POSTHOG_HOST: sink.url }, OPTS);
+    const c = rnd();
+    [c, undefined, { message: c, tenantId: c }].forEach(v => assert.doesNotThrow(() => ec.captureServerError(v, { url: '/a' })));
+    await ec.flushErrorCapture(1500);
+    assert.ok(sink.events.length >= 1);
+    assert.ok(!JSON.stringify(sink.events).includes(c));
+    sink.events.forEach(e => assert.ok(e.properties.environment === 'production' && e.properties.code === 'request_error'));
+  } finally { await sink.stop(); }
 });
 
 // ---- runner (supports async tests; runs sequentially) ----
