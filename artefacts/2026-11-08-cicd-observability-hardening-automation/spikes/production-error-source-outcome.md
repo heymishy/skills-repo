@@ -86,4 +86,6 @@ Every option still needs the same last step, a job that turns a detection into a
 
 ## Decision log reference
 
-To be recorded in `artefacts/2026-11-08-cicd-observability-hardening-automation/decisions.md` once the operator confirms this outcome.
+Confirmed by the operator (Hamish King) on 2026-11-13 and recorded in `artefacts/2026-11-08-cicd-observability-hardening-automation/decisions.md` (entry "2026-11-13 | ARCH | spike outcome — production error detection is app-side recording, not log polling").
+
+Caveat added at confirmation: the 100-line Fly buffer reading was taken shortly after a production promotion, so boot lines may have inflated the rate and a quiet app could span longer than one second. The conclusion holds, because 100 lines is a hard cap and a rare error can still scroll off. The empty PostHog Logs result reflects that the app sends no logs, not low traffic.

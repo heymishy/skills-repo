@@ -66,6 +66,15 @@
 **Revisit trigger:** If a second contributor joins this project, have them formally review these 4 verification scripts before the next time any of these stories' scope changes (not retroactively, unless a defect traced to an unreviewed scenario is found first).
 ---
 
+---
+**2026-11-13 | ARCH | spike outcome — production error detection is app-side recording, not log polling**
+**Decision:** Production error detection will be redesigned (spike outcome REDESIGN): the app records known errors itself when they happen, into a new table in its own database through a thin recording function, and a separate reader job turns new rows into incident records. The Production Log Scan approach (coha-s4 as built) is abandoned and not repaired.
+**Alternatives considered:** (A) Fly CLI polled — rejected, the measured buffer is 100 lines spanning about one second. (B) Fly HTTP Logs API paged — rejected for now, untested and unsupported for external use. (C) Explicit PostHog exception capture — viable, but reading it back needs a PostHog read key in CI and it is PostHog-specific. (D) OpenTelemetry (OTel) logs to PostHog, Grafana Cloud or Honeycomb, or a Fly log shipper — deferred, they send whole log lines to a third party (tenant data), and alert delivery without Teams is not established; PostHog Logs held 0 entries in the last 7 days because the app sends none. (E, chosen) App-side recorder plus reader job.
+**Rationale:** Smallest footprint, zero cost, detection at the moment of the error, tenant data stays inside systems already run, works without Teams. OTel can be added later inside the recorder without changing its callers. Light production traffic does not change the choice: it makes the recorder cheaper, and the PostHog result was caused by nothing being sent, not by low activity. Evidence: `spikes/production-error-source-outcome.md` and `spikes/production-error-source-working-notes.md`.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If the recorder cannot cover the failure patterns that matter, or a second tenant-facing team needs searchable logs, re-open the OTel route and check PostHog Logs retention, alert delivery and PII scrubbing first. If the Fly HTTP Logs API is ever needed, test it with an operator-prepared token that cannot echo.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
