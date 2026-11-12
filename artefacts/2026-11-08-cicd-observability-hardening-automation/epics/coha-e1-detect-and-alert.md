@@ -50,8 +50,9 @@ No guardrail here is a blocker before decomposing.
 - [ ] CI/CD chain notifications (announce, status, auto-retry visibility) — coha-s2
 - [ ] Vulnerability-check CI step with de-duplicated notification — coha-s3
 - [ ] Bounded production-log scan with pattern-match notification — coha-s4 (SUPERSEDED by coha-s5 and coha-s6, pending operator confirmation)
-- [ ] Production error capture to PostHog with tenant text scrubbed — coha-s5 (draft)
-- [ ] Alert-to-GitHub-issue bridge for new production error issues — coha-s6 (draft)
+- [ ] Production error capture to PostHog with tenant text scrubbed — coha-s5 (test plan written)
+- [ ] Alert-to-GitHub-issue bridge for new production error issues — coha-s6 (review passed run 3)
+- [ ] Incident record created for each production error GitHub issue — coha-s7 (draft)
 
 ## Human Oversight Level
 
