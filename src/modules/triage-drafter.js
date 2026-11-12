@@ -15,7 +15,7 @@
  */
 
 const { jaccardSimilarity } = require('./drift-comparator');
-const { loadIncidentRecords, saveIncidentRecords } = require('../../scripts/lib/incident-store');
+const { loadIncidentRecords, saveIncidentRecords, withDefaultType } = require('../../scripts/lib/incident-store');
 
 // Domain-tuned threshold -- deliberately NOT inherited from
 // drift-comparator.js's DUPLICATE_SIMILARITY_THRESHOLD (0.5), which was
@@ -57,7 +57,9 @@ function draftTriageSummary(newRecordId, filePath) {
     return { status: 'cannot-score', triageSummary: newRecord.triageSummary, priorIncidentLinks: [] };
   }
 
-  const others = records.filter((r) => r.id !== newRecordId);
+  // iwf-s1: the store also holds deferred-item records, which are not prior
+  // incidents. A record with no `type` predates the generalization and counts as an incident.
+  const others = records.filter((r) => r.id !== newRecordId && withDefaultType(r).type === 'incident');
   const scored = others
     .map((r) => ({ record: r, score: jaccardSimilarity(newRecord.tags, Array.isArray(r.tags) ? r.tags : []) }))
     .filter((s) => s.score >= INCIDENT_JACCARD_THRESHOLD)
