@@ -53,7 +53,7 @@ All four route through the same notification adapter (story 1), so it's built on
 ## Out of Scope
 
 - **Production-defect triage, write-up, and response** — once this initiative detects and alerts, deciding what it means, drafting a summary, and approving production promotion belongs to the separate incident-triage-and-respond initiative (discovery 4). This initiative stops at "something needs attention, here's what."
-- **Full observability platform (APM, distributed tracing, custom metrics dashboards)** — `flyctl logs` plus existing PostHog analytics are sufficient inputs for this MVP; no new observability vendor or instrumentation layer.
+- **Full observability platform (APM, distributed tracing, custom metrics dashboards)** — `flyctl logs` plus existing PostHog analytics are sufficient inputs for this MVP; no new observability vendor or instrumentation layer. SUPERSEDED IN PART 2026-11-13: the production-error-source spike measured `flyctl logs` at about 100 lines (roughly one second of traffic), so it is not a sufficient input. Error capture now uses PostHog, the vendor already in use, through its existing SDK (see `decisions.md`, 2026-11-13). Full APM, tracing and metrics dashboards remain out of scope.
 - **OS/infrastructure-level monitoring beyond what Fly.io's platform already exposes** — no custom infra agent, no new metrics collector.
 - **Automatic vulnerability remediation** — this MVP detects and notifies on `npm audit` findings; it does not auto-upgrade dependencies or auto-merge Dependabot-style PRs.
 - **Slack as a notification target** — only Teams has real scaffolding to extend (`teams-adapter.js`); despite the original brainstorm naming both, Slack support isn't guaranteed by this MVP and would need its own adapter.

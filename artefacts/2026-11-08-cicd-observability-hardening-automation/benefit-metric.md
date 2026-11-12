@@ -56,11 +56,11 @@ This initiative delivers direct capability (notification adapter, CI/CD alerts, 
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Time between a defect appearing in Fly.io logs and the bounded scan surfacing it. |
+| **What we measure** | Time between a production defect occurring and a GitHub issue for it existing. REVISED 2026-11-13: originally "a defect appearing in Fly.io logs and the bounded scan surfacing it"; the log scan was ruled out by the production-error-source spike (see `decisions.md`, 2026-11-13). The "defect occurred" timestamp is now the captured PostHog exception (coha-s5) and the surfacing event is the GitHub issue opened by the bridge (coha-s6). |
 | **Baseline** | Not yet established. Today, defects are found only by accident (e.g. the still-unfixed `tenant_admin_bootstrap_failed` bug), with no systematic detection to measure against. |
-| **Target** | A real first measurement of detection latency, established once the log-scan has run for a month — this metric's purpose is to get a real number for the first time, not to hit a specific target yet. |
+| **Target** | A real first measurement of detection latency, established once error capture and the bridge have run for a month — this metric's purpose is to get a real number for the first time, not to hit a specific target yet. |
 | **Minimum validation signal** | The measurement is actually obtained at least once within month 1 — a known-bad latency is still a win over no measurement at all. |
-| **Measurement method** | Once the log-scan has run for a month, compute the gap between confirmed defect timestamps (via log inspection) and scan-detection timestamps. |
+| **Measurement method** | Once error capture and the bridge have run for a month, compute the gap between confirmed defect timestamps (the captured exception's time, checked against the application record where needed) and scan-detection timestamps. |
 | **Feedback loop** | Once a real baseline exists, set a specific target latency in a future benefit-metric revision — premature to target a number now. |
 
 ---
@@ -86,7 +86,7 @@ This initiative delivers direct capability (notification adapter, CI/CD alerts, 
 | CI/CD chain notification coverage | coha-s1 (adapter), coha-s2 (CI/CD hooks) | Covered |
 | Manual CI toil reduction for known-flaky patterns | coha-s2 (auto-retry visibility) | Covered |
 | Vulnerability-finding visibility | coha-s3 | Covered |
-| Production-defect detection latency | coha-s4 | Covered |
+| Production-defect detection latency | coha-s5 (capture), coha-s6 (issue creation); coha-s4 superseded 2026-11-13 | Covered once coha-s6 ships; coha-s5 alone records but does not notify |
 | `dompurify` critical finding resolution (Tier 3) | coha-s3 (its first real run re-surfaces this exact finding; DoR sign-off gate confirms status) | Covered |
 
 ---

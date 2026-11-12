@@ -8,7 +8,7 @@ Chosen because this epic has one genuine foundation all three signal sources dep
 
 ## Goal
 
-When this epic is complete, a merge to master, a known-flaky CI auto-retry, a new high/critical `npm audit` finding, and a matched error pattern in Fly.io production logs each generate exactly one chat notification via a single shared outbound adapter — replacing today's reality where an engineer has to actively poll GitHub Actions, has zero production-defect visibility beyond accident, and nobody ever runs a vulnerability check at all. Every check remains triggered and bounded (a CI job, a webhook, a scheduled check that runs and exits) — never a standing watch process, per `product/mission.md`'s constraint.
+When this epic is complete, a merge to master, a known-flaky CI auto-retry, a new high/critical `npm audit` finding, and a production error captured in PostHog (REVISED 2026-11-13: originally "a matched error pattern in Fly.io production logs", ruled out by the production-error-source spike; see `decisions.md`) each generate exactly one chat notification via a single shared outbound adapter — replacing today's reality where an engineer has to actively poll GitHub Actions, has zero production-defect visibility beyond accident, and nobody ever runs a vulnerability check at all. Every check remains triggered and bounded (a CI job, a webhook, a scheduled check that runs and exits) — never a standing watch process, per `product/mission.md`'s constraint.
 
 ## Architecture constraints scan (Step 1.5)
 
