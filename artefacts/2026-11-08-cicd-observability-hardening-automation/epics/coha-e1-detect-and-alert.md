@@ -49,7 +49,9 @@ No guardrail here is a blocker before decomposing.
 - [ ] Outbound Teams chat-notification adapter — coha-s1
 - [ ] CI/CD chain notifications (announce, status, auto-retry visibility) — coha-s2
 - [ ] Vulnerability-check CI step with de-duplicated notification — coha-s3
-- [ ] Bounded production-log scan with pattern-match notification — coha-s4
+- [ ] Bounded production-log scan with pattern-match notification — coha-s4 (SUPERSEDED by coha-s5 and coha-s6, pending operator confirmation)
+- [ ] Production error capture to PostHog with tenant text scrubbed — coha-s5 (draft)
+- [ ] Alert-to-GitHub-issue bridge for new production error issues — coha-s6 (draft)
 
 ## Human Oversight Level
 

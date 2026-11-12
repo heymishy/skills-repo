@@ -86,7 +86,7 @@ Every option still needs the same last step, a job that turns a detection into a
 
 ## Decision log reference
 
-**Amended 2026-11-13:** after the operator asked about error trackers and full-stack observability, a documentation check and a local proof of concept replaced the "database recorder" recommendation above with PostHog error capture plus a bridge that opens GitHub issues. The REDESIGN outcome stands (polling logs is ruled out); only the recommended mechanism changed. See the second decisions.md entry of that date and `stories/coha-s5-posthog-error-capture-and-issue-bridge.md`.
+**Amended 2026-11-13:** after the operator asked about error trackers and full-stack observability, a documentation check and a local proof of concept replaced the "database recorder" recommendation above with PostHog error capture plus a bridge that opens GitHub issues. The REDESIGN outcome stands (polling logs is ruled out); only the recommended mechanism changed. See the second decisions.md entry of that date and `stories/coha-s5-posthog-error-capture-and-scrub.md and stories/coha-s6-alert-to-github-issue-bridge.md`.
 
 Confirmed by the operator (Hamish King) on 2026-11-13 and recorded in `artefacts/2026-11-08-cicd-observability-hardening-automation/decisions.md` (entry "2026-11-13 | ARCH | spike outcome — production error detection is app-side recording, not log polling").
 
