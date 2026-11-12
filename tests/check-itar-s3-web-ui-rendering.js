@@ -230,6 +230,37 @@ async function renderPage(routes, session) {
     assertTrue(dt < 6000, 'hung fetch must be bounded, took ' + dt + 'ms');
   });
 
+  await test('handleGetProductView_rendersBothReactiveDecisionsAndIncidents_whenBothSourcesPresent (urpv-s3 + itar-s3 coexist)', async function() {
+    var decisionsMd = [
+      '# Decisions', '', '---', '',
+      '**2026-11-08 | RISK-ACCEPT | discovery**', '**Decision:** Accept the coexistence-marker risk.', '', '---', ''
+    ].join('\n');
+    stubGithub({
+      'artefacts/feat-a/decisions.md': decisionsMd,
+      'workspace/incidents.json': JSON.stringify([incident({ id: 'inc-co', trigger: 'Coexistence incident trigger' })])
+    });
+    var r = freshRequire(PRODUCTS_ROUTE_PATH);
+    var fetcher = require(FETCHER_PATH);
+    fetcher.setFetchRepoPath(fetcher.realFetchRepoPath);
+    require(MODULES_ADAPTER_PATH).setModulesAdapter({ query: async function() { return { rows: [] }; } });
+    var pool = {
+      query: async function(sql) {
+        if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
+          return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: 'acme', repo_name: 'repo' }] };
+        }
+        if (/FROM journeys/.test(sql)) {
+          return { rows: [{ journey_id: 'j1', feature_slug: 'feat-a', stage: 'discovery', display_name: null }] };
+        }
+        return { rows: [] };
+      }
+    };
+    var res = makeRes();
+    await r.handleGetProductView({ params: { id: 'p1' }, session: { tenantId: 't1', login: 'u', accessToken: 'tok-123' } }, res, null, pool);
+    var html = res.html();
+    assertTrue(html.indexOf('Accept the coexistence-marker risk.') !== -1 && html.indexOf('urpv-decisions-reactive') !== -1, 'reactive decision (urpv-s3) must render');
+    assertTrue(html.indexOf('Coexistence incident trigger') !== -1 && html.indexOf('data-incident-item') !== -1, 'incident (itar-s3) must render');
+  });
+
   // ---------------- Wiring proof ----------------
   await test('server.js_registersProductViewRoute_andWiresRealFetchRepoPath (wiring)', function() {
     var src = fs.readFileSync(path.join(ROOT, 'src/web-ui/server.js'), 'utf8');

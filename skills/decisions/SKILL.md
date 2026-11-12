@@ -274,3 +274,5 @@ Update `.github/pipeline-state.json` for the relevant feature after each decisio
 - Set `updatedAt: [now]`
 - If a `RISK-ACCEPT` was recorded: add a `riskAcceptances` entry with `id`, `decision`, and `date`
 - Do not change `stage` — /decisions does not advance the pipeline stage
+
+**Deferred-item self-registration (mandatory for every `RISK-ACCEPT` recorded in this run):** For each `RISK-ACCEPT` entry logged, run `node scripts/register-deferral.js --hook risk-accept --decision-ref "[entry header, e.g. 2026-11-09 | RISK-ACCEPT | review]" --summary "[the decision, one line]" --revisit "[the entry's revisit trigger]" --feature [feature-slug]` (add `--story [story-id]` if the decision is story-scoped) from the project repository root. It writes one `deferred-item` record to `workspace/incidents.json` (source `risk-accept`), linked to that decision entry through the `--decision-ref` value. Do not invent a separate storage path. If the command exits non-zero, report the error in the closing message instead of silently skipping it.
