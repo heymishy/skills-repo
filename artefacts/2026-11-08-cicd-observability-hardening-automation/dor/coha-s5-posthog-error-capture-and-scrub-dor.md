@@ -55,10 +55,10 @@ See `coha-s5-posthog-error-capture-and-scrub-dor-contract.md` (saved alongside t
 | W1 | NFRs identified | ✅ | — | Performance, security and privacy, isolation, cost, accessibility (N/A) all stated |
 | W2 | Scope stability declared | ✅ | — | "Stable" |
 | W3 | MEDIUM findings acknowledged | ✅ N/A | — | None open (all run 1 and run 2 MEDIUM findings resolved) |
-| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases | **Needs the operator's acknowledgement.** The existing 2026-11-09 RISK-ACCEPT covers coha-s1 to coha-s4 only; this story is new. Same root cause (no second contributor). Proposed: extend that entry to coha-s5, coha-s6 and coha-s7. |
+| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases | Acknowledged by Hamish King on 2026-11-13: the 2026-11-09 RISK-ACCEPT is extended to coha-s5, coha-s6 and coha-s7 (decisions.md). The operator also states they verified the scripts; as the story author and owner that is not an independent domain-expert review, so the warning stays acknowledged rather than resolved. |
 | W5 | No UNCERTAIN gap-table items | ✅ | — | The three gap-table entries each have a stated mitigation |
 
-**Outstanding decisions to log:** W4 for coha-s5 (pending the operator's yes; the entry is written when they confirm).
+**Outstanding decisions to log:** none; the W4 entry was written to decisions.md on 2026-11-13.
 
 ---
 
@@ -66,7 +66,7 @@ See `coha-s5-posthog-error-capture-and-scrub-dor-contract.md` (saved alongside t
 
 Parent epic: **Medium**. The tech lead must be shown this DoR artefact before the story is assigned; the operator is the only contributor and the tech lead in this repo, so this artefact and the operator's sign-off below are that step.
 
-**Sign-off:** pending — name and date to be entered by the operator: ____________________
+**Sign-off:** Hamish King — Platform Owner — 2026-11-13 (given in the session; W4 acknowledged as a RISK-ACCEPT, see decisions.md)
 
 **Open facts the implementer must not assume away (recorded, not blocking):**
 1. The operator states staging and production share one PostHog key; unverified.
@@ -85,7 +85,7 @@ Story has no `domain` field — skipped silently.
 ```
 ## Coding Agent Instructions
 
-Proceed: Yes (once the operator has signed off above and acknowledged W4)
+Proceed: Yes (operator sign-off and W4 acknowledgement recorded 2026-11-13)
 Story: Production error capture to PostHog with tenant text scrubbed — artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md
 Test plan: artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s5-posthog-error-capture-and-scrub-test-plan.md
 Contract: artefacts/2026-11-08-cicd-observability-hardening-automation/dor/coha-s5-posthog-error-capture-and-scrub-dor-contract.md

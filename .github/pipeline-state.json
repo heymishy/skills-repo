@@ -46815,9 +46815,9 @@
           "name": "Production error capture to PostHog with tenant text scrubbed",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-11-12T18:41:42.799Z",
+          "updatedAt": "2026-11-12T18:43:45.554Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46830,7 +46830,8 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "blocker": "DoR artefact written 2026-11-13; awaiting operator sign-off (Medium oversight) and W4 acknowledgement before dorStatus can be signed-off"
+          "blocker": "",
+          "dorStatus": "signed-off"
         },
         {
           "id": "coha-s6",

@@ -93,6 +93,15 @@
 **Revisit trigger:** If the ruleset bypass cannot be granted, fall back to option B or to a pull request opened by the workflow.
 ---
 
+---
+**2026-11-13 | RISK-ACCEPT | definition-of-ready — W4 verification-script domain-expert review extended to coha-s5, coha-s6, coha-s7**
+**Decision:** Extend the 2026-11-09 shared W4 acknowledgement ("verification script reviewed by a domain expert") from coha-s1 to coha-s4 to the three stories added on 2026-11-13: coha-s5 (capture and scrub), coha-s6 (alert-to-GitHub-issue bridge) and coha-s7 (incident record).
+**Alternatives considered:** (A) Block each story's DoR until a second person reviews its verification script — rejected, no second contributor exists. (B) Treat the operator's own check as the domain-expert review — rejected, the operator is the author and owner, the same reasoning as the 2026-11-09 entry. (C, chosen) Acknowledge explicitly as an open risk with a revisit trigger.
+**Rationale:** Same root cause as the 2026-11-09 entry. The operator stated on 2026-11-13 that they verified the scripts; that statement is recorded here but is not counted as independent review. Only coha-s5 has a verification script today; coha-s6 and coha-s7 will get theirs at /test-plan, so for those two this entry is an advance acknowledgement and is re-checked at their DoR.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), during /definition-of-ready for coha-s5, 2026-11-13
+**Revisit trigger:** If a second contributor joins, have them review these verification scripts before any of these stories' scope next changes.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
