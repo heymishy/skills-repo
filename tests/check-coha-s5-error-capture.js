@@ -22,6 +22,7 @@ function sdkEvent(msg, extra) {
 
 test('scrubEvent_keepsOnlyNamedKeys_andFixedDistinctId', () => {
   const out = ec.scrubEvent(sdkEvent('boom ' + seed, { route: '/x', code: 'request_error' }), 'production');
+  assert.strictEqual(out.properties.route, '/:p');
   const keys = Object.keys(out.properties).sort();
   assert.deepStrictEqual(keys, ['$exception_level','$exception_list','$geoip_disable','$is_server','$lib','$lib_version',
     '$process_person_profile','code','environment','route'].sort());
@@ -65,11 +66,12 @@ test('scrubEvent_dropsEvent_onMalformedOrNonExceptionInput', () => {
 // ---- leak tests: a canary planted in each field must never reach the output ----
 function leakCheck(name, mutate, extra) {
   test('scrubEvent_leak_' + name, () => {
-    const canary = 'CANARY-' + crypto.randomBytes(6).toString('hex');
+    const canary = 'c' + crypto.randomBytes(6).toString('hex');  // regex-clean: no spaces or punctuation
     const ev = sdkEvent('m', extra ? extra(canary) : {});
     mutate(ev, canary);
     const out = ec.scrubEvent(ev, 'production');
-    assert.ok(out === null || !JSON.stringify(out).includes(canary), 'leaked ' + name + ': ' + canary);
+    assert.ok(out !== null, 'well-formed input must not be dropped: ' + name);
+    assert.ok(!JSON.stringify(out).includes(canary), 'leaked ' + name + ': ' + canary);
   });
 }
 const x0 = ev => ev.properties.$exception_list[0];
@@ -107,6 +109,69 @@ test('scrubEvent_validatesCopiedValues', () => {
   assert.strictEqual(p.$is_server, true);
 });
 
+
+// ---- allow-list (not charset) tests, regex-clean canaries ----
+const hex = () => 'c' + crypto.randomBytes(6).toString('hex');
+leakCheck('code', (ev, c) => { ev.properties.code = c; });
+leakCheck('codeCanaryWord', (ev) => { ev.properties.code = 'canary'; }, null);
+leakCheck('typeRegexClean', (ev, c) => { x0(ev).type = c + 'Error'; });
+leakCheck('libRegexClean', (ev, c) => { ev.properties.$lib = c; });
+leakCheck('libVersionRegexClean', (ev, c) => { ev.properties.$lib_version = c; });
+leakCheck('filenameTenantDir', (ev, c) => { const f = x0(ev).stacktrace.frames[0]; f.filename = '/tenants/' + c + '/a.js'; f.abs_path = '/tenants/' + c + '/a.js'; });
+leakCheck('functionAtOrSpace', (ev, c) => { x0(ev).stacktrace.frames[0].function = c + ' for tenant'; });
+test('scrubEvent_filename_isRepoRelativeOrBasename', () => {
+  const fr = (fn) => { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].filename = fn; return ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].filename; };
+  assert.strictEqual(fr('/tenants/' + hex() + '/a.js'), 'a.js');
+  assert.strictEqual(fr('/app/src/web-ui/server.js'), 'src/web-ui/server.js');
+  assert.strictEqual(fr('/app/src/x/node_modules/pkg/i.js'), 'node_modules/pkg/i.js');
+  assert.strictEqual(fr('C:\\work\\src\\web-ui\\s.js'), 'src/web-ui/s.js');
+  assert.strictEqual(fr('/home/mysrc/a.js'), 'a.js');  // 'src/' must sit at a segment boundary
+});
+test('scrubEvent_function_identifierShapedOnly', () => {
+  // A pure identifier is defined by the code itself and cannot carry tenant text; anything else is dropped.
+  const fn = (v) => { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].function = v; return ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].function; };
+  assert.strictEqual(fn('Object.handle'), 'Object.handle');
+  assert.strictEqual(fn('a@b'), undefined);
+  assert.strictEqual(fn('a b'), undefined);
+});
+test('scrubEvent_codeAndType_allowListsOnly', () => {
+  const o = (c, t) => { const e = sdkEvent('m', { code: c }); e.properties.$exception_list[0].type = t; return ec.scrubEvent(e, 'production'); };
+  assert.strictEqual(o('request_error', 'TypeError').properties.code, 'request_error');
+  assert.strictEqual(o('request_error', 'TypeError').properties.$exception_list[0].type, 'TypeError');
+  assert.strictEqual(o('tenant_admin_bootstrap_failed', 'Error').properties.code, 'tenant_admin_bootstrap_failed');
+  assert.strictEqual(o('other_code', 'Foo').properties.code, 'unhandled_exception');
+  assert.strictEqual(o('other_code', 'Foo').properties.$exception_list[0].type, 'Error');
+});
+test('scrubEvent_libValues_allowListed', () => {
+  const p = ec.scrubEvent(sdkEvent('m', { $lib: 'posthog-node', $lib_version: '5.40.0-beta.1' }), 'production').properties;
+  assert.strictEqual(p.$lib, 'posthog-node'); assert.strictEqual(p.$lib_version, '5.40.0-beta.1');
+  const q = ec.scrubEvent(sdkEvent('m', { $lib: 'other', $lib_version: 'v5' }), 'production').properties;
+  assert.ok(!('$lib' in q) && !('$lib_version' in q));
+});
+test('routeLabel_capsSegments_atEight', () => {
+  const out = ec.routeLabel('/products' + '/a'.repeat(1e5));
+  assert.ok(out.length < 100, 'length ' + out.length);
+  assert.ok(out.endsWith('/...'));
+  assert.strictEqual(ec.routeLabel('/products/a/b'), '/products/:p/:p');
+});
+test('scrubEvent_invalidTimestamp_isDropped', () => {
+  const e = sdkEvent('m'); e.timestamp = 'x' + hex();
+  assert.ok(!('timestamp' in ec.scrubEvent(e, 'production')));
+  const g = sdkEvent('m'); g.timestamp = '2026-11-13T01:02:03.456Z';
+  assert.strictEqual(ec.scrubEvent(g, 'production').timestamp, '2026-11-13T01:02:03.456Z');
+});
+test('scrubEvent_throwingGetter_returnsNull', () => {
+  const e = sdkEvent('m'); Object.defineProperty(e.properties, '$exception_list', { get() { throw new Error('boom'); }, enumerable: true });
+  assert.strictEqual(ec.scrubEvent(e, 'production'), null);
+});
+test('scrubEvent_protoKeys_doNotPolluteOrAppear', () => {
+  const c = hex();
+  const e = JSON.parse('{"event":"$exception","__proto__":{"polluted":"' + c + '"},"properties":{"__proto__":{"polluted":"' + c + '"},"constructor":{"x":"' + c + '"},"$exception_list":[{"type":"Error","value":"m","__proto__":{"polluted":"' + c + '"}}]}}');
+  const out = ec.scrubEvent(e, 'production');
+  assert.ok(out !== null);
+  assert.ok(!JSON.stringify(out).includes(c));
+  assert.strictEqual({}.polluted, undefined);
+});
 
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
