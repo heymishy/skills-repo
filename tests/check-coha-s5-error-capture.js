@@ -58,8 +58,8 @@ test('scrubEvent_routeIsPattern_notRawUrl', () => {
   assert.ok(!s.includes(token), 'token leaked: ' + token);
 });
 test('scrubEvent_dropsEvent_onMalformedOrNonExceptionInput', () => {
-  const circ = sdkEvent('m'); circ.properties.$exception_list = null;  // non-array
-  assert.strictEqual(ec.scrubEvent(circ, 'production'), null);
+  const nonArrayList = sdkEvent('m'); nonArrayList.properties.$exception_list = null;
+  assert.strictEqual(ec.scrubEvent(nonArrayList, 'production'), null);
   assert.strictEqual(ec.scrubEvent({ event: 'other', properties: {} }, 'production'), null);  // non-exception events are dropped
 });
 
@@ -117,15 +117,31 @@ leakCheck('codeCanaryWord', (ev) => { ev.properties.code = 'canary'; }, null);
 leakCheck('typeRegexClean', (ev, c) => { x0(ev).type = c + 'Error'; });
 leakCheck('libRegexClean', (ev, c) => { ev.properties.$lib = c; });
 leakCheck('libVersionRegexClean', (ev, c) => { ev.properties.$lib_version = c; });
+leakCheck('filenameBareTenantDir', (ev, c) => { x0(ev).stacktrace.frames[0].filename = '/tenants/' + c; });
+leakCheck('absPathBareTenantDir', (ev, c) => { x0(ev).stacktrace.frames[0].abs_path = '/tenants/' + c; });
+leakCheck('moduleBareToken', (ev, c) => { x0(ev).stacktrace.frames[0].module = c; });
+leakCheck('platformBareToken', (ev, c) => { x0(ev).stacktrace.frames[0].platform = c; });
+test('scrubEvent_frameFunction_acceptedRisk_identifierIsKept', () => {
+  // coha-s5 review round 3: accepted risk, frame function names are code-defined. An identifier-shaped
+  // function name is kept on purpose; changing this must be a deliberate decision, not a side effect.
+  const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].function = 'c' + hex();
+  const fn = ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].function;
+  assert.ok(typeof fn === 'string' && fn.length > 1);
+});
+test('scrubEvent_frame_platformAllowListed_moduleOmitted', () => {
+  const e = sdkEvent('m'); const fr = e.properties.$exception_list[0].stacktrace.frames[0]; fr.module = 'task_queues'; fr.platform = 'node:javascript';
+  const g = ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0];
+  assert.strictEqual(g.platform, 'node:javascript'); assert.ok(!('module' in g));
+});
 leakCheck('filenameTenantDir', (ev, c) => { const f = x0(ev).stacktrace.frames[0]; f.filename = '/tenants/' + c + '/a.js'; f.abs_path = '/tenants/' + c + '/a.js'; });
 leakCheck('functionAtOrSpace', (ev, c) => { x0(ev).stacktrace.frames[0].function = c + ' for tenant'; });
-test('scrubEvent_filename_isRepoRelativeOrBasename', () => {
+test('scrubEvent_filename_keptOnlyWhenRepoRelative', () => {
   const fr = (fn) => { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].filename = fn; return ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].filename; };
-  assert.strictEqual(fr('/tenants/' + hex() + '/a.js'), 'a.js');
+  assert.strictEqual(fr('/tenants/' + hex() + '/a.js'), undefined);  // no basename fallback
   assert.strictEqual(fr('/app/src/web-ui/server.js'), 'src/web-ui/server.js');
   assert.strictEqual(fr('/app/src/x/node_modules/pkg/i.js'), 'node_modules/pkg/i.js');
   assert.strictEqual(fr('C:\\work\\src\\web-ui\\s.js'), 'src/web-ui/s.js');
-  assert.strictEqual(fr('/home/mysrc/a.js'), 'a.js');  // 'src/' must sit at a segment boundary
+  assert.strictEqual(fr('/home/mysrc/a.js'), undefined);  // 'src/' must sit at a segment boundary
 });
 test('scrubEvent_function_identifierShapedOnly', () => {
   // A pure identifier is defined by the code itself and cannot carry tenant text; anything else is dropped.

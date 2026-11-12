@@ -17,13 +17,15 @@ const ROUTE_ROOTS = new Set(['admin', 'agency', 'api', 'artefact', 'auth', 'bill
 
 const LEVELS = ['fatal', 'error', 'warning', 'info', 'debug'];
 const RE_VERSION = /^\d+\.\d+\.\d+([.\-][\w.\-]{0,20})?$/;
-const RE_REPO_PATH = /^[\w.\-\/]{1,120}$/;
+const RE_REPO_PATH = /^(src|node_modules)\/[\w.\-\/]{1,150}$/;  // anything not under src/ or node_modules/ is omitted
+const KNOWN_PLATFORMS = new Set(['node:javascript', 'javascript']);
 const RE_IDENT = /^[A-Za-z_$][\w$.<>]{0,80}$/;
 const ALLOWED_CODES = new Set(Array.from(ALLOW_LISTED_MESSAGES).concat(['request_error', 'unhandled_exception']));
 const ALLOWED_TYPES = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'EvalError', 'URIError', 'AggregateError']);
 const MAX_ROUTE_SEGMENTS = 8;
 
-// Repo-relative path only: from the LAST 'src/' or 'node_modules/' at a segment boundary, else the basename.
+// From the LAST 'src/' or 'node_modules/' at a segment boundary, else the basename; the caller keeps
+// the result only if it starts with src/ or node_modules/ (a basename never does, so it is omitted).
 function repoRelative(p) {
   const s = p.replace(/\\/g, '/');
   let best = -1;
@@ -35,7 +37,6 @@ function repoRelative(p) {
   if (best >= 0) return s.slice(best);
   return s.slice(s.lastIndexOf('/') + 1);
 }
-const RE_TOKEN = /^[\w.:\-]{1,40}$/;
 
 function routeLabel(url) {
   try {
@@ -55,9 +56,10 @@ function scrubFrame(f) {
     const v = typeof f[k] === 'string' ? repoRelative(f[k]) : null;
     if (v && RE_REPO_PATH.test(v)) g[k] = v;
   });
-  // A pure identifier is defined by the code itself and cannot carry tenant text.
+  // coha-s5 review round 3: accepted risk, frame function names are code-defined. An identifier-shaped
+  // name cannot be PROVEN free of tenant text, but it is the code's own symbol, so it is kept.
   if (typeof f.function === 'string' && RE_IDENT.test(f.function)) g.function = f.function;
-  ['module', 'platform'].forEach(k => { if (typeof f[k] === 'string' && RE_TOKEN.test(f[k])) g[k] = f[k]; });
+  if (KNOWN_PLATFORMS.has(f.platform)) g.platform = f.platform;  // module is never copied
   ['lineno', 'colno'].forEach(k => { if (typeof f[k] === 'number' && isFinite(f[k])) g[k] = f[k]; });
   if (typeof f.in_app === 'boolean') g.in_app = f.in_app;
   return g;
