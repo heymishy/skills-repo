@@ -28,6 +28,7 @@ test('scrubEvent_keepsOnlyNamedKeys_andFixedDistinctId', () => {
   assert.strictEqual(out.distinctId, 'server-error-capture');
   assert.strictEqual(out.properties.$process_person_profile, false);
   assert.strictEqual(out.properties.environment, 'production');
+  assert.ok(!('tenantId' in out.properties) && !('reason' in out.properties));  // tenant-shaped extras never sent
 });
 test('scrubEvent_removesTenantShapes_fromMessage', () => {
   const shapes = ['Acme Pty Ltd', 'jo@acme.example', 'duplicate key value violates "users_pkey" (id)=(' + seed + ')', seed];
@@ -55,15 +56,57 @@ test('scrubEvent_routeIsPattern_notRawUrl', () => {
   assert.ok(!s.includes(seed), 'seed leaked: ' + seed);
   assert.ok(!s.includes(token), 'token leaked: ' + token);
 });
-test('scrubEvent_throwingHook_dropsEvent', () => {
-  const circ = sdkEvent('m'); circ.properties.$exception_list = null;  // makes the mapper throw
+test('scrubEvent_dropsEvent_onMalformedOrNonExceptionInput', () => {
+  const circ = sdkEvent('m'); circ.properties.$exception_list = null;  // non-array
   assert.strictEqual(ec.scrubEvent(circ, 'production'), null);
   assert.strictEqual(ec.scrubEvent({ event: 'other', properties: {} }, 'production'), null);  // non-exception events are dropped
 });
-test('scrubEvent_thrownErrorWithTenantReason_neverSendsReason', () => {
-  const out = ec.scrubEvent(sdkEvent('x', { code: 'tenant_admin_bootstrap_failed' }), 'production');
-  assert.ok(!('tenantId' in out.properties) && !('reason' in out.properties));
+
+// ---- leak tests: a canary planted in each field must never reach the output ----
+function leakCheck(name, mutate, extra) {
+  test('scrubEvent_leak_' + name, () => {
+    const canary = 'CANARY-' + crypto.randomBytes(6).toString('hex');
+    const ev = sdkEvent('m', extra ? extra(canary) : {});
+    mutate(ev, canary);
+    const out = ec.scrubEvent(ev, 'production');
+    assert.ok(out === null || !JSON.stringify(out).includes(canary), 'leaked ' + name + ': ' + canary);
+  });
+}
+const x0 = ev => ev.properties.$exception_list[0];
+leakCheck('topLevelUuid', (ev, c) => { ev.uuid = c; });
+leakCheck('topLevelGroups', (ev, c) => { ev.groups = { tenant: c }; });
+leakCheck('topLevelSet', (ev, c) => { ev.$set = { name: c }; ev.properties.$set = { name: c }; });
+leakCheck('mechanismData', (ev, c) => { x0(ev).mechanism = { handled: true, type: 'generic', data: { who: c } }; });
+leakCheck('mechanismType', (ev, c) => { x0(ev).mechanism = { handled: true, type: c }; });
+leakCheck('stacktraceExtraKeys', (ev, c) => { x0(ev).stacktrace.extra = c; x0(ev).stacktrace.type = c; });
+leakCheck('fingerprint', (ev, c) => { ev.properties.$exception_fingerprint = c; });
+leakCheck('lib', (ev, c) => { ev.properties.$lib = c + ' Acme Pty Ltd'; });
+leakCheck('libVersion', (ev, c) => { ev.properties.$lib_version = c + ' Acme Pty Ltd'; });
+leakCheck('exceptionLevel', (ev, c) => { ev.properties.$exception_level = c; });
+leakCheck('isServer', (ev, c) => { ev.properties.$is_server = c; ev.properties.$geoip_disable = c; });
+leakCheck('type', (ev, c) => { x0(ev).type = c + ' for Acme Pty Ltd'; });
+leakCheck('nonNumericLineno', (ev, c) => { x0(ev).stacktrace.frames[0].lineno = c; x0(ev).stacktrace.frames[0].colno = c; });
+leakCheck('frameStrings', (ev, c) => { const f = x0(ev).stacktrace.frames[0]; f.filename = c + '?x=jo@acme.example'; f.function = c + '\n"quoted"'; f.module = c + ' !'; f.platform = c + ' !'; f.in_app = c; });
+leakCheck('rawUrlRoute', (ev, c) => { ev.properties.route = '/' + c + '/orders/123?token=' + c; });
+leakCheck('tenantSlugRoute', (ev, c) => { ev.properties.route = '/acme-pty-ltd/orders/' + c; });
+test('scrubEvent_outputTopLevel_isExactlyFixedShape', () => {
+  const ev = sdkEvent('m'); ev.uuid = 'u'; ev.groups = { a: 1 }; ev.$set = { a: 1 }; ev.timestamp = 'not-a-date';
+  const out = ec.scrubEvent(ev, 'production');
+  assert.ok(Object.keys(out).every(k => ['event', 'distinctId', 'properties', 'timestamp'].includes(k)), Object.keys(out).join());
+  assert.strictEqual(out.event, '$exception');
 });
+test('routeLabel_unknownFirstSegment_becomesPlaceholder', () => {
+  assert.strictEqual(ec.routeLabel('/acme-pty-ltd/orders'), '/:p/:p');
+  assert.strictEqual(ec.routeLabel('/products/abc'), '/products/:p');
+});
+test('scrubEvent_validatesCopiedValues', () => {
+  const p = ec.scrubEvent(sdkEvent('m', { $exception_level: 'weird', $lib: 'bad lib!' }), 'production').properties;
+  assert.strictEqual(p.$exception_level, 'error');
+  assert.ok(!('$lib' in p));
+  assert.strictEqual(p.$lib_version, '5.40.0');
+  assert.strictEqual(p.$is_server, true);
+});
+
 
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
