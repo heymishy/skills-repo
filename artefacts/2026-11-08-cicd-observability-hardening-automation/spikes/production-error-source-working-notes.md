@@ -86,3 +86,39 @@ Figures below come from vendor pages and search summaries, and the pages disagre
 ## Step 8: skipped (operator agreed, 2026-11-13)
 
 The Fly HTTP Logs API test was not run. The earlier steps point away from log polling (CLI buffer of about one second; the API is documented as unsupported for external use), and running it needs a deliberately prepared token. It stays recorded as untested, not as ruled out on evidence.
+
+---
+
+## Addendum 2026-11-13: purpose-built error trackers and full-stack observability (documentation and web search only; no accounts, no production access)
+
+Requested by the operator after the outcome was confirmed: the aim is the best option for full-stack observability that feeds issue creation and fixing. The earlier candidate list tested logs and explicit capture only; it did not assess error-tracker products or exception autocapture. Figures below are from vendor pages and search summaries, several secondhand, and need re-checking on live pages before anything is built.
+
+### PostHog Error Tracking (posthog.com/docs/error-tracking/installation/node, /alerts, /pricing)
+
+- **Capture:** `posthog-node` v5 option `enableExceptionAutocapture: true` captures uncaught exceptions and unhandled rejections. Express swallows errors internally, so autocapture alone misses them; `setupExpressErrorHandler(posthog, app)` is also needed. `captureException` covers caught errors. Warnings are not covered by the page. Needs file system access to process stack traces. `shutdown()` must run before exit to flush the batch.
+- **Alerts:** triggers are issue created or reopened (filterable by issue properties) and spike alerts when an issue's rate rises above its baseline. Destinations are Slack, Discord, Teams and an HTTP webhook; email only for trend alerts. GitHub issue or Linear creation is not mentioned on the alerts page. A webhook would need a small receiver that calls the GitHub API (inference, not documented).
+- **Price:** 100,000 exceptions per month free, billed per `$exception` event, not per issue. Per-product retention not found; account-level free plan retention is stated as 1 year.
+- **Fit:** already a dependency and already holds the project token; no new vendor or secret to send. Existing `captureException` calls would be superseded by autocapture.
+
+### PostHog beyond errors
+
+- **Logs:** OTLP ingestion confirmed earlier (50 GB per month free). Empty for this project today because nothing is sent.
+- **Tracing:** PostHog supports distributed tracing over OpenTelemetry, with span query tools (secondhand: mirrors of PostHog's own skill file).
+- **Metrics:** no evidence found of a metrics product. Host-level metrics remain with Fly.
+
+### Sentry free Developer plan
+
+- 5,000 errors per month, one user, email alerts; some sources also list 5M spans and 5 GB logs. Retention figures conflict (3, 14 or 30 days).
+- GitHub issue management and sync: Sentry's docs say they are for Team and above; whether alert-driven issue creation works on the free plan is unconfirmed. A new vendor, account and privacy review.
+
+### Grafana Cloud free plan (third-party aggregators only; grafana.com not read)
+
+- 10K active metric series, 50 GB logs, 50 GB traces, 14-day retention, 3 users. The only candidate covering all four signals (errors via logs and traces, logs, traces, metrics) on one free plan. Whether webhook alert contact points are free was not confirmed. A new vendor and a privacy review.
+
+### What this changes
+
+- **PostHog autocapture plus Express handler replaces the hand-built recorder for thrown errors.** It supplies grouping, counts, spike and new-issue alerts, and a webhook, so the app need not build any of that.
+- **Warn-level cases still need handling:** `tenant_admin_bootstrap_failed` is a warn line that returns false. It needs either an explicit capture call or a raise to error level.
+- **The bridge from alert to GitHub issue and incident record is still needed** whichever product is chosen: a webhook receiver, or a scheduled job reading the product's API.
+- **OTel stays the portability layer.** Logs and traces can go to PostHog now and to Grafana Cloud or another backend later without app changes. Metrics are the one signal PostHog does not appear to cover.
+- Unverified and needed before deciding: alert webhook payload and custom headers, exception retention, whether scrubbing can strip tenant data from stack traces and messages, and whether Teams-style destinations matter (Teams is not in use).
