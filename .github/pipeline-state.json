@@ -46831,7 +46831,51 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "blocker": "",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Scrubbing functions (AC1, AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Client lifecycle, suppression, unwired stub (AC5, AC6, AC7, AC9 stub)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Catch-block call and createApp router seam (AC1, AC3 URL case, AC8)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Startup wiring and signal-time flush, separate from the handler (AC9)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Unhandled rejection captured, process survives (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "The two bootstrap call sites in auth.js and auth-email.js (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR checks and final verification",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s5-posthog-error-capture-and-scrub-plan.md"
+            }
+          ]
         },
         {
           "id": "coha-s6",
