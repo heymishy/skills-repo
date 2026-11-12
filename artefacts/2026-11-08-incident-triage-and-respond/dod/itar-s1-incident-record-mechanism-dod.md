@@ -26,10 +26,11 @@ A deviation is any difference between implemented behaviour and the AC, even if 
 
 ## Scope Deviations
 
-None. `git show c856b57c --stat` confirms the merge touched only: `scripts/lib/incident-store.js` (new module), `tests/check-itar-s1-incident-store.js` (new test file), the implementation plan artefact, `decisions.md`, and `pipeline-state.json`. Neither out-of-scope item (automated alert-to-record creation; any UI for creating a record) was implemented.
+One, found on 2026-11-12 and corrected here. The original text of this section said "None", but it checked only what the merge added and did not check the DoR contract's own deliverable list against it. The contract (`dor/itar-s1-incident-record-mechanism-dor-contract.md`) named two deliverables: the module `scripts/lib/incident-store.js` and a new committed data file `workspace/incidents.json`. `git show c856b57c --stat` shows the merge touched the module, its test, the plan, `decisions.md` and `pipeline-state.json`, and no data file. `workspace/incidents.json` was absent and untracked on master until dsrf-s1 (PR #1077, merged 2026-11-12) created it, with two `deferred-item` records and no incident records. The AC2 test still passes, because `appendIncidentRecord` creates the file when it is missing, which is why no test caught this.
+
+Neither out-of-scope item (automated alert-to-record creation; any UI for creating a record) was implemented.
 
 ---
-
 ## Test Plan Coverage
 
 **Tests from plan implemented:** 9 / 9
@@ -71,12 +72,15 @@ Performance, Accessibility, and Compliance NFRs are explicitly "Not applicable" 
 
 ## Outcome
 
-**COMPLETE**
+**COMPLETE WITH DEVIATIONS**
 
-**Follow-up actions:** None required to close this story. Standing, already-tracked items (not new to this DoD): the `workspace/incidents.json` fetch-latency-at-scale gap flagged in `nfr-profile.md` (owed before `itar-s3` reaches DoR, unaffected by this story); `itar-s2`'s unpinned Jaccard threshold (already acknowledged in `decisions.md`).
+Corrected 2026-11-12 from COMPLETE. All 4 ACs hold as written and their evidence is unchanged, so no AC is re-graded. The deviation is the missing `workspace/incidents.json` deliverable described under Scope Deviations, now resolved by dsrf-s1. The earlier "no follow-up required" was wrong only in not noticing it.
+
+**Follow-up actions:**
+1. Decide whether to persist the real `tenant_admin_bootstrap_failed` incident as a record in `workspace/incidents.json`. AC4 only says the note "can be" migrated, and the test proves it against the real text, so the AC is met without it. But it would be the first real `type: "incident"` record, and itar-s2's threshold pinning (`INCIDENT_JACCARD_THRESHOLD`, 0.3) is waiting on exactly that. If done, record it through `node scripts/create-incident.js` so its triage summary is drafted. Owner: operator.
+2. Standing, already-tracked items (not new): the `workspace/incidents.json` fetch-latency-at-scale gap flagged in `nfr-profile.md` (owed before `itar-s3` reaches DoR); itar-s2's unpinned Jaccard threshold.
 
 ---
-
 ## DoD Observations
 
 1. The shipped data model is a faithful, slightly-more-precise implementation of the story's own canvas marker: the marker typed `tags` as a loose `string`, but the real shipped type is `string[]` (an array) — consistent with AC1's "a list of keyword tags" wording and with `itar-s2`'s own Jaccard-matching need for a real array, not a single delimited string. Not a deviation; a correct resolution of a minor marker/AC phrasing looseness in the array's favor.
