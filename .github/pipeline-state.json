@@ -46887,15 +46887,15 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
-          "updatedAt": "2026-11-13T18:46:32.888Z",
+          "updatedAt": "2026-11-13T23:33:04.044Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 37,
-            "passing": 0,
+            "totalTests": 90,
+            "passing": 83,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },
           "acTotal": 9,
@@ -46908,61 +46908,61 @@
             {
               "id": "task-1",
               "name": "Fixture and test harness",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-2",
               "name": "Store module (table, claim, mark created)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-3",
               "name": "Handler: method, secret, body limit, shape",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-4",
               "name": "Environment gate and issue content",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-5",
               "name": "Duplicates, concurrency and stuck-pending takeover",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-6",
               "name": "GitHub failure, timeout and unwired adapter",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-7",
               "name": "NFR tests (performance, security, audit)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-8",
               "name": "Real GitHub adapter and real-HTTP integration tests",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-9",
               "name": "Production wiring in server.js and real-Postgres tests (separate D37 wiring task)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             },
             {
               "id": "task-10",
               "name": "Test-runner slot, full suite and handover",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             }
           ]
