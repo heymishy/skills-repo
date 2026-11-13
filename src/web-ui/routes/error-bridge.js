@@ -21,7 +21,8 @@ const NOT_WIRED_GITHUB = 'Adapter not wired: error-bridge-github. Call setGithub
 // Adapter contract: createIssue({title, body, labels}) resolves {number}. findIssueByMarker(markerLine) resolves the issue
 // number (a bare integer), or null ONLY when the issue is confirmed absent; it must THROW on any failure to look (non-2xx,
 // unreadable body, network error), because the handler creates an issue when it returns null. Both must throw on failure,
-// never return empty values.
+// never return empty values. createIssue errors must set `definite = true` only when the failure proves no issue was created
+// (a 4xx other than 408, or a connection error before any request byte was sent); anything else is ambiguous.
 const unwiredGithubAdapter = {
   createIssue() { throw new Error(NOT_WIRED_GITHUB); },
   findIssueByMarker() { throw new Error(NOT_WIRED_GITHUB); }
@@ -139,24 +140,32 @@ async function handlePostErrorBridge(req, res, deps) {
   // at once; a timeout or a store failure after a create does not (a late success could land, and a takeover recovers it by marker).
   let issueNumber = null;
   let recovered = false;
+  let phase = 'search';
+  const unknown = (what) => { d.log('error-bridge: github failed ' + what + ' for ' + id + ' (outcome unknown, claim kept)'); return send(res, 503, { error: 'upstream unavailable' }); };
   try {
     let existing = null;
     if (outcome === 'takeover') existing = await withTimeout(() => d.github.findIssueByMarker(marker), d.githubTimeoutMs);
-    if (existing) { issueNumber = existing; recovered = true; }
-    else {
+    if (existing) {
+      if (!Number.isInteger(existing)) return unknown('bad response');
+      issueNumber = existing; recovered = true;
+    } else {
+      phase = 'create';
       const issue = await withTimeout(() => d.github.createIssue({ title: f.code, body: buildBody(f, marker), labels: [LABEL] }), d.githubTimeoutMs);
+      if (!Number.isInteger(issue && issue.number)) return unknown('bad response');
       issueNumber = issue.number;
     }
   } catch (e) {
-    if (e && e.name === 'GithubTimeout') {
-      d.log('error-bridge: github timeout for ' + id);
-    } else {
-      let note = ' (claim released)';
-      if (!(e && typeof e.message === 'string' && e.message.indexOf('Adapter not wired') === 0)) {
-        try { await store.release(d.pool, id); } catch (re) { note = ' (release failed)'; }
-      } else note = '';
-      d.log('error-bridge: github failed ' + describe(e) + ' for ' + id + note);
+    const notWired = !!(e && typeof e.message === 'string' && e.message.indexOf('Adapter not wired') === 0);
+    const timeout = !!(e && e.name === 'GithubTimeout');
+    // Release the claim only when nothing can have been created: any search-phase failure, or a create failure the adapter marked definite.
+    const releasable = !notWired && (phase === 'search' || (e && e.definite === true && !timeout));
+    if (!releasable) {
+      if (timeout || notWired) { d.log(timeout ? 'error-bridge: github timeout for ' + id : 'error-bridge: github failed ' + describe(e) + ' for ' + id); return send(res, 503, { error: 'upstream unavailable' }); }
+      return unknown(describe(e));
     }
+    let note = ' (claim released)';
+    try { await store.release(d.pool, id); } catch (re) { note = ' (release failed)'; }
+    d.log(timeout ? 'error-bridge: github timeout for ' + id + note : 'error-bridge: github failed ' + describe(e) + ' for ' + id + note);
     return send(res, 503, { error: 'upstream unavailable' });
   }
   try {

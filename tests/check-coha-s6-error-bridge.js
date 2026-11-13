@@ -372,8 +372,8 @@ test('store: release makes the next claim a takeover, and never touches a create
   assert.deepStrictEqual([pool.rows.get(id).status, pool.rows.get(id).issue_number], ['created', 9]);
   assert.strictEqual(await store.claim(pool, id, 120), 'created');
 });
-test('U22b a GitHub error then an immediate retry (no clock advance) opens exactly one issue after a marker search', async () => {
-  const ctx = makeCtx(); const payload = body(); ctx.adapter._fail = Object.assign(new Error('github status 500'), { name: 'GithubError' });
+test('U22b a definite GitHub error then an immediate retry (no clock advance) opens exactly one issue after a marker search', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter._fail = Object.assign(new Error('github status 422'), { name: 'GithubError', definite: true });
   assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
   ctx.adapter._fail = null;
   assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
@@ -407,7 +407,7 @@ test('U20b markCreated failing after a successful create gives 503, keeps the ro
 });
 test('a failing release is swallowed: still 503, one log line, and it says release failed', async () => {
   const ctx = makeCtx(); const payload = body(); const realQuery = ctx.pool.query;
-  ctx.adapter._fail = Object.assign(new Error('github status 500'), { name: 'GithubError' });
+  ctx.adapter._fail = Object.assign(new Error('github status 422'), { name: 'GithubError', definite: true });
   ctx.pool.query = async (text, params) => {
     if (text.replace(/\s+/g, ' ').trim().startsWith('UPDATE production_error_issues SET updated_at')) throw new Error('db down');
     return realQuery(text, params);
@@ -419,13 +419,59 @@ test('a failing release is swallowed: still 503, one log line, and it says relea
 });
 test('the definite-failure log line holds only the PostHog issue id and the error name', async () => {
   const ctx = makeCtx(); const payload = body({ code: 'title-' + CANARY });
-  ctx.adapter._fail = Object.assign(new Error('bad creds ' + TOKEN + ' ' + CANARY), { name: 'GithubError' });
+  ctx.adapter._fail = Object.assign(new Error('bad creds ' + TOKEN + ' ' + CANARY), { name: 'GithubError', definite: true });
   await deliver(payload, ctx);
   assert.strictEqual(ctx.lines.length, 1);
   const line = ctx.lines[0];
   assert.ok(line.indexOf(payload.posthog_issue_id) !== -1 && line.indexOf('GithubError') !== -1);
   assert.ok(line.indexOf('claim released') !== -1);
   [TOKEN, SECRET, CANARY].forEach((s) => assert.ok(line.indexOf(s) === -1, 'log leaks a secret or payload text'));
+});
+
+test('ambiguous create (issue made, then a 502-style error): claim kept, retry is inflight, no duplicate', async () => {
+  const ctx = makeCtx(); const payload = body();
+  ctx.adapter.createIssue = async (i) => { ctx.adapter.created.push(i); throw Object.assign(new Error('github status 502'), { name: 'GithubError' }); };
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503);
+  assert.strictEqual(ctx.lines.length, 1);
+  assert.ok(ctx.lines[0].indexOf('outcome unknown, claim kept') !== -1);
+  const retry = await deliver(payload, ctx);
+  assert.strictEqual(retry.statusCode, 200); assert.ok(/duplicate/.test(retry.body));
+  assert.strictEqual(ctx.adapter.created.length, 1);
+});
+test('search-phase failure releases the claim, creates nothing, and the immediate retry creates exactly one issue', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  ctx.adapter.findIssueByMarker = async () => { throw Object.assign(new Error('github status 500'), { name: 'GithubError' }); };
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503); assert.strictEqual(ctx.adapter.created.length, 0);
+  assert.strictEqual(ctx.lines.length, 1); assert.ok(ctx.lines[0].indexOf('claim released') !== -1);
+  ctx.adapter.findIssueByMarker = async () => null;
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+});
+test('a create result with no integer number gives 503, row not created, claim kept', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter.createIssue = async () => ({});
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503);
+  assert.strictEqual(ctx.lines.length, 1); assert.ok(ctx.lines[0].indexOf('bad response') !== -1);
+  assert.notStrictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+  const retry = await deliver(payload, ctx);
+  assert.strictEqual(retry.statusCode, 200); assert.ok(/duplicate/.test(retry.body));
+});
+test('a non-integer found number gives 503 with no create and no release', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 }); ctx.adapter._find = '12abc';
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503); assert.strictEqual(ctx.adapter.created.length, 0);
+  assert.ok(ctx.lines[0].indexOf('bad response') !== -1);
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 0);
+});
+test('the unwired adapter never releases the claim', async () => {
+  const ctx = makeCtx(); const payload = body(); delete ctx.deps.github;
+  ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  await deliver(payload, ctx, { deps: { github: bridge.unwiredGithubAdapter } });
+  const row = ctx.pool.rows.get(payload.posthog_issue_id);
+  assert.ok(ctx.pool.nowMs - row.claimedMs < 86400000 / 2, 'claim was released');
 });
 
 // RUNNER
