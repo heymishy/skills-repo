@@ -499,8 +499,18 @@ test('N2 no secret, token or payload canary appears in any log line', async () =
     [stuck, ctx, {}], [body({ code: '' }), ctx, {}], ['not json ' + CANARY, ctx, {}], [body(), ctx, { secret: SECRET + 'x' }],
     [body({ code: 'title-' + CANARY }), failing, {}], [body({ code: 'title-' + CANARY }), definite, {}], [body({ code: 'title-' + CANARY }), timing, {}]
   ];
+  // Success, duplicate and recovery paths with the canary in the free-text fields.
+  const ok = makeCtx(); const canaryFields = () => ({ code: 'title-' + CANARY, posthog_issue_url: 'https://us.posthog.com/project/x/' + CANARY });
+  const dupSeeded = body(canaryFields()); ok.pool.seed(dupSeeded.posthog_issue_id, { status: 'created', number: 7 });
+  const recov = body(canaryFields()); ok.pool.seed(recov.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  const takeCreate = body(canaryFields()); ok.pool.seed(takeCreate.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  const okFind = makeCtx(); okFind.adapter._find = 5;
+  const recovOk = body(canaryFields()); okFind.pool.seed(recovOk.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  cases.push([body(canaryFields()), ok, {}], [dupSeeded, ok, {}], [recovOk, okFind, {}], [takeCreate, ok, {}]);
   for (const [p, c, o] of cases) await deliver(p, c, o);
-  const all = [ctx, failing, definite, timing].reduce((acc, c) => acc.concat(c.lines), []);
+  assert.ok(okFind.lines.length === 1 && okFind.lines[0].indexOf('recovered') !== -1, 'the recovery path ran');
+  assert.ok(ok.lines.some((l) => l.indexOf('created issue') !== -1) && ok.lines.some((l) => l.indexOf('duplicate') !== -1), 'create and duplicate paths ran');
+  const all = [ctx, failing, definite, timing, ok, okFind].reduce((acc, c) => acc.concat(c.lines), []);
   assert.ok(all.length >= cases.length, 'every case logged something');
   const joined = all.join('\n');
   [SECRET, TOKEN, CANARY].forEach((s) => assert.ok(joined.indexOf(s) === -1, 'a secret or canary was logged'));
@@ -520,7 +530,9 @@ test('N3 each outcome logs exactly one distinct line', async () => {
   await once(body(), (c) => { c.adapter._fail = new Error('x'); });
   await once(body(), (c) => { c.adapter._fail = Object.assign(new Error('x'), { name: 'GithubError', definite: true }); });
   await once(body(), (c) => { c.adapter.createIssue = () => new Promise(() => {}); });
-  assert.strictEqual(cases, 9);
+  await once(body(), (c, p) => { c.pool.seed(p.posthog_issue_id, { status: 'pending', agoSec: 180 }); c.adapter._find = 5; });
+  await once(body(), (c, p) => c.pool.seed(p.posthog_issue_id, { status: 'pending', agoSec: 30 }));
+  assert.strictEqual(cases, 11);
   assert.strictEqual(seen.size, cases, 'every outcome has its own distinct line');
 });
 
