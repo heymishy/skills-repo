@@ -22,7 +22,8 @@ const NOT_WIRED_GITHUB = 'Adapter not wired: error-bridge-github. Call setGithub
 // number (a bare integer), or null ONLY when the issue is confirmed absent; it must THROW on any failure to look (non-2xx,
 // unreadable body, network error), because the handler creates an issue when it returns null. Both must throw on failure,
 // never return empty values. createIssue errors must set `definite = true` only when the failure proves no issue was created
-// (a 4xx other than 408, or a connection error before any request byte was sent); anything else is ambiguous.
+// (GitHub answered with an HTTP error status other than 408, or the connection failed before any request byte was sent);
+// anything else is ambiguous.
 const unwiredGithubAdapter = {
   createIssue() { throw new Error(NOT_WIRED_GITHUB); },
   findIssueByMarker() { throw new Error(NOT_WIRED_GITHUB); }
@@ -136,8 +137,11 @@ async function handlePostErrorBridge(req, res, deps) {
     return send(res, 200, { duplicate: true });
   }
 
-  // A failed or timed-out GitHub call leaves the row pending. A definite failure releases the claim so the retry takes over
-  // at once; a timeout or a store failure after a create does not (a late success could land, and a takeover recovers it by marker).
+  // A search-phase failure always releases the claim. A create-phase failure releases it only when the error carries
+  // definite === true (the adapter sets it when GitHub answered with an HTTP error status other than 408, or the connection
+  // failed before any request byte was sent). An ambiguous create failure (timeout, reset after sending, unparseable or
+  // number-less success), a timeout, and a store failure after a create all keep the claim, because the issue may exist and a
+  // later takeover recovers it by its marker line. Only a null search result means "confirmed absent".
   let issueNumber = null;
   let recovered = false;
   let phase = 'search';
@@ -145,7 +149,7 @@ async function handlePostErrorBridge(req, res, deps) {
   try {
     let existing = null;
     if (outcome === 'takeover') existing = await withTimeout(() => d.github.findIssueByMarker(marker), d.githubTimeoutMs);
-    if (existing) {
+    if (existing !== null) {
       if (!Number.isInteger(existing)) return unknown('bad response');
       issueNumber = existing; recovered = true;
     } else {

@@ -466,6 +466,16 @@ test('a non-integer found number gives 503 with no create and no release', async
   assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
   assert.strictEqual(ctx.adapter.created.length, 0);
 });
+test('a marker search resolving undefined is not "absent": 503, no create, claim kept', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  ctx.adapter.findIssueByMarker = async () => undefined;
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503); assert.strictEqual(ctx.adapter.created.length, 0);
+  assert.ok(ctx.lines[0].indexOf('bad response') !== -1);
+  const retry = await deliver(payload, ctx);
+  assert.strictEqual(retry.statusCode, 200); assert.ok(/duplicate/.test(retry.body));
+  assert.strictEqual(ctx.adapter.created.length, 0);
+});
 test('the unwired adapter never releases the claim', async () => {
   const ctx = makeCtx(); const payload = body(); delete ctx.deps.github;
   ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
