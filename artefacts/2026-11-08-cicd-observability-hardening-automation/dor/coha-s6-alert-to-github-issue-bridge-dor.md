@@ -1,5 +1,8 @@
 # Definition of Ready: GitHub issue opened by PostHog for each new production error issue (native destination)
 
+> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
+
+
 **Story reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 **Test plan reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md
 **Verification script:** artefacts/2026-11-08-cicd-observability-hardening-automation/verification-scripts/coha-s6-alert-to-github-issue-bridge-verification.md

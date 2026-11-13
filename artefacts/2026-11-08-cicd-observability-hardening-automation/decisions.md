@@ -138,6 +138,15 @@
 **Revisit trigger:** Re-open this entry if the repository holds a deploy or production secret an Actions branch run can read that you would not accept PostHog's side being able to reach, if PostHog changes the App's permissions, if the master ruleset's required approvals stay at zero when a second contributor joins, or at the first sign of an unexpected branch, pull request or workflow change authored by the App. Reinstating the run-3 bridge (git commit 6e16356c7) is the exit.
 ---
 
+---
+**2026-11-13 | ARCH | coha-s6 — native PostHog GitHub destination abandoned, custom bridge reinstated**
+**Decision:** Supersede the 2026-11-13 entries "coha-s6 — use PostHog's native GitHub destination, not a custom bridge" and "coha-s6 — the PostHog GitHub App holds far broader permissions than issue write, accepted". coha-s6 goes back to the custom bridge: PostHog's `template-webhook` destination (with a secret header and a body we define) calls a route in the app, which opens the GitHub issue with a token limited to issue read and write on the single target repo. The PostHog GitHub App is uninstalled and the alert created for it was deleted.
+**Alternatives considered:** (A) Keep the App as accepted — rejected by the operator after the agent showed the concrete exposure. (B) Keep the App and move the repo's deploy and staging secrets into a protected GitHub environment — not chosen; it only protects what is moved and costs a separate change to the deploy workflows. (C, chosen) Reinstate the bridge.
+**Rationale:** Evidence read on 2026-11-13: GitHub's install page for the PostHog App offers only repository scope and a fixed permission set (read and write on code, workflows, actions, checks, pull requests, hooks and issues, plus read access to the account's email addresses); the repository's Actions secrets include `FLY_API_TOKEN`, `STAGING_DATABASE_URL`, `FLEET_PUSH_TOKEN`, `CAPTURE_EXCHANGE_SECRET` and the e2e staging credentials, which a workflow changed on a branch can read, and the `master` ruleset does not protect branches. The bridge costs more code but its token can only write issues. Kept for the record: the one T3 run of the native destination opened issue #1088 (closed as not planned) and showed the template redacts frames to file base names; that is evidence about the template, not a reason to return to it.
+**Made by:** Claude Sonnet 5.5 (recommended), chosen by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If PostHog offers an error-tracking GitHub destination that works with a token or an app limited to issue write, or if the repository's secrets are moved out of reach of branch workflows and the operator wants the native route back, reconsider. The earlier revisit trigger (reinstating the bridge if the native route misbehaves) is now the active design, not an exit.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

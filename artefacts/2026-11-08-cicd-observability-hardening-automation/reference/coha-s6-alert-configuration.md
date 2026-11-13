@@ -1,5 +1,8 @@
 # coha-s6 alert configuration (read back from PostHog)
 
+> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
+
+
 **Story:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 **Evidence for:** AC1 (repository scope) and AC2 (stored alert shape); checks T1 and T2 of the test plan.
 **Read back:** 2026-11-13, from PostHog project 10908 through `integrations-list`, `integrations-github-repos-retrieve` and `error-tracking-alerts-list` (not from the creation response).

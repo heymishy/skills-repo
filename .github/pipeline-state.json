@@ -46884,37 +46884,39 @@
         {
           "id": "coha-s6",
           "slug": "coha-s6",
-          "name": "GitHub issue opened by PostHog for each new production error issue (native destination)",
+          "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "definition-of-ready",
-          "health": "green",
-          "updatedAt": "2026-11-13T00:10:58.758Z",
-          "reviewStatus": "passed",
+          "stage": "definition",
+          "health": "amber",
+          "updatedAt": "2026-11-13T07:17:58.776Z",
+          "reviewStatus": "not-started",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 7,
+            "status": "not-started",
+            "totalTests": 0,
             "passing": 0,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },
-          "acTotal": 7,
+          "acTotal": 9,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "dorStatus": "signed-off"
+          "dorStatus": "not-started",
+          "blocker": "Story reinstated as the custom bridge on 2026-11-13; needs /review, /test-plan and /definition-of-ready again"
         },
         {
           "id": "coha-s7",
           "slug": "coha-s7",
-          "name": "Label and incident record created for each PostHog-opened production error issue",
+          "name": "Incident record created for each bridge-opened production error GitHub issue",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
-          "stage": "review",
-          "health": "green",
-          "updatedAt": "2026-11-13T03:27:14.767Z",
-          "reviewStatus": "passed",
-          "highFindings": 0
+          "stage": "definition",
+          "health": "amber",
+          "updatedAt": "2026-11-13T07:19:07.692Z",
+          "reviewStatus": "not-started",
+          "highFindings": 0,
+          "blocker": "Revised for the custom bridge on 2026-11-13; needs /review"
         }
       ],
       "guardrails": [

@@ -1,5 +1,7 @@
 # Review Report: Label and incident record created for each PostHog-opened production error issue — Run 1
 
+> **STALE 2026-11-13.** This review was written for the native-route design of coha-s7 (recognition by the PostHog GitHub App as author, label added by the workflow). That design was abandoned the same day, and coha-s7 was revised again for the custom bridge, so this PASS no longer applies. It is kept as a record. coha-s7 needs a new review.
+
 **Story reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md
 **Story slug:** coha-s7
 **Date:** 2026-11-13

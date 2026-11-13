@@ -1,5 +1,8 @@
 # coha-s6 fixture: a real issue opened by PostHog's GitHub destination
 
+> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
+
+
 **Story:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md (AC3, check T3)
 **Consumed by:** coha-s7 (artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md), whose recognition rule is written from this note, not from PostHog's documentation.
 **Captured:** 2026-11-13, one approved run of the alert's test function (mock switched off) against project 10908, with a clearly labelled sample event (message `coha_s6_t3_test_sample`, one frame in `src/web-ui/routes/auth.js`), not a real scrubbed production event.
