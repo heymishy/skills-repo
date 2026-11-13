@@ -211,6 +211,39 @@ test('N4 empty fields are named in the log without their values, and the respons
   assert.ok(/code/.test(line) && /first_seen/.test(line));
 });
 
+test('U4b a PostHog link with markdown, a query string or other characters after the prefix gives 400; the fixture link passes', async () => {
+  await expectRejected('md', body({ posthog_issue_url: 'https://us.posthog.com/project/1[click](https://evil.example)' }), {}, 400);
+  await expectRejected('query', body({ posthog_issue_url: 'https://us.posthog.com/project/1/error_tracking/abc?x=1' }), {}, 400);
+  const res = await deliver(body({ environment: 'staging' }), makeCtx());
+  assert.strictEqual(res.statusCode, 200);
+});
+test('U3c first_seen must be a timestamp: mentions and markdown give 400; both timestamp forms pass the shape check', async () => {
+  await expectRejected('mention', body({ first_seen: '@everyone [x](https://evil.example)' }), {}, 400);
+  const a = await deliver(body({ environment: 'staging', first_seen: '2026-11-13T07:30:00.000Z' }), makeCtx());
+  const b = await deliver(body({ environment: 'staging', first_seen: '2026-11-13 07:30:00' }), makeCtx());
+  assert.strictEqual(a.statusCode, 200);
+  assert.strictEqual(b.statusCode, 200);
+});
+test('U3d a code with a control character or a Unicode line separator gives 400', async () => {
+  await expectRejected('u2028', body({ code: 'a b' }), {}, 400);
+  await expectRejected('bell', body({ code: 'a\u0007b' }), {}, 400);
+});
+test('U17 early rejections 401 and 413 close the connection', async () => {
+  const r401 = await expectRejected('401', body(), { secret: 'x' }, 401);
+  assert.strictEqual(r401.res.headers.connection, 'close');
+  const r413 = await expectRejected('413', JSON.stringify(body({ code: 'x'.repeat(20 * 1024) })), {}, 413);
+  assert.strictEqual(r413.res.headers.connection, 'close');
+});
+test('U15b a declared Content-Length over 16 KB gives 413 before the body is read or parsed', async () => {
+  const orig = JSON.parse; let parsed = false;
+  JSON.parse = function (s) { if (typeof s === 'string' && s.indexOf('posthog_issue_id') !== -1) parsed = true; return orig.apply(this, arguments); };
+  try {
+    const { res } = await expectRejected('cl', body(), { headers: { 'content-length': '20000' } }, 413);
+    assert.strictEqual(res.headers.connection, 'close');
+  } finally { JSON.parse = orig; }
+  assert.strictEqual(parsed, false);
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;

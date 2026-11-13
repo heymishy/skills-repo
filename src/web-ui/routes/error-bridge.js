@@ -10,6 +10,9 @@ const SCHEMA = 'coha-s6/v1';
 const LABEL = 'production-error';
 const POSTHOG_URL_PREFIX = 'https://us.posthog.com/project/';
 const MAX_TITLE = 120;
+const URL_TAIL_RE = /^[A-Za-z0-9\/_-]+$/;
+const FIRST_SEEN_RE = /^[0-9TZ:.+ -]{1,64}$/;
+const CODE_BAD_RE = /[\u0000-\u001f\u007f\u2028\u2029]/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FIELDS = ['code', 'environment', 'first_seen', 'posthog_issue_id', 'posthog_issue_url'];
 
@@ -81,12 +84,12 @@ async function handlePostErrorBridge(req, res, deps) {
     githubTimeoutMs: 8000,
     claimWindowSeconds: store.CLAIM_WINDOW_SECONDS
   }, deps || {});
-  const reject = (status, line) => { d.log('error-bridge: rejected ' + line); return send(res, status, { error: status === 413 ? 'payload too large' : 'bad request' }); };
+  const reject = (status, line) => { d.log('error-bridge: rejected ' + line); return send(res, status, { error: status === 413 ? 'payload too large' : 'bad request' }, status === 413 ? { Connection: 'close' } : undefined); };
 
   if (req.method !== 'POST') { d.log('error-bridge: rejected method'); return send(res, 405, { error: 'method not allowed' }, { Allow: 'POST' }); }
   if (!secretOk(req.headers && req.headers[SECRET_HEADER], d.secret)) {
     d.log(d.secret ? 'error-bridge: rejected unauthorised' : 'error-bridge: rejected secret not configured');
-    return send(res, 401, { error: 'unauthorised' });
+    return send(res, 401, { error: 'unauthorised' }, { Connection: 'close' });
   }
   if (Number(req.headers['content-length']) > MAX_BODY_BYTES) { req.resume(); return reject(413, 'too large'); }
   const read = await readBody(req, MAX_BODY_BYTES);
@@ -106,9 +109,9 @@ async function handlePostErrorBridge(req, res, deps) {
   const empty = FIELDS.filter((k) => f[k] === '');
   if (empty.length) return reject(400, 'empty fields: ' + empty.join(','));
   if (!UUID_RE.test(f.posthog_issue_id)) return reject(400, 'issue id');
-  if (f.posthog_issue_url.indexOf(POSTHOG_URL_PREFIX) !== 0 || f.posthog_issue_url.length > 512 || /\s/.test(f.posthog_issue_url)) return reject(400, 'link');
-  if (f.code.length > MAX_TITLE || /[\r\n]/.test(f.code)) return reject(400, 'code');
-  if (f.first_seen.length > 64 || /[\r\n]/.test(f.first_seen)) return reject(400, 'first seen');
+  if (f.posthog_issue_url.indexOf(POSTHOG_URL_PREFIX) !== 0 || f.posthog_issue_url.length > 512 || !URL_TAIL_RE.test(f.posthog_issue_url.slice(POSTHOG_URL_PREFIX.length))) return reject(400, 'link');
+  if (f.code.length > MAX_TITLE || CODE_BAD_RE.test(f.code)) return reject(400, 'code');
+  if (!FIRST_SEEN_RE.test(f.first_seen)) return reject(400, 'first seen');
 
   // CLAIM_AND_CREATE (Tasks 4, 5 and 6 add the issue creation here)
   return send(res, 200, { ok: true });
