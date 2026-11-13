@@ -127,6 +127,23 @@ function httpRequest(base, method, pathname, headers, payload) {
 
 // ---- TESTS APPENDED BELOW THIS LINE (insert new tests above the RUNNER marker) ----
 
+test('store: claim of a new id inserts a pending row and reports claimed', async () => {
+  const pool = makeFakePool(); const id = newId();
+  assert.strictEqual(await store.claim(pool, id, 120), 'claimed');
+  assert.strictEqual(pool.rows.get(id).status, 'pending');
+});
+test('store: markCreated sets status created and the issue number', async () => {
+  const pool = makeFakePool(); const id = newId();
+  await store.claim(pool, id, 120); await store.markCreated(pool, id, 42);
+  assert.deepStrictEqual([pool.rows.get(id).status, pool.rows.get(id).issue_number], ['created', 42]);
+  assert.strictEqual(await store.claim(pool, id, 120), 'created');
+});
+test('store: ensureTable issues one CREATE TABLE IF NOT EXISTS with a primary key on the PostHog issue id', async () => {
+  const pool = makeFakePool(); await store.ensureTable(pool);
+  assert.ok(/CREATE TABLE IF NOT EXISTS production_error_issues/.test(pool.queries[0]));
+  assert.ok(/posthog_issue_id VARCHAR PRIMARY KEY/.test(pool.queries[0]));
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
