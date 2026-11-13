@@ -322,6 +322,39 @@ test('U9b two simultaneous first deliveries of a new id create exactly one issue
   assert.strictEqual(ctx.adapter.created.length, 1);
 });
 
+test('U20 GitHub failing gives 503 and the row is not created', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter._fail = Object.assign(new Error('github status 500'), { name: 'GithubError' });
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503);
+  assert.notStrictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+test('U21 GitHub not answering gives 503 within the timeout plus a margin', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter.createIssue = () => new Promise(() => {});
+  const t0 = Date.now(); const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503); assert.ok(Date.now() - t0 < 1000);
+  assert.notStrictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+test('U22 after a failure, a later delivery past the claim window opens exactly one issue', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter._fail = new Error('boom');
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
+  ctx.adapter._fail = null; ctx.pool.advance(180);
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+  assert.strictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+test('U23 the unwired adapter stub throws the exact message', () => {
+  const msg = 'Adapter not wired: error-bridge-github. Call setGithubIssueAdapter() with a real implementation before use.';
+  assert.throws(() => bridge.unwiredGithubAdapter.createIssue({}), (e) => e.message === msg);
+  assert.throws(() => bridge.unwiredGithubAdapter.findIssueByMarker('x'), (e) => e.message === msg);
+});
+test('U24 the handler with the stub gives 503, logs "not wired", stays alive and creates no row marked created', async () => {
+  const ctx = makeCtx(); const payload = body(); delete ctx.deps.github;
+  const res = await deliver(payload, ctx, { deps: { github: bridge.unwiredGithubAdapter } });
+  assert.strictEqual(res.statusCode, 503);
+  assert.ok(ctx.lines.join('\n').indexOf('Adapter not wired: error-bridge-github') !== -1);
+  assert.notStrictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
