@@ -126,10 +126,20 @@ async function handlePostErrorBridge(req, res, deps) {
     outcome = await store.claim(d.pool, id, d.claimWindowSeconds);
   } catch (e) { d.log('error-bridge: store failed ' + describe(e)); return send(res, 503, { error: 'unavailable' }); }
 
-  // DUPLICATES (Task 5 adds the created / in-flight early return here)
+  if (outcome === 'created' || outcome === 'inflight') {
+    d.log('error-bridge: duplicate ' + id + ' (' + outcome + ')');
+    return send(res, 200, { duplicate: true });
+  }
 
   try {
-    // TAKEOVER (Task 5 adds the marker search here)
+    if (outcome === 'takeover') {
+      const existing = await withTimeout(() => d.github.findIssueByMarker(marker), d.githubTimeoutMs);
+      if (existing) {
+        await store.markCreated(d.pool, id, existing);
+        d.log('error-bridge: recovered issue #' + existing + ' for ' + id);
+        return send(res, 200, { issue: existing, recovered: true });
+      }
+    }
     const issue = await withTimeout(() => d.github.createIssue({ title: f.code, body: buildBody(f, marker), labels: [LABEL] }), d.githubTimeoutMs);
     await store.markCreated(d.pool, id, issue.number);
     d.log('error-bridge: created issue #' + issue.number + ' for ' + id);

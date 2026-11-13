@@ -250,6 +250,9 @@ test('U1 a valid production body creates one issue with the code title and the p
   assert.strictEqual(ctx.adapter.created.length, 1);
   assert.strictEqual(ctx.adapter.created[0].title, payload.code);
   assert.deepStrictEqual(ctx.adapter.created[0].labels, ['production-error']);
+  assert.deepStrictEqual(JSON.parse(res.body), { issue: 101 });
+  const row = ctx.pool.rows.get(payload.posthog_issue_id);
+  assert.deepStrictEqual([row.status, row.issue_number], ['created', 101]);
 });
 test('U2 the issue body holds only the fixed fields and the marker line', async () => {
   const ctx = makeCtx(); const payload = body({ extra: CANARY });
@@ -260,7 +263,7 @@ test('U2 the issue body holds only the fixed fields and the marker line', async 
     '\n\nPostHog issue id: ' + payload.posthog_issue_id + '\n');
   assert.ok(issue.title.indexOf(CANARY) === -1 && issue.body.indexOf(CANARY) === -1);
 });
-test('U17 environment staging: 200, no issue, no row, its own log line', async () => {
+test('U17b environment staging: 200, no issue, no row, its own log line', async () => {
   const ctx = makeCtx(); const res = await deliver(body({ environment: 'staging' }), ctx);
   assert.strictEqual(res.statusCode, 200);
   assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
@@ -279,9 +282,44 @@ test('U19 an unexpected environment value is ignored and not echoed in full', as
     const ctx = makeCtx(); const res = await deliver(body({ environment: v }), ctx);
     assert.strictEqual(res.statusCode, 200);
     assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
-    assert.ok(/ignored environment unexpected/.test(ctx.lines[0]));
-    assert.ok(ctx.lines[0].indexOf(v) === -1 || v.length < 20, 'a long value must not be echoed');
+    assert.strictEqual(ctx.lines[0], 'error-bridge: ignored environment unexpected (length ' + v.length + ')');
   }
+});
+
+test('U5 a created duplicate: 200, adapter not called, row unchanged', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'created', number: 7 });
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 200); assert.strictEqual(ctx.adapter.created.length, 0);
+  assert.strictEqual(ctx.pool.rows.get(payload.posthog_issue_id).issue_number, 7);
+});
+test('U6 an in-flight duplicate (claimed 30 seconds ago): 200, adapter not called', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 30 });
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 200); assert.strictEqual(ctx.adapter.created.length, 0);
+});
+test('U7 stuck pending taken over, issue not on GitHub: one issue created, row created', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  await deliver(payload, ctx);
+  assert.strictEqual(ctx.adapter.found.length, 1);
+  assert.strictEqual(ctx.adapter.found[0], 'PostHog issue id: ' + payload.posthog_issue_id);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+  assert.deepStrictEqual([ctx.pool.rows.get(payload.posthog_issue_id).status, ctx.pool.rows.get(payload.posthog_issue_id).issue_number], ['created', 101]);
+});
+test('U8 stuck pending taken over, issue already on GitHub: no create, row created with its number', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 }); ctx.adapter._find = 42;
+  await deliver(payload, ctx);
+  assert.strictEqual(ctx.adapter.created.length, 0);
+  assert.deepStrictEqual([ctx.pool.rows.get(payload.posthog_issue_id).status, ctx.pool.rows.get(payload.posthog_issue_id).issue_number], ['created', 42]);
+});
+test('U9 two concurrent takeovers of one stuck row create exactly one issue', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.pool.seed(payload.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+});
+test('U9b two simultaneous first deliveries of a new id create exactly one issue', async () => {
+  const ctx = makeCtx(); const payload = body();
+  await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+  assert.strictEqual(ctx.adapter.created.length, 1);
 });
 
 // RUNNER
