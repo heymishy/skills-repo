@@ -200,6 +200,21 @@
 **Revisit trigger:** fix #1042 or add an integrity-check exception for tfhc-s1; re-baseline the pcr-s1 threshold through a short-track story. Verification runs with Git Bash first on PATH.
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s6 — the claim is released after a definite GitHub failure (amends the in-flight rule)**
+**Decision:** When the bridge's GitHub call fails definitely (the search or the create throws an error that is not a timeout), the bridge makes a best-effort update that backdates the row's claim time, so the next delivery of the same PostHog issue takes over at once (after searching GitHub for the marker line, so no duplicate). A timeout does not release the claim, and neither does a failed store update after the issue was created (a later takeover recovers that issue by its marker). The signed-off rule that a duplicate delivery inside the 2-minute window gets 200 is unchanged.
+**Context:** The Task 5 concurrency review (coha-s6 subagent-execution) found that a failed delivery leaves its row pending, so a PostHog retry inside the window gets 200 in-flight; PostHog treats that as delivered, the alert fires only once per new error issue, and the issue is never created.
+**Alternatives considered:** (b+a) also answer in-flight duplicates with 503 so PostHog keeps retrying: rejected for now because it changes the signed-off AC2 and test U6 and PostHog's retry behaviour on 5xx is unverified; leave as designed with a RISK-ACCEPT: rejected, the loss is silent.
+**Made by:** Claude Sonnet 5.5 (recommended), chosen by Hamish King (Platform Owner), 2026-11-14.
+**Tests added:** U22b (failure then immediate retry opens one issue), U21b (timeout does not release), U20b (store failure after create is logged with the issue number and does not release), release-failure-swallowed, and store release tests.
+---
+**2026-11-14 | RISK-ACCEPT | coha-s6 — a retry that arrives while the first attempt is still running gets 200 in-flight and the issue can be lost**
+**Decision:** Accepted residual risk. If PostHog's own webhook timeout is shorter than the bridge's worst case (about 8 seconds, or about 16 seconds on a takeover) and it retries while the first attempt is still running, the retry gets 200 in-flight; if the first attempt then fails, no further delivery arrives for that error issue. The claim release above does not help in that sequence because the retry has already been answered.
+**Why accepted:** Needs PostHog to time out and retry before our attempt finishes and then GitHub to fail; PostHog's webhook timeout and retry schedule are undocumented, and the first real production error (AC9) is the check. Mitigation if it is ever seen: answer in-flight duplicates with 503 (the rejected alternative above) through an amended story.
+**Made by:** Claude Sonnet 5.5 (recommended), accepted by Hamish King (Platform Owner), 2026-11-14 (accepted by choosing the recommended option, which left this residual risk in place).
+**Revisit trigger:** A missing issue for a production error PostHog shows as alerted; or PostHog documenting its webhook timeout and retry schedule.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
