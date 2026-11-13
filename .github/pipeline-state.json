@@ -46817,7 +46817,7 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s5-posthog-error-capture-and-scrub.md",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-11-12T22:29:33.668Z",
+          "updatedAt": "2026-11-13T06:50:19.166Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46830,7 +46830,7 @@
           "acVerified": 9,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "blocker": "Post-merge: staging smoke scenario 10 not yet run; Fly capture keys unconfirmed; frame-function-name RISK-ACCEPT not logged",
+          "blocker": "Post-merge: staging smoke scenario 10 not yet run (no staging-only failing page exists); frame-function-name RISK-ACCEPT not logged. Fly capture keys confirmed 2026-11-13 and staging and production share one PostHog project.",
           "dorStatus": "signed-off",
           "tasks": [
             {
