@@ -484,6 +484,46 @@ test('the unwired adapter never releases the claim', async () => {
   assert.ok(ctx.pool.nowMs - row.claimedMs < 86400000 / 2, 'claim was released');
 });
 
+// NFR tests (N1 to N3; N4 is earlier in this file)
+test('N1 a valid delivery answers within 2 seconds with fake adapters', async () => {
+  const t0 = Date.now(); await deliver(body(), makeCtx()); assert.ok(Date.now() - t0 < 2000);
+});
+test('N2 no secret, token or payload canary appears in any log line', async () => {
+  const ctx = makeCtx();
+  const stuck = body(); ctx.pool.seed(stuck.posthog_issue_id, { status: 'pending', agoSec: 180 });
+  const failing = makeCtx(); failing.adapter._fail = new Error('upstream said ' + TOKEN + ' ' + CANARY);
+  const definite = makeCtx(); definite.adapter._fail = Object.assign(new Error('bad creds ' + TOKEN), { name: 'GithubError', definite: true });
+  const timing = makeCtx(); timing.adapter.createIssue = () => new Promise(() => {});
+  const cases = [
+    [body({ extra: CANARY }), ctx, {}], [body({ environment: 'staging', extra: CANARY }), ctx, {}], [body({ environment: CANARY }), ctx, {}],
+    [stuck, ctx, {}], [body({ code: '' }), ctx, {}], ['not json ' + CANARY, ctx, {}], [body(), ctx, { secret: SECRET + 'x' }],
+    [body({ code: 'title-' + CANARY }), failing, {}], [body({ code: 'title-' + CANARY }), definite, {}], [body({ code: 'title-' + CANARY }), timing, {}]
+  ];
+  for (const [p, c, o] of cases) await deliver(p, c, o);
+  const all = [ctx, failing, definite, timing].reduce((acc, c) => acc.concat(c.lines), []);
+  assert.ok(all.length >= cases.length, 'every case logged something');
+  const joined = all.join('\n');
+  [SECRET, TOKEN, CANARY].forEach((s) => assert.ok(joined.indexOf(s) === -1, 'a secret or canary was logged'));
+});
+test('N3 each outcome logs exactly one distinct line', async () => {
+  const seen = new Set(); let cases = 0;
+  async function once(payload, mutate, opts) {
+    const ctx = makeCtx(); if (mutate) mutate(ctx, payload);
+    await deliver(payload, ctx, opts); assert.strictEqual(ctx.lines.length, 1, 'one line per outcome'); seen.add(ctx.lines[0].replace(/[0-9a-f-]{36}|#\d+/g, 'X')); cases++;
+  }
+  await once(body());
+  await once(body(), (c, p) => c.pool.seed(p.posthog_issue_id, { status: 'created', number: 1 }));
+  await once(body({ environment: 'staging' }));
+  await once(body({ environment: '' }));
+  await once(body({ code: '' }));
+  await once(body(), null, { secret: 'wrong' });
+  await once(body(), (c) => { c.adapter._fail = new Error('x'); });
+  await once(body(), (c) => { c.adapter._fail = Object.assign(new Error('x'), { name: 'GithubError', definite: true }); });
+  await once(body(), (c) => { c.adapter.createIssue = () => new Promise(() => {}); });
+  assert.strictEqual(cases, 9);
+  assert.strictEqual(seen.size, cases, 'every outcome has its own distinct line');
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
