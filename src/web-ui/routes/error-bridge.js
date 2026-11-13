@@ -110,7 +110,12 @@ async function handlePostErrorBridge(req, res, deps) {
   const f = {};
   FIELDS.forEach((k) => { f[k] = parsed[k] === undefined ? '' : parsed[k]; });
 
-  if (f.environment === '') { d.log('error-bridge: ignored environment missing'); return send(res, 200, { ignored: 'environment missing' }); }
+  if (f.environment === '') {
+    // Name (never show) the other empty fields too: if a real event renders several properties empty together, the log must say so.
+    const alsoEmpty = FIELDS.filter((k) => k !== 'environment' && f[k] === '');
+    d.log('error-bridge: ignored environment missing' + (alsoEmpty.length ? ' (also empty: ' + alsoEmpty.join(',') + ')' : ''));
+    return send(res, 200, { ignored: 'environment missing' });
+  }
   if (f.environment === 'staging') { d.log('error-bridge: ignored staging'); return send(res, 200, { ignored: 'staging' }); }
   if (f.environment !== 'production') {
     d.log('error-bridge: ignored environment unexpected (length ' + f.environment.length + ')');

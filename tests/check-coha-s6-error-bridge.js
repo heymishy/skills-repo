@@ -287,6 +287,21 @@ test('U18 environment empty or absent: 200, no issue, no row, a different log li
     assert.deepStrictEqual(ctx.lines, ['error-bridge: ignored environment missing']);
   }
 });
+test('U18b a missing environment also names the other empty fields (names only), on the same single log line', async () => {
+  const noEnv = (over) => { const b = body(over); delete b.environment; return b; };
+  const cases = [
+    [body({ environment: '', code: '', first_seen: '' }), 'error-bridge: ignored environment missing (also empty: code,first_seen)'],
+    [noEnv({ code: '', first_seen: '', posthog_issue_id: '', posthog_issue_url: '' }), 'error-bridge: ignored environment missing (also empty: code,first_seen,posthog_issue_id,posthog_issue_url)'],
+    [body({ environment: '', code: 'title-' + CANARY, first_seen: '' }), 'error-bridge: ignored environment missing (also empty: first_seen)']
+  ];
+  for (const [payload, line] of cases) {
+    const ctx = makeCtx(); const res = await deliver(payload, ctx);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
+    assert.deepStrictEqual(ctx.lines, [line]);
+    assert.ok(ctx.lines[0].indexOf(CANARY) === -1, 'a field value must never be logged');
+  }
+});
 test('U19 an unexpected environment value is ignored and not echoed in full', async () => {
   for (const v of ['Production', 'prod', 'x'.repeat(300)]) {
     const ctx = makeCtx(); const res = await deliver(body({ environment: v }), ctx);
