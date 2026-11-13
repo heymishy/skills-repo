@@ -46887,9 +46887,9 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-13T23:43:13.925Z",
+          "updatedAt": "2026-11-13T23:45:54.892Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46966,7 +46966,9 @@
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1089"
         },
         {
           "id": "coha-s7",
