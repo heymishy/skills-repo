@@ -52,7 +52,7 @@ No guardrail here is a blocker before decomposing.
 - [ ] Bounded production-log scan with pattern-match notification — coha-s4 (SUPERSEDED by coha-s5 and coha-s6, pending operator confirmation)
 - [ ] Production error capture to PostHog with tenant text scrubbed — coha-s5 (test plan written)
 - [ ] Alert-to-GitHub-issue bridge for new production error issues — coha-s6 (reinstated 2026-11-13, needs re-review)
-- [ ] Incident record created for each bridge-opened production error GitHub issue — coha-s7 (revised 2026-11-13, needs re-review)
+- [ ] Incident record pull request opened for each bridge-opened production error GitHub issue — coha-s7 (review passed run 3)
 
 ## Human Oversight Level
 

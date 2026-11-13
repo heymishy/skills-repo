@@ -46908,15 +46908,15 @@
         {
           "id": "coha-s7",
           "slug": "coha-s7",
-          "name": "Incident record created for each bridge-opened production error GitHub issue",
+          "name": "Incident record pull request opened for each bridge-opened production error GitHub issue",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
           "stage": "review",
-          "health": "red",
-          "updatedAt": "2026-11-13T07:24:20.496Z",
-          "reviewStatus": "has-findings",
-          "highFindings": 1,
-          "blocker": "Review run 2 HIGH 2-H1: option A needs a path-based ruleset bypass that does not exist; operator must choose how the record reaches the repo"
+          "health": "green",
+          "updatedAt": "2026-11-13T07:39:02.908Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "blocker": ""
         }
       ],
       "guardrails": [
