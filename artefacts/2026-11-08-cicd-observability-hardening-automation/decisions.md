@@ -225,6 +225,19 @@
 **Revisit trigger:** a duplicate or a missing issue for an alerted production error.
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s6 — tests/check-coha-s6-error-bridge.js stays in the normal concurrent test pool (not added to SEQUENTIAL_EXCLUSIVE_LIST)**
+**Decision:** The new check file is not added to SEQUENTIAL_EXCLUSIVE_LIST in scripts/run-all-tests.js.
+**Evidence (measured 2026-11-14, Windows, processes pinned to 2 cores by processor affinity):** (1) Full suite with the pool sized as on a 2-CPU runner (one slot): 852 files, 2 failed, both on the acknowledged baseline (the tfhc-s1 integrity check and the pcr-s1 timing test); the new file and tests/check-cat-s1-core-trace-builder.js passed. (2) Full suite with a two-slot pool on 2 real cores: 852 files, 3 failed: the same two plus tests/check-rb-s3-harness-agnostic-instructions.js, whose only failing assertion is its 2-second overhead timing test; it passes alone. (3) Controlled experiment, that timing test run six times each pinned to 2 cores: alone 0 of 6 failures (about 16.5 s), beside the new file 0 of 6 (about 17.0 s, roughly 3 percent slower), beside tests/check-coha-s5-error-capture.js (the file that is already exclusive) 5 of 6 failures (about 22 s).
+**Rationale:** The new file does not starve timing-sensitive tests, unlike coha-s5, so the exclusive list is not needed. The rb-s3 timing failure in the two-slot full run is the existing sensitivity of that test to CPU load and is not attributed to this story; it is recorded here in case it recurs in CI.
+**Revisit trigger:** a timing-sensitive test failing in CI on a run that includes this file while passing without it.
+**Made by:** Claude Sonnet 5.5 (measured), 2026-11-14.
+---
+**2026-11-14 | NOTE | coha-s6 final review observations accepted without code change**
+**Observations:** (1) If the bridge's GitHub adapter is not wired when an alert arrives (the token or repo secret is missing or invalid), the first delivery claims a row and does not release it, so a PostHog retry within 2 minutes gets 200 in-flight. Nothing can have been created on that path, so releasing would be harmless, but the practical effect equals the already accepted lost-alert risk: an alert that arrives while the bridge is misconfigured is not recovered unless a further delivery arrives after the 2-minute window. The operator prerequisites (set the three Fly secrets before enabling the PostHog destination) are what prevent this; the app logs "Error bridge GitHub adapter NOT wired" at startup. (2) The takeover marker search lists only the 100 most recent issues carrying the production-error label (any state). If the label was not applied to an issue (the label must exist in the repository before the first run, DoR assumption 3), was later removed, or more than 100 labelled issues have been created since, a takeover search misses an existing issue and a duplicate can be opened. Unlikely inside a 2-minute window; the live test run (AC6) checks that the created issue actually carries the label.
+**Made by:** Claude Sonnet 5.5, 2026-11-14.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
