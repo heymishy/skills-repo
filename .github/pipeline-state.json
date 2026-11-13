@@ -46907,12 +46907,14 @@
         {
           "id": "coha-s7",
           "slug": "coha-s7",
-          "name": "Incident record created for each production error GitHub issue",
+          "name": "Label and incident record created for each PostHog-opened production error issue",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
-          "updatedAt": "2026-11-12T18:32:31.806Z"
+          "updatedAt": "2026-11-13T03:27:14.767Z",
+          "reviewStatus": "passed",
+          "highFindings": 0
         }
       ],
       "guardrails": [
