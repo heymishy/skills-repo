@@ -104,7 +104,12 @@ async function handlePostErrorBridge(req, res, deps) {
   const f = {};
   FIELDS.forEach((k) => { f[k] = parsed[k] === undefined ? '' : parsed[k]; });
 
-  // ENVIRONMENT_GATE (Task 4 inserts the environment checks here, before the empty-field check below)
+  if (f.environment === '') { d.log('error-bridge: ignored environment missing'); return send(res, 200, { ignored: 'environment missing' }); }
+  if (f.environment === 'staging') { d.log('error-bridge: ignored staging'); return send(res, 200, { ignored: 'staging' }); }
+  if (f.environment !== 'production') {
+    d.log('error-bridge: ignored environment unexpected (length ' + f.environment.length + ')');
+    return send(res, 200, { ignored: 'environment' });
+  }
 
   const empty = FIELDS.filter((k) => f[k] === '');
   if (empty.length) return reject(400, 'empty fields: ' + empty.join(','));
@@ -113,8 +118,27 @@ async function handlePostErrorBridge(req, res, deps) {
   if (f.code.length > MAX_TITLE || CODE_BAD_RE.test(f.code)) return reject(400, 'code');
   if (!FIRST_SEEN_RE.test(f.first_seen)) return reject(400, 'first seen');
 
-  // CLAIM_AND_CREATE (Tasks 4, 5 and 6 add the issue creation here)
-  return send(res, 200, { ok: true });
+  const id = f.posthog_issue_id;
+  const marker = 'PostHog issue id: ' + id;
+  let outcome;
+  try {
+    if (!d.pool) throw new Error('Adapter not wired: error-bridge-store. Call setStorePool() with a real implementation before use.');
+    outcome = await store.claim(d.pool, id, d.claimWindowSeconds);
+  } catch (e) { d.log('error-bridge: store failed ' + describe(e)); return send(res, 503, { error: 'unavailable' }); }
+
+  // DUPLICATES (Task 5 adds the created / in-flight early return here)
+
+  try {
+    // TAKEOVER (Task 5 adds the marker search here)
+    const issue = await withTimeout(() => d.github.createIssue({ title: f.code, body: buildBody(f, marker), labels: [LABEL] }), d.githubTimeoutMs);
+    await store.markCreated(d.pool, id, issue.number);
+    d.log('error-bridge: created issue #' + issue.number + ' for ' + id);
+    return send(res, 200, { issue: issue.number });
+  } catch (e) {
+    // FAILURE (Task 6 refines this)
+    d.log('error-bridge: github failed ' + describe(e) + ' for ' + id);
+    return send(res, 503, { error: 'upstream unavailable' });
+  }
 }
 
 module.exports = {

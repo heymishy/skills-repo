@@ -225,7 +225,7 @@ test('U3c first_seen must be a timestamp: mentions and markdown give 400; both t
   assert.strictEqual(b.statusCode, 200);
 });
 test('U3d a code with a control character or a Unicode line separator gives 400', async () => {
-  await expectRejected('u2028', body({ code: 'a b' }), {}, 400);
+  await expectRejected('u2028', body({ code: 'a\u2028b' }), {}, 400);
   await expectRejected('bell', body({ code: 'a\u0007b' }), {}, 400);
 });
 test('U17 early rejections 401 and 413 close the connection', async () => {
@@ -243,14 +243,54 @@ test('U15b a declared Content-Length over 16 KB gives 413 before the body is rea
   } finally { JSON.parse = orig; }
   assert.strictEqual(parsed, false);
 });
+test('U1 a valid production body creates one issue with the code title and the production-error label', async () => {
+  const ctx = makeCtx(); const payload = body();
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+  assert.strictEqual(ctx.adapter.created[0].title, payload.code);
+  assert.deepStrictEqual(ctx.adapter.created[0].labels, ['production-error']);
+});
+test('U2 the issue body holds only the fixed fields and the marker line', async () => {
+  const ctx = makeCtx(); const payload = body({ extra: CANARY });
+  await deliver(payload, ctx);
+  const issue = ctx.adapter.created[0];
+  assert.strictEqual(issue.body,
+    'First seen: ' + payload.first_seen + '\nEnvironment: production\nPostHog: ' + payload.posthog_issue_url +
+    '\n\nPostHog issue id: ' + payload.posthog_issue_id + '\n');
+  assert.ok(issue.title.indexOf(CANARY) === -1 && issue.body.indexOf(CANARY) === -1);
+});
+test('U17 environment staging: 200, no issue, no row, its own log line', async () => {
+  const ctx = makeCtx(); const res = await deliver(body({ environment: 'staging' }), ctx);
+  assert.strictEqual(res.statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
+  assert.deepStrictEqual(ctx.lines, ['error-bridge: ignored staging']);
+});
+test('U18 environment empty or absent: 200, no issue, no row, a different log line', async () => {
+  for (const payload of [body({ environment: '' }), (() => { const b = body(); delete b.environment; return b; })()]) {
+    const ctx = makeCtx(); const res = await deliver(payload, ctx);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
+    assert.deepStrictEqual(ctx.lines, ['error-bridge: ignored environment missing']);
+  }
+});
+test('U19 an unexpected environment value is ignored and not echoed in full', async () => {
+  for (const v of ['Production', 'prod', 'x'.repeat(300)]) {
+    const ctx = makeCtx(); const res = await deliver(body({ environment: v }), ctx);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(ctx.adapter.created.length, 0); assert.strictEqual(ctx.pool.rows.size, 0);
+    assert.ok(/ignored environment unexpected/.test(ctx.lines[0]));
+    assert.ok(ctx.lines[0].indexOf(v) === -1 || v.length < 20, 'a long value must not be echoed');
+  }
+});
 
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
   for (const t of tests) {
     if (t.skip) { skipped++; console.log('  SKIPPED (no COHA_S6_TEST_DATABASE_URL) ' + t.name); continue; }
-    try { await t.fn(); passed++; console.log('  ✓ ' + t.name); }
-    catch (e) { failed++; console.log('  ✗ ' + t.name + '\n      ' + (e && e.message)); }
+    try { await t.fn(); passed++; console.log('  \u2713 ' + t.name); }
+    catch (e) { failed++; console.log('  \u2717 ' + t.name + '\n      ' + (e && e.message)); }
   }
   console.log('[coha-s6-error-bridge] Results: ' + passed + ' passed, ' + failed + ' failed, ' + skipped + ' skipped (real-Postgres tests need COHA_S6_TEST_DATABASE_URL)');
   process.exit(failed ? 1 : 0);
