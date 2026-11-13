@@ -21,10 +21,32 @@ function githubError(message, definite) {
   return e;
 }
 
+// Wiring-time validation: a bad configuration throws at construction so server.js keeps the D37 stub (route answers 503).
+// Messages name the problem only, never a value (the token, or a token pasted into the wrong variable, must not be logged).
+const REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+function configError(problem) {
+  const e = new Error('invalid configuration: ' + problem);
+  e.name = 'GithubConfigError';
+  return e;
+}
+function validateConfig(token, repo, apiBase) {
+  if (typeof token !== 'string' || token === '') throw configError('token is empty');
+  if (typeof repo !== 'string' || !REPO_RE.test(repo) || repo.split('/').some((s) => s === '.' || s === '..')) {
+    throw configError('repo must be "owner/name" (letters, digits, ".", "-", "_"; no "." or ".." segment)');
+  }
+  let u;
+  try { u = new URL(apiBase); } catch (e) { throw configError('apiBase is not a valid URL'); }
+  if (u.protocol === 'https:') return;
+  // Plain http would send the token in cleartext; allowed only for a local test server.
+  if (u.protocol === 'http:' && (u.hostname === '127.0.0.1' || u.hostname === 'localhost')) return;
+  throw configError('apiBase must be https (plain http only for 127.0.0.1 or localhost)');
+}
+
 function createGithubAdapter(opts) {
   const token = opts.token;
   const repo = opts.repo; // "owner/name"
   const apiBase = (opts.apiBase || 'https://api.github.com').replace(/\/+$/, '');
+  validateConfig(token, repo, apiBase);
   // Idle (socket inactivity) timeout, not a total-duration bound. The 7000 ms default fires before the handler's own 8000 ms bound.
   const timeoutMs = opts.timeoutMs || 7000;
 

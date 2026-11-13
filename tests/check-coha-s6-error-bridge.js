@@ -737,6 +737,38 @@ test('I2b a definite GitHub failure releases the claim: the immediate retry succ
   } finally { srv.close(); gh.srv.close(); }
 });
 
+// Wiring-time validation (Task 9 addition b): createGithubAdapter throws at construction on a bad configuration, so server.js
+// keeps the D37 stub in place and the route answers 503 "not wired". No thrown message may contain the token.
+function constructErr(opts) {
+  const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
+  try { createGithubAdapter(opts); } catch (e) { assertNoTokenLeak(e); return e; }
+  throw new Error('expected createGithubAdapter to throw for ' + JSON.stringify(opts).split(TOKEN).join('<token>'));
+}
+test('adapter config: an invalid repo throws at construction and the message holds no token', () => {
+  const bad = ['o/r/issues/1/comments?', 'o/r/../../../user', '../../orgs/x', 'o', 'o/', '/r', 'o/r?x=1', 'a/b/c', '../x', 'x/..', './x', 'x/.', '', 'o/r#f', 'o /r', 'o/r\n'];
+  bad.forEach((repo) => { constructErr({ token: TOKEN, repo, apiBase: 'https://api.github.com' }); });
+  constructErr({ token: TOKEN, apiBase: 'https://api.github.com' });
+});
+test('adapter config: apiBase must be https unless the host is 127.0.0.1 or localhost', () => {
+  const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
+  ['http://example.com', 'http://api.github.com', 'ftp://127.0.0.1', 'not a url', 'http://127.0.0.1.example.com'].forEach((apiBase) => { constructErr({ token: TOKEN, repo: 'o/r', apiBase }); });
+  ['http://127.0.0.1:1234', 'http://localhost:1234', 'https://api.github.com', 'https://ghe.example.com/api/v3', undefined].forEach((apiBase) => {
+    const a = createGithubAdapter({ token: TOKEN, repo: 'o/r', apiBase });
+    assert.strictEqual(typeof a.createIssue, 'function'); assert.strictEqual(typeof a.findIssueByMarker, 'function');
+  });
+});
+test('adapter config: an empty or missing token throws; valid repos with dots, dashes and underscores are accepted', () => {
+  const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
+  constructErr({ token: '', repo: 'o/r', apiBase: 'https://api.github.com' });
+  constructErr({ repo: 'o/r', apiBase: 'https://api.github.com' });
+  ['o/r', 'my-org/my.repo', 'Org_1/repo-name_2', 'o/.github', 'o/r..x'].forEach((repo) => { createGithubAdapter({ token: TOKEN, repo }); });
+});
+test('adapter config: a thrown configuration message never contains the token, even when the token is put in the repo or apiBase', () => {
+  constructErr({ token: TOKEN, repo: TOKEN + '/x/y', apiBase: 'https://api.github.com' });
+  constructErr({ token: TOKEN, repo: 'o/r', apiBase: 'http://' + TOKEN + '.example.com' });
+  constructErr({ token: TOKEN, repo: 'o/r', apiBase: 'not a url ' + TOKEN });
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
