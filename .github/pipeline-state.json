@@ -46887,19 +46887,19 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-11-13T23:33:04.044Z",
+          "updatedAt": "2026-11-13T23:43:13.925Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 90,
-            "passing": 83,
+            "passing": 90,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },
           "acTotal": 9,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
@@ -46965,7 +46965,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s6-alert-to-github-issue-bridge-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "coha-s7",

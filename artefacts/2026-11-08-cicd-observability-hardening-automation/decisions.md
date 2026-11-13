@@ -238,6 +238,13 @@
 **Made by:** Claude Sonnet 5.5, 2026-11-14.
 ---
 
+---
+**2026-11-14 | SCOPE | coha-s6 verify-completion: additions beyond the plan text**
+**Context:** Step 3 of /verify-completion compares the branch commits with the DoR ACs and the implementation plan. Everything maps to a plan task, a review fix, or an earlier 2026-11-14 decision, except the following small additions made during execution, which are logged here and will be listed in the pull request description.
+**Additions:** (1) An always-run test W1 that starts the real server.js in a child process without a database and checks over real HTTP that the new route exists, rejects a wrong secret (401) and wrong method (405), answers 503 "not wired" for a valid delivery and 200 for a staging delivery: this gives CI a wiring check that does not need Postgres (the plan's wiring tests P6 and P7 need a database and do not run in CI). (2) Configuration checks in createGithubAdapter at wiring time (the repository name must look like owner/name and not contain path tricks, the token must be non-empty, the API base must be https unless it is a loopback host and must not carry a query, fragment or user info), with server.js leaving the throwing stub in place if the check fails: from a quality review that an operator typo in ERROR_BRIDGE_REPO could otherwise aim the bearer token's writes at a different API path. (3) Test-only safety: the real-database tests refuse to run against a non-local database unless COHA_S6_ALLOW_REMOTE_DB=1 is set, because they drop the production_error_issues table. (4) The missing-environment log line names (never shows) other empty fields, from the final review, so that if a real PostHog event renders several properties empty together the first real production error (AC9) can be diagnosed from the log. (5) Hardening of field validation beyond the plan: the PostHog link tail, first_seen and code character sets, from the Task 3 review. None adds a user-visible capability or touches a file outside the six named files.
+**Made by:** Claude Sonnet 5.5, 2026-11-14 (recommended from reviews; the operator can ask for any to be removed in the pull request).
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
