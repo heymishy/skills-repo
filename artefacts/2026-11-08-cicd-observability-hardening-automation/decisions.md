@@ -147,6 +147,51 @@
 **Revisit trigger:** If PostHog offers an error-tracking GitHub destination that works with a token or an app limited to issue write, or if the repository's secrets are moved out of reach of branch workflows and the operator wants the native route back, reconsider. The earlier revisit trigger (reinstating the bridge if the native route misbehaves) is now the active design, not an exit.
 ---
 
+---
+**2026-11-13 | RISK-ACCEPT | definition-of-ready — coha-s6 (bridge) W3 and W4 acknowledged**
+**Decision:** Acknowledge, rather than resolve, two DoR warnings for the reinstated coha-s6 bridge: W3 (review run 5's MEDIUM findings 5-M1 and 5-M2 were fixed in the same session by the agent that wrote the story, not independently checked) and W4 (the verification script has no domain-expert review). This supersedes, for the bridge, the two entries of the same day written for the abandoned native-destination design.
+**Alternatives considered:** (A) Block until a second person reviews — rejected, no second contributor exists. (B) Count the operator's own check as the review — rejected, the operator is the author and owner. (C, chosen) Acknowledge as open risks.
+**Rationale:** Same root cause as the earlier W4 entries. The risk is limited by 37 automated tests, seven of them against a real database, and two live scenarios that read real service state.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If a second contributor joins, have them review the coha-s6 verification script and the bridge's failure handling before the bridge's rules next change.
+---
+
+---
+**2026-11-13 | RISK-ACCEPT | definition-of-ready — coha-s6 (bridge) AC9, first real production error opens one issue, may not be observed before merge**
+**Decision:** Accept that AC9, a `production-observed` check (verification script scenario 9), cannot be produced on demand and may be absent at merge. The DoD records coha-s6 as COMPLETE WITH DEVIATIONS until a real production error opens exactly one issue, repeats open none, and the real event is shown to fill every field of the webhook body including `environment`. A post-merge action in `workspace/state.json` names the operator as the person who confirms it. This supersedes the AC6 entry written for the native-destination design.
+**Alternatives considered:** (A) Cause a deliberate production error — rejected, it would put a fake error into production data and the public issue list. (B) Hold the story open — rejected, the rest is complete and coha-s7 depends on it. (C, chosen) Merge with the deviation recorded and a named follow-up.
+**Rationale:** Duplicate suppression and field rendering on a real event cannot be exercised without a real new error issue in production. Residual risk: a template that works on the sample but renders empty fields on a real event would drop real errors until the first one occurs. The bridge logs the names of empty fields and a distinct line for a missing environment, so the failure is visible in the app log after the first real error.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If a production error produces two issues, none, or a log line naming empty fields, fix the template or the bridge before relying on it.
+---
+
+---
+**2026-11-13 | ARCH | coha-s6 — bridge uses a fine-grained personal access token limited to issues on one repo**
+**Decision:** The bridge opens issues with a fine-grained personal access token scoped to `heymishy/skills-repo` only, with Issues read and write and nothing else, a 90-day expiry and a calendar reminder to rotate it, held as the Fly secret `ERROR_BRIDGE_GITHUB_TOKEN`. The operator creates it and sets it without printing it.
+**Alternatives considered:** (B) An issues-only GitHub App owned by the operator — not chosen: bot identity and short-lived tokens, but it needs a private key and a signing step in the app, which is more code and a more valuable secret for little gain at this scale. (C) PostHog's GitHub App — rejected earlier the same day (permissions cannot be narrowed).
+**Rationale:** The token's worst case is spam issues in a public repo, not code or secret access. Cost accepted: issues appear authored by the operator's account, not a bot, so coha-s7's author check identifies the operator's login.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If a second contributor joins, if the 90-day rotation is missed once, or if bot-authored issues are wanted, move to an issues-only GitHub App.
+---
+
+---
+**2026-11-13 | DEFERRAL | coha-s6 — database-backed bridge tests are local evidence, not a CI gate**
+**Decision:** The seven real-Postgres tests (P1 to P7) of coha-s6 run locally against a throwaway container at `/verify-completion` and their output goes in the DoD as `integration-real-code` evidence. A Postgres service in `.github/workflows/pr-checks.yml` is deferred; it is a platform change that would need its own story. The always-run suite (30 tests) still covers every branch through a fake pool and runs in CI.
+**Alternatives considered:** (A) Add a CI Postgres service now — deferred, separate platform change. (B) Treat the gated tests as a RISK-ACCEPT — rejected: they are real evidence when run, and the repo's rule is to get real evidence where only infrastructure friction blocks it.
+**Rationale:** Atomicity of two simultaneous deliveries cannot be shown with a fake; a local container shows it. If Docker is unavailable at verify time, that is a stated blocker, not a pass.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If the bridge's duplicate logic changes after merge, or a second contributor joins, add the CI Postgres service so the atomicity tests gate every PR.
+---
+
+---
+**2026-11-13 | ARCH | coha-s7 — incident record reaches the repository through a pull request per record (replaces option A)**
+**Decision:** The workflow that creates an incident record opens a pull request containing the record instead of pushing to `master`; the operator merges each one. This replaces the 2026-11-13 option A (workflow pushes under a path bypass). Review `coha-s7-review-2.md` (finding 2-H1) showed the `master` ruleset has no file-path rule and its only bypass is the repository admin role, so the premise of option A, a path-scoped bypass, does not exist.
+**Alternatives considered:** (1) Give the Actions app a blanket bypass on `master` — rejected: any workflow with `contents: write` could then push anything, including workflow files. (3) Write records to an unguarded branch — not chosen, it moves where the triage feature reads records from. (4) The bridge writes the file through the Contents API with a one-file token — not chosen, it adds a repository write to the app that was deliberately kept out.
+**Rationale:** No ruleset change, `master` stays guarded, and a short delay before a record appears is acceptable because the incident already has an open GitHub issue. Cost accepted: one pull request to merge per incident and the status checks must pass on it.
+**Made by:** Claude Sonnet 5.5 (recommended), confirmed by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** If incident volume makes merging a pull request per record a burden, revisit option 3 or a batched record. A separate follow-up, not part of this decision: the "path-based bypass" operator note in CLAUDE.md is inaccurate and needs a corrected note through its own story.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

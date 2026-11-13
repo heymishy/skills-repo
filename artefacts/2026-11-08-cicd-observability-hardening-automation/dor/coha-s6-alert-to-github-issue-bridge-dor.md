@@ -1,15 +1,12 @@
-# Definition of Ready: GitHub issue opened by PostHog for each new production error issue (native destination)
-
-> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
-
+# Definition of Ready: Alert-to-GitHub-issue bridge for new production error issues
 
 **Story reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 **Test plan reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md
 **Verification script:** artefacts/2026-11-08-cicd-observability-hardening-automation/verification-scripts/coha-s6-alert-to-github-issue-bridge-verification.md
-**Review:** PASS, run 4 (artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s6-review-4.md), 0 HIGH, 3 MEDIUM (resolved in revision), 2 LOW
+**Review:** PASS, run 5 (artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s6-review-5.md), 0 HIGH, 2 MEDIUM (resolved in revision), 3 LOW
 **Assessed by:** Claude Sonnet 5.5
 **Date:** 2026-11-13
-**Status:** SIGNED OFF by Hamish King, Platform Owner, 2026-11-13 (hard blocks 19/19; W3, W4 and the AC6 RISK-ACCEPT acknowledged)
+**Status:** SIGNED OFF by Hamish King, Platform Owner, 2026-11-13 (hard blocks 20/20 applicable; W3, W4 and the AC9 RISK-ACCEPT acknowledged)
 
 ---
 
@@ -19,7 +16,7 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 
 ## Contract Review
 
-✅ **Contract review passed.** Each AC maps to a live check at the strength the AC needs, and the contract states which are live-verified, which is production-observed and deferred, and which is only half observed (AC1). The contract's exclusions (`src/`, `scripts/`, `.github/workflows/`) have no test assertions against them; the only assertion about them is AC7's "nothing changed there", so the contract does not contradict the test plan (B1/D1). The injectable-adapter and CSS-layout rules do not apply.
+✅ **Contract review passed.** Each AC maps to named tests at the type it needs: AC1 to AC5 and AC8 through the real handler (with a fake adapter or a local fake GitHub API over real HTTP), AC7 through the real `server.js` startup in a child process, AC6 and AC9 as live and production-observed scenarios stated as such. The contract's exclusions (`error-capture.js`, `posthog-config.js`, `posthog-server.js`, `routes/billing.js`) have no test assertions against them, and the files the tests do assert against (`server.js`, the new route, store and adapter modules) are all in the touch list, so the contract does not contradict the test plan (B1/D1). Mock-shape check: the fixture is rendered by PostHog from a sample event we supplied, so it proves our template and route agree, not that a real event fills the fields; the contract says so, adds the field-name logging, and leaves the real-event proof to AC9. The Stripe route is a pattern, not a reused adapter.
 
 ---
 
@@ -28,27 +25,27 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | User story in As/Want/So format, named persona | ✅ | "As a delivery engineer ..." |
-| H2 | At least 3 ACs in Given/When/Then | ✅ | 7 ACs |
-| H3 | Every AC has at least one test | ✅ | 7 checks (T1 to T7), each AC mapped in the coverage table. They are live checks, not coded tests, because the story ships no code (explained in the test plan) |
+| H2 | At least 3 ACs in Given/When/Then | ✅ | 9 ACs |
+| H3 | Every AC has at least one test | ✅ | 37 automated tests (30 always-run, 7 real-Postgres gated) plus 2 manual live scenarios; every AC mapped in the coverage table |
 | H4 | Out-of-scope populated | ✅ | Seven explicit exclusions |
 | H5 | Benefit linkage names a metric | ✅ | Production-defect detection latency (Metric 4) |
-| H6 | Complexity rated | ✅ | Rating 1, scope stability Unstable until AC3 |
-| H7 | No unresolved HIGH review findings | ✅ | review-4: 0 HIGH |
-| H8 | No uncovered ACs | ✅ | Gaps are classified, none uncovered; AC4 conditional, AC6 deferred |
-| H8-ext | Cross-story schema dependency | ✅ | Upstream coha-s5 is merged; no `schemaDepends` field is used by this story, so the schema check is not required |
-| H9 | Architecture Constraints populated; no Category E HIGH | ✅ | Constraints cover ADR-012, credentials and the fallback; no Category E HIGH in run 4 |
-| H-E2E | No CSS-layout-dependent AC | ✅ N/A | `hasLayoutDependentGaps: false` |
-| H-NFR | NFR profile exists | ✅ | Rows for coha-s6 rewritten 2026-11-13 to match the native design (privacy, isolation, reliability, security) |
+| H6 | Complexity rated | ✅ | Rating 2, scope stability Unstable until the live check |
+| H7 | No unresolved HIGH review findings | ✅ | review-5: 0 HIGH |
+| H8 | No uncovered ACs | ✅ | AC6 and AC9 are manual by nature and covered by scenarios; gaps classified in the test plan |
+| H8-ext | Cross-story schema dependency | ✅ | Upstream coha-s5 declared; contract carries `schemaDepends: [prStatus, dodStatus]`, both present in `pipeline-state.schema.json` |
+| H9 | Architecture Constraints populated; no Category E HIGH | ✅ | Constraints cover D37, ADR-012, credentials, CSRF exemption; no Category E HIGH in run 5 |
+| H-E2E | No CSS-layout-dependent AC | ✅ N/A | No UI; `hasLayoutDependentGaps: false` |
+| H-NFR | NFR profile exists | ✅ | Rows for coha-s6 restored to the bridge design on 2026-11-13 (privacy, isolation, reliability, security) |
 | H-NFR2 | Compliance NFR sign-off | ✅ N/A | No regulatory clause |
 | H-NFR3 | Data classification not blank | ✅ | "Internal" |
 | H-NFR-profile | Profile present | ✅ | Present |
-| H-GOV | Approved By in discovery | ✅ | "Hamish King — Platform Owner — 2026-11-08"; M1 signal: role unverified for independent sign-off quality, as for the other stories in this feature |
-| H-ADAPTER | Injectable adapter wiring | ✅ N/A | The story introduces no adapter and no `setX()` function |
+| H-GOV | Approved By in discovery | ✅ | "Hamish King — Platform Owner — 2026-11-08". M1 signal: role unverified for independent sign-off quality, as for the other stories in this feature |
+| H-ADAPTER | Injectable adapter wiring check (D37) | ✅ | `setGithubIssueAdapter` is an injectable adapter: the stub throws the exact "Adapter not wired" message (U23), AC7 scopes the production wiring in `server.js` and P6/P7 assert observable outcomes (right token and body; two ids give two issues), and the contract names the wiring as its own task separate from the handler task |
 | H-INF | `hasInfraTrack` not set | ✅ N/A | |
-| H-MIG | `hasMigrationTrack` not set | ✅ N/A | |
+| H-MIG | `hasMigrationTrack` not set | ✅ N/A | The `CREATE TABLE IF NOT EXISTS` is an additive boot migration like `credit_audit_log`; no existing table changes |
 | H-DESIGN | `hasDesignSystemTrack` not set | ✅ N/A | No UI |
 
-**Result: 19/19 applicable hard blocks passed.**
+**Result: 20/20 applicable hard blocks passed.**
 
 ---
 
@@ -56,13 +53,13 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 
 | # | Check | Status | Risk if proceeding | Acknowledged by |
 |---|-------|--------|--------------------|-----------------|
-| W1 | NFRs identified | ✅ | — | Security, privacy, isolation, reliability, audit stated; performance and accessibility N/A |
-| W2 | Scope stability declared | ✅ | — | "Unstable until AC3" |
-| W3 | MEDIUM findings acknowledged | ⚠️ | 4-M1 to 4-M3 were fixed in the same session by the reviewer who is also the author | Acknowledged by Hamish King on 2026-11-13: the fixes were made by the same agent that wrote the story and were not independently checked; logged in decisions.md |
-| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases; here the script is the only test evidence, as no code ships | Re-acknowledged by Hamish King on 2026-11-13 now that the script exists and is the sole evidence; logged as a RISK-ACCEPT in decisions.md. Not an independent review. |
-| W5 | No UNCERTAIN gap-table items | ✅ | — | All gap-table entries have a stated handling |
+| W1 | NFRs identified | ✅ | — | Performance, security, audit, reliability stated; accessibility N/A |
+| W2 | Scope stability declared | ✅ | — | "Unstable until the live check" |
+| W3 | MEDIUM findings acknowledged | ⚠️ | 5-M1 and 5-M2 were fixed in the same session by the agent that wrote the story | Acknowledged by Hamish King on 2026-11-13; logged in decisions.md |
+| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases | Acknowledged by Hamish King on 2026-11-13 as a RISK-ACCEPT in decisions.md; the 7 database-backed tests and the live scenarios limit what an unreviewed script can get wrong. Not an independent review. |
+| W5 | No UNCERTAIN gap-table items | ✅ | — | Every gap-table entry has a stated handling |
 
-**Decisions logged 2026-11-13 (decisions.md):** W3, W4 and a RISK-ACCEPT in `decisions.md` classifying AC6 (production-observed, may not occur before merge) with a post-merge action in `workspace/state.json`, as the story and review 4-M2 require.
+**Decisions logged 2026-11-13 (decisions.md):** W3 and W4 acknowledgements; the AC9 RISK-ACCEPT; the bridge token type; the deferral of a CI Postgres service.
 
 ---
 
@@ -70,24 +67,13 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 
 Parent epic: **Medium**. The tech lead must be shown this DoR artefact; the operator is the only contributor and the tech lead in this repo, so this artefact and the operator's sign-off are that step.
 
-**Sign-off:** Hamish King — Platform Owner — 2026-11-13, given in the session together with the three acknowledgements below.
-
-**Operator confirmations given 2026-11-13 ("Confirm all 4"):**
-1. Sign off this DoR (Proceed: Yes).
-2. Acknowledge W3 (the review-4 fixes were made by the same agent that wrote them).
-3. Re-acknowledge W4 for coha-s6's verification script as a RISK-ACCEPT.
-4. Agree the AC6 RISK-ACCEPT and the post-merge action.
+**Sign-off:** Hamish King — Platform Owner — 2026-11-13, given in the session by replying "Agree" to five stated recommendations (token type, Postgres evidence, W3 and W4, the AC9 RISK-ACCEPT, and the coha-s7 delivery option).
 
 **Open facts the implementer must not assume away (recorded, not blocking):**
-1. The GitHub integration is not connected (PostHog integrations list was empty on 2026-11-13). The agent cannot start the live scenarios until the operator does that.
-2. The operator states staging and production share one PostHog key; unverified, and AC5 re-opens it if the staging event does not show in this project.
-3. Scenarios 3 and 4 open real issues in a public repo; each needs fresh approval immediately before it runs.
-
----
-
-## Amendment 2026-11-13 (after sign-off)
-
-After the operator installed the PostHog GitHub App, GitHub's installation page showed permissions far broader than the story's AC1 required (read and write on code, workflows, actions, pull requests, hooks and checks, as well as issues). The operator accepted the risk against the agent's recommendation (decisions.md, "coha-s6 — the PostHog GitHub App holds far broader permissions than issue write, accepted"). AC1 was reworded to record the permissions as observed and accepted rather than satisfied; the test plan's T1 and the verification script's scenario 1 and the NFR profile security row were updated to match. This is a narrow amendment and the story was not sent back through `/review`; the sign-off above stands on that basis, which the operator can overturn by asking for a re-review.
+1. The label `production-error` did not exist in `heymishy/skills-repo` on 2026-11-13, and whether an issues-only token can create it is unverified; the operator creates it first.
+2. A real Postgres is needed at `/verify-completion` for AC2, AC5 and AC7 evidence; Docker must be running.
+3. The operator creates the fine-grained token (single repo, Issues read and write only, 90-day expiry) and sets `ERROR_BRIDGE_SECRET` and `ERROR_BRIDGE_GITHUB_TOKEN` as Fly secrets without printing them; the agent never sees either value.
+4. Scenario 6 opens a real issue in a public repo and needs approval immediately before the one run.
 
 ---
 
@@ -102,21 +88,26 @@ Story has no `domain` field — skipped silently.
 ```
 ## Coding Agent Instructions
 
-Proceed: Yes (operator sign-off and acknowledgements recorded 2026-11-13)
-Story: GitHub issue opened by PostHog for each new production error issue (native destination) — artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
+Proceed: Yes (operator sign-off, W3 and W4 acknowledgements and the AC9 RISK-ACCEPT recorded 2026-11-13)
+Story: Alert-to-GitHub-issue bridge for new production error issues — artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 Test plan: artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md
 Contract: artefacts/2026-11-08-cicd-observability-hardening-automation/dor/coha-s6-alert-to-github-issue-bridge-dor-contract.md
 
 Goal:
-Complete checks T1 to T7 of the test plan and record the evidence. There is no application code to write.
+Make every test in the test plan pass. Do not add scope, behaviour, or structure beyond what the tests and ACs specify.
 
 Constraints:
-- No file under src/, scripts/ or .github/workflows/ may change. If a gap in PostHog's native GitHub destination appears to need code, stop and report it; do not improvise a bridge (the run-3 design at git commit 6e16356c7 is the fallback, reinstated only through /definition and /review).
-- Never create, print, log or commit a credential, token or installation id. The operator connects the GitHub integration; the agent only reads the integrations list.
-- Each action that opens an issue in the public repo (T3 test-function run, T4 extra issue) needs explicit operator approval immediately before, covers one run, and is followed by closing the issue.
-- Create the alert with trigger "issue created" only and the filter environment = production; read it back from PostHog and record the read-back without secrets.
-- If AC3 or AC4 shows tenant text or anything beyond the fixed code and src/ or node_modules/ frames in an issue, disable the alert and report.
-- Production reads need explicit approval each time.
-- Record evidence strength per AC (live-verified, production-observed) for the DoD; AC6 stays pending until a real production error occurs.
-- Open a draft PR only if a tracked change outside artefacts/ and bookkeeping is ever needed; otherwise bookkeeping goes to master by the short-lived-branch path.
+- Node.js, this repo's existing conventions; test runner is node scripts/run-all-tests.js; the new check is node tests/check-coha-s6-error-bridge.js. The 7 real-Postgres tests (P1 to P7) run only when COHA_S6_TEST_DATABASE_URL is set and must print SKIPPED, never a pass, when it is not.
+- New files: src/web-ui/routes/error-bridge.js, src/web-ui/modules/error-bridge-store.js, src/web-ui/modules/error-bridge-github.js. Do not change error-capture.js, posthog-config.js, posthog-server.js or routes/billing.js. Follow the /webhook/stripe route in server.js (around line 4237) as a pattern only.
+- Injectable adapter rule (D37): the unwired stub MUST throw "Adapter not wired: error-bridge-github. Call setGithubIssueAdapter() with a real implementation before use."; the handler must contain that throw and return 503; the implementation plan must list the production wiring in server.js as a separate task from the handler task; the wiring test (P6, P7) asserts an observable outcome against a local fake GitHub API.
+- Shared secret compared with crypto.timingSafeEqual, guarding unequal lengths; request body capped at 16 KB and rejected before parsing; body must carry schema coha-s6/v1 and string fields only; the PostHog link must start with https://us.posthog.com/project/.
+- Issue content is fixed fields only: title is the code (no newline, at most 120 characters); body holds first-seen time, environment, the PostHog link and a marker line with the PostHog issue id; label production-error. No message beyond the code, no stack, no other payload text.
+- Act only on environment = production. Staging and a missing environment return 200 with no issue and no row, each with its own distinct log line; an unexpected value is treated as not production.
+- Duplicate state: table production_error_issues with a unique PostHog issue id, status pending or created, claim window 2 minutes, takeover by one conditional update, marker search on GitHub before creating on takeover.
+- Credentials: ERROR_BRIDGE_SECRET and ERROR_BRIDGE_GITHUB_TOKEN come from the environment; never log, print, write or commit them; tests use generated values and assert they never appear in any log line.
+- Never send test traffic to the real GitHub or PostHog; tests use a local fake GitHub API and generated values only. Do not re-require server.js more than once in one test process; start it in a child process.
+- Never touch workspace/incidents.json.
+- Architecture standards: read .github/architecture-guardrails.md before implementing.
+- Open a draft PR when tests pass — do not mark ready for review.
+- If you encounter an ambiguity not covered by the ACs or tests: add a PR comment describing it and do not mark ready for review.
 ```
