@@ -215,6 +215,16 @@
 **Revisit trigger:** A missing issue for a production error PostHog shows as alerted; or PostHog documenting its webhook timeout and retry schedule.
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s6 — where the line between a definite and an ambiguous GitHub failure sits (refines the release-claim decision)**
+**Decision:** The claim is released (so a PostHog retry takes over at once) in two cases only: any failure of the marker search (no create was attempted in that request), and a failed create that the adapter marks `definite`, meaning GitHub answered with an HTTP error status other than 408, or the connection failed before any request byte was sent. A timeout, a connection reset after the request was sent, an unparseable or number-less success, and a failed store update after a create all keep the claim, because the issue may exist and a later takeover recovers it by its marker line.
+**Context:** The quality review of the first release-claim commit showed that releasing after any non-timeout error can create a duplicate public issue when the error came after GitHub created the issue and a quick retry's marker search misses it; the first implementation also treated a plain HTTP 5xx as ambiguous only because the adapter did not exist yet.
+**Rationale:** An HTTP error response means GitHub answered and refused or failed; creation followed by an error response is rare, a rare duplicate is visible and closable, and a lost alert is silent, so HTTP error statuses (including 5xx) count as definite. The marker search uses the repository's issue list (read-your-writes in practice), not the search API, which lags.
+**Residual risks accepted:** (1) an HTTP 5xx after GitHub already created the issue can produce one duplicate if the list also lags; (2) an ambiguous create (timeout, reset after sending) followed by a PostHog retry inside the 2-minute window gets 200 in-flight, and the issue is created later only by a further delivery, which PostHog does not send for the same error issue, so that issue can be lost; the marker search recovers an existing issue only when another delivery arrives. Both are visible at the first real production error (AC9).
+**Made by:** Claude Sonnet 5.5 (recommended), within the operator's 2026-11-14 choice to release the claim on a definite failure; the operator is told of this boundary in the session and may overrule it.
+**Revisit trigger:** a duplicate or a missing issue for an alerted production error.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
