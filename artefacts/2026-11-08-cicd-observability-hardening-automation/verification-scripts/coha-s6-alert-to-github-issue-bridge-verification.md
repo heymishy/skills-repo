@@ -31,7 +31,7 @@ This story has no screens and no code. It sets up one alert in PostHog that open
 2. On GitHub, open the PostHog App's installation page for the repository and read the list of permissions.
 
 **Expected outcome:**
-> There is one GitHub connection. The only repository it can reach is `heymishy/skills-repo`. The permissions page shows write access for issues and nothing broader (no access to code, workflows or settings). You tell the agent in writing what the permissions page showed; the agent cannot see that page.
+> There is one GitHub connection. The only repository it can reach is `heymishy/skills-repo`. The permissions page lists what the PostHog App can do; on 2026-11-13 it showed read and write on actions, checks, code, commit statuses, issues, pull requests, repository hooks and workflows, and read on metadata. That is broader than the issue write the story first asked for and cannot be narrowed; it is an accepted risk (decisions.md, 2026-11-13), so this scenario passes on the repository scope and records the permissions as observed, not as satisfied. You tell the agent in writing what the permissions page showed; the agent cannot see that page.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**

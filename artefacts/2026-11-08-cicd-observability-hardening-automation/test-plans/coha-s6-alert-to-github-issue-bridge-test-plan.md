@@ -52,7 +52,7 @@ Total checks: 7 (T1 to T7). T4 and T6 are conditional or deferred; the DoD recor
 ### T1 (AC1): the GitHub integration reaches only the target repo
 - **Precondition:** the operator has connected PostHog's GitHub integration on project 10908 and installed the App on the single target repo.
 - **Action:** list the project's integrations through the PostHog tools, then list the repos the GitHub integration can reach.
-- **Expected:** exactly one GitHub integration; the repo list is exactly `heymishy/skills-repo` (the configured target). The installation's issue permission being write with nothing broader is read from GitHub's installation page by the operator and stated in writing; the DoD marks that half as stated, not observed.
+- **Expected:** exactly one GitHub integration; the repo list is exactly `heymishy/skills-repo` (the configured target). The installation's permissions are read from GitHub's installation page by the operator and stated in writing; the DoD marks that half as stated, not observed. Amended 2026-11-13: the installed PostHog App holds read and write on code, workflows, actions, pull requests, hooks and checks as well as issues, which cannot be narrowed; the operator accepted this as a RISK-ACCEPT in `decisions.md`, so T1 passes on the repo scope and the DoD records the permissions as accepted, not satisfied.
 - **Fails now:** the integrations list is empty (count 0 on 2026-11-13).
 
 ### T2 (AC2): the stored alert has the right shape

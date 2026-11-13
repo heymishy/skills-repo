@@ -129,6 +129,15 @@
 **Revisit trigger:** If a production error produces two issues or none, disable the alert and reinstate the run-3 bridge design (commit 6e16356c7) through /definition and /review.
 ---
 
+---
+**2026-11-13 | RISK-ACCEPT | coha-s6 — the PostHog GitHub App holds far broader permissions than issue write, accepted**
+**Decision:** Keep the PostHog GitHub App installed on `heymishy/skills-repo` (integration 428805, read back from PostHog) although GitHub's installation page shows read and write on actions, checks, code, commit statuses, issues, pull requests, repository hooks and workflows, plus read on metadata. This overrides the story's "issue write only" requirement (AC1 as reviewed in run 4), which cannot be met: a GitHub App's permission set is fixed by its author and cannot be narrowed at install. The App is limited to the single target repo.
+**Alternatives considered:** (A) Uninstall and reinstate the run-3 bridge with a fine-grained token that has issue write only (git commit 6e16356c7) — the agent's recommendation, rejected by the operator for now. (B) Keep it installed but unused — not recommended, an installed App with write access is still exposure.
+**Rationale:** Operator's choice, with these facts read from GitHub on 2026-11-13. The ruleset "default skills-repo maintainer rules" on `master` blocks deletion and non-fast-forward pushes, requires a pull request (zero required approvals), required status checks and linear history; its only bypass is the repository admin role, so the App cannot push directly to `master`. The App can, however: push branches and edit workflow files on them (a changed workflow on a same-repo branch runs with the repository's secrets), open pull requests, and merge a pull request once status checks pass because zero approvals are required. The `traces` branch is protected against deletion and force pushes only. The accepted exposure is therefore a compromised or misused PostHog App installation reaching repository secrets or `master` through a branch or a pull request; direct writes to `master` are blocked. Cheapest hardening, not yet done and not required by this entry: set the required approving reviews on the `master` ruleset to 1.
+**Made by:** Claude Sonnet 5.5 (recommended against), accepted by Hamish King (Platform Owner), 2026-11-13
+**Revisit trigger:** Re-open this entry if the repository holds a deploy or production secret an Actions branch run can read that you would not accept PostHog's side being able to reach, if PostHog changes the App's permissions, if the master ruleset's required approvals stay at zero when a second contributor joins, or at the first sign of an unexpected branch, pull request or workflow change authored by the App. Reinstating the run-3 bridge (git commit 6e16356c7) is the exit.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

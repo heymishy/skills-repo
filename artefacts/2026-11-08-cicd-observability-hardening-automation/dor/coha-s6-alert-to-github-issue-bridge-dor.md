@@ -82,6 +82,12 @@ Parent epic: **Medium**. The tech lead must be shown this DoR artefact; the oper
 
 ---
 
+## Amendment 2026-11-13 (after sign-off)
+
+After the operator installed the PostHog GitHub App, GitHub's installation page showed permissions far broader than the story's AC1 required (read and write on code, workflows, actions, pull requests, hooks and checks, as well as issues). The operator accepted the risk against the agent's recommendation (decisions.md, "coha-s6 — the PostHog GitHub App holds far broader permissions than issue write, accepted"). AC1 was reworded to record the permissions as observed and accepted rather than satisfied; the test plan's T1 and the verification script's scenario 1 and the NFR profile security row were updated to match. This is a narrow amendment and the story was not sent back through `/review`; the sign-off above stands on that basis, which the operator can overturn by asking for a re-review.
+
+---
+
 ## Standards injection
 
 Story has no `domain` field — skipped silently.
