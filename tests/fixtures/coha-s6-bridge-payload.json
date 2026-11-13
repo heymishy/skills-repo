@@ -1,0 +1,8 @@
+{
+  "schema": "coha-s6/v1",
+  "posthog_issue_id": "00000000-0000-4000-8000-0000c0a56005",
+  "code": "tenant_admin_bootstrap_failed",
+  "environment": "production",
+  "first_seen": "2026-11-13T07:30:00.000Z",
+  "posthog_issue_url": "https://us.posthog.com/project/10908/error-tracking/00000000-0000-4000-8000-0000c0a56005"
+}
