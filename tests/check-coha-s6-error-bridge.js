@@ -547,7 +547,14 @@ function adapterFor(base, extra) {
   const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
   return createGithubAdapter(Object.assign({ token: TOKEN, repo: 'o/r', apiBase: base }, extra || {}));
 }
-const captureErr = (p) => p.then(() => { throw new Error('expected a rejection'); }, (e) => e);
+// Every error captured from the adapter is checked for a token leak: message, name, stack and every own property value.
+function assertNoTokenLeak(e) {
+  assert.ok(e instanceof Error, 'a rejection must be an Error');
+  const seen = [e.message, e.name, e.stack].concat(Object.getOwnPropertyNames(e).map((k) => String(e[k])));
+  seen.forEach((v) => assert.strictEqual(String(v).indexOf(TOKEN), -1, 'token leaked into an adapter error'));
+  assert.strictEqual(JSON.stringify(seen).indexOf(TOKEN), -1);
+}
+const captureErr = (p) => p.then(() => { throw new Error('expected a rejection'); }, (e) => { assertNoTokenLeak(e); return e; });
 const NEW_ISSUE = { title: 'T', body: 'B', labels: [] };
 
 test('adapter: createIssue posts to /repos/<repo>/issues with the Bearer token, title, body and labels', async () => {
@@ -641,6 +648,46 @@ test('adapter: findIssueByMarker throws (never null) when the look fails or the 
     const e3 = await captureErr(adapterFor(srvBad.base).findIssueByMarker('PostHog issue id: a'));
     assert.strictEqual(e3.message, 'github bad response');
   } finally { await srv500.stop(); await srvOdd.stop(); await srvBad.stop(); }
+});
+test('adapter: marker match is an exact whole line (longer id and quoted line do not match; the real line does)', async () => {
+  const gh = await startFakeGithub();
+  try {
+    const a = adapterFor(gh.base);
+    gh.listed = [{ number: 11, body: 'PostHog issue id: abcdef' }, { number: 12, body: '> PostHog issue id: abc' }];
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: abc'), null);
+    gh.listed.push({ number: 13, body: 'intro\r\nPostHog issue id: abc\r\nmore' });
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: abc'), 13);
+  } finally { gh.srv.close(); }
+});
+test('adapter: a pull request carrying the marker line is never returned', async () => {
+  const gh = await startFakeGithub();
+  try {
+    const a = adapterFor(gh.base);
+    gh.listed = [{ number: 21, body: 'PostHog issue id: abc', pull_request: { url: 'x' } }];
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: abc'), null);
+    gh.listed.push({ number: 22, body: 'PostHog issue id: abc' });
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: abc'), 22);
+  } finally { gh.srv.close(); }
+});
+test('adapter: a 307 on createIssue is a definite status error and the redirect target gets zero requests', async () => {
+  let hits = 0;
+  const target = await startRawServer((req, res) => { hits++; req.resume(); res.writeHead(201); res.end('{"number":1}'); });
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(307, { Location: target.base + '/repos/o/r/issues' }); res.end(); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.name, 'GithubError'); assert.strictEqual(e.message, 'github status 307'); assert.strictEqual(e.definite, true);
+    assert.strictEqual(hits, 0);
+  } finally { await srv.stop(); await target.stop(); }
+});
+test('adapter: a 301 on the findIssueByMarker GET throws a status error and the redirect target gets zero requests', async () => {
+  let hits = 0;
+  const target = await startRawServer((req, res) => { hits++; req.resume(); res.writeHead(200); res.end('[]'); });
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(301, { Location: target.base + '/x' }); res.end(); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).findIssueByMarker('PostHog issue id: a'));
+    assert.strictEqual(e.name, 'GithubError'); assert.strictEqual(e.message, 'github status 301');
+    assert.strictEqual(hits, 0);
+  } finally { await srv.stop(); await target.stop(); }
 });
 test('I1 the real handler behind a real HTTP server: 200, 401, 405, 413, 200 and exactly one GitHub request', async () => {
   const gh = await startFakeGithub();

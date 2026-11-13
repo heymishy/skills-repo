@@ -2,7 +2,8 @@
 // coha-s6: the only file that knows GitHub's HTTP shape (ADR-012). The handler and store never see a URL.
 //
 // Error contract with the handler:
-//   - name 'GithubTimeout' for the adapter's own request timeout (never definite).
+//   - name 'GithubTimeout' for the adapter's idle (socket inactivity) timeout, default 7000 ms (never definite).
+//   - redirects are never followed: any 3xx is a status error.
 //   - definite === true ONLY when the failure proves no issue was created: an HTTP error status other than 408,
 //     or a connection that failed before any request byte was sent (ECONNREFUSED, ENOTFOUND, EAI_AGAIN).
 //   - everything else (408, reset or broken connection, unparseable 2xx, bad issue number) is ambiguous: definite is not set.
@@ -24,7 +25,8 @@ function createGithubAdapter(opts) {
   const token = opts.token;
   const repo = opts.repo; // "owner/name"
   const apiBase = (opts.apiBase || 'https://api.github.com').replace(/\/+$/, '');
-  const timeoutMs = opts.timeoutMs || 8000;
+  // Idle (socket inactivity) timeout, not a total-duration bound. The 7000 ms default fires before the handler's own 8000 ms bound.
+  const timeoutMs = opts.timeoutMs || 7000;
 
   function call(method, pathname, payload) {
     return new Promise((resolve, reject) => {
@@ -82,7 +84,8 @@ function createGithubAdapter(opts) {
     async findIssueByMarker(markerLine) {
       const list = await call('GET', '/repos/' + repo + '/issues?labels=' + LABEL + '&state=all&per_page=100');
       if (!Array.isArray(list)) throw githubError('github bad response', false);
-      const hit = list.find((i) => i && typeof i.body === 'string' && i.body.split(/\r?\n/).indexOf(markerLine) !== -1);
+      // The issues list endpoint also returns pull requests (they carry a pull_request key); never match those.
+      const hit = list.find((i) => i && !Object.prototype.hasOwnProperty.call(i, 'pull_request') && typeof i.body === 'string' &&i.body.split(/\r?\n/).indexOf(markerLine) !== -1);
       if (!hit) return null;
       if (!Number.isInteger(hit.number)) throw githubError('github bad response', false);
       return hit.number;
