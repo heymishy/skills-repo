@@ -144,6 +144,73 @@ test('store: ensureTable issues one CREATE TABLE IF NOT EXISTS with a primary ke
   assert.ok(/posthog_issue_id VARCHAR PRIMARY KEY/.test(pool.queries[0]));
 });
 
+async function expectRejected(name, payload, opts, status) {
+  const ctx = makeCtx();
+  const res = await deliver(payload, ctx, opts);
+  assert.strictEqual(res.statusCode, status, name + ': status');
+  assert.strictEqual(ctx.pool.rows.size, 0, name + ': nothing inserted');
+  assert.strictEqual(ctx.adapter.created.length, 0, name + ': adapter not called');
+  return { res, ctx };
+}
+
+test('U10 missing secret header gives 401 with no hint', async () => {
+  const { res } = await expectRejected('missing', body(), { secret: null }, 401);
+  assert.ok(!/secret|header|length|mismatch/i.test(res.body));
+});
+test('U10b unset configured secret fails closed with 401', async () => {
+  await expectRejected('unset', body(), { deps: { secret: '' } }, 401);
+});
+test('U11 wrong secret of the same length gives 401', async () => {
+  await expectRejected('same-length', body(), { secret: SECRET.replace(/.$/, SECRET.endsWith('0') ? '1' : '0') }, 401);
+});
+test('U12 wrong secret of a different length gives 401 without throwing', async () => {
+  await expectRejected('short', body(), { secret: 'x' }, 401);
+  await expectRejected('long', body(), { secret: SECRET + SECRET }, 401);
+});
+test('U13 the comparison uses crypto.timingSafeEqual', async () => {
+  const orig = crypto.timingSafeEqual; let calls = 0;
+  crypto.timingSafeEqual = function () { calls++; return orig.apply(this, arguments); };
+  try { await deliver(body({ environment: 'staging' }), makeCtx()); } finally { crypto.timingSafeEqual = orig; }
+  assert.ok(calls >= 1);
+});
+test('U14 non-POST gives 405 with Allow: POST', async () => {
+  const { res } = await expectRejected('get', '', { method: 'GET' }, 405);
+  assert.strictEqual(res.headers.allow, 'POST');
+});
+test('U15 body over 16 KB gives 413 before parsing', async () => {
+  const big = JSON.stringify(body({ code: 'x'.repeat(20 * 1024) }));
+  const orig = JSON.parse; let parsedBig = false;
+  JSON.parse = function (s) { if (typeof s === 'string' && s.length > 16 * 1024) parsedBig = true; return orig.apply(this, arguments); };
+  try { await expectRejected('big', big, {}, 413); } finally { JSON.parse = orig; }
+  assert.strictEqual(parsedBig, false);
+});
+[
+  ['not json', 'this is not json'],
+  ['json array', '[1,2,3]'],
+  ['missing schema', JSON.stringify(Object.assign(body(), { schema: undefined }))],
+  ['wrong schema', JSON.stringify(body({ schema: 'other/v9' }))],
+  ['non-string field', JSON.stringify(body({ code: 12345 }))]
+].forEach(([name, payload]) => {
+  test('U16 malformed body gives 400: ' + name, async () => { await expectRejected(name, payload, {}, 400); });
+});
+test('U4 a PostHog link outside https://us.posthog.com/project/ gives 400', async () => {
+  await expectRejected('url', body({ posthog_issue_url: 'https://evil.example/project/1' }), {}, 400);
+  await expectRejected('url-newline', body({ posthog_issue_url: 'https://us.posthog.com/project/1\nx' }), {}, 400);
+});
+test('U3 an over-long or multiline code gives 400, never a cut title', async () => {
+  await expectRejected('long', body({ code: 'a'.repeat(500) }), {}, 400);
+  await expectRejected('multiline', body({ code: 'line1\nline2' }), {}, 400);
+});
+test('U3b a non-UUID issue id or an over-long first_seen gives 400', async () => {
+  await expectRejected('id', body({ posthog_issue_id: '../x' }), {}, 400);
+  await expectRejected('first_seen', body({ first_seen: 'z'.repeat(200) }), {}, 400);
+});
+test('N4 empty fields are named in the log without their values, and the response is 400', async () => {
+  const { ctx } = await expectRejected('empty', body({ first_seen: '', code: '' }), {}, 400);
+  const line = ctx.lines.join('\n');
+  assert.ok(/code/.test(line) && /first_seen/.test(line));
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
