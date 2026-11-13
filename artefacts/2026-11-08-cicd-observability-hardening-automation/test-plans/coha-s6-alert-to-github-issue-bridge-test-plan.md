@@ -1,103 +1,149 @@
-# Test Plan: GitHub issue opened by PostHog for each new production error issue (native destination)
-
-> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
-
+# Test Plan: Alert-to-GitHub-issue bridge for new production error issues
 
 **Story reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 **Epic reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/epics/coha-e1-detect-and-alert.md
-**Review reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s6-review-4.md (PASS, run 4)
+**Review reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s6-review-5.md (PASS, run 5)
+**Fixture:** artefacts/2026-11-08-cicd-observability-hardening-automation/reference/coha-s6-bridge-payload-fixture.md
 **Test plan author:** Claude Sonnet 5.5
 **Date:** 2026-11-13
-**Test runner (read from `package.json`):** `npm test` runs `node scripts/run-all-tests.js`, discovering `tests/check-*.js`. This story ships no code, so it adds no file to that suite and changes nothing the suite runs. Its checks are live reads and actions against PostHog and GitHub, plus one repository diff check, all written as the verification script. The only automated check is the existing `node scripts/check-pipeline-state-integrity.js`, which must keep its single known baseline failure (`tfhc-s1`) and gain none.
+**Test runner (read from `package.json`):** `npm test` runs `node scripts/run-all-tests.js`, discovering `tests/check-*.js`. Each check is a plain Node script that prints pass and fail counts and exits non-zero on failure. The new file is `tests/check-coha-s6-error-bridge.js`, run with `node tests/check-coha-s6-error-bridge.js`. Because coha-s5's test file had to join `SEQUENTIAL_EXCLUSIVE_LIST` in `scripts/run-all-tests.js` after it starved a timing-sensitive test on the 2-slot CI pool, this file's own slot is decided at implementation by running the full suite on 2 CPUs.
+
+## Component names used below (final file names are the implementation plan's call)
+
+- **Route handler:** `handlePostErrorBridge(req, res, deps)`, registered in `server.js` next to `/webhook/stripe`.
+- **Store:** the `production_error_issues` table logic (insert, claim, mark created, take over).
+- **GitHub adapter:** `createIssue` and `findIssueByMarker`, injectable, stub throws `Adapter not wired: error-bridge-github. Call setGithubIssueAdapter() with a real implementation before use.`
+- **Wiring:** the real adapter and pool wired in `server.js`.
 
 ---
 
-## Why there are no coded tests
+## Test data strategy
 
-Every behaviour this story delivers happens inside PostHog or GitHub: the alert's stored configuration, the issue PostHog opens, and PostHog's own duplicate handling. A coded test would only prove a mock of those services, which is the failure the mock-shape rule exists to prevent. The evidence is therefore live: each check below reads real PostHog or GitHub state and records what it saw. Strength tags follow the DoD scale (unit, integration-real-code, live-verified, production-observed).
-
----
+- **Source:** fixtures plus synthetic. The request body is the fixture rendered by PostHog's simulation (`reference/coha-s6-bridge-payload-fixture.md`), copied to `tests/fixtures/coha-s6-bridge-payload.json` by the implementation, with variants generated in setup (staging, missing environment, wrong schema, oversized, malformed). Issue ids are generated UUIDs per test so rows never collide.
+- **GitHub:** a local fake GitHub API (a small HTTP server in the test) that records method, path, `Authorization` header and body. Real GitHub is never called by a test.
+- **Database:** two layers. (1) A fake pool implementing the few SQL shapes the store uses, for call-shape and branching tests. (2) The same store tests re-run against a real Postgres, because "two deliveries at the same moment cannot both create an issue" is an atomicity claim a fake cannot prove. The real-Postgres layer runs when `COHA_S6_TEST_DATABASE_URL` is set (a throwaway local container, for example `postgres:16`), and the file prints `SKIPPED (no COHA_S6_TEST_DATABASE_URL)` for each real-database test otherwise. See the gap table: CI has no Postgres service today, so these tests are evidence at `/verify-completion`, run locally and recorded in the DoD, not a CI gate. Their count is reported separately from the always-run count so a skip cannot hide as a pass.
+- **Sensitivity:** no real secret, token or tenant data. The shared secret and token in tests are generated strings; every log-capture test asserts those strings never appear in any log line.
+- **Gaps:** none in the data itself.
 
 ## AC Coverage
 
 | AC | Description | Unit | Integration | E2E | Manual (live) | Gap type | Risk |
 |----|-------------|------|-------------|-----|---------------|----------|------|
-| AC1 | GitHub integration present, reaches only the single target repo, issue write only | — | — | — | 1 check (T1) | External-service state | 🟡 half is an operator statement |
-| AC2 | Alert stored with trigger "issue created" only, filter `environment = production`, `template-github`, correct repo, enabled | — | — | — | 1 check (T2) | External-service state | 🟢 |
-| AC3 | Test function run once opens exactly one issue; issue shape and author recorded as coha-s7 fixture | — | — | — | 1 check (T3) | External-service effect | 🟡 sample event is not a real scrubbed event |
-| AC4 | Real scrubbed staging event through a temporary unfiltered alert yields only the fixed code and `src/` or `node_modules/` frames; alert deleted, issue closed (conditional) | — | — | — | 1 check (T4) | External-service effect | 🔴 outward-facing, needs its own approval |
-| AC5 | Staging error opens no issue, and the event is visible in this project | — | — | — | 1 check (T5) | External-service negative | 🟡 depends on coha-s5 scenario 10 |
-| AC6 | First real production error opens exactly one issue, repeats open none | — | — | — | 1 check (T6) | Production-observed, may not occur before merge | 🔴 cannot be run on demand |
-| AC7 | Diff holds only artefacts and bookkeeping, and no credential, installation id or token | — | 1 check (T7, repository diff) | — | — | — | 🟢 |
+| AC1 | Valid production payload with the secret opens exactly one issue with label, code title and fixed-field body | 4 tests | 1 test | — | — | — | 🟢 |
+| AC2 | Duplicate, simultaneous, restart and stuck-pending deliveries open no second issue | 5 tests (U5 to U9, fake pool) | 4 tests (P1 to P4, real Postgres, gated) | — | — | CI cannot run real Postgres | 🟡 |
+| AC3 | Missing or wrong secret 401; non-POST 405; over 16 KB 413 unparsed; malformed 400 | 7 tests (U10 to U16) | 1 test (I1) | — | — | — | 🟢 |
+| AC4 | Staging or missing environment: 200, no issue, no row, distinct log lines | 3 tests (U17 to U19) | 1 test (I1) | — | — | — | 🟢 |
+| AC5 | GitHub failure or timeout: 503, row not `created`, later delivery opens one | 3 tests (U20 to U22) | 2 tests (I2, and P5 real Postgres, gated) | — | — | — | 🟢 |
+| AC6 | Live destination test run reaches the deployed bridge with the secret header intact and the bridge acts | — | — | — | 1 scenario | External service | 🔴 outward-facing |
+| AC7 | Real startup path posts a valid payload and a fake GitHub API receives path, token and title, body, label | — | 2 tests (P6, P7, real Postgres, gated) | — | — | CI cannot run real Postgres | 🟡 |
+| AC8 | Unwired adapter: 503 and a "not wired" log, no row marked `created` | 2 tests | — | — | — | — | 🟢 |
+| AC9 | First real production error opens one issue, repeats open none; real event fills every field | — | — | — | 1 scenario | Production-observed, may not occur before merge | 🔴 |
 
-Total checks: 7 (T1 to T7). T4 and T6 are conditional or deferred; the DoD records each as run, not needed, or deferred with a reason.
+NFR tests: 4 (N1 to N4, see below). Total planned tests: 30 always-run (24 unit U1 to U24, 2 integration I1 and I2, 4 NFR N1 to N4) + 7 real-Postgres gated (P1 to P7) = 37 automated, plus 2 manual live scenarios (AC6, AC9).
 
 ## Gap table
 
 | Gap | AC | Gap type | Handling |
 |-----|----|----------|----------|
-| No code-level test exists for any AC but AC7 | AC1 to AC6 | External-service | Live verification script; strength recorded per AC in the DoD |
-| AC6 cannot be produced on demand | AC6 | Production-observed | DoR classifies it with a RISK-ACCEPT in `decisions.md` and a `workspace/state.json` action; DoD outcome COMPLETE WITH DEVIATIONS until seen |
-| AC4 opens an extra public issue | AC4 | Outward-facing | Separate operator approval immediately before; temporary alert deleted and issue closed straight after; judged needed only if T3's sample cannot show tenant-text exclusion |
+| No Postgres service in CI, so atomicity tests cannot gate the PR | AC2, AC5, AC7 | Infrastructure | Real-Postgres tests run locally against a throwaway container at `/verify-completion` and the output is recorded in the DoD as integration-real-code. Per the repo's rule on Docker-infrastructure evidence, this is real evidence, not a RISK-ACCEPT, but a CI service for it is a possible follow-up. The always-run suite still covers every branch through the fake pool. If Docker is unavailable on the machine at verify time, that is a stated blocker, not a pass. |
+| AC6 needs a deployed bridge, both Fly secrets, and an enabled PostHog destination | AC6 | External service | Manual scenario after merge and deploy to staging; operator approval immediately before the one live run, which opens a real issue in the public repo (closed afterwards). |
+| AC9 cannot be produced on demand | AC9 | Production-observed | DoR classifies it with a RISK-ACCEPT in `decisions.md` and a post-merge action in `workspace/state.json`; DoD outcome COMPLETE WITH DEVIATIONS until seen. |
+| Real event may not fill the body template as the sample does | AC1, AC4, AC9 | Mock-shape | The bridge logs names of empty fields (NFR test N4); the first real production error is the check. |
+| `production-error` label does not exist in the repo and GitHub's behaviour when an issues-only token creates an issue with a missing label is unverified | AC1, AC6 | Assumption | The operator creates the label before AC6 (verification scenario setup); the adapter test asserts the label is sent by name; AC6 confirms it lands. |
 | No CSS-layout-dependent ACs | — | — | None |
 
 ---
 
-## Test Data Strategy
+## Unit tests
 
-- **Source:** mixed. T3 uses PostHog's built-in sample event (synthetic, supplied by PostHog). T4 and T5 use a real event produced by coha-s5's capture on staging, which is already scrubbed by the allow-list (a fixed code and `src/` frames, no tenant text). T6 uses a real production error if one occurs.
-- **Sensitivity:** no PCI data and no tenant data enter any check, because coha-s5 removes tenant text before anything leaves the app. The target repo is public, so every created issue is treated as public content and read before it is left open.
-- **Credentials:** none created, printed or stored. The GitHub App installation is held by PostHog.
-- **Gaps:** none in the data. The staging error needs the coha-s5 follow-ups (Fly capture keys set, scenario 10 run); T5 cannot run before they are done.
+Fake pool, fake adapter, captured logger. Each test starts from a clean store.
 
-## Checks
+**U1 (AC1): a valid production body creates one issue through the adapter.** Precondition: shared secret set, adapter fake records calls. Action: call the handler with the fixture body and the correct secret header. Expected: status 200; adapter `createIssue` called exactly once with title equal to `code`, labels exactly `["production-error"]`.
 
-### T1 (AC1): the GitHub integration reaches only the target repo
-- **Precondition:** the operator has connected PostHog's GitHub integration on project 10908 and installed the App on the single target repo.
-- **Action:** list the project's integrations through the PostHog tools, then list the repos the GitHub integration can reach.
-- **Expected:** exactly one GitHub integration; the repo list is exactly `heymishy/skills-repo` (the configured target). The installation's permissions are read from GitHub's installation page by the operator and stated in writing; the DoD marks that half as stated, not observed. Amended 2026-11-13: the installed PostHog App holds read and write on code, workflows, actions, pull requests, hooks and checks as well as issues, which cannot be narrowed; the operator accepted this as a RISK-ACCEPT in `decisions.md`, so T1 passes on the repo scope and the DoD records the permissions as accepted, not satisfied.
-- **Fails now:** the integrations list is empty (count 0 on 2026-11-13).
+**U2 (AC1): the issue body contains only the fixed fields.** Action: as U1. Expected: the body passed to the adapter contains the first-seen time, `environment`, the PostHog link and the marker line carrying the PostHog issue id, and no other text; a generated canary placed in an unexpected body field (`extra`) never appears in the issue title or body.
 
-### T2 (AC2): the stored alert has the right shape
-- **Precondition:** T1 passed. The agent has created one error-tracking alert through the PostHog tools.
-- **Action:** read the alert back from PostHog (not the creation response).
-- **Expected:** the stored function is of type `internal_destination` with `template_id` `template-github`, enabled; the trigger is "issue created" and no other trigger; filters hold `environment = production`; the repository input is the configured target repo. The read-back is written to `reference/coha-s6-alert-configuration.md` with no secrets and no installation id.
-- **Fails now:** no error-tracking alert exists.
+**U3 (AC1): the issue title is the code and nothing else; an over-long or multiline code is rejected or cut.** Action: bodies with a 500-character code and a code with a newline. Expected: title never exceeds a stated limit (120 characters) and never contains a newline; behaviour is 200 with the cut title or 400, whichever the plan fixes, asserted explicitly.
 
-### T3 (AC3): the test function opens exactly one issue with the expected shape
-- **Precondition:** T2 passed; the operator has approved one test-function run, immediately beforehand.
-- **Action:** run the destination's test function once. Then list issues in the target repo.
-- **Expected:** exactly one new issue; title of the form `<type>: <code>`; body is a code block holding the message, at most 5 frames, and a "View in PostHog" link. The issue's author login, title shape and link pattern are written into the coha-s7 fixture note. No second issue appears after a few minutes. The test issue is closed by the operator afterwards.
-- **Fails now:** the destination does not exist.
+**U4 (AC1): the PostHog link is checked.** Action: body whose `posthog_issue_url` does not start with `https://us.posthog.com/project/`. Expected: 400, no issue, no row.
 
-### T4 (AC4, conditional): a real scrubbed event shows no tenant text
-- **Precondition:** T3's sample is judged insufficient, with the reason written down; a real staging event exists in PostHog; the operator approves one extra public issue.
-- **Action:** create a temporary copy of the alert with no environment filter, let the staging event fire it, read the issue, then delete the temporary alert and close the issue.
-- **Expected:** the issue holds only the fixed code and at most 5 frames each under `src/` or `node_modules/`, with no source lines; the temporary alert no longer exists when listed afterwards.
-- **Not run when:** T3's sample is judged enough; the DoD says so and why.
+**U5 (AC2): created duplicate.** Precondition: row for the id with status `created`. Action: deliver the same body. Expected: 200, adapter not called, row unchanged.
 
-### T5 (AC5): a staging error opens no issue
-- **Precondition:** coha-s5 follow-ups done (capture keys set; scenario 10 can run).
-- **Action:** raise the deliberate staging error from coha-s5 scenario 10; confirm the event appears in PostHog Error Tracking in this project with `environment` staging; wait the alert's firing window; list issues in the target repo.
-- **Expected:** the event is visible in this project; no issue exists for it. If the event is not visible in this project, T5 fails and the shared-project assumption is re-opened.
+**U6 (AC2): in-flight duplicate.** Precondition: row `pending`, claim time 30 seconds ago. Expected: 200, adapter not called.
 
-### T6 (AC6, deferred): the first real production error opens one issue
-- **Precondition:** a real production error is first seen.
-- **Action:** after PostHog shows the new error issue, list issues in the target repo; after further occurrences of the same error, list again.
-- **Expected:** exactly one issue for that error issue id, still one after repeats.
-- **Deferred when:** no production error has occurred by merge. Recorded as `production-observed` pending, not as passed.
+**U7 (AC2): stuck pending taken over, issue not on GitHub.** Precondition: row `pending`, claim time 3 minutes ago, `findIssueByMarker` returns none. Expected: one conditional update wins, `createIssue` called once, row becomes `created` with the issue number.
 
-### T7 (AC7): the diff contains no code and no credential
-- **Action:** `git diff --name-only` between the story's branch point and its final commit, then scan the changed files for token, key, installation-id and secret-shaped strings (names only, never values).
-- **Expected:** every changed path is under `artefacts/`, `workspace/` or `.github/pipeline-state.json` and `.github/pipeline-timings.jsonl`; nothing under `src/`, `scripts/` or `.github/workflows/`; the scan finds nothing credential-shaped.
+**U8 (AC2): stuck pending taken over, issue already on GitHub.** Precondition: as U7 but `findIssueByMarker` returns issue number 42. Expected: `createIssue` not called, row becomes `created` with number 42.
 
----
+**U9 (AC2): two concurrent takeovers, one winner.** Action: two handler calls on the same stuck row at once with a fake pool that serialises the conditional update. Expected: exactly one `createIssue` call.
 
-## NFR checks
+**U10 (AC3): missing secret header gives 401.** Expected: nothing inserted, adapter not called, response body contains no hint about which part was wrong.
 
-| NFR | Check |
-|-----|-------|
-| Security (one-repo, issue-write-only installation; public-repo content; staging excluded) | Covered by T1, T3/T4 and T5; no separate test. |
-| Audit (read-back, integrations list, real fixture recorded in artefacts) | Covered by T1, T2, T3 outputs being committed. |
-| Reliability (duplicate suppression unproven until AC6; failed delivery visible in PostHog destination logs) | Covered by T6; the verification script names PostHog's destination logs as the place to look for a failed delivery. |
-| Performance, Accessibility | Not applicable (stated in the story). |
+**U11 (AC3): wrong secret of the same length gives 401.** Expected as U10.
+
+**U12 (AC3): wrong secret of a different length gives 401 without throwing.** Expected: 401 (guards `timingSafeEqual`'s length requirement).
+
+**U13 (AC3): the comparison is `crypto.timingSafeEqual`.** Action: spy on `crypto.timingSafeEqual`. Expected: called when a header is present.
+
+**U14 (AC3): non-POST gives 405 with an `Allow: POST` header.**
+
+**U15 (AC3): body over 16 KB gives 413 before parsing.** Action: send 20 KB. Expected: 413; a spy on `JSON.parse` shows it was not called on the body.
+
+**U16 (AC3): unparseable body and wrongly shaped bodies give 400.** Cases: not JSON, JSON array, missing `schema`, `schema` not `coha-s6/v1`, a field that is not a string. Expected: 400 each, nothing inserted. One assertion per case with the case named in the output.
+
+**U17 (AC4): `environment` is `staging`.** Expected: 200, adapter not called, no row, log line `error-bridge: ignored staging`.
+
+**U18 (AC4): `environment` is empty.** Expected: 200, adapter not called, no row, log line `error-bridge: ignored environment missing`, which differs from U17's line.
+
+**U19 (AC4): `environment` has an unexpected value (`Production`, `prod`).** Expected: treated as not production: 200, ignored, logged as an unexpected value without echoing it back at full length.
+
+**U20 (AC5): GitHub returns 500.** Expected: 503, row not `created`.
+
+**U21 (AC5): GitHub does not answer within the adapter's timeout.** Expected: 503 within the timeout plus a margin, row not `created`.
+
+**U22 (AC5): after U20, a later delivery of the same body opens exactly one issue.** Expected: second delivery after the claim window creates one issue; no second `createIssue` success.
+
+**U23 (AC8): the unwired adapter stub throws the exact message.** Expected: the stub's error message equals the string above.
+
+**U24 (AC8): the handler with the stub returns 503 and logs `not wired`.** Expected: 503, a log line containing `Adapter not wired: error-bridge-github`, process alive, no row `created`.
+
+## Integration tests (always run)
+
+**I1 (AC1, AC3, AC4): the real handler behind a real local HTTP server.** Action: start the handler on an ephemeral port with the fake pool and fake GitHub API, send real HTTP requests for the fixture, a wrong secret, a GET, an oversized body and a staging body. Expected: statuses 200, 401, 405, 413, 200, and exactly one request recorded by the fake GitHub API (path `/repos/<owner>/<repo>/issues`, `Authorization: Bearer <generated token>`, JSON body with the right title and labels).
+
+**I2 (AC5): the real handler with a fake GitHub API that fails then succeeds.** Expected: first request 503, a later request opens one issue.
+
+## Integration tests (real Postgres, gated by `COHA_S6_TEST_DATABASE_URL`)
+
+**P1 (AC2): table creation is idempotent and has the unique key.** Action: run the boot migration twice. Expected: no error, one table, the PostHog issue id column unique.
+
+**P2 (AC2): two simultaneous deliveries open one issue.** Action: fire two requests for a new id at once through the real handler and real pool. Expected: exactly one `createIssue` call across both, one row `created`.
+
+**P3 (AC2): restart between deliveries.** Action: deliver, build a fresh handler and pool, deliver again. Expected: the second delivery is a duplicate, no second issue.
+
+**P4 (AC2): stuck pending older than the window is taken over once.** Action: insert a `pending` row aged 3 minutes, send two simultaneous deliveries. Expected: one winner, one `createIssue` or one marker hit, never two issues.
+
+**P5 (AC5): a failed GitHub call leaves the row recoverable.** Action: fail the first call, then deliver after the window. Expected: exactly one issue.
+
+**P6 (AC7): the real startup path.** Action: start `server.js` in a child process with test environment variables (the shared secret, the target repo, a token, `DATABASE_URL` set to the test database, and the GitHub API base pointed at the fake). Post the fixture. Expected: the fake GitHub API receives one request with the right path, the token in `Authorization`, and the expected title, body and label. Per the repo rule, `server.js` is never re-required in-process.
+
+**P7 (AC7): the wired behaviour is correct, not just assigned.** Action: post two different PostHog issue ids through the real startup path. Expected: two different issues with their own correct titles and marker lines.
+
+## NFR tests
+
+**N1 (Performance): the route answers within 2 seconds with fake adapters.** Assert only the elapsed time for a valid delivery.
+
+**N2 (Security): no secret, token or payload content in any log line.** Action: run all handler cases with a log-capturing logger. Expected: the generated shared secret, the generated token and a payload canary never appear in any captured line.
+
+**N3 (Audit): each outcome logs once.** Action: run created, duplicate, staging, environment missing, rejected and failed cases. Expected: one distinct, stable log line per outcome, carrying the PostHog issue id when known and nothing else from the payload.
+
+**N4 (Audit, mock-shape): empty fields are named.** Action: a body whose `first_seen` and `code` are empty strings. Expected: the log names `first_seen` and `code` as empty without their values, and the response is 400.
+
+## Verification commands
+
+- Always-run: `node tests/check-coha-s6-error-bridge.js`.
+- With the real database: start a throwaway Postgres container, set `COHA_S6_TEST_DATABASE_URL` to its connection string for that shell only, run the same command, and expect the seven P tests to run instead of print SKIPPED.
+- Full suite: `npm test`, then compare with the baseline as `scripts/ci-test-regression-check.js` does in CI.
+
+## Wiring (D37)
+
+The adapter rule requires a separate wiring test. P6 and P7 are that test and assert behavioural correctness (an observable request with the right token and body; two different ids give two different issues), not that a function was assigned.

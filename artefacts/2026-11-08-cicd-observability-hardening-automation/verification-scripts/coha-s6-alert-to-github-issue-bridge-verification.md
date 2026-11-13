@@ -1,148 +1,181 @@
-# AC Verification Script: GitHub issue opened by PostHog for each new production error issue
-
-> **SUPERSEDED 2026-11-13.** This artefact was written for the native PostHog GitHub destination design of coha-s6, which was abandoned the same day (decisions.md, "coha-s6 - native PostHog GitHub destination abandoned, custom bridge reinstated"). It is kept as a record, not as a live plan. coha-s6 returns to the custom bridge design and gets a new test plan, verification script and DoR.
-
+# AC Verification Script: Alert-to-GitHub-issue bridge for new production error issues
 
 **Story reference:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 **Technical test plan:** artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md
-**Script version:** 1
+**Script version:** 2 (replaces the version written for the abandoned PostHog GitHub destination; that one is in git history)
 **Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 
-This story has no screens and no code. It sets up one alert in PostHog that opens a GitHub issue the first time a new production error appears. Before any setup, a reviewer can read this script to confirm the described behaviour is the behaviour wanted. Scenarios 2, 3 and 4 open real issues in a public repository, so each one needs your say-so right before it happens.
+This story adds a small address on the running app that PostHog calls when a new production error appears. The app then opens one GitHub issue for it, once. There are no screens. Scenarios 1 to 5, 7 and 8 are checked by running the test file and reading its output. Scenarios 6 and 9 happen against the real deployed app and PostHog after merge, and scenario 6 opens a real issue in a public repository. Before coding, a reviewer can read this script to confirm the behaviour described is the behaviour wanted.
 
 ---
 
 ## Setup
 
 **Before you start:**
-1. In PostHog (project 10908), open the project settings, find the integrations section and connect GitHub.
-2. When GitHub asks where to install the PostHog App, choose the one repository `heymishy/skills-repo` only, and allow it to write issues and nothing else.
-3. Tell the agent when this is done. You do not need to give the agent any key or password.
+1. Open a terminal in the project folder.
+2. The checks use a pretend GitHub (a small local program that records what it is sent) and made-up secrets and tokens. They send nothing to the real GitHub or PostHog.
+3. Run the always-on checks with: `node tests/check-coha-s6-error-bridge.js`. It prints one line per check and a total at the end. The failure count is 0 when everything is as described below.
+4. Some checks need a real database. To run them, start a throwaway Postgres container (for example `docker run --rm -d -p 55432:5432 -e POSTGRES_PASSWORD=test postgres:16`), then in PowerShell set `$env:COHA_S6_TEST_DATABASE_URL = 'postgres://postgres:test@localhost:55432/postgres'` and run the same command again. Without that variable those checks print "SKIPPED"; a SKIPPED line is not a pass. Close the container and clear the variable afterwards (`Remove-Item Env:COHA_S6_TEST_DATABASE_URL`).
+5. For scenario 6 (after merge and deploy to staging) you also need the label `production-error` to exist in `heymishy/skills-repo` (create it in GitHub's Issues, Labels page if it is missing; it was missing on 2026-11-13), the shared secret and the narrowly scoped GitHub token set as Fly secrets on the staging app, and a PostHog destination pointing at the staging app's address with the secret header.
 
-**Reset between scenarios:** close any test issue that a scenario opened, and leave the alert as it is.
+**Reset between scenarios:** not needed for the test file (each check starts clean). After scenario 6, close the test issue it opens.
 
 ---
 
 ## Scenarios
 
-### Scenario 1: PostHog is connected to GitHub for one repository only
+### Scenario 1: A new production error opens exactly one issue with the right content
 
 **Covers:** AC1
 
 **Steps:**
-1. Ask the agent to list the project's connections to GitHub.
-2. On GitHub, open the PostHog App's installation page for the repository and read the list of permissions.
+1. Run the test file.
+2. Find the lines for the checks named "valid production body creates one issue", "issue body has only the fixed fields", "title is the code only" and "link is checked".
 
 **Expected outcome:**
-> There is one GitHub connection. The only repository it can reach is `heymishy/skills-repo`. The permissions page lists what the PostHog App can do; on 2026-11-13 it showed read and write on actions, checks, code, commit statuses, issues, pull requests, repository hooks and workflows, and read on metadata. That is broader than the issue write the story first asked for and cannot be narrowed; it is an accepted risk (decisions.md, 2026-11-13), so this scenario passes on the repository scope and records the permissions as observed, not as satisfied. You tell the agent in writing what the permissions page showed; the agent cannot see that page.
+> All four lines show a pass. The issue the pretend GitHub receives has the label `production-error`, a title equal to the error code (for example `tenant_admin_bootstrap_failed`), and a body holding only the time the error was first seen, the environment, a link to PostHog and a line carrying the PostHog issue number. A made-up extra word placed in the request never appears in the issue. A link that does not start with `https://us.posthog.com/project/` is refused.
+
+**Broken behaviour looks like:** an issue whose body contains an error message, a stack trace, a file path or the made-up extra word.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 2: The alert is set up as intended
+### Scenario 2: The same error never opens a second issue
 
 **Covers:** AC2
 
 **Steps:**
-1. Ask the agent to create the alert, then read it back from PostHog and show you what PostHog stored.
+1. Run the test file, then run it again with the real database set up (Setup step 4).
+2. Find the lines for "created duplicate", "in-flight duplicate", "stuck pending, issue not on GitHub", "stuck pending, issue already on GitHub", "two concurrent takeovers", and, with the database, "two simultaneous deliveries", "restart between deliveries" and "stuck pending taken over once".
 
 **Expected outcome:**
-> The alert is switched on. It fires only when a new error issue is created (not when one reopens or spikes). It only applies to errors where the environment is `production`. It opens issues in `heymishy/skills-repo`. The read-back is saved in `reference/coha-s6-alert-configuration.md` and contains no keys, tokens or installation numbers.
+> Every line shows a pass. Sending the same error twice, or at the same moment from two places, or again after the app restarted, leaves exactly one issue. A delivery that was interrupted halfway (the app stopped after noting it but before finishing) is picked up after two minutes and produces exactly one issue, whether or not GitHub had already received the first attempt. With the database set up, the database checks run rather than print SKIPPED.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 3: A test run opens exactly one issue of the expected shape
+### Scenario 3: Callers without the secret are turned away
 
 **Covers:** AC3
 
 **Steps:**
-1. Tell the agent "yes, run the test once". The agent asks you again immediately before, because this opens a real public issue.
-2. Look at the issues list of `heymishy/skills-repo` a few minutes later.
-3. Close the test issue.
+1. Run the test file.
+2. Find the lines for "missing secret", "wrong secret", "wrong length secret", "non-POST", "body over 16 KB" and "malformed body" (one line per kind of malformed body).
 
 **Expected outcome:**
-> Exactly one new issue appears. Its title reads like `Error: <a fixed error code>`. Its body shows the error message in a code block, up to 5 lines saying where in the code it happened, and a "View in PostHog" link. No second issue appears. The agent records who opened it (the account name), the title style and the link style, so the later story that adds a label can recognise these issues.
-
-**Broken behaviour looks like:** two or more issues, an issue with a title that is a long sentence or contains a person, tenant or file contents, or no issue at all (in that case the agent looks in PostHog's record for the alert to see whether delivery failed).
+> A missing or wrong secret gets the answer 401 and nothing is stored or opened. Any request that is not a POST gets 405. A request larger than 16 KB gets 413 and is not even read. A body that is not valid, is the wrong shape, or has a value that is not text gets 400. The reply never says which part of the secret was wrong.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 4: A real cleaned-up error shows no tenant text (only if scenario 3 was not enough)
+### Scenario 4: Staging and unlabelled errors are ignored on purpose
 
 **Covers:** AC4
 
 **Steps:**
-1. The agent writes down why the test run in scenario 3 could not show that tenant text is excluded. If it could, this scenario is skipped and the reason is recorded.
-2. Tell the agent "yes, open one extra issue". The agent asks again immediately before.
-3. The agent routes one real staging error through a temporary copy of the alert that has no environment condition.
-4. Read the issue. Then confirm the agent has deleted the temporary alert, and close the issue.
+1. Run the test file.
+2. Find the lines for "environment is staging", "environment is empty" and "environment has an unexpected value".
 
 **Expected outcome:**
-> The issue contains only the fixed error code and at most 5 code locations, each inside the `src/` or `node_modules/` folders, with no lines of source code. No customer or tenant name, email or text appears anywhere. The temporary alert no longer appears when the alerts are listed.
+> All three show a pass. In each case the answer is 200 (so PostHog does not retry), no issue is opened and nothing is stored. The log line for a staging error reads `error-bridge: ignored staging` and the line for a missing environment reads `error-bridge: ignored environment missing`, so the two can be told apart.
 
-**Result:** [ ] Pass  [ ] Fail  [ ] Skipped (reason written)
-**Notes:**
-
----
-
-### Scenario 5: A staging error opens no issue
-
-**Covers:** AC5
-
-**Steps:**
-1. Do this after the coha-s5 follow-ups are done (the capture keys exist on staging). Run scenario 10 of the coha-s5 verification script to cause one deliberate error on staging.
-2. In PostHog Error Tracking for this project, find the new event and read its environment.
-3. Wait about 10 minutes, then look at the issues list of `heymishy/skills-repo`.
-
-**Expected outcome:**
-> The event is visible in this PostHog project and shows the environment `staging`. No new issue exists in the repository for it. If the event does not show up in this project at all, this scenario fails and the assumption that staging and production share one PostHog project has to be re-checked before anything else.
+**Broken behaviour looks like:** a staging error opening an issue, or both situations producing the same log line so that a silent loss of real production errors cannot be spotted.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 6: The first real production error opens one issue (cannot be done on demand)
+### Scenario 5: If GitHub is down, the error is not lost
+
+**Covers:** AC5
+
+**Steps:**
+1. Run the test file.
+2. Find the lines for "GitHub returns 500", "GitHub does not answer", "later delivery opens exactly one issue" and, with the real database, "failed call leaves the row recoverable".
+
+**Expected outcome:**
+> The app answers 503 (so PostHog can try again) within a short time, the record is not left marked as done, and a later delivery of the same error opens exactly one issue.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 6: The real PostHog sends a request the real bridge accepts (after merge, opens a real public issue)
 
 **Covers:** AC6
 
 **Steps:**
-1. This is done the first time a real error occurs in production. Until then it is recorded as waiting, not passed.
-2. When PostHog shows the new error, look at the issues list of `heymishy/skills-repo`.
-3. After the same error happens again, look at the issues list again.
+1. After the change is deployed to staging and the Setup step 5 items are done, tell the agent "yes, run the live test once". The agent asks again immediately before, because this opens a real issue in a public repository.
+2. The agent runs the PostHog destination's test function once with the outgoing request switched on.
+3. Look at the issues list of `heymishy/skills-repo`, then close the test issue.
 
 **Expected outcome:**
-> Exactly one issue exists for that error, and there is still only one after it happens again.
+> The staging app's log shows one request arriving with the secret header present and accepted. Exactly one new issue appears, with the label `production-error`, a title equal to the sample error code, and a body holding only the first-seen time, the environment, the PostHog link and the PostHog issue number. No second issue appears a few minutes later. If the label does not appear, record that (the label may not have been allowed) and tell the agent.
+
+**Broken behaviour looks like:** a refused request (401), an issue without the label, or more than one issue.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 7: The real app startup wires everything up correctly
+
+**Covers:** AC7
+
+**Steps:**
+1. Run the test file with the real database set up (Setup step 4).
+2. Find the lines "real startup path" and "wired behaviour is correct".
+
+**Expected outcome:**
+> Both show a pass, not SKIPPED. Starting the app the way it really starts, then sending it a valid error, makes the pretend GitHub receive one request with the right address, the token in the Authorization header, and the expected title, body and label. Sending two different errors produces two different issues, each with its own title and PostHog number.
+
+**Result:** [ ] Pass  [ ] Fail  [ ] Skipped (no database; the story is not verified until this runs)
+**Notes:**
+
+---
+
+### Scenario 8: A half-set-up app fails safely
+
+**Covers:** AC8
+
+**Steps:**
+1. Run the test file.
+2. Find the lines "unwired adapter stub throws the exact message" and "handler with the stub returns 503".
+
+**Expected outcome:**
+> Both pass. The built-in placeholder for the GitHub step refuses to work with the message `Adapter not wired: error-bridge-github. Call setGithubIssueAdapter() with a real implementation before use.` If the app is somehow started without the real GitHub step, a delivery gets the answer 503 and a log line that says "Adapter not wired"; the app keeps running and nothing is marked as done.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 9: The first real production error opens one issue (cannot be done on demand)
+
+**Covers:** AC9
+
+**Steps:**
+1. This is checked the first time a real error appears in production after the bridge is live. Until then it is recorded as waiting, not passed.
+2. When PostHog shows a new production error, look at the issues list of `heymishy/skills-repo`, then look again after the same error happens again.
+3. If no issue appears, read the app's log for the lines `error-bridge: ignored environment missing` or a line naming empty fields.
+
+**Expected outcome:**
+> Exactly one issue exists for that error and still one after it happens again. This is also the only proof that a real error from PostHog fills in every field, including the environment.
 
 **Result:** [ ] Pass  [ ] Fail  [ ] Waiting for a real production error
 **Notes:**
 
 ---
 
-### Scenario 7: Nothing but documents was changed, and no password or key was saved
+## What the checks on secrets and logs must show
 
-**Covers:** AC7
-
-**Steps:**
-1. Ask the agent to list every file this story changed.
-2. Ask the agent to scan those files for anything shaped like a key, token, installation number or secret, reporting only file names and never the values.
-
-**Expected outcome:**
-> Every changed file is under `artefacts/` or `workspace/`, or is one of the two pipeline bookkeeping files. Nothing is under `src/`, `scripts/` or `.github/workflows/`. The scan reports nothing.
-
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
-
----
-
-## If a delivery does not happen
-
-PostHog keeps a record of each time the alert tried to open an issue, including failures (for example if the GitHub App was removed). Open the alert in PostHog and read its logs. This is the only place a failed delivery shows up; nothing in our app watches it.
+Across all scenarios the test file also checks that the made-up shared secret, the made-up token and a made-up word in the payload never appear in any log line, that every kind of outcome logs one distinct line carrying only the PostHog issue number, that an answer takes under 2 seconds with the pretend services, and that a body with empty fields is refused with a log naming the empty fields (never their values). These appear as the four lines starting with "NFR".

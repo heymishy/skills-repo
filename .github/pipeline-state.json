@@ -46887,14 +46887,14 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-13T07:24:20.350Z",
+          "updatedAt": "2026-11-13T07:31:30.102Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "not-started",
-            "totalTests": 0,
+            "status": "written",
+            "totalTests": 37,
             "passing": 0,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },

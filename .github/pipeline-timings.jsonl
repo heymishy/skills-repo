@@ -13,3 +13,4 @@
 {"skill":"review","featureSlug":"2026-11-08-cicd-observability-hardening-automation","storySlug":"coha-s7","stage":"review","timestamp":"2026-11-13T03:27:14.905Z","startedAt":"2026-11-13T03:07:14.904Z","durationMs":1200001}
 {"skill":"review","featureSlug":"2026-11-08-cicd-observability-hardening-automation","storySlug":"coha-s6","stage":"review","timestamp":"2026-11-13T07:24:20.615Z","startedAt":"2026-11-13T07:09:20.613Z","durationMs":900002}
 {"skill":"review","featureSlug":"2026-11-08-cicd-observability-hardening-automation","storySlug":"coha-s7","stage":"review","timestamp":"2026-11-13T07:24:20.708Z","startedAt":"2026-11-13T07:09:20.706Z","durationMs":900002}
+{"skill":"test-plan","featureSlug":"2026-11-08-cicd-observability-hardening-automation","storySlug":"coha-s6","stage":"test-plan","timestamp":"2026-11-13T07:31:30.222Z","startedAt":"2026-11-13T06:51:30.220Z","durationMs":2400002}
