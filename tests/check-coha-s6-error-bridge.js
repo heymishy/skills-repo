@@ -536,6 +536,160 @@ test('N3 each outcome logs exactly one distinct line', async () => {
   assert.strictEqual(seen.size, cases, 'every outcome has its own distinct line');
 });
 
+function startRawServer(handler) {
+  const srv = http.createServer(handler);
+  const conns = new Set();
+  srv.on('connection', (s) => { conns.add(s); s.on('close', () => conns.delete(s)); });
+  srv.stop = () => new Promise((r) => { conns.forEach((s) => s.destroy()); srv.close(() => r()); });
+  return new Promise((resolve) => srv.listen(0, '127.0.0.1', () => { srv.base = 'http://127.0.0.1:' + srv.address().port; resolve(srv); }));
+}
+function adapterFor(base, extra) {
+  const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
+  return createGithubAdapter(Object.assign({ token: TOKEN, repo: 'o/r', apiBase: base }, extra || {}));
+}
+const captureErr = (p) => p.then(() => { throw new Error('expected a rejection'); }, (e) => e);
+const NEW_ISSUE = { title: 'T', body: 'B', labels: [] };
+
+test('adapter: createIssue posts to /repos/<repo>/issues with the Bearer token, title, body and labels', async () => {
+  const gh = await startFakeGithub();
+  try {
+    const a = adapterFor(gh.base);
+    const out = await a.createIssue({ title: 'T', body: 'B', labels: ['production-error'] });
+    assert.ok(Number.isInteger(out.number) && out.number > 0);
+    assert.strictEqual(gh.calls[0].method, 'POST'); assert.strictEqual(gh.calls[0].path, '/repos/o/r/issues');
+    assert.strictEqual(gh.calls[0].auth, 'Bearer ' + TOKEN);
+    assert.deepStrictEqual(gh.calls[0].body, { title: 'T', body: 'B', labels: ['production-error'] });
+  } finally { gh.srv.close(); }
+});
+test('adapter: findIssueByMarker lists labelled issues and returns the number whose body holds the marker line, else exactly null', async () => {
+  const gh = await startFakeGithub();
+  try {
+    const a = adapterFor(gh.base);
+    gh.listed = [{ number: 5, body: 'PostHog issue id: other' }, { number: 9, body: 'x\n\nPostHog issue id: abc\n' }];
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: abc'), 9);
+    assert.strictEqual(await a.findIssueByMarker('PostHog issue id: nope'), null);
+    assert.strictEqual(gh.calls[0].path, '/repos/o/r/issues?labels=production-error&state=all&per_page=100');
+    assert.strictEqual(gh.calls[0].method, 'GET');
+  } finally { gh.srv.close(); }
+});
+test('adapter: a 500 answer throws GithubError "github status 500", definite, with no token or response text in the message', async () => {
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(500, { 'x-secret-header': TOKEN }); res.end('leak-' + TOKEN); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.name, 'GithubError'); assert.strictEqual(e.message, 'github status 500'); assert.strictEqual(e.definite, true);
+  } finally { await srv.stop(); }
+});
+test('adapter: a 404 answer is definite', async () => {
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(404); res.end('{}'); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.message, 'github status 404'); assert.strictEqual(e.definite, true);
+  } finally { await srv.stop(); }
+});
+test('adapter: a 408 answer is ambiguous (definite is not true)', async () => {
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(408); res.end('{}'); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.name, 'GithubError'); assert.strictEqual(e.message, 'github status 408'); assert.notStrictEqual(e.definite, true);
+  } finally { await srv.stop(); }
+});
+test('adapter: a socket destroyed after the request was read is a network error that is not definite', async () => {
+  const srv = await startRawServer((req, res) => { req.on('data', () => {}); req.on('end', () => req.socket.destroy()); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.notStrictEqual(e.definite, true); assert.notStrictEqual(e.name, 'GithubTimeout');
+  } finally { await srv.stop(); }
+});
+test('adapter: a closed port (connection refused) is definite, keeps its code, and the message holds no URL or header', async () => {
+  const srv = await startRawServer(() => {}); const base = srv.base; await srv.stop();
+  const e = await captureErr(adapterFor(base).createIssue(NEW_ISSUE));
+  assert.strictEqual(e.definite, true); assert.strictEqual(e.code, 'ECONNREFUSED');
+  assert.ok(e.message.indexOf('127.0.0.1') === -1 && e.message.indexOf(TOKEN) === -1 && e.message.indexOf('Bearer') === -1);
+});
+test('adapter: a 2xx whose body is not JSON is "github bad response" and not definite', async () => {
+  const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(201); res.end('<html>not json'); });
+  try {
+    const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.name, 'GithubError'); assert.strictEqual(e.message, 'github bad response'); assert.notStrictEqual(e.definite, true);
+  } finally { await srv.stop(); }
+});
+test('adapter: a createIssue answer whose number is not an integer is "github bad response" and not definite', async () => {
+  for (const bad of ['{"number":"7"}', '{"number":7.5}', '{"number":null}', '{}']) {
+    const srv = await startRawServer((req, res) => { req.resume(); res.writeHead(201); res.end(bad); });
+    try {
+      const e = await captureErr(adapterFor(srv.base).createIssue(NEW_ISSUE));
+      assert.strictEqual(e.name, 'GithubError', bad); assert.strictEqual(e.message, 'github bad response', bad); assert.notStrictEqual(e.definite, true, bad);
+    } finally { await srv.stop(); }
+  }
+});
+test('adapter: a server that never answers times out as GithubTimeout, not definite', async () => {
+  const srv = await startRawServer((req) => { req.resume(); });
+  try {
+    const e = await captureErr(adapterFor(srv.base, { timeoutMs: 150 }).createIssue(NEW_ISSUE));
+    assert.strictEqual(e.name, 'GithubTimeout'); assert.notStrictEqual(e.definite, true);
+  } finally { await srv.stop(); }
+});
+test('adapter: findIssueByMarker throws (never null) when the look fails or the list is not an array', async () => {
+  const srv500 = await startRawServer((req, res) => { req.resume(); res.writeHead(500); res.end('{}'); });
+  const srvOdd = await startRawServer((req, res) => { req.resume(); res.writeHead(200); res.end('{"message":"x"}'); });
+  const srvBad = await startRawServer((req, res) => { req.resume(); res.writeHead(200); res.end('nope'); });
+  try {
+    const e1 = await captureErr(adapterFor(srv500.base).findIssueByMarker('PostHog issue id: a'));
+    assert.strictEqual(e1.message, 'github status 500');
+    const e2 = await captureErr(adapterFor(srvOdd.base).findIssueByMarker('PostHog issue id: a'));
+    assert.strictEqual(e2.message, 'github bad response');
+    const e3 = await captureErr(adapterFor(srvBad.base).findIssueByMarker('PostHog issue id: a'));
+    assert.strictEqual(e3.message, 'github bad response');
+  } finally { await srv500.stop(); await srvOdd.stop(); await srvBad.stop(); }
+});
+test('I1 the real handler behind a real HTTP server: 200, 401, 405, 413, 200 and exactly one GitHub request', async () => {
+  const gh = await startFakeGithub();
+  const ctx = makeCtx(); ctx.deps.github = adapterFor(gh.base);
+  const srv = http.createServer((req, res) => bridge.handlePostErrorBridge(req, res, ctx.deps));
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + srv.address().port; const H = { 'content-type': 'application/json', [HEADER]: SECRET };
+  try {
+    const payload = body();
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, payload)).status, 200);
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', Object.assign({}, H, { [HEADER]: 'wrong' }), body())).status, 401);
+    assert.strictEqual((await httpRequest(base, 'GET', '/webhook/error-alert', H)).status, 405);
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, JSON.stringify(body({ code: 'x'.repeat(20 * 1024) })))).status, 413);
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, body({ environment: 'staging' }))).status, 200);
+    const posts = gh.calls.filter((c) => c.method === 'POST');
+    assert.strictEqual(posts.length, 1);
+    assert.strictEqual(posts[0].path, '/repos/o/r/issues'); assert.strictEqual(posts[0].auth, 'Bearer ' + TOKEN);
+    assert.strictEqual(posts[0].body.title, payload.code); assert.deepStrictEqual(posts[0].body.labels, ['production-error']);
+  } finally { srv.close(); gh.srv.close(); }
+});
+test('I2 GitHub failing then succeeding: first 503, a later delivery past the window opens one issue', async () => {
+  const gh = await startFakeGithub(); gh.mode = 'fail';
+  const ctx = makeCtx(); ctx.deps.github = adapterFor(gh.base, { timeoutMs: 500 }); ctx.deps.githubTimeoutMs = 1000;
+  const srv = http.createServer((req, res) => bridge.handlePostErrorBridge(req, res, ctx.deps));
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + srv.address().port; const H = { 'content-type': 'application/json', [HEADER]: SECRET }; const payload = body();
+  try {
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, payload)).status, 503);
+    gh.mode = 'ok'; gh.listed = []; ctx.pool.advance(180);
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, payload)).status, 200);
+    assert.strictEqual(gh.calls.filter((c) => c.method === 'POST' && c.body && c.body.title === payload.code).length >= 1, true);
+    assert.strictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+  } finally { srv.close(); gh.srv.close(); }
+});
+test('I2b a definite GitHub failure releases the claim: the immediate retry succeeds without advancing the clock', async () => {
+  const gh = await startFakeGithub(); gh.mode = 'fail';
+  const ctx = makeCtx(); ctx.deps.github = adapterFor(gh.base, { timeoutMs: 500 }); ctx.deps.githubTimeoutMs = 1000;
+  const srv = http.createServer((req, res) => bridge.handlePostErrorBridge(req, res, ctx.deps));
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + srv.address().port; const H = { 'content-type': 'application/json', [HEADER]: SECRET }; const payload = body();
+  try {
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, payload)).status, 503);
+    gh.mode = 'ok'; gh.listed = [];
+    assert.strictEqual((await httpRequest(base, 'POST', '/webhook/error-alert', H, payload)).status, 200);
+    assert.strictEqual(gh.calls.filter((c) => c.method === 'POST' && c.body && c.body.title === payload.code).length >= 1, true);
+    assert.strictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+  } finally { srv.close(); gh.srv.close(); }
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
