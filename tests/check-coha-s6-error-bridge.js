@@ -1,5 +1,9 @@
 'use strict';
 // coha-s6: alert-to-GitHub-issue bridge. Plain Node check script (npm test discovers tests/check-*.js).
+//
+// WARNING: COHA_S6_TEST_DATABASE_URL MUST point at a THROWAWAY database. The real-Postgres tests DROP TABLE
+// production_error_issues, and P6/P7 boot server.js against it, which creates and migrates other tables.
+// NEVER point it at staging or production. freshDb refuses a non-local host unless COHA_S6_ALLOW_REMOTE_DB=1.
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -14,6 +18,7 @@ const FIXTURE = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'coh
 const SECRET = 'gen-secret-' + crypto.randomBytes(12).toString('hex');
 const TOKEN = 'gen-token-' + crypto.randomBytes(12).toString('hex');
 const CANARY = 'canary-' + crypto.randomBytes(8).toString('hex');
+// WARNING: THROWAWAY database only (tests DROP TABLE and boot server.js against it). Never staging or production.
 const DB_URL = process.env.COHA_S6_TEST_DATABASE_URL;
 const HEADER = 'x-error-bridge-secret';
 
@@ -757,6 +762,15 @@ test('adapter config: apiBase must be https unless the host is 127.0.0.1 or loca
     assert.strictEqual(typeof a.createIssue, 'function'); assert.strictEqual(typeof a.findIssueByMarker, 'function');
   });
 });
+test('adapter config: apiBase with a query string, a fragment or userinfo throws; a path prefix (GitHub Enterprise /api/v3) is allowed', () => {
+  const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
+  ['https://api.github.com?x=1', 'https://api.github.com#f', 'https://u:p@api.github.com', 'https://u@api.github.com', 'https://:p@api.github.com',
+    'https://ghe.example.com/api/v3?x=1', 'http://127.0.0.1:1234/#f', 'https://' + TOKEN + '@api.github.com', 'https://api.github.com?'].forEach((apiBase) => {
+    const e = constructErr({ token: TOKEN, repo: 'o/r', apiBase });
+    assert.ok(/^invalid configuration: /.test(e.message), 'a fixed configuration message');
+  });
+  ['https://ghe.example.com/api/v3', 'https://ghe.example.com/api/v3/', 'http://127.0.0.1:1234/prefix'].forEach((apiBase) => { createGithubAdapter({ token: TOKEN, repo: 'o/r', apiBase }); });
+});
 test('adapter config: an empty or missing token throws; valid repos with dots, dashes and underscores are accepted', () => {
   const { createGithubAdapter } = require('../src/web-ui/modules/error-bridge-github');
   constructErr({ token: '', repo: 'o/r', apiBase: 'https://api.github.com' });
@@ -771,7 +785,16 @@ test('adapter config: a thrown configuration message never contains the token, e
 
 // ---- Task 9: production wiring in server.js (W1 always runs; P1 to P7 need COHA_S6_TEST_DATABASE_URL) ----
 const { Pool } = DB_URL ? require('pg') : { Pool: null };
+// True only for a parseable URL whose host is 127.0.0.1, localhost or ::1 (a throwaway local container).
+function isLocalDbUrl(url) {
+  let u;
+  try { u = new URL(url); } catch (e) { return false; }
+  return ['127.0.0.1', 'localhost', '[::1]', '::1'].indexOf(u.hostname) !== -1;
+}
 async function freshDb() {
+  if (!isLocalDbUrl(DB_URL) && process.env.COHA_S6_ALLOW_REMOTE_DB !== '1') {
+    throw new Error('refusing to DROP TABLE on a non-local database: COHA_S6_TEST_DATABASE_URL must be a throwaway local database (set COHA_S6_ALLOW_REMOTE_DB=1 to override)');
+  }
   const pool = new Pool({ connectionString: DB_URL });
   await pool.query('DROP TABLE IF EXISTS production_error_issues');
   await store.ensureTable(pool);
@@ -787,25 +810,65 @@ dbTest('P1 table creation is idempotent and the PostHog issue id is the primary 
     assert.strictEqual(r.rows[0].n, 1);
   } finally { await pool.end(); }
 });
+// Two concurrent deliveries of one id: both answer 200, exactly one body is {issue: N} (or, for a takeover that recovers,
+// {issue: N, recovered: true} when allowRecovered) and the other is exactly {duplicate: true}. A wrong 503 fails here.
+function assertOneIssueOneDuplicate(responses, allowRecovered) {
+  assert.deepStrictEqual(responses.map((r) => r.statusCode), [200, 200], 'both deliveries answer 200');
+  const bodies = responses.map((r) => JSON.parse(r.body));
+  const isIssue = (b) => Number.isInteger(b.issue) && (JSON.stringify(b) === JSON.stringify({ issue: b.issue }) || (allowRecovered && JSON.stringify(b) === JSON.stringify({ issue: b.issue, recovered: true })));
+  const isDup = (b) => JSON.stringify(b) === JSON.stringify({ duplicate: true });
+  assert.strictEqual(bodies.filter(isIssue).length, 1, 'exactly one {issue: N}: ' + JSON.stringify(bodies));
+  assert.strictEqual(bodies.filter(isDup).length, 1, 'exactly one {duplicate: true}: ' + JSON.stringify(bodies));
+}
+function assertDuplicate(res) {
+  assert.strictEqual(res.statusCode, 200);
+  assert.deepStrictEqual(JSON.parse(res.body), { duplicate: true });
+}
+
+// Always-run fake-pool twins of P2 and P3, so the HTTP-outcome assertions above are exercised without a database.
+test('P2-fake two simultaneous deliveries of a new id: statuses 200 and 200, one {issue}, one {duplicate:true}', async () => {
+  const ctx = makeCtx(); const payload = body();
+  const responses = await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+  assertOneIssueOneDuplicate(responses, false);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+});
+test('P3-fake a second handler call with a fresh context sharing the same pool is 200 {duplicate:true} and creates nothing', async () => {
+  const ctx1 = makeCtx(); const payload = body();
+  const first = await deliver(payload, ctx1);
+  assert.strictEqual(first.statusCode, 200); assert.ok(Number.isInteger(JSON.parse(first.body).issue));
+  const ctx2 = makeCtx(); ctx2.pool = ctx1.pool; ctx2.deps.pool = ctx1.pool;
+  assertDuplicate(await deliver(payload, ctx2));
+  assert.strictEqual(ctx2.adapter.created.length, 0);
+});
+
 dbTest('P2 two simultaneous deliveries open one issue', async () => {
   const pool = await freshDb(); const ctx = dbCtx(pool); const payload = body();
   try {
-    await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    const responses = await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    assertOneIssueOneDuplicate(responses, false);
     assert.strictEqual(ctx.adapter.created.length, 1);
     assert.strictEqual((await pool.query('SELECT status FROM production_error_issues WHERE posthog_issue_id=$1', [payload.posthog_issue_id])).rows[0].status, 'created');
   } finally { await pool.end(); }
 });
 dbTest('P3 a restart between deliveries still treats the second as a duplicate', async () => {
-  const pool1 = await freshDb(); const ctx1 = dbCtx(pool1); const payload = body();
-  await deliver(payload, ctx1); await pool1.end();
+  const payload = body();
+  const pool1 = await freshDb();
+  try {
+    const first = await deliver(payload, dbCtx(pool1));
+    assert.strictEqual(first.statusCode, 200); assert.ok(Number.isInteger(JSON.parse(first.body).issue));
+  } finally { await pool1.end(); }
   const pool2 = new Pool({ connectionString: DB_URL }); const ctx2 = dbCtx(pool2);
-  try { await deliver(payload, ctx2); assert.strictEqual(ctx2.adapter.created.length, 0); } finally { await pool2.end(); }
+  try {
+    assertDuplicate(await deliver(payload, ctx2));
+    assert.strictEqual(ctx2.adapter.created.length, 0);
+  } finally { await pool2.end(); }
 });
 dbTest('P4 a stuck pending row older than the window is taken over exactly once', async () => {
   const pool = await freshDb(); const ctx = dbCtx(pool); const payload = body();
   try {
     await pool.query(`INSERT INTO production_error_issues (posthog_issue_id, status, claimed_at) VALUES ($1,'pending', now() - interval '3 minutes')`, [payload.posthog_issue_id]);
-    await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    const responses = await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    assertOneIssueOneDuplicate(responses, true);
     assert.strictEqual(ctx.adapter.created.length, 1);
   } finally { await pool.end(); }
 });
@@ -815,17 +878,30 @@ dbTest('P5 a failed GitHub call leaves the row recoverable and a later delivery 
     ctx.adapter._fail = new Error('boom'); assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
     ctx.adapter._fail = null;
     await pool.query(`UPDATE production_error_issues SET claimed_at = now() - interval '3 minutes' WHERE posthog_issue_id=$1`, [payload.posthog_issue_id]);
-    assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+    const second = await deliver(payload, ctx);
+    assert.strictEqual(second.statusCode, 200);
+    assert.ok(Number.isInteger(JSON.parse(second.body).issue), 'the later delivery returns {issue: N}');
     assert.strictEqual(ctx.adapter.created.length, 1);
   } finally { await pool.end(); }
+});
+test('isLocalDbUrl accepts only 127.0.0.1, localhost and ::1; remote hosts and malformed URLs are refused', () => {
+  assert.strictEqual(isLocalDbUrl('postgresql://postgres:pw@localhost:55432/coha'), true);
+  assert.strictEqual(isLocalDbUrl('postgresql://postgres:pw@127.0.0.1:55432/coha'), true);
+  assert.strictEqual(isLocalDbUrl('postgresql://postgres:pw@[::1]:55432/coha'), true);
+  assert.strictEqual(isLocalDbUrl('postgresql://u:p@wuce-db.fly.dev:5432/app'), false);
+  assert.strictEqual(isLocalDbUrl('postgresql://u:p@ep-cool-name-123.us-east-2.aws.neon.tech/neondb'), false);
+  assert.strictEqual(isLocalDbUrl('not a url'), false);
+  assert.strictEqual(isLocalDbUrl(undefined), false);
+  assert.strictEqual(isLocalDbUrl('postgresql://u:p@127.0.0.1.example.com/app'), false);
 });
 
 // W1/P6/P7: the real startup path. server.js runs in a child process (never re-required in-process).
 // REQUIRED_ENV: what validateRequiredEnvVars (src/web-ui/config/validate-env.js) needs, with dummy values.
 const REQUIRED_ENV = { GITHUB_CLIENT_ID: 'coha-s6-dummy-client-id', GITHUB_CLIENT_SECRET: 'coha-s6-dummy-client-secret', SESSION_SECRET: 'coha-s6-dummy-session-secret-at-least-32-chars' };
-// BOOT_ENV: NODE_ENV=test keeps every real GitHub/PostHog adapter unwired (no outbound traffic); WIRE_SKILL_ADAPTERS=true
-// runs the server.js wiring block that holds the `if (process.env.DATABASE_URL)` pool wiring, where the error bridge is wired.
-// The child env is built from scratch, so no real credential from this shell reaches it.
+// BOOT_ENV: NODE_ENV=test keeps only the server.js blocks guarded by `NODE_ENV !== 'test'` unwired (the outbound GitHub,
+// PostHog and similar adapters). WIRE_SKILL_ADAPTERS=true runs the larger adapter block at server.js ~437 (local,
+// in-process wiring with no outbound call at boot), which holds the `if (process.env.DATABASE_URL)` pool wiring where the
+// error bridge is wired. The child env is built from scratch with no keys, so no real credential from this shell reaches it.
 const BOOT_ENV = { NODE_ENV: 'test', WIRE_SKILL_ADAPTERS: 'true' };
 function startServer(extraEnv) {
   const net = require('net'); const cp = require('child_process');
@@ -839,16 +915,26 @@ function startServer(extraEnv) {
         const onData = (d) => { out += d; if (!started && /listening on port/.test(out)) { started = true; clearTimeout(timer); resolve({ child, base: 'http://127.0.0.1:' + port, output: () => out }); } };
         child.stdout.on('data', onData); child.stderr.on('data', onData);
         child.on('exit', (code) => { if (!started) { clearTimeout(timer); reject(new Error('server exited before listening (code ' + code + '): ' + out.slice(-400))); } });
+        child.on('error', (err) => { if (!started) { clearTimeout(timer); reject(new Error('server child process failed to start: ' + (err && err.code ? err.code : 'error'))); } });
       });
     });
   });
 }
+// Graceful kill, then after a 5 s grace a hard kill (SIGKILL) with up to 5 more seconds to exit.
 function stopServer(srv) {
-  return new Promise((resolve) => {
-    if (srv.child.exitCode !== null || srv.child.signalCode !== null) return resolve();
-    const t = setTimeout(resolve, 5000);
-    srv.child.once('exit', () => { clearTimeout(t); resolve(); });
-    srv.child.kill();
+  const exited = () => srv.child.exitCode !== null || srv.child.signalCode !== null;
+  const waitExit = (ms) => new Promise((resolve) => {
+    if (exited()) return resolve(true);
+    const t = setTimeout(() => { srv.child.removeListener('exit', onExit); resolve(exited()); }, ms);
+    function onExit() { clearTimeout(t); resolve(true); }
+    srv.child.once('exit', onExit);
+  });
+  if (exited()) return Promise.resolve();
+  srv.child.kill();
+  return waitExit(5000).then((done) => {
+    if (done) return undefined;
+    try { srv.child.kill('SIGKILL'); } catch (e) { /* already gone */ }
+    return waitExit(5000).then(() => undefined);
   });
 }
 async function waitFor(fn, ms) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await new Promise((r) => setTimeout(r, 100)); } return false; }

@@ -36,6 +36,11 @@ function validateConfig(token, repo, apiBase) {
   }
   let u;
   try { u = new URL(apiBase); } catch (e) { throw configError('apiBase is not a valid URL'); }
+  // A path prefix is allowed (GitHub Enterprise uses /api/v3); a query string, a fragment or userinfo is not.
+  // The raw-string checks also catch an empty "?", "#" or "@" that URL parsing normalises away.
+  if (u.search || u.hash || u.username || u.password || /[?#@]/.test(apiBase)) {
+    throw configError('apiBase must not contain a query string, a fragment or userinfo');
+  }
   if (u.protocol === 'https:') return;
   // Plain http would send the token in cleartext; allowed only for a local test server.
   if (u.protocol === 'http:' && (u.hostname === '127.0.0.1' || u.hostname === 'localhost')) return;
