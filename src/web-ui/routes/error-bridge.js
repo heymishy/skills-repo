@@ -18,6 +18,10 @@ const FIELDS = ['code', 'environment', 'first_seen', 'posthog_issue_id', 'postho
 
 // D37: the stub MUST throw. server.js wires the real adapter (Task 9).
 const NOT_WIRED_GITHUB = 'Adapter not wired: error-bridge-github. Call setGithubIssueAdapter() with a real implementation before use.';
+// Adapter contract: createIssue({title, body, labels}) resolves {number}. findIssueByMarker(markerLine) resolves the issue
+// number (a bare integer), or null ONLY when the issue is confirmed absent; it must THROW on any failure to look (non-2xx,
+// unreadable body, network error), because the handler creates an issue when it returns null. Both must throw on failure,
+// never return empty values.
 const unwiredGithubAdapter = {
   createIssue() { throw new Error(NOT_WIRED_GITHUB); },
   findIssueByMarker() { throw new Error(NOT_WIRED_GITHUB); }
@@ -131,24 +135,38 @@ async function handlePostErrorBridge(req, res, deps) {
     return send(res, 200, { duplicate: true });
   }
 
+  // A failed or timed-out GitHub call leaves the row pending. A definite failure releases the claim so the retry takes over
+  // at once; a timeout or a store failure after a create does not (a late success could land, and a takeover recovers it by marker).
+  let issueNumber = null;
+  let recovered = false;
   try {
-    if (outcome === 'takeover') {
-      const existing = await withTimeout(() => d.github.findIssueByMarker(marker), d.githubTimeoutMs);
-      if (existing) {
-        await store.markCreated(d.pool, id, existing);
-        d.log('error-bridge: recovered issue #' + existing + ' for ' + id);
-        return send(res, 200, { issue: existing, recovered: true });
-      }
+    let existing = null;
+    if (outcome === 'takeover') existing = await withTimeout(() => d.github.findIssueByMarker(marker), d.githubTimeoutMs);
+    if (existing) { issueNumber = existing; recovered = true; }
+    else {
+      const issue = await withTimeout(() => d.github.createIssue({ title: f.code, body: buildBody(f, marker), labels: [LABEL] }), d.githubTimeoutMs);
+      issueNumber = issue.number;
     }
-    const issue = await withTimeout(() => d.github.createIssue({ title: f.code, body: buildBody(f, marker), labels: [LABEL] }), d.githubTimeoutMs);
-    await store.markCreated(d.pool, id, issue.number);
-    d.log('error-bridge: created issue #' + issue.number + ' for ' + id);
-    return send(res, 200, { issue: issue.number });
   } catch (e) {
-    // FAILURE (Task 6 refines this)
-    d.log('error-bridge: github failed ' + describe(e) + ' for ' + id);
+    if (e && e.name === 'GithubTimeout') {
+      d.log('error-bridge: github timeout for ' + id);
+    } else {
+      let note = ' (claim released)';
+      if (!(e && typeof e.message === 'string' && e.message.indexOf('Adapter not wired') === 0)) {
+        try { await store.release(d.pool, id); } catch (re) { note = ' (release failed)'; }
+      } else note = '';
+      d.log('error-bridge: github failed ' + describe(e) + ' for ' + id + note);
+    }
     return send(res, 503, { error: 'upstream unavailable' });
   }
+  try {
+    await store.markCreated(d.pool, id, issueNumber);
+  } catch (e) {
+    d.log('error-bridge: ' + (recovered ? 'recovered' : 'created') + ' issue #' + issueNumber + ' but store update failed for ' + id);
+    return send(res, 503, { error: 'unavailable' });
+  }
+  d.log('error-bridge: ' + (recovered ? 'recovered' : 'created') + ' issue #' + issueNumber + ' for ' + id);
+  return send(res, 200, recovered ? { issue: issueNumber, recovered: true } : { issue: issueNumber });
 }
 
 module.exports = {

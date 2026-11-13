@@ -40,4 +40,12 @@ async function markCreated(pool, id, issueNumber) {
     [id, issueNumber]);
 }
 
-module.exports = { CLAIM_WINDOW_SECONDS, TABLE_SQL, ensureTable, claim, markCreated };
+// After a definite GitHub failure: age the claim so the next delivery's takeover succeeds at once. Only ever touches a
+// pending row, and is an UPDATE (never a DELETE) so the primary-key duplicate guard is kept.
+async function release(pool, id) {
+  await pool.query(
+    `UPDATE production_error_issues SET updated_at = now(), claimed_at = now() - interval '1 day'
+     WHERE posthog_issue_id = $1 AND status = 'pending'`, [id]);
+}
+
+module.exports = { CLAIM_WINDOW_SECONDS, TABLE_SQL, ensureTable, claim, markCreated, release };

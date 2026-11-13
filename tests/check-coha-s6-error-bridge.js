@@ -64,6 +64,11 @@ function makeFakePool() {
       if (r && r.status === 'pending' && p.nowMs - r.claimedMs > params[1] * 1000) { r.claimedMs = p.nowMs; return { rows: [{ posthog_issue_id: params[0] }], rowCount: 1 }; }
       return { rows: [], rowCount: 0 };
     }
+    if (t.startsWith('UPDATE production_error_issues SET updated_at')) {
+      const r = p.rows.get(params[0]);
+      if (r && r.status === 'pending') { r.claimedMs = p.nowMs - 86400000; return { rows: [], rowCount: 1 }; }
+      return { rows: [], rowCount: 0 };
+    }
     if (t.startsWith('UPDATE production_error_issues SET status')) {
       const r = p.rows.get(params[0]);
       if (r) { r.status = 'created'; r.issue_number = params[1]; }
@@ -353,6 +358,74 @@ test('U24 the handler with the stub gives 503, logs "not wired", stays alive and
   assert.strictEqual(res.statusCode, 503);
   assert.ok(ctx.lines.join('\n').indexOf('Adapter not wired: error-bridge-github') !== -1);
   assert.notStrictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+
+// Amendment: release the claim after a definite GitHub failure (not after a timeout or a store failure).
+test('store: release makes the next claim a takeover, and never touches a created row', async () => {
+  const pool = makeFakePool(); const id = newId();
+  assert.strictEqual(await store.claim(pool, id, 120), 'claimed');
+  await store.release(pool, id);
+  assert.strictEqual(pool.rows.get(id).status, 'pending');
+  assert.strictEqual(await store.claim(pool, id, 120), 'takeover');
+  await store.markCreated(pool, id, 9);
+  await store.release(pool, id);
+  assert.deepStrictEqual([pool.rows.get(id).status, pool.rows.get(id).issue_number], ['created', 9]);
+  assert.strictEqual(await store.claim(pool, id, 120), 'created');
+});
+test('U22b a GitHub error then an immediate retry (no clock advance) opens exactly one issue after a marker search', async () => {
+  const ctx = makeCtx(); const payload = body(); ctx.adapter._fail = Object.assign(new Error('github status 500'), { name: 'GithubError' });
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
+  ctx.adapter._fail = null;
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+  assert.strictEqual(ctx.adapter.created.length, 1);
+  assert.strictEqual(ctx.adapter.found.length, 1);
+  assert.strictEqual(ctx.pool.rows.get(payload.posthog_issue_id).status, 'created');
+});
+test('U21b a timeout does not release the claim: an immediate retry is inflight and nothing is created twice', async () => {
+  const ctx = makeCtx(); const payload = body(); let calls = 0; ctx.adapter.createIssue = () => { calls++; return new Promise(() => {}); };
+  assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
+  assert.ok(ctx.lines.join('\n').indexOf('github timeout for ' + payload.posthog_issue_id) !== -1);
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 200); assert.ok(/duplicate/.test(res.body));
+  assert.strictEqual(calls, 1);
+});
+test('U20b markCreated failing after a successful create gives 503, keeps the row pending, and a retry is inflight', async () => {
+  const ctx = makeCtx(); const payload = body(); const realQuery = ctx.pool.query; let thrown = false;
+  ctx.pool.query = async (text, params) => {
+    if (!thrown && text.replace(/\s+/g, ' ').trim().startsWith('UPDATE production_error_issues SET status')) { thrown = true; throw new Error('db down ' + CANARY); }
+    return realQuery(text, params);
+  };
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503);
+  assert.strictEqual(ctx.lines.length, 1);
+  assert.ok(ctx.lines[0].indexOf('created issue #101 but store update failed for ' + payload.posthog_issue_id) !== -1);
+  assert.ok(ctx.lines[0].indexOf(CANARY) === -1);
+  const row = ctx.pool.rows.get(payload.posthog_issue_id);
+  assert.deepStrictEqual([row.status, row.issue_number], ['pending', null]);
+  const retry = await deliver(payload, ctx);
+  assert.strictEqual(retry.statusCode, 200); assert.strictEqual(ctx.adapter.created.length, 1);
+});
+test('a failing release is swallowed: still 503, one log line, and it says release failed', async () => {
+  const ctx = makeCtx(); const payload = body(); const realQuery = ctx.pool.query;
+  ctx.adapter._fail = Object.assign(new Error('github status 500'), { name: 'GithubError' });
+  ctx.pool.query = async (text, params) => {
+    if (text.replace(/\s+/g, ' ').trim().startsWith('UPDATE production_error_issues SET updated_at')) throw new Error('db down');
+    return realQuery(text, params);
+  };
+  const res = await deliver(payload, ctx);
+  assert.strictEqual(res.statusCode, 503);
+  assert.strictEqual(ctx.lines.length, 1);
+  assert.ok(ctx.lines[0].indexOf('release failed') !== -1);
+});
+test('the definite-failure log line holds only the PostHog issue id and the error name', async () => {
+  const ctx = makeCtx(); const payload = body({ code: 'title-' + CANARY });
+  ctx.adapter._fail = Object.assign(new Error('bad creds ' + TOKEN + ' ' + CANARY), { name: 'GithubError' });
+  await deliver(payload, ctx);
+  assert.strictEqual(ctx.lines.length, 1);
+  const line = ctx.lines[0];
+  assert.ok(line.indexOf(payload.posthog_issue_id) !== -1 && line.indexOf('GithubError') !== -1);
+  assert.ok(line.indexOf('claim released') !== -1);
+  [TOKEN, SECRET, CANARY].forEach((s) => assert.ok(line.indexOf(s) === -1, 'log leaks a secret or payload text'));
 });
 
 // RUNNER
