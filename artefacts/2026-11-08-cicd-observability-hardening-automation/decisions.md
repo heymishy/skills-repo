@@ -111,6 +111,24 @@
 **Revisit trigger:** If the live check shows tenant text or anything beyond the fixed code and `src/` frames in the issue, if the environment filter cannot be enforced, or if duplicates appear, disable the alert and reinstate the run-3 bridge design (git commit 6e16356c7) through `/definition` and `/review`. The earlier revisit trigger tied to "AC3 of coha-s6" (webhook secret header) is superseded by this entry.
 ---
 
+---
+**2026-11-13 | RISK-ACCEPT | definition-of-ready — coha-s6 W3 and W4 acknowledged, W4 re-acknowledged now the script exists**
+**Decision:** Acknowledge, rather than resolve, two DoR warnings for coha-s6: W3 (review run 4's three MEDIUM findings 4-M1 to 4-M3 were fixed in the same session by the agent that wrote the story, and the fixes were not independently checked) and W4 (the verification script has no domain-expert review). This re-checks the 2026-11-13 advance acknowledgement that named coha-s6.
+**Alternatives considered:** (A) Block until a second person reviews the story fixes and the script — rejected, no second contributor exists. (B) Count the operator's own check as the review — rejected, the operator is the author and owner. (C, chosen) Acknowledge as open risks.
+**Rationale:** Same root cause as the 2026-11-09 and earlier 2026-11-13 W4 entries. The risk is higher than usual for W4 because no code ships, so the verification script is the only evidence for AC1 to AC6; the live checks themselves read real PostHog and GitHub state, which limits what an unreviewed script can get wrong.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), during /definition-of-ready for coha-s6, 2026-11-13
+**Revisit trigger:** If a second contributor joins, have them review the coha-s6 verification script and the alert configuration before the alert's rules next change.
+---
+
+---
+**2026-11-13 | RISK-ACCEPT | definition-of-ready — coha-s6 AC6 (first real production error opens exactly one issue) may not be observed before merge**
+**Decision:** Accept that AC6, a `production-observed` check (verification script scenario 6), cannot be run on demand and may be absent at merge. The DoD records coha-s6 as COMPLETE WITH DEVIATIONS until a real production error opens exactly one issue and repeats open none. A post-merge action in `workspace/state.json` names the operator as the person who confirms it.
+**Alternatives considered:** (A) Cause a deliberate production error to prove it — rejected, it would put a fake error into production data and the public issue list. (B) Hold the story open until a real error occurs — rejected, the rest of the story is complete and coha-s7 depends on it. (C, chosen) Merge with the deviation recorded and a named follow-up.
+**Rationale:** Duplicate suppression is PostHog's own behaviour and cannot be exercised without a real new error issue in production. Until then "once" rests on PostHog's documented "issue created" semantics, which is unproven here.
+**Made by:** Claude Sonnet 5.5, confirmed by Hamish King (Platform Owner), during /definition-of-ready for coha-s6, 2026-11-13
+**Revisit trigger:** If a production error produces two issues or none, disable the alert and reinstate the run-3 bridge design (commit 6e16356c7) through /definition and /review.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

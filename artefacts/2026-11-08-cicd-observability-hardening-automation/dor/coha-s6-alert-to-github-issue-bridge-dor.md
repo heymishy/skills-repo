@@ -6,7 +6,7 @@
 **Review:** PASS, run 4 (artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s6-review-4.md), 0 HIGH, 3 MEDIUM (resolved in revision), 2 LOW
 **Assessed by:** Claude Sonnet 5.5
 **Date:** 2026-11-13
-**Status:** HARD BLOCKS PASS — AWAITING OPERATOR SIGN-OFF (not signed off; no sign-off has been given for this story)
+**Status:** SIGNED OFF by Hamish King, Platform Owner, 2026-11-13 (hard blocks 19/19; W3, W4 and the AC6 RISK-ACCEPT acknowledged)
 
 ---
 
@@ -55,11 +55,11 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 |---|-------|--------|--------------------|-----------------|
 | W1 | NFRs identified | ✅ | — | Security, privacy, isolation, reliability, audit stated; performance and accessibility N/A |
 | W2 | Scope stability declared | ✅ | — | "Unstable until AC3" |
-| W3 | MEDIUM findings acknowledged | ⚠️ | 4-M1 to 4-M3 were fixed in the same session by the reviewer who is also the author | Needs operator acknowledgement below; none of them needs a decisions.md entry on its own, but the fixes were not independently checked |
-| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases; here the script is the only test evidence, as no code ships | The 2026-11-13 RISK-ACCEPT extension (decisions.md) named coha-s6 as an advance acknowledgement "re-checked at their DoR". It needs the operator's re-acknowledgement now that the script exists and is the sole evidence. |
+| W3 | MEDIUM findings acknowledged | ⚠️ | 4-M1 to 4-M3 were fixed in the same session by the reviewer who is also the author | Acknowledged by Hamish King on 2026-11-13: the fixes were made by the same agent that wrote the story and were not independently checked; logged in decisions.md |
+| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases; here the script is the only test evidence, as no code ships | Re-acknowledged by Hamish King on 2026-11-13 now that the script exists and is the sole evidence; logged as a RISK-ACCEPT in decisions.md. Not an independent review. |
 | W5 | No UNCERTAIN gap-table items | ✅ | — | All gap-table entries have a stated handling |
 
-**Outstanding decisions to log (needs the operator's agreement before it is written):** a RISK-ACCEPT in `decisions.md` classifying AC6 (production-observed, may not occur before merge) with a post-merge action in `workspace/state.json`, as the story and review 4-M2 require.
+**Decisions logged 2026-11-13 (decisions.md):** W3, W4 and a RISK-ACCEPT in `decisions.md` classifying AC6 (production-observed, may not occur before merge) with a post-merge action in `workspace/state.json`, as the story and review 4-M2 require.
 
 ---
 
@@ -67,9 +67,9 @@ See `coha-s6-alert-to-github-issue-bridge-dor-contract.md` (saved alongside this
 
 Parent epic: **Medium**. The tech lead must be shown this DoR artefact; the operator is the only contributor and the tech lead in this repo, so this artefact and the operator's sign-off are that step.
 
-**Sign-off:** PENDING — Hamish King, Platform Owner. Not given. This artefact will be updated with the name, date and the acknowledgements below when the operator confirms.
+**Sign-off:** Hamish King — Platform Owner — 2026-11-13, given in the session together with the three acknowledgements below.
 
-**Operator confirmations needed (all four, in one reply):**
+**Operator confirmations given 2026-11-13 ("Confirm all 4"):**
 1. Sign off this DoR (Proceed: Yes).
 2. Acknowledge W3 (the review-4 fixes were made by the same agent that wrote them).
 3. Re-acknowledge W4 for coha-s6's verification script as a RISK-ACCEPT.
@@ -93,7 +93,7 @@ Story has no `domain` field — skipped silently.
 ```
 ## Coding Agent Instructions
 
-Proceed: PENDING operator sign-off (not given)
+Proceed: Yes (operator sign-off and acknowledgements recorded 2026-11-13)
 Story: GitHub issue opened by PostHog for each new production error issue (native destination) — artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md
 Test plan: artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md
 Contract: artefacts/2026-11-08-cicd-observability-hardening-automation/dor/coha-s6-alert-to-github-issue-bridge-dor-contract.md
