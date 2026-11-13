@@ -46887,9 +46887,9 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
-          "updatedAt": "2026-11-13T07:37:10.689Z",
+          "updatedAt": "2026-11-13T18:39:18.714Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {

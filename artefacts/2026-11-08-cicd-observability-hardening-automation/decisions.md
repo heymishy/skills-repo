@@ -192,6 +192,14 @@
 **Revisit trigger:** If incident volume makes merging a pull request per record a burden, revisit option 3 or a batched record. A separate follow-up, not part of this decision: the "path-based bypass" operator note in CLAUDE.md is inaccurate and needs a corrected note through its own story.
 ---
 
+---
+**2026-11-14 | RISK-ACCEPT | coha-s6 branch-setup — baseline of 5 pre-existing test failures acknowledged**
+**Decision:** coha-s6 proceeds past a baseline with 5 failing files (851 run, master fdea433e6): scripts/check-pipeline-state-integrity.js (tfhc-s1 is merged with testPlan.passing 4 of 5, because the fifth test fails on accepted product bug GitHub issue #1042), tests/check-pcr-s1-test-runner.js (per-file timing 773-782 ms against a 749.8 ms limit set from a 2026-07-11 baseline on another machine), tests/check-p4-enf-second-line.js and tests/check-rtvap-s1-archived-test-plan-coverage.js (bash on PATH resolves to the WSL launcher; both pass with Git Bash first on PATH), tests/check-p3.5-validate-trace.js (Windows PowerShell 5 in the full run).
+**Rationale:** None touches the bridge. Three are environmental, one is a stale machine-specific threshold, one is an accurate record of an accepted defect; the passing count was not falsified.
+**Made by:** Claude Sonnet 5.5 (recommended), acknowledged by Hamish King (Platform Owner), 2026-11-14
+**Revisit trigger:** fix #1042 or add an integrity-check exception for tfhc-s1; re-baseline the pcr-s1 threshold through a short-track story. Verification runs with Git Bash first on PATH.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
