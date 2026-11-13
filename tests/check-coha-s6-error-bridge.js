@@ -769,6 +769,137 @@ test('adapter config: a thrown configuration message never contains the token, e
   constructErr({ token: TOKEN, repo: 'o/r', apiBase: 'not a url ' + TOKEN });
 });
 
+// ---- Task 9: production wiring in server.js (W1 always runs; P1 to P7 need COHA_S6_TEST_DATABASE_URL) ----
+const { Pool } = DB_URL ? require('pg') : { Pool: null };
+async function freshDb() {
+  const pool = new Pool({ connectionString: DB_URL });
+  await pool.query('DROP TABLE IF EXISTS production_error_issues');
+  await store.ensureTable(pool);
+  return pool;
+}
+function dbCtx(pool) { const c = makeCtx(); c.deps.pool = pool; return c; }
+
+dbTest('P1 table creation is idempotent and the PostHog issue id is the primary key', async () => {
+  const pool = await freshDb();
+  try {
+    await store.ensureTable(pool); await store.ensureTable(pool);
+    const r = await pool.query(`SELECT count(*)::int AS n FROM information_schema.table_constraints WHERE table_name='production_error_issues' AND constraint_type='PRIMARY KEY'`);
+    assert.strictEqual(r.rows[0].n, 1);
+  } finally { await pool.end(); }
+});
+dbTest('P2 two simultaneous deliveries open one issue', async () => {
+  const pool = await freshDb(); const ctx = dbCtx(pool); const payload = body();
+  try {
+    await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    assert.strictEqual(ctx.adapter.created.length, 1);
+    assert.strictEqual((await pool.query('SELECT status FROM production_error_issues WHERE posthog_issue_id=$1', [payload.posthog_issue_id])).rows[0].status, 'created');
+  } finally { await pool.end(); }
+});
+dbTest('P3 a restart between deliveries still treats the second as a duplicate', async () => {
+  const pool1 = await freshDb(); const ctx1 = dbCtx(pool1); const payload = body();
+  await deliver(payload, ctx1); await pool1.end();
+  const pool2 = new Pool({ connectionString: DB_URL }); const ctx2 = dbCtx(pool2);
+  try { await deliver(payload, ctx2); assert.strictEqual(ctx2.adapter.created.length, 0); } finally { await pool2.end(); }
+});
+dbTest('P4 a stuck pending row older than the window is taken over exactly once', async () => {
+  const pool = await freshDb(); const ctx = dbCtx(pool); const payload = body();
+  try {
+    await pool.query(`INSERT INTO production_error_issues (posthog_issue_id, status, claimed_at) VALUES ($1,'pending', now() - interval '3 minutes')`, [payload.posthog_issue_id]);
+    await Promise.all([deliver(payload, ctx), deliver(payload, ctx)]);
+    assert.strictEqual(ctx.adapter.created.length, 1);
+  } finally { await pool.end(); }
+});
+dbTest('P5 a failed GitHub call leaves the row recoverable and a later delivery opens one issue', async () => {
+  const pool = await freshDb(); const ctx = dbCtx(pool); const payload = body();
+  try {
+    ctx.adapter._fail = new Error('boom'); assert.strictEqual((await deliver(payload, ctx)).statusCode, 503);
+    ctx.adapter._fail = null;
+    await pool.query(`UPDATE production_error_issues SET claimed_at = now() - interval '3 minutes' WHERE posthog_issue_id=$1`, [payload.posthog_issue_id]);
+    assert.strictEqual((await deliver(payload, ctx)).statusCode, 200);
+    assert.strictEqual(ctx.adapter.created.length, 1);
+  } finally { await pool.end(); }
+});
+
+// W1/P6/P7: the real startup path. server.js runs in a child process (never re-required in-process).
+// REQUIRED_ENV: what validateRequiredEnvVars (src/web-ui/config/validate-env.js) needs, with dummy values.
+const REQUIRED_ENV = { GITHUB_CLIENT_ID: 'coha-s6-dummy-client-id', GITHUB_CLIENT_SECRET: 'coha-s6-dummy-client-secret', SESSION_SECRET: 'coha-s6-dummy-session-secret-at-least-32-chars' };
+// BOOT_ENV: NODE_ENV=test keeps every real GitHub/PostHog adapter unwired (no outbound traffic); WIRE_SKILL_ADAPTERS=true
+// runs the server.js wiring block that holds the `if (process.env.DATABASE_URL)` pool wiring, where the error bridge is wired.
+// The child env is built from scratch, so no real credential from this shell reaches it.
+const BOOT_ENV = { NODE_ENV: 'test', WIRE_SKILL_ADAPTERS: 'true' };
+function startServer(extraEnv) {
+  const net = require('net'); const cp = require('child_process');
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer(); probe.listen(0, '127.0.0.1', () => {
+      const port = probe.address().port; probe.close(() => {
+        const env = Object.assign({ PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, PORT: String(port) }, REQUIRED_ENV, BOOT_ENV, extraEnv);
+        const child = cp.spawn(process.execPath, [path.join(__dirname, '..', 'src', 'web-ui', 'server.js')], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+        let out = ''; let started = false;
+        const timer = setTimeout(() => { child.kill(); reject(new Error('server did not start within 30 s: ' + out.slice(-400))); }, 30000);
+        const onData = (d) => { out += d; if (!started && /listening on port/.test(out)) { started = true; clearTimeout(timer); resolve({ child, base: 'http://127.0.0.1:' + port, output: () => out }); } };
+        child.stdout.on('data', onData); child.stderr.on('data', onData);
+        child.on('exit', (code) => { if (!started) { clearTimeout(timer); reject(new Error('server exited before listening (code ' + code + '): ' + out.slice(-400))); } });
+      });
+    });
+  });
+}
+function stopServer(srv) {
+  return new Promise((resolve) => {
+    if (srv.child.exitCode !== null || srv.child.signalCode !== null) return resolve();
+    const t = setTimeout(resolve, 5000);
+    srv.child.once('exit', () => { clearTimeout(t); resolve(); });
+    srv.child.kill();
+  });
+}
+async function waitFor(fn, ms) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await new Promise((r) => setTimeout(r, 100)); } return false; }
+
+test('W1 the real startup path without a database registers /webhook/error-alert and reaches the handler (401, 405, 503 not wired, 200 staging)', async () => {
+  const srv = await startServer({ ERROR_BRIDGE_SECRET: SECRET });
+  try {
+    const J = { 'content-type': 'application/json' };
+    const wrongSecret = SECRET.slice(0, -1) + (SECRET.slice(-1) === 'a' ? 'b' : 'a');
+    assert.strictEqual((await httpRequest(srv.base, 'POST', '/webhook/error-alert', Object.assign({ [HEADER]: wrongSecret }, J), body())).status, 401, 'wrong secret');
+    assert.strictEqual((await httpRequest(srv.base, 'POST', '/webhook/error-alert', J, body())).status, 401, 'no secret header');
+    const g = await httpRequest(srv.base, 'GET', '/webhook/error-alert', {});
+    assert.strictEqual(g.status, 405); assert.strictEqual(g.headers.allow, 'POST');
+    const ok = await httpRequest(srv.base, 'POST', '/webhook/error-alert', Object.assign({ [HEADER]: SECRET }, J), body());
+    assert.strictEqual(ok.status, 503, 'no database: the store is not wired');
+    assert.ok(await waitFor(() => /Adapter not wired: error-bridge-store/.test(srv.output()), 3000), 'the server logged the store "Adapter not wired" line');
+    const st = await httpRequest(srv.base, 'POST', '/webhook/error-alert', Object.assign({ [HEADER]: SECRET }, J), body({ environment: 'staging' }));
+    assert.strictEqual(st.status, 200); assert.deepStrictEqual(JSON.parse(st.body), { ignored: 'staging' });
+    assert.strictEqual(srv.output().indexOf(SECRET), -1, 'the secret never appears in the server output');
+  } finally { await stopServer(srv); }
+});
+
+dbTest('P6 the real startup path posts a valid payload and the fake GitHub API receives path, token, title, body and label', async () => {
+  const gh = await startFakeGithub(); const pool = await freshDb(); await pool.end();
+  const srv = await startServer({ DATABASE_URL: DB_URL, ERROR_BRIDGE_SECRET: SECRET, ERROR_BRIDGE_GITHUB_TOKEN: TOKEN, ERROR_BRIDGE_REPO: 'o/r', ERROR_BRIDGE_GITHUB_API_BASE: gh.base });
+  try {
+    assert.ok(await waitFor(() => srv.output().indexOf('Error bridge GitHub adapter wired') !== -1, 3000), 'the server logged that the GitHub adapter is wired');
+    const payload = body();
+    const r = await httpRequest(srv.base, 'POST', '/webhook/error-alert', { 'content-type': 'application/json', [HEADER]: SECRET }, payload);
+    assert.strictEqual(r.status, 200);
+    const post = gh.calls.find((c) => c.method === 'POST');
+    assert.ok(post, 'the fake GitHub API received a POST');
+    assert.strictEqual(post.path, '/repos/o/r/issues'); assert.strictEqual(post.auth, 'Bearer ' + TOKEN);
+    assert.strictEqual(post.body.title, payload.code); assert.deepStrictEqual(post.body.labels, ['production-error']);
+    assert.ok(post.body.body.indexOf('PostHog issue id: ' + payload.posthog_issue_id) !== -1);
+    assert.ok(srv.output().indexOf(SECRET) === -1 && srv.output().indexOf(TOKEN) === -1, 'no secret or token in the server output');
+  } finally { await stopServer(srv); gh.srv.close(); }
+});
+dbTest('P7 two different PostHog issue ids through the real startup path give two different issues with their own titles and markers', async () => {
+  const gh = await startFakeGithub(); const pool = await freshDb(); await pool.end();
+  const srv = await startServer({ DATABASE_URL: DB_URL, ERROR_BRIDGE_SECRET: SECRET, ERROR_BRIDGE_GITHUB_TOKEN: TOKEN, ERROR_BRIDGE_REPO: 'o/r', ERROR_BRIDGE_GITHUB_API_BASE: gh.base });
+  try {
+    const a = body({ code: 'first_error_code' }); const b = body({ code: 'second_error_code' });
+    for (const p of [a, b]) assert.strictEqual((await httpRequest(srv.base, 'POST', '/webhook/error-alert', { 'content-type': 'application/json', [HEADER]: SECRET }, p)).status, 200);
+    const posts = gh.calls.filter((c) => c.method === 'POST');
+    assert.strictEqual(posts.length, 2);
+    assert.deepStrictEqual(posts.map((c) => c.body.title).sort(), ['first_error_code', 'second_error_code']);
+    posts.forEach((c) => { const own = c.body.title === a.code ? a : b; assert.ok(c.body.body.indexOf('PostHog issue id: ' + own.posthog_issue_id) !== -1); });
+  } finally { await stopServer(srv); gh.srv.close(); }
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0, skipped = 0;
