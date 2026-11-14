@@ -77,6 +77,9 @@ const { setFetchRepoPath, realFetchRepoPath }                        = require('
 const { createGuardrailPr, setGuardrailPrAdapter, realCreateGuardrailPr } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
+const { handlePostErrorBridge, setGithubIssueAdapter, setStorePool } = require('./routes/error-bridge'); // coha-s6
+const { createGithubAdapter } = require('./modules/error-bridge-github'); // coha-s6
+const _errorBridgeStore = require('./modules/error-bridge-store'); // coha-s6
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
@@ -569,6 +572,27 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('credit_audit_log table ready'); })
       .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
+    // coha-s6 -- error bridge: store pool, boot migration, and the real GitHub adapter (D37 wiring, own task).
+    // The adapter is wired only when its token and repo are configured and valid; otherwise the throwing stub stays and
+    // the route answers 503 "not wired". createGithubAdapter's error messages never hold the token or any config value.
+    setStorePool(_creditsPool);
+    _errorBridgeStore.ensureTable(_creditsPool)
+      .then(function() { console.log('production_error_issues table ready'); })
+      .catch(function(err) { console.error('production_error_issues table migration failed:', err.message); });
+    if (process.env.ERROR_BRIDGE_GITHUB_TOKEN && process.env.ERROR_BRIDGE_REPO) {
+      try {
+        setGithubIssueAdapter(createGithubAdapter({
+          token: process.env.ERROR_BRIDGE_GITHUB_TOKEN,
+          repo: process.env.ERROR_BRIDGE_REPO,
+          apiBase: process.env.ERROR_BRIDGE_GITHUB_API_BASE // test-only override; unset in production
+        }));
+        console.log('Error bridge GitHub adapter wired');
+      } catch (err) {
+        console.error('Error bridge GitHub adapter NOT wired: ' + err.message);
+      }
+    } else {
+      console.warn('Error bridge GitHub adapter NOT wired: set ERROR_BRIDGE_GITHUB_TOKEN and ERROR_BRIDGE_REPO');
+    }
     // ep1-s1 — Auto-migrate customer_journeys table (D37: no new adapter wiring --
     // queried through the same _creditsPool already wired above). SQL copied
     // verbatim from scripts/migrate-schema-journeys.js (that script is not
@@ -4241,6 +4265,11 @@ async function router(req, res) {
     // No express.json() or equivalent is used in this server (native http module).
     // The handler reads raw bytes directly from the request stream via _readRawBody().
     await handlePostStripeWebhook(req, res);
+
+  } else if (pathname === '/webhook/error-alert') {
+    // coha-s6 -- PostHog error-tracking alert -> GitHub issue. Own shared-secret verification; no session, no CSRF
+    // (PostHog cannot hold either). Any method reaches the handler so it can answer 405 itself.
+    await handlePostErrorBridge(req, res);
 
   } else if (pathname === '/billing/checkout' && req.method === 'POST') {
     // lab-s3.2 — Stripe Checkout session creation
