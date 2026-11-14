@@ -46889,7 +46889,7 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-11-13T23:45:54.892Z",
+          "updatedAt": "2026-11-14T00:28:30.080Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46967,7 +46967,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1089"
         },
         {
