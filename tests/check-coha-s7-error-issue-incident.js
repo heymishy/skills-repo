@@ -222,6 +222,90 @@ test('U13 hostile text stays inert data; control characters and over-long codes 
     assert.strictEqual(r.recognised, false); assert.strictEqual(r.reason, 'code');
   });
 });
+test('U2b recognition declines a mismatching url, a foreign host, an unsafe number and a pull request object', () => {
+  const base = mk({ number: 7 });
+  assert.strictEqual(lib.recogniseIssue(ev(base.issue), CFG).recognised, true);
+  const other = mk({ number: 7, htmlUrl: 'https://github.com/example/repo/issues/9' });
+  const r1 = lib.recogniseIssue(ev(other.issue), CFG);
+  assert.strictEqual(r1.recognised, false); assert.strictEqual(r1.reason, 'shape');
+  const host = mk({ number: 77, htmlUrl: 'https://evil.example/x/y/issues/77' });
+  const r2 = lib.recogniseIssue(ev(host.issue), CFG);
+  assert.strictEqual(r2.recognised, false); assert.strictEqual(r2.reason, 'shape');
+  const big = mk({ number: 1e300 });
+  const r3 = lib.recogniseIssue(ev(big.issue), CFG);
+  assert.strictEqual(r3.recognised, false); assert.strictEqual(r3.reason, 'shape');
+  const pr = mk();
+  pr.issue.pull_request = { url: 'https://api.github.com/repos/example/repo/pulls/77' };
+  const r4 = lib.recogniseIssue(ev(pr.issue), CFG);
+  assert.strictEqual(r4.recognised, false); assert.strictEqual(r4.reason, 'pull-request');
+});
+
+test('U3b planRecord refuses a declined result or a bad id, and free text never reaches the record plan', () => {
+  assert.throws(() => lib.planRecord({ recognised: false }), /not recognised/);
+  const m = mk();
+  const good = lib.recogniseIssue(ev(m.issue), CFG);
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { id: '../x' })));
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { recognised: undefined })));
+  const c = mk({ firstSeen: 'first ' + CANARY, environment: 'env ' + CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
+  const plan = lib.planRecord(lib.recogniseIssue(ev(c.issue), CFG));
+  assert.ok(plan.trigger.indexOf(CANARY) === -1);
+  assert.ok(plan.summary.indexOf(CANARY) === -1);
+  assert.ok(plan.tags.join(',').indexOf(CANARY) === -1);
+});
+
+test('U5 the pull request text holds only the code and the issue number; the hand-off holds only fixed fields', () => {
+  const m = mk({ title: 'my_error', firstSeen: CANARY, environment: CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
+  const r = lib.recogniseIssue(ev(m.issue), CFG);
+  assert.strictEqual(r.recognised, true);
+  const pr = lib.buildPullRequest(r);
+  assert.ok(pr.title.indexOf('my_error') !== -1 && pr.title.indexOf('#77') !== -1);
+  assert.ok(pr.body.indexOf('my_error') !== -1 && pr.body.indexOf('#77') !== -1);
+  assert.ok(pr.title.indexOf(CANARY) === -1 && pr.body.indexOf(CANARY) === -1);
+  assert.ok(pr.title.indexOf('\n') === -1 && pr.title.length <= 200);
+  assert.ok(JSON.stringify(planOf(m)).indexOf(CANARY) === -1, 'the plan handed to the record job carries none of the free text');
+});
+
+test('U14 the idempotency decision and its three distinct reasons', () => {
+  const id = crypto.randomUUID();
+  const branch = 'incident/posthog-' + id;
+  const rec = (tags) => ({ id: 'r', type: 'incident', tags: tags });
+  const decide = (f) => lib.decideIdempotency(Object.assign({ id: id, records: [], branches: [], openPullRequests: [] }, f));
+  assert.deepStrictEqual(decide({ records: [rec(['production-error', 'posthog:' + id])] }), { action: 'skip', reason: 'already-recorded' });
+  assert.strictEqual(decide({ records: [rec(['posthog:' + id + '-x']), rec(['xposthog:' + id])] }).action, 'open');
+  assert.deepStrictEqual(decide({ branches: [branch] }), { action: 'skip', reason: 'branch-exists' });
+  assert.deepStrictEqual(decide({ openPullRequests: [{ headRefName: branch }] }), { action: 'skip', reason: 'pr-open' });
+  assert.strictEqual(decide({ branches: [branch], openPullRequests: [{ headRefName: branch }] }).reason, 'pr-open');
+  assert.deepStrictEqual(decide({}), { action: 'open', reason: 'new' });
+  assert.strictEqual(new Set(['already-recorded', 'branch-exists', 'pr-open']).size, 3);
+  const m = mk({ id: id });
+  const p = planOf(m, { branches: [branch] });
+  assert.strictEqual(p.action, 'skip'); assert.strictEqual(p.reason, 'branch-exists'); assert.strictEqual(p.record, null);
+});
+
+test('U14b the rebuild switch lifts only the branch and pull request skips', () => {
+  const id = crypto.randomUUID();
+  const branch = 'incident/posthog-' + id;
+  const decide = (f) => lib.decideIdempotency(Object.assign({ id: id, records: [], branches: [], openPullRequests: [] }, f), { rebuild: true });
+  assert.deepStrictEqual(decide({ branches: [branch] }), { action: 'rebuild', reason: 'rebuild' });
+  assert.deepStrictEqual(decide({ openPullRequests: [{ headRefName: branch }] }), { action: 'rebuild', reason: 'rebuild' });
+  assert.deepStrictEqual(decide({ records: [{ tags: ['posthog:' + id] }], branches: [branch] }), { action: 'skip', reason: 'already-recorded' });
+  assert.deepStrictEqual(decide({}), { action: 'open', reason: 'new' });
+  const m = mk({ id: id });
+  const p = planOf(m, { branches: [branch] }, { rebuild: true });
+  assert.strictEqual(p.action, 'rebuild'); assert.strictEqual(p.branch, branch); assert.ok(p.pullRequest && p.record);
+  const d = planOf(m, { branches: [branch] }, { rebuild: true, dryRun: true });
+  assert.strictEqual(d.action, 'dry-run'); assert.strictEqual(d.reason, 'would-rebuild');
+});
+
+test('U15 a closed pull request: a gone branch allows a new attempt, a present branch still skips', () => {
+  const id = crypto.randomUUID();
+  const branch = 'incident/posthog-' + id;
+  const m = mk({ id: id });
+  assert.strictEqual(planOf(m, { branches: [], openPullRequests: [] }).action, 'open');
+  const p = planOf(m, { branches: [branch], openPullRequests: [] });
+  assert.strictEqual(p.action, 'skip'); assert.strictEqual(p.reason, 'branch-exists');
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0;

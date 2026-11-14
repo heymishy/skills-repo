@@ -33,7 +33,7 @@ function lineValue(lines, prefix) {
 function recogniseIssue(event, config) {
   const issue = normaliseEvent(event).issue;
   const isObj = issue !== null && typeof issue === 'object';
-  const number = isObj && Number.isInteger(issue.number) && issue.number > 0 ? issue.number : null;
+  const number = isObj && Number.isSafeInteger(issue.number) && issue.number > 0 ? issue.number : null;
   const decline = (reason) => ({ recognised: false, reason: reason, issueNumber: number });
   if (!isObj) return decline('shape');
   if (Object.prototype.hasOwnProperty.call(issue, 'pull_request')) return decline('pull-request');
@@ -55,7 +55,7 @@ function recogniseIssue(event, config) {
   if (!UUID_RE.test(id)) return decline('id');
 
   if (number === null) return decline('shape');
-  if (typeof issue.html_url !== 'string' || !ISSUE_URL_RE.test(issue.html_url)) return decline('shape');
+  if (typeof issue.html_url !== 'string' || !ISSUE_URL_RE.test(issue.html_url) || !issue.html_url.endsWith('/issues/' + number)) return decline('shape');
   if (codeProblem(issue.title) !== null) return decline('code');
 
   return {
@@ -77,6 +77,7 @@ function branchNameFor(id) {
 
 // The record fields handed to the existing incident recorder. Nothing but the fixed fields.
 function planRecord(r) {
+  if (!r || r.recognised !== true || typeof r.id !== 'string' || !UUID_RE.test(r.id)) throw new Error('not recognised');
   return {
     trigger: 'GitHub issue ' + r.issueUrl + ' (PostHog issue id ' + r.id + ')',
     summary: r.code,
@@ -84,7 +85,67 @@ function planRecord(r) {
   };
 }
 
+// Title and body use only the fixed code (inline code, one line, backticks replaced) and the issue number.
+function buildPullRequest(r) {
+  const safe = String(r.code).replace(/`/g, "'");
+  return {
+    title: 'Incident record for `' + safe + '` (issue #' + r.issueNumber + ')',
+    body: 'Adds one incident record for `' + safe + '` from issue #' + r.issueNumber + '. It exists only on this pull request until it is merged.'
+  };
+}
+
+// facts: { id, records, branches, openPullRequests }; options: { rebuild }.
+// A record already on master always skips; the rebuild switch lifts only the branch and pull request skips.
+function decideIdempotency(facts, options) {
+  const f = facts || {};
+  const o = options || {};
+  const tag = 'posthog:' + f.id;
+  const records = Array.isArray(f.records) ? f.records : [];
+  if (records.some((r) => r && Array.isArray(r.tags) && r.tags.indexOf(tag) !== -1)) return { action: 'skip', reason: 'already-recorded' };
+  const branch = branchNameFor(f.id);
+  const branches = Array.isArray(f.branches) ? f.branches : [];
+  const prs = Array.isArray(f.openPullRequests) ? f.openPullRequests : [];
+  const prOpen = prs.some((p) => p && p.headRefName === branch);
+  const branchExists = branches.indexOf(branch) !== -1;
+  if (prOpen || branchExists) {
+    if (o.rebuild) return { action: 'rebuild', reason: 'rebuild' };
+    return { action: 'skip', reason: prOpen ? 'pr-open' : 'branch-exists' };
+  }
+  return { action: 'open', reason: 'new' };
+}
+
+// input: { event, config: { bridgeAuthor }, facts: { records, branches, openPullRequests }, options: { rebuild, dryRun } }
+// Returns a plan: { action: decline | skip | open | rebuild | dry-run, reason, issueNumber, id, branch, code, issueUrl, record, pullRequest }.
+function planRun(input) {
+  const options = input.options || {};
+  const r = recogniseIssue(input.event, input.config);
+  if (!r.recognised) {
+    return { action: 'decline', reason: r.reason, issueNumber: r.issueNumber, id: null, branch: null, code: null, issueUrl: null, record: null, pullRequest: null };
+  }
+  const facts = input.facts || {};
+  const branch = branchNameFor(r.id);
+  const common = { issueNumber: r.issueNumber, id: r.id, branch: branch, code: r.code, issueUrl: r.issueUrl };
+  const idem = decideIdempotency({ id: r.id, records: facts.records, branches: facts.branches, openPullRequests: facts.openPullRequests }, options);
+  if (idem.action === 'skip') return Object.assign({ action: 'skip', reason: idem.reason, record: null, pullRequest: null }, common);
+  const record = planRecord(r);
+  const pullRequest = buildPullRequest(r);
+  if (options.dryRun) return Object.assign({ action: 'dry-run', reason: idem.action === 'rebuild' ? 'would-rebuild' : 'would-open', record: record, pullRequest: pullRequest }, common);
+  return Object.assign({ action: idem.action, reason: idem.reason, record: record, pullRequest: pullRequest }, common);
+}
+
+// The record job never trusts the plan it receives: it re-checks every field it uses.
+function validatePlanForBuild(plan) {
+  if (!plan || typeof plan !== 'object') throw new Error('bad plan');
+  if (plan.action !== 'open' && plan.action !== 'rebuild') throw new Error('nothing to build');
+  if (typeof plan.id !== 'string' || !UUID_RE.test(plan.id)) throw new Error('bad id');
+  if (!Number.isSafeInteger(plan.issueNumber) || plan.issueNumber <= 0) throw new Error('bad issue number');
+  if (typeof plan.issueUrl !== 'string' || !ISSUE_URL_RE.test(plan.issueUrl) || !plan.issueUrl.endsWith('/issues/' + plan.issueNumber)) throw new Error('bad issue url');
+  if (codeProblem(plan.code) !== null) throw new Error('bad code');
+  return { action: plan.action, id: plan.id, code: plan.code, issueNumber: plan.issueNumber, issueUrl: plan.issueUrl };
+}
+
 module.exports = {
   LABEL, MARKER_PREFIX, BRANCH_PREFIX, UUID_RE, ISSUE_URL_RE, MAX_CODE,
-  codeProblem, normaliseEvent, recogniseIssue, branchNameFor, planRecord
+  codeProblem, normaliseEvent, recogniseIssue, branchNameFor, planRecord,
+  buildPullRequest, decideIdempotency, planRun, validatePlanForBuild
 };
