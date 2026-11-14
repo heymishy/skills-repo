@@ -604,6 +604,123 @@ test('N2 a failed run leaves nothing half done', () => {
   assert.ok(badPlanEnv.stderr.indexOf(CANARY) === -1 && badPlanEnv.stdout.indexOf(CANARY) === -1, 'plan text not echoed');
 });
 
+// ---- product page harness (the same approach as tests/check-itar-s3-web-ui-rendering.js) ----
+function freshRequire(p) { delete require.cache[require.resolve(p)]; return require(p); }
+const PRODUCTS_ROUTE_PATH = path.join(ROOT, 'src/web-ui/routes/products.js');
+const FETCHER_PATH = path.join(ROOT, 'src/web-ui/adapters/artefact-fetcher.js');
+const MODULES_ADAPTER_PATH = path.join(ROOT, 'src/web-ui/adapters/modules-adapter.js');
+function makePool(owner, repo) {
+  return { query: async function (sql) {
+    if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: owner, repo_name: repo }] };
+    return { rows: [] };
+  } };
+}
+async function renderPageWith(rawIncidents) {
+  const realFetch = global.fetch;
+  global.fetch = async function (url) {
+    if (String(url).endsWith('/contents/workspace/incidents.json')) {
+      return { status: 200, ok: true, json: async function () { return { type: 'file', encoding: 'base64', content: Buffer.from(rawIncidents, 'utf8').toString('base64').replace(/(.{60})/g, '$1\n') }; } };
+    }
+    return { status: 404, ok: false, json: async function () { return { message: 'Not Found' }; } };
+  };
+  try {
+    const route = freshRequire(PRODUCTS_ROUTE_PATH);
+    const fetcher = require(FETCHER_PATH);
+    fetcher.setFetchRepoPath(fetcher.realFetchRepoPath);
+    require(MODULES_ADAPTER_PATH).setModulesAdapter({ query: async function () { return { rows: [] }; } });
+    let html = null;
+    const res = { writeHead: function () {}, end: function (b) { html = b; } };
+    const req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'u', accessToken: 'tok-123' } };
+    await route.handleGetProductView(req, res, null, makePool('acme', 'repo'));
+    return html;
+  } finally { global.fetch = realFetch; }
+}
+function buildRecord(m, s) {
+  assert.strictEqual(run(planArgs(s)).status, 0);
+  assert.strictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', s.out + '2'], { PLAN_JSON: readOut(s.out).plan }).status, 0);
+}
+
+test('I2 the product page renders the new record as one distinct item, with its text escaped', async () => {
+  const m = mk({ title: 'tenant_admin_bootstrap_failed' });
+  const s = cliSetup(m);
+  buildRecord(m, s);
+  const html = await renderPageWith(fs.readFileSync(s.incidents, 'utf8'));
+  assert.strictEqual((html.match(/data-incident-item/g) || []).length, 3, 'one item per record');
+  assert.ok(html.indexOf('tenant_admin_bootstrap_failed') !== -1);
+  assert.ok(/Status: open/.test(html));
+  const m2 = mk({ title: '<b>x</b>' });
+  const s2 = cliSetup(m2);
+  buildRecord(m2, s2);
+  const html2 = await renderPageWith(fs.readFileSync(s2.incidents, 'utf8'));
+  assert.ok(html2.indexOf('&lt;b&gt;x&lt;/b&gt;') !== -1 && html2.indexOf('<b>x</b>') === -1, 'the code appears as plain characters');
+});
+
+test('I3 the existing store loads and validates the new record', () => {
+  const m = mk();
+  const s = cliSetup(m);
+  buildRecord(m, s);
+  const loaded = store.loadIncidentRecords(s.incidents);
+  assert.strictEqual(loaded.length, 3);
+  assert.deepStrictEqual(store.withDefaultType(loaded[2]), loaded[2]);
+  loaded.forEach((r) => assert.doesNotThrow(() => store.validateRecord(r)));
+  assert.strictEqual(store.loadRecords(s.incidents).length, 3);
+});
+
+function git(cwd, args) { const r = cp.spawnSync('git', args, { cwd: cwd, encoding: 'utf8' }); return { status: r.status, out: (r.stdout || '') + (r.stderr || ''), stdout: r.stdout || '' }; }
+function gitOk(cwd, args) { const r = git(cwd, args); assert.strictEqual(r.status, 0, 'git ' + args.join(' ') + ': ' + r.out); return r; }
+
+test('I4 two branches from one base conflict; a rebuild from the current master merges cleanly', () => {
+  const dir = tmpDir();
+  const origin = path.join(dir, 'origin.git');
+  const work = path.join(dir, 'work');
+  gitOk(dir, ['init', '--bare', origin]);
+  gitOk(origin, ['symbolic-ref', 'HEAD', 'refs/heads/master']);
+  gitOk(dir, ['clone', origin, work]);
+  gitOk(work, ['config', 'user.name', 'test']); gitOk(work, ['config', 'user.email', 'test@example.com']);
+  gitOk(work, ['checkout', '-B', 'master']);
+  fs.mkdirSync(path.join(work, 'workspace'));
+  const file = path.join(work, 'workspace', 'incidents.json');
+  fs.copyFileSync(seedFile(tmpDir()), file);
+  gitOk(work, ['add', '.']); gitOk(work, ['commit', '-m', 'seed']); gitOk(work, ['push', 'origin', 'master']);
+
+  const recordOn = (m, action, facts) => {
+    const branch = 'incident/posthog-' + m.id;
+    gitOk(work, ['fetch', 'origin']);
+    gitOk(work, ['checkout', '-B', branch, 'origin/master']);
+    const plan = lib.planRun({ event: ev(m.issue), config: CFG, facts: Object.assign({ records: [], branches: [], openPullRequests: [] }, facts || {}), options: { rebuild: action === 'rebuild' } });
+    assert.strictEqual(plan.action, action);
+    assert.strictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', file], { PLAN_JSON: JSON.stringify(plan) }).status, 0);
+    gitOk(work, ['add', 'workspace/incidents.json']); gitOk(work, ['commit', '-m', 'record ' + m.id]);
+    return branch;
+  };
+  const a = mk({ title: 'error_a', number: 11 }), b = mk({ title: 'error_b', number: 12 });
+  const branchA = recordOn(a, 'open');
+  gitOk(work, ['push', 'origin', 'HEAD:refs/heads/' + branchA]);
+  const branchB = recordOn(b, 'open');
+  gitOk(work, ['push', 'origin', 'HEAD:refs/heads/' + branchB]);
+
+  gitOk(work, ['checkout', 'master']);
+  gitOk(work, ['merge', '--no-ff', '-m', 'merge a', branchA]);
+  gitOk(work, ['push', 'origin', 'master']);
+  const clash = git(work, ['merge', '--no-ff', '-m', 'merge b', branchB]);
+  assert.notStrictEqual(clash.status, 0, 'merging the second record after the first conflicts, which is why a rebuild exists');
+  git(work, ['merge', '--abort']);
+
+  const rebuilt = recordOn(b, 'rebuild', { branches: [branchB] });
+  assert.strictEqual(rebuilt, branchB);
+  const push = git(work, ['push', '--force-with-lease', 'origin', 'HEAD:refs/heads/' + branchB]);
+  assert.strictEqual(push.status, 0, push.out);
+  const remote = gitOk(work, ['ls-remote', '--heads', 'origin', branchB]).stdout.trim().split('\n').filter(Boolean);
+  assert.strictEqual(remote.length, 1, 'exactly one branch for B on the origin');
+  assert.ok(remote[0].indexOf(gitOk(work, ['rev-parse', 'HEAD']).stdout.trim()) === 0, 'its tip is the rebuilt commit');
+
+  gitOk(work, ['checkout', 'master']);
+  gitOk(work, ['merge', '--no-ff', '-m', 'merge rebuilt b', branchB]);
+  const final = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.strictEqual(final.length, 4);
+  [a, b].forEach((m) => assert.strictEqual(final.filter((r) => r.tags.indexOf('posthog:' + m.id) !== -1).length, 1));
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0;
