@@ -91,3 +91,16 @@ Added after the production-error-source spike replaced the log scan with PostHog
 | Cost | Within PostHog's free allowance | 100,000 exceptions per month; one event per error is asserted | coha-s5 |
 
 **Data classification (unchanged):** Internal. Raw error text may contain tenant data inside the running app; the stories require it to be removed before anything leaves the app.
+
+## Additions 2026-11-14 (coha-s7, after the pull-request delivery design and its test plan)
+
+| Category | NFR | Requirement | Applies to story |
+|----------|-----|-------------|-----------------|
+| Security | Only a bridge-opened production error issue can create a record | Recognised only when the issue carries the `production-error` label at opening, its author equals the bridge account (exact match, an unset variable recognises nothing) and its body holds a whole-line `PostHog issue id: <lowercase uuid>` marker; title or body text alone never counts; tested by U6 to U12 | coha-s7 |
+| Security | No untrusted issue text is executed, and nothing can be pushed to or merged into `master` | Issue text reaches the script as data from a file, never in a shell command or workflow expression; the pull request shows the code only in inline code; every push targets a validated `incident/posthog-` branch; no merge, approve or ready step; tested by U13, U18, W4, W5 | coha-s7 |
+| Security | Least privilege and no outside code | The recognise job has contents read and issues read only, the record job contents write and pull-requests write only; only `actions/checkout`; no credential in a tracked file (W2, W8, W12) | coha-s7 |
+| Audit | Every attempt is visible in the run log without echoing issue text | One result line per attempt (opened, skipped with one of three reasons, declined with a reason, dry run) carrying a fixed reason and the issue number only (N1) | coha-s7 |
+| Reliability | One record pull request per error, never lost, never duplicated | Idempotent on the PostHog id (a record on master, an existing branch or an open pull request skips); one concurrency group per issue number so a simultaneous error is never cancelled; a conflicted record is rebuilt by a hand start with the rebuild switch; a failed run leaves nothing half done (AC2, AC7, N2) | coha-s7 |
+| Compliance | Audit records reach `main` only through the operator's merge | The record exists only on its pull request until the operator merges it with the admin bypass (decisions.md 2026-11-14); one-file workflow accepted as a RISK-ACCEPT against ADR-009 | coha-s7 |
+
+**Data classification (coha-s7):** Internal. The record holds the fixed error code, first-seen time, environment and PostHog link already published in a public issue by coha-s6; no tenant data, message text or stack.

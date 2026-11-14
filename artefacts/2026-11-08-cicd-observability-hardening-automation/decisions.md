@@ -253,6 +253,30 @@
 **Made by:** Claude Sonnet 5.5 (recommended), awaiting operator decision at DoR.
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s7 definition of ready: three refinements accepted and written into the story**
+**Decision:** (a) The workflow uses one concurrency group per issue number with cancel-in-progress false instead of a single shared group; (b) the bridge author login is compared exactly, letter case included, and an unset or empty variable recognises nothing; (c) the pull request title and body show the error code only inside inline code formatting on one line with any backtick replaced.
+**Rationale:** (a) GitHub keeps at most one running and one pending run per group and cancels an older pending run, so a shared group loses a record when three issues arrive together; each issue builds its own branch from the current master and the idempotency check covers a repeat run, so runs for different issues need no serialising. (b) fails closed on a misconfigured variable. (c) a hostile or odd code cannot notify anyone or render as markup.
+**Made by:** Claude Sonnet 5.5 (recommended), accepted by Hamish King (Platform Owner), 2026-11-14. The story's constraints and a "DoR amendments" section carry the text; review runs 4 and 5 cover them.
+---
+**2026-11-14 | SCOPE | coha-s7 gains a ninth acceptance criterion: a live non-dry run on a test issue**
+**Decision:** AC9 is added: a live, non-dry run by hand on a test issue opened by the bridge account creates exactly one branch and one data-only pull request, a repeat creates nothing, and the operator then closes the pull request unmerged, deletes the branch and closes the issue. It is live-verified evidence and needs the operator's approval immediately before the run.
+**Context:** No test and no other acceptance criterion exercises the real branch push and pull request creation by the workflow's token (AC8 is a dry run). I recommended a RISK-ACCEPT plus an optional post-merge run; the operator chose to make it an acceptance criterion instead.
+**Consequence:** The story was amended and re-reviewed (review run 4 failed on one HIGH, the live check set-up order, which was fixed; run 5 passed); the verification script's scenario 9 is now required; the definition of done for coha-s7 cannot be complete until the AC8 and AC9 live evidence exists, in the same way as coha-s6's AC6.
+**Made by:** Hamish King (Platform Owner), 2026-11-14.
+---
+**2026-11-14 | RISK-ACCEPT | coha-s7: one workflow file instead of the two ADR-009 asks for**
+**Decision:** The recognise job and the record job live in one workflow file, with job-level permissions (the recognise job reads contents only; the record job has contents write and pull-requests write and no issues permission). This deviates from ADR-009 (evaluation and write-back workflows as separate triggers with separate permission scopes).
+**Rationale:** ADR-009 exists to prevent a write-back workflow re-triggering its own evaluation. Here the trigger is an issue being opened, and a branch push or pull request made with the workflow's own token starts no other workflow, so the loop cannot occur; the permission separation ADR-009 wants is achieved with two jobs, and one file is simpler to test (tests W2, W3, W6).
+**Revisit trigger:** a personal access token or app token is ever used to open the pull request (that would start other workflows), or a second trigger is added to the file.
+**Made by:** Claude Sonnet 5.5 (recommended), accepted by Hamish King (Platform Owner), 2026-11-14.
+---
+**2026-11-14 | DECISION | coha-s7: Actions may create pull requests, and each record pull request is merged by the operator with the admin bypass**
+**Decision:** The repository setting that lets GitHub Actions create pull requests stays on (read from GitHub on 2026-11-13 and 2026-11-14: can_approve_pull_request_reviews true, default workflow permission read). The operator accepts merging each record pull request personally with the admin bypass, because GitHub does not run the three required checks (Run assurance gate, Scenario A and B end to end) on a pull request created with a workflow's own token.
+**Revisit trigger:** incident volume makes a conscious bypass merge per record a burden; then consider a batched record or a token that triggers the checks.
+**Made by:** Hamish King (Platform Owner), 2026-11-14.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

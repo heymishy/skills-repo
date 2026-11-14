@@ -46978,17 +46978,17 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
           "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-11-14T00:34:02.661Z",
+          "updatedAt": "2026-11-14T01:08:12.256Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "blocker": "",
           "testPlan": {
             "status": "written",
-            "totalTests": 38,
+            "totalTests": 39,
             "passing": 0,
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s7-incident-record-from-production-error-issue-test-plan.md"
           },
-          "acTotal": 8,
+          "acTotal": 9,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false"
