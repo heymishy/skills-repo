@@ -284,6 +284,14 @@
 **Revisit trigger:** a live scenario (8 or 9) failing for a reason the script did not anticipate.
 ---
 
+---
+**2026-11-14 | RISK-ACCEPT | coha-s7 branch-setup: baseline of 3 pre-existing test failures acknowledged**
+**Decision:** coha-s7 proceeds past a baseline with 3 failing files (852 run, master 4d3d1e351, Git Bash first on PATH, PowerShell 7): scripts/check-pipeline-state-integrity.js (tfhc-s1 is merged with testPlan.passing 4 of 5 because its fifth test fails on accepted product bug GitHub issue 1042), tests/check-pcr-s1-test-runner.js (per-file timing against a limit set from a 2026-07-11 baseline on another machine) and tests/check-p3.5-validate-trace.js (a PowerShell child process killed under full-suite load: "validate-trace.ps1 --ci exited null"; it passed 3 of 3 runs alone and in both of the last two full runs). All three were already in the set acknowledged for coha-s6 on 2026-11-14.
+**Rationale:** None touches the incident record workflow, script or tests. One is an accurate record of an accepted defect, one a stale machine-specific threshold, one an intermittent load-induced timeout.
+**Made by:** Claude Sonnet 5.5 (recommended), acknowledged by Hamish King (Platform Owner), 2026-11-14.
+**Revisit trigger:** as for coha-s6: fix issue 1042 or add an integrity-check exception for tfhc-s1; re-baseline the pcr-s1 threshold; make the p3.5 PowerShell test tolerant of a slow start. Verification runs with Git Bash first on PATH.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
