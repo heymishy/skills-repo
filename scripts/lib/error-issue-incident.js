@@ -75,34 +75,36 @@ function branchNameFor(id) {
   return BRANCH_PREFIX + id;
 }
 
-// The record fields handed to the existing incident recorder. Nothing but the fixed fields.
-// Field-based guard: accepts a recogniseIssue result or a validatePlanForBuild result, nothing else.
+// Validates a recogniseIssue or validatePlanForBuild result and returns a plain copy of the four fields; callers use only the copy.
 function assertFields(r) {
-  if (!r || typeof r !== 'object' ||
-      typeof r.id !== 'string' || !UUID_RE.test(r.id) ||
-      codeProblem(r.code) !== null ||
-      !Number.isSafeInteger(r.issueNumber) || r.issueNumber <= 0 ||
-      typeof r.issueUrl !== 'string' || !ISSUE_URL_RE.test(r.issueUrl) || !r.issueUrl.endsWith('/issues/' + r.issueNumber)) {
+  if (!r || typeof r !== 'object') throw new Error('not recognised');
+  const c = { id: r.id, code: r.code, issueNumber: r.issueNumber, issueUrl: r.issueUrl };
+  if (typeof c.id !== 'string' || !UUID_RE.test(c.id) ||
+      codeProblem(c.code) !== null ||
+      !Number.isSafeInteger(c.issueNumber) || c.issueNumber <= 0 ||
+      typeof c.issueUrl !== 'string' || !ISSUE_URL_RE.test(c.issueUrl) || !c.issueUrl.endsWith('/issues/' + c.issueNumber)) {
     throw new Error('not recognised');
   }
+  return c;
 }
 
+// The record fields handed to the existing incident recorder. Nothing but the fixed fields.
 function planRecord(r) {
-  assertFields(r);
+  const c = assertFields(r);
   return {
-    trigger: 'GitHub issue ' + r.issueUrl + ' (PostHog issue id ' + r.id + ')',
-    summary: r.code,
-    tags: [LABEL, 'posthog:' + r.id]
+    trigger: 'GitHub issue ' + c.issueUrl + ' (PostHog issue id ' + c.id + ')',
+    summary: c.code,
+    tags: [LABEL, 'posthog:' + c.id]
   };
 }
 
 // Title and body use only the fixed code (inline code, one line, backticks replaced) and the issue number.
 function buildPullRequest(r) {
-  assertFields(r);
-  const safe = String(r.code).replace(/`/g, "'");
+  const c = assertFields(r);
+  const safe = c.code.replace(/`/g, "'");
   return {
-    title: 'Incident record for `' + safe + '` (issue #' + r.issueNumber + ')',
-    body: 'Adds one incident record for `' + safe + '` from issue #' + r.issueNumber + '. It exists only on this pull request until it is merged.'
+    title: 'Incident record for `' + safe + '` (issue #' + c.issueNumber + ')',
+    body: 'Adds one incident record for `' + safe + '` from issue #' + c.issueNumber + '. It exists only on this pull request until it is merged.'
   };
 }
 

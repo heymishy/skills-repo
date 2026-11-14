@@ -238,7 +238,7 @@ test('U2b recognition declines a mismatching url, a foreign host, an unsafe numb
   const r5 = lib.recogniseIssue(ev(huge.issue), CFG);
   assert.strictEqual(r5.recognised, false); assert.strictEqual(r5.reason, 'shape');
   const pr = mk();
-  pr.issue.pull_request ={ url: 'https://api.github.com/repos/example/repo/pulls/77' };
+  pr.issue.pull_request = { url: 'https://api.github.com/repos/example/repo/pulls/77' };
   const r4 = lib.recogniseIssue(ev(pr.issue), CFG);
   assert.strictEqual(r4.recognised, false); assert.strictEqual(r4.reason, 'pull-request');
 });
@@ -247,10 +247,21 @@ test('U3b planRecord refuses a declined result or a bad id, and free text never 
   assert.throws(() => lib.planRecord({ recognised: false }), /not recognised/);
   const m = mk();
   const good = lib.recogniseIssue(ev(m.issue), CFG);
-  assert.throws(() => lib.planRecord(Object.assign({}, good, { id: '../x' })));
-  assert.throws(() => lib.planRecord(Object.assign({}, good, { code: 'a\nb' })));
-  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueUrl: 'https://github.com/example/repo/issues/9' })));
-  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueNumber: 2 ** 53 })));
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { id: '../x' })), /not recognised/);
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { code: 'a\nb' })), /not recognised/);
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueUrl: 'https://github.com/example/repo/issues/9' })), /not recognised/);
+  // matching url, so only the safe-integer rule can reject this one
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueNumber: 2 ** 53, issueUrl: 'https://github.com/example/repo/issues/9007199254740992' })), /not recognised/);
+  // a getter that changes its answer on each read must not slip text past the check
+  let reads = 0;
+  const sneaky = { id: good.id, issueNumber: good.issueNumber, issueUrl: good.issueUrl, get code() { reads += 1; return reads === 1 ? 'ok' : 'evil\nline'; } };
+  let sneakyPlan = null;
+  try { sneakyPlan = lib.planRecord(sneaky); } catch (e) { assert.match(e.message, /not recognised/); }
+  if (sneakyPlan !== null) assert.strictEqual(sneakyPlan.summary, 'ok');
+  reads = 0;
+  let sneakyPr = null;
+  try { sneakyPr = lib.buildPullRequest(sneaky); } catch (e) { assert.match(e.message, /not recognised/); }
+  if (sneakyPr !== null) assert.ok(sneakyPr.title.indexOf('evil') === -1 && sneakyPr.body.indexOf('evil') === -1);
   assert.throws(() => lib.buildPullRequest({ recognised: false }), /not recognised/);
   assert.throws(() => lib.buildPullRequest(Object.assign({}, good, { id: '../x' })), /not recognised/);
   // regression: the object validatePlanForBuild returns has no recognised flag and must be accepted
@@ -258,7 +269,7 @@ test('U3b planRecord refuses a declined result or a bad id, and free text never 
   assert.strictEqual('recognised' in validated, false);
   assert.deepStrictEqual(lib.planRecord(validated), lib.planRecord(good));
   assert.deepStrictEqual(lib.buildPullRequest(validated), lib.buildPullRequest(good));
-  const c =mk({ firstSeen: 'first ' + CANARY, environment: 'env ' + CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
+  const c = mk({ firstSeen: 'first ' + CANARY, environment: 'env ' + CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
   const plan = lib.planRecord(lib.recogniseIssue(ev(c.issue), CFG));
   assert.ok(plan.trigger.indexOf(CANARY) === -1);
   assert.ok(plan.summary.indexOf(CANARY) === -1);
@@ -269,14 +280,16 @@ test('U3c validatePlanForBuild never trusts the plan it receives', () => {
   const id = crypto.randomUUID();
   const url = 'https://github.com/example/repo/issues/7';
   const good = { action: 'open', id: id, code: 'my_error', issueNumber: 7, issueUrl: url };
-  const bad = (over) => assert.throws(() => lib.validatePlanForBuild(Object.assign({}, good, over)), 'should throw for ' + JSON.stringify(over));
-  ['dry-run', 'skip', 'decline'].forEach((a) => bad({ action: a }));
-  bad({ id: id.toUpperCase() }); bad({ id: '../x' });
-  bad({ issueNumber: '7' }); bad({ issueNumber: 7.5 }); bad({ issueNumber: 0 }); bad({ issueNumber: 2 ** 53 });
-  bad({ issueUrl: 'https://github.com/example/repo/issues/17' });
-  bad({ issueUrl: 'https://evil.example/x/y/issues/7' });
-  bad({ code: 'a\nb' }); bad({ code: 'x'.repeat(121) });
-  [null, undefined, 'plan', 7].forEach((p) => assert.throws(() => lib.validatePlanForBuild(p)));
+  const bad = (over, re) => assert.throws(() => lib.validatePlanForBuild(Object.assign({}, good, over)), re);
+  ['dry-run', 'skip', 'decline'].forEach((a) => bad({ action: a }, /nothing to build/));
+  bad({ id: id.toUpperCase() }, /bad id/); bad({ id: '../x' }, /bad id/);
+  bad({ issueNumber: '7' }, /bad issue number/); bad({ issueNumber: 7.5 }, /bad issue number/); bad({ issueNumber: 0 }, /bad issue number/);
+  // matching url, so only the safe-integer rule can reject this one
+  bad({ issueNumber: 2 ** 53, issueUrl: 'https://github.com/example/repo/issues/9007199254740992' }, /bad issue number/);
+  bad({ issueUrl: 'https://github.com/example/repo/issues/17' }, /bad issue url/);
+  bad({ issueUrl: 'https://evil.example/x/y/issues/7' }, /bad issue url/);
+  bad({ code: 'a\nb' }, /bad code/); bad({ code: 'x'.repeat(121) }, /bad code/);
+  [null, undefined, 'plan', 7].forEach((p) => assert.throws(() => lib.validatePlanForBuild(p), /bad plan/));
   const out = lib.validatePlanForBuild(Object.assign({}, good, { action: 'rebuild', branch: '../x', record: {} }));
   assert.deepStrictEqual(Object.keys(out).sort(), ['action', 'code', 'id', 'issueNumber', 'issueUrl']);
   assert.strictEqual(out.action, 'rebuild');
