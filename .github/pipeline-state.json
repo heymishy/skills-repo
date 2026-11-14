@@ -46887,9 +46887,9 @@
           "name": "Alert-to-GitHub-issue bridge for new production error issues",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-14T00:28:30.080Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-14T19:10:51.892Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46903,7 +46903,7 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "blocker": "",
+          "blocker": "Post-merge live checks outstanding: AC6 live PostHog run and AC9 first real production error; operator secrets, label and PostHog destination not yet set",
           "tasks": [
             {
               "id": "task-1",
@@ -46968,7 +46968,9 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1089"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1089",
+          "dodStatus": "complete",
+          "releaseReady": false
         },
         {
           "id": "coha-s7",
@@ -46976,12 +46978,12 @@
           "name": "Incident record pull request opened for each bridge-opened production error GitHub issue",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-11-14T19:00:37.612Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-11-14T19:10:52.126Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "blocker": "",
+          "blocker": "Post-merge live checks outstanding: AC8 dry run and AC9 real run; ERROR_BRIDGE_AUTHOR variable not yet created",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 44,
@@ -47038,8 +47040,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1090"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1090",
+          "dodStatus": "complete",
+          "releaseReady": false
         }
       ],
       "guardrails": [
