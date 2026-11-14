@@ -2,7 +2,7 @@
 
 **Story:** artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md
 **Date:** 2026-11-14
-**Status:** PROPOSED, awaiting sign-off by Hamish King, Platform Owner
+**Status:** APPROVED by Hamish King, Platform Owner, 2026-11-14
 **schemaDepends:** [prStatus, dodStatus] (both present in `.github/pipeline-state.schema.json`; the upstream story coha-s6 is `prStatus: merged`, pull request 1089, and its definition of done is not yet written)
 
 **What will be built:**

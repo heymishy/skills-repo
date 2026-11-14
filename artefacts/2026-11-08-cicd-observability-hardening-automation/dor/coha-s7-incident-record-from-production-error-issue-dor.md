@@ -6,7 +6,7 @@
 **Review:** PASS, run 5 (artefacts/2026-11-08-cicd-observability-hardening-automation/review/coha-s7-review-5.md), 0 HIGH, 0 MEDIUM, 4 LOW (three fixed in the story, one carried to the test plan). Run 4 of the same amendments FAILED on one HIGH (the live check set-up order), which was fixed. Runs 4 and 5 were written by an independent reviewer agent, not by the author.
 **Assessed by:** Claude Sonnet 5.5
 **Date:** 2026-11-14
-**Status:** AWAITING SIGN-OFF by Hamish King, Platform Owner (hard blocks 20/20 passed, 6 not applicable; W3 and W4 need acknowledgement)
+**Status:** SIGNED OFF by Hamish King, Platform Owner, 2026-11-14 (hard blocks 20/20 passed, 6 not applicable; W3 and W4 acknowledged as RISK-ACCEPTs)
 
 ---
 
@@ -55,8 +55,8 @@ See `coha-s7-incident-record-from-production-error-issue-dor-contract.md` (saved
 |---|-------|--------|--------------------|-----------------|
 | W1 | NFRs identified | ✅ | — | Security, audit, reliability stated; accessibility N/A; now in the NFR profile |
 | W2 | Scope stability declared | ✅ | — | Rating and stability stated; amended by the operator on 2026-11-14 and re-reviewed |
-| W3 | MEDIUM findings acknowledged | ⚠️ | Runs 3 (two MEDIUM) and 4 (four MEDIUM) found issues that were fixed in the story by the author agent before the next run; run 5 by an independent reviewer found 0 MEDIUM | Needs acknowledgement by Hamish King; to be logged in decisions.md |
-| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases | Needs acknowledgement as a RISK-ACCEPT; the 39 automated tests and the two live scenarios limit what an unreviewed script can get wrong. Not an independent review. |
+| W3 | MEDIUM findings acknowledged | ⚠️ | Runs 3 (two MEDIUM) and 4 (four MEDIUM) found issues that were fixed in the story by the author agent before the next run; run 5 by an independent reviewer found 0 MEDIUM | Acknowledged by Hamish King on 2026-11-14; logged in decisions.md |
+| W4 | Verification script reviewed by a domain expert | ⚠️ | An unreviewed script may miss edge cases | Acknowledged by Hamish King on 2026-11-14 as a RISK-ACCEPT in decisions.md; the 39 automated tests and the two live scenarios limit what an unreviewed script can get wrong. Not an independent review. |
 | W5 | No UNCERTAIN gap-table items | ✅ | — | Every gap-table entry has a stated handling |
 
 **Decisions already logged 2026-11-14 (decisions.md):** the three refinements (per-issue concurrency, exact author match, inline-code pull request text); AC9 added; the RISK-ACCEPT for the one-file workflow (ADR-009); the Actions-may-create-pull-requests and admin-bypass-merge confirmations.
@@ -67,7 +67,7 @@ See `coha-s7-incident-record-from-production-error-issue-dor-contract.md` (saved
 
 Parent epic: **Medium**. The tech lead must be shown this DoR artefact; the operator is the only contributor and the tech lead in this repo, so this artefact and the operator's sign-off are that step.
 
-**Sign-off:** pending, Hamish King — Platform Owner.
+**Sign-off:** Hamish King — Platform Owner — 2026-11-14, given in the session after the four decisions (three refinements, AC9 added, ADR-009 RISK-ACCEPT, and the two confirmations) and the W3 and W4 acknowledgements.
 
 **Open facts the implementer must not assume away (recorded, not blocking):**
 1. The workflow variable naming the bridge account does not exist yet; the operator creates it (their exact GitHub login, letter case included) before AC8 and AC9. Until then every issue is declined, by design.
@@ -88,7 +88,7 @@ Story has no `domain` field — skipped silently.
 ```
 ## Coding Agent Instructions
 
-Proceed: No until the operator signs off (then: Yes)
+Proceed: Yes (operator sign-off, W3 and W4 acknowledgements, and the AC9 and ADR-009 decisions recorded 2026-11-14)
 Story: Incident record pull request opened for each bridge-opened production error GitHub issue — artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md
 Test plan: artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s7-incident-record-from-production-error-issue-test-plan.md
 Contract: artefacts/2026-11-08-cicd-observability-hardening-automation/dor/coha-s7-incident-record-from-production-error-issue-dor-contract.md

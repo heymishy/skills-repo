@@ -277,6 +277,13 @@
 **Made by:** Hamish King (Platform Owner), 2026-11-14.
 ---
 
+---
+**2026-11-14 | RISK-ACCEPT | coha-s7 definition of ready: W3 (MEDIUM review findings) and W4 (verification script not reviewed by a domain expert)**
+**Decision:** (W3) The MEDIUM findings of review runs 3 (3-M1, 3-M2) and 4 (4-M1 to 4-M4) were fixed in the story by the agent that authored it before the next run; review run 5 was written by an independent reviewer agent and found 0 MEDIUM. Acknowledged. (W4) The verification script has not been reviewed by a domain expert; the operator is the only reviewer in this repo. Acknowledged as a RISK-ACCEPT: the 39 automated tests, which include real git, the real record creation and the real product page handler, and the two live scenarios (AC8 and AC9) limit what an unreviewed script can get wrong. This is not an independent review.
+**Made by:** Claude Sonnet 5.5 (recommended), acknowledged by Hamish King (Platform Owner), 2026-11-14.
+**Revisit trigger:** a live scenario (8 or 9) failing for a reason the script did not anticipate.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
