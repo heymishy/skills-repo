@@ -754,6 +754,23 @@ function jobPermissions(text) {
   for (let k = i + 1; k < lines.length && indentOf(lines[k]) >= 6; k++) { const m = /^\s+([a-z-]+):\s*(\S+)/.exec(lines[k]); if (m) out[m[1]] = m[2]; }
   return out;
 }
+// The non-blank lines of a top-level block (from its header line to the next top-level key).
+function topBlock(content, key) {
+  const lines = content.split(/\r?\n/); const i = lines.findIndex((l) => l === key + ':' || l.startsWith(key + ': ') || new RegExp('^' + key + ':\\s*$').test(l));
+  if (i === -1) return null;
+  const out = [];
+  for (let k = i + 1; k < lines.length && !/^\S/.test(lines[k]); k++) if (lines[k].trim() !== '') out.push(lines[k]);
+  return out;
+}
+// The steps of one job, each as { name, text }; a step starts at a line indented six spaces and beginning with '- '.
+function stepsOf(id) {
+  const lines = jobText(id).split('\n'); const steps = []; let cur = null;
+  lines.forEach((l) => {
+    if (/^      - /.test(l)) { if (cur) steps.push(cur); cur = { lines: [l] }; } else if (cur) { if (/^ {0,5}\S/.test(l)) { steps.push(cur); cur = null; } else cur.lines.push(l); }
+  });
+  if (cur) steps.push(cur);
+  return steps.map((s) => { const text = s.lines.join('\n'); const m = /^\s+(-\s+)?name:\s*(.+)$/m.exec(text); return { name: m ? m[2].trim() : '', text: text }; });
+}
 function runBlocks(content) {
   const lines = content.split(/\r?\n/); const blocks = [];
   lines.forEach((line, i) => {
@@ -771,11 +788,15 @@ test('W1 the trigger is issue opened (types declared) plus a hand start with thr
   assert.ok(!/labeled|edited|reopened|transferred/.test(topText.split(/^permissions:/m)[0]), 'no other issue activity');
   assert.ok(/^  workflow_dispatch:/m.test(topText));
   ['issue_number', 'dry_run', 'rebuild'].forEach((i) => assert.ok(new RegExp('^      ' + i + ':', 'm').test(topText), 'input ' + i));
+  const onKeys = (topBlock(wf, 'on') || []).map((l) => /^  ([A-Za-z_]+):/.exec(l)).filter(Boolean).map((m) => m[1]).sort();
+  assert.deepStrictEqual(onKeys, ['issues', 'workflow_dispatch'], 'the only triggers are issues and workflow_dispatch');
 });
 
 test('W2 least-privilege job permissions', () => {
   assert.ok(/^permissions:\s*\n  contents: read\s*(\n|$)/m.test(topText));
-  assert.deepStrictEqual(jobPermissions(jobText('recognise')), { contents: 'read', issues: 'read' });
+  assert.deepStrictEqual(topBlock(wf, 'permissions'), ['  contents: read'], 'the top-level permissions block is exactly contents: read');
+  assert.deepStrictEqual(jobs.map((j) => j.id).sort(), ['recognise', 'record'], 'exactly two jobs');
+  assert.deepStrictEqual(jobPermissions(jobText('recognise')), { contents: 'read', issues: 'read', 'pull-requests': 'read' });
   assert.deepStrictEqual(jobPermissions(jobText('record')), { contents: 'write', 'pull-requests': 'write' });
   assert.ok(/needs:\s*recognise/.test(jobText('record')));
   assert.ok(!/write-all|id-token|packages:|actions:/.test(wf));
@@ -793,6 +814,8 @@ test('W4 untrusted text never reaches a shell or an expression in a run block', 
   runBlocks(wf).forEach((b) => { (b.match(/\$\{\{\s*[^}]*?\s*\}\}/g) || []).forEach((e) => assert.ok(allowed.has(e.replace(/^\$\{\{\s*|\s*\}\}$/g, '')), 'unexpected expression in a run block: ' + e)); });
   assert.ok(!/github\.event\.(issue\.(title|body|user|labels)|comment|pull_request\.title|head_commit)|github\.head_ref/.test(wf));
   assert.ok(/GITHUB_EVENT_PATH/.test(wf), 'the event is read from the event file');
+  assert.ok(runBlocks(wf).some((b) => b.indexOf('"$ISSUE_NUMBER" =~ ^[1-9][0-9]*$') !== -1), 'the hand-start issue number must be a positive number with no leading zero');
+  assert.ok(wf.indexOf('^[0-9]+$') === -1, 'the looser number pattern (allows leading zeros) is not used');
 });
 
 test('W5 the workflow never pushes to master, merges, approves or marks ready', () => {
@@ -804,6 +827,16 @@ test('W5 the workflow never pushes to master, merges, approves or marks ready', 
   assert.ok(code.some((l) => /\bgit push\b/.test(l)));
   ['gh pr merge', 'gh pr ready', 'gh pr review', '--admin', '--approve'].forEach((c) => assert.ok(!code.some((l) => l.indexOf(c) !== -1), 'forbidden: ' + c));
   code.filter((l) => /gh pr create/.test(l)).forEach((l) => assert.ok(/--base master/.test(l)));
+  assert.ok(!/continue-on-error/.test(wf), 'no step or job may ignore its own failure');
+  assert.ok(!jobText('record').split('\n').some((l) => /^ {6,}(-\s+)?if:/.test(l)), 'no step-level if: inside the record job');
+  const ghApi = code.filter((l) => /\bgh api\b/.test(l));
+  assert.ok(ghApi.length >= 1);
+  ghApi.forEach((l) => {
+    assert.ok(jobText('recognise').indexOf(l) !== -1 && jobText('record').indexOf(l) === -1, 'gh api only in the recognise job: ' + l.trim());
+    assert.ok(!/\s(-X|--method|-f|-F|--field|--raw-field|--input)(\s|=|$)/.test(l), 'gh api is a plain read: ' + l.trim());
+  });
+  const withToken = jobs.map((j) => stepsOf(j.id)).reduce((a, b) => a.concat(b), []).filter((s) => /GH_TOKEN/.test(s.text)).map((s) => s.name).sort();
+  assert.deepStrictEqual(withToken, ['Fetch the issue (hand start only)', 'Gather facts (existing branches and open pull requests)', 'Open the pull request if none is open'].sort(), 'GH_TOKEN only in the three steps that call gh');
 });
 
 test('W6 the record job runs only for open or rebuild; nothing else pushes or opens a pull request', () => {
@@ -815,7 +848,10 @@ test('W6 the record job runs only for open or rebuild; nothing else pushes or op
 
 test('W7 checkout of master only, no stored credentials in the recognise job, no pull_request_target', () => {
   assert.ok(/persist-credentials:\s*false/.test(jobText('recognise')));
-  assert.ok(!/pull_request_target/.test(wf));
+  assert.ok(!/pull_request_target|workflow_run/.test(wf));
+  assert.ok(!/^\s+repository:/m.test(wf), 'no checkout names another repository');
+  const recCheckout = stepsOf('record').find((s) => /uses:\s*actions\/checkout@v4/.test(s.text));
+  assert.ok(recCheckout && !/persist-credentials/.test(recCheckout.text), 'the record checkout keeps the default credentials it needs to push');
   const checkouts = (wf.match(/uses:\s*actions\/checkout@v4/g) || []).length;
   assert.ok(checkouts >= 2);
   assert.strictEqual((wf.match(/ref:\s*master/g) || []).length, checkouts, 'every checkout names ref: master');
@@ -843,6 +879,15 @@ test('W11 both jobs are bounded and the plan step prints the result line', () =>
   ['recognise', 'record'].forEach((id) => { const m = /timeout-minutes:\s*(\d+)/.exec(jobText(id)); assert.ok(m && Number(m[1]) <= 15, id + ' has a time limit'); });
   assert.ok(/error-issue-incident\.js/.test(jobText('recognise')));
   assert.ok(/error-issue-incident\.js build/.test(jobText('record')));
+  assert.ok(/^defaults:\s*\n  run:\s*\n    shell: bash\s*$/m.test(topText), 'top-level defaults.run.shell is bash (bash -eo pipefail)');
+  assert.strictEqual((wf.match(/^\s+shell:/gm) || []).length, 1, 'no step overrides the shell');
+});
+
+test('W13 the record job does not count pull requests from forks as already open', () => {
+  const lines = jobText('record').split('\n').filter((l) => /gh pr list/.test(l) && /--head/.test(l));
+  assert.strictEqual(lines.length, 1, 'one existing pull request check in the record job');
+  assert.ok(/--json number,isCrossRepository(\s|$)/.test(lines[0]), 'requests isCrossRepository');
+  assert.ok(lines[0].indexOf("--jq '[.[] | select(.isCrossRepository | not)] | length'") !== -1, 'filters cross-repository pull requests out of the count');
 });
 
 test('W12 no credential in any new file', () => {

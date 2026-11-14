@@ -28,6 +28,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: incident-record-${{ github.event.issue.number || inputs.issue_number }}
   cancel-in-progress: false
@@ -39,6 +43,7 @@ jobs:
     permissions:
       contents: read
       issues: read
+      pull-requests: read
     outputs:
       action: ${{ steps.plan.outputs.action }}
       reason: ${{ steps.plan.outputs.reason }}
@@ -56,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ inputs.issue_number }}
         run: |
-          if ! [[ "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
+          if ! [[ "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
             echo "error-issue-incident: the issue number is not a number"
             exit 1
           fi
@@ -127,7 +132,7 @@ jobs:
           PR_TITLE: ${{ steps.build.outputs.pr_title }}
           PR_BODY: ${{ steps.build.outputs.pr_body }}
         run: |
-          open=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json number --jq 'length')
+          open=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json number,isCrossRepository --jq '[.[] | select(.isCrossRepository | not)] | length')
           if [ "$open" = "0" ]; then
             gh pr create --repo "$GITHUB_REPOSITORY" --base master --head "$BRANCH" --title "$PR_TITLE" --body "$PR_BODY"
           else
