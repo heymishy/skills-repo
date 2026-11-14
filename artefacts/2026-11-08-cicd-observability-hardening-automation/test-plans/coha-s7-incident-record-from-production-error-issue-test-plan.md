@@ -72,7 +72,7 @@ Logic module and command-line script, with no GitHub and no real incident file. 
 
 **U9 (AC4): the label is required at the moment of opening.** Action: events with no labels, `labels: []`, `labels: null`, labels `production-errors`, `Production-Error`, `production_error`, and the correct label among several others. Expected: only the exact `production-error` label recognises; the others decline with reason `label`.
 
-**U10 (AC4): the marker must be a whole line.** Action: bodies with no marker; the marker embedded in a sentence; the marker preceded by `> ` or by spaces; the marker with trailing text; the correct marker with `\n` line endings and with `\r\n` line endings. Expected: only the two correct forms recognise; the others decline with reason `marker`.
+**U10 (AC4): the marker must be a whole line.** Action: bodies with no marker; the marker embedded in a sentence; the marker preceded by `> ` or by spaces; the marker line written without the space after the colon; the correct marker with `\n` line endings and with `\r\n` line endings. Expected: only the two correct forms recognise; the others decline with reason `marker`. (A marker line that does start at the beginning of a line but whose value is not a lowercase UUID, such as a valid id followed by trailing text, is U12's `id` case, not this one.)
 
 **U11 (AC4): two different markers are ambiguous.** Action: a body holding two marker lines with different UUIDs; a body holding the same marker twice. Expected: different ids decline with reason `marker-ambiguous`; the same id twice is accepted as one.
 
@@ -114,7 +114,7 @@ Logic module and command-line script, with no GitHub and no real incident file. 
 
 **W3 (AC7, finding 1): concurrency does not drop runs.** Expected: a `concurrency` group whose expression covers both the event's issue number and the dispatch input's issue number (so automatic and hand-started runs for the same issue share a group) and `cancel-in-progress: false` (or absent).
 
-**W4 (AC6): untrusted text never reaches a shell or an expression.** Expected: no `run:` block contains any `${{ ... }}` expression other than an allow-list (`github.run_id`, `github.repository`, `github.event.issue.number`, `inputs.issue_number`, `inputs.dry_run`, `vars.*`, `needs.*.outputs.*`, `steps.*.outputs.*`, `secrets.GITHUB_TOKEN`, `runner.temp`); the strings `github.event.issue.title`, `.body`, `.user`, `.labels` and `github.event.comment`, `github.head_ref` appear nowhere in the file; the event is read by the script from `$GITHUB_EVENT_PATH` or a file written from `gh api`.
+**W4 (AC6): untrusted text never reaches a shell or an expression.** Expected: no `run:` block contains any `${{ ... }}` expression other than `github.repository`, `github.run_id` and `runner.temp` (everything else, including inputs, variables, secrets and the outputs of other jobs and steps, reaches a step only through its `env:` block); the strings `github.event.issue.title`, `.body`, `.user`, `.labels` and `github.event.comment`, `github.head_ref` appear nowhere in the file; the event is read by the script from `$GITHUB_EVENT_PATH` or a file written from `gh api`.
 
 **W5 (security, NFR): the workflow never pushes to or merges into `master`.** Expected: every `git push` targets `refs/heads/incident/posthog-` followed by a validated id; no step pushes to `master` or `main`, uses `--admin`, `gh pr merge`, `gh pr ready`, or approves a pull request; `gh pr create` names `--base master` (the operator, not the workflow, reviews and merges).
 
@@ -134,7 +134,7 @@ Logic module and command-line script, with no GitHub and no real incident file. 
 
 ## NFR / behaviour tests
 
-**N1 (Audit): every outcome logs once with a fixed reason and no issue text.** Action: run the script for each outcome (open, skip x3, decline x5 for author, label, marker, ambiguous marker, id, dry-run) with a canary seeded in the issue title, body and PostHog link. Expected: exactly one result line per run carrying the outcome, the fixed reason string and the issue number; the canary never appears in stdout or stderr.
+**N1 (Audit): every outcome logs once with a fixed reason and no issue text.** Action: run the script for each outcome (open, skip x3, decline x5 for author, label, marker, ambiguous marker, id, dry-run) with a canary seeded in the body's extra text, the first-seen time, the environment and the PostHog link (not the title: a dry run prints the title as the record's summary, by design). Expected: exactly one result line per run (a line starting `error-issue-incident: `) carrying the outcome, the fixed reason string and the issue number; the canary never appears in stdout, stderr or the output file. A dry run may print one further line, starting `error-issue-incident-dry-run: `, holding the record and pull request it would create.
 
 **N2 (Reliability): a failed run leaves nothing half done.** Action: run `open` against (a) an unreadable incident file, (b) an incident file holding invalid JSON, (c) a path that is a directory. Expected: non-zero exit with a fixed message, no plan with action `open` printed, and, where the file exists, its bytes unchanged.
 

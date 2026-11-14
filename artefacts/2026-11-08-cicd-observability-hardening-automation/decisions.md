@@ -292,6 +292,13 @@
 **Revisit trigger:** as for coha-s6: fix issue 1042 or add an integrity-check exception for tfhc-s1; re-baseline the pcr-s1 threshold; make the p3.5 PowerShell test tolerant of a slow start. Verification runs with Git Bash first on PATH.
 ---
 
+---
+**2026-11-14 | NOTE | coha-s7 implementation plan: every incident record will be linked to every earlier one by the triage drafter**
+**Observation:** Each record carries the tags `production-error` and `posthog:<id>` (story AC1). The triage drafter scores prior incidents by tag overlap (Jaccard) against a provisional threshold of 0.3. Two such records share one of three distinct tags, a score of about 0.33, so every new record will be linked to every earlier production error record. That is acceptable now (they are all production errors and the threshold is provisional) but it will matter when the threshold is calibrated against real data, which is one of the stated reasons this story exists. No change is made here.
+**Also noted:** The plan makes four small clarifications to the test plan so the plan and the tests agree: a marker line with trailing text declines as `id` (not `marker`); the N1 canary is not placed in the title because a dry run prints the title as the record summary by design; the workflow-file test allows only github.repository, github.run_id and runner.temp inside run blocks; the hand start reads current labels (recorded in the story).
+**Made by:** Claude Sonnet 5.5, 2026-11-14.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

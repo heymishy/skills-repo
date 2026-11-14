@@ -46976,9 +46976,9 @@
           "name": "Incident record pull request opened for each bridge-opened production error GitHub issue",
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s7-incident-record-from-production-error-issue.md",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
-          "updatedAt": "2026-11-14T01:39:16.486Z",
+          "updatedAt": "2026-11-14T01:57:38.736Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "blocker": "",
@@ -46992,7 +46992,51 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Test harness and builders",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Logic module: recognition, record plan, branch name",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Logic module: pull request text, idempotency, plan for a run",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Command-line script (plan and build)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Integration with the real product page, loader and real git",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Workflow file and its wiring tests",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Test-runner slot, full suite and handover",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-08-cicd-observability-hardening-automation/plans/coha-s7-incident-record-from-production-error-issue-plan.md"
+            }
+          ]
         }
       ],
       "guardrails": [
