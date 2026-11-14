@@ -245,6 +245,14 @@
 **Made by:** Claude Sonnet 5.5, 2026-11-14 (recommended from reviews; the operator can ask for any to be removed in the pull request).
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s7 test plan: four findings to settle at /definition-of-ready**
+**Context:** Writing the coha-s7 test plan against the merged coha-s6 code and the repository's existing incident tooling surfaced four points where the reviewed story is silent, wrong, or leaves a gap. None blocks the test plan; each needs the operator's decision at DoR (or a recorded RISK-ACCEPT).
+**Findings:** (1) The story's single concurrency group serialises two simultaneous runs, but GitHub Actions keeps one running and one pending run per group and cancels an older pending run when another arrives, so three issues opened at once would lose a record. Recommended: a group per issue number with cancel-in-progress false (test W3); each issue builds its own branch from the current master anyway, and the idempotency check covers a duplicate run for one issue. (2) The path that matters, the real branch push and pull request creation by the workflow's own token, has no automated test and no acceptance criterion (AC8 is a dry run). Recommended: keep the optional live scenario 9 in the verification script and have the operator choose at DoR between adding it as an AC or a RISK-ACCEPT with a post-merge action. (3) The bridge author comparison is exact and fails closed: the workflow variable must hold the login in GitHub's exact case; an unset variable recognises nothing (tests U7, U8). (4) The pull request title and body show the error code only inside inline code formatting with backticks neutralised, so a hostile code cannot ping anyone (test U13); this slightly tightens the story's wording.
+**Also noted:** The producer contract is now fixed in merged code (title is the code; label production-error; body First seen / Environment / PostHog / blank line / "PostHog issue id: <uuid>"), and the test plan builds its fixtures with the real producer function so a format drift fails the test.
+**Made by:** Claude Sonnet 5.5 (recommended), awaiting operator decision at DoR.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

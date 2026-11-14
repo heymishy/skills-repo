@@ -3152,3 +3152,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: assumption-invalidated
   signal-text: The assumed path-based bypass for workspace/** on the master ruleset does not exist; the ruleset has no file-path rule and bypasses only for the repository admin role, so direct bookkeeping pushes work only because the operator is an admin and a workflow cannot push without a blanket bypass.
   source: agent-auto
+
+- date: 2026-11-14
+  session-phase: test-plan (coha-s7)
+  signal-type: assumption-invalidated
+  signal-text: A reviewed story assumed a single GitHub Actions concurrency group serialises simultaneous runs without loss; in fact only one run can be pending per group and an older pending run is cancelled, so a per-issue group with cancel-in-progress false is needed. Reviews read the story's own logic but not the platform semantics it depends on.
+  source: agent-auto
