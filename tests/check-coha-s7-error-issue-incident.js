@@ -234,8 +234,11 @@ test('U2b recognition declines a mismatching url, a foreign host, an unsafe numb
   const big = mk({ number: 1e300 });
   const r3 = lib.recogniseIssue(ev(big.issue), CFG);
   assert.strictEqual(r3.recognised, false); assert.strictEqual(r3.reason, 'shape');
+  const huge = mk({ number: 2 ** 53, htmlUrl: 'https://github.com/example/repo/issues/9007199254740992' });
+  const r5 = lib.recogniseIssue(ev(huge.issue), CFG);
+  assert.strictEqual(r5.recognised, false); assert.strictEqual(r5.reason, 'shape');
   const pr = mk();
-  pr.issue.pull_request = { url: 'https://api.github.com/repos/example/repo/pulls/77' };
+  pr.issue.pull_request ={ url: 'https://api.github.com/repos/example/repo/pulls/77' };
   const r4 = lib.recogniseIssue(ev(pr.issue), CFG);
   assert.strictEqual(r4.recognised, false); assert.strictEqual(r4.reason, 'pull-request');
 });
@@ -245,12 +248,38 @@ test('U3b planRecord refuses a declined result or a bad id, and free text never 
   const m = mk();
   const good = lib.recogniseIssue(ev(m.issue), CFG);
   assert.throws(() => lib.planRecord(Object.assign({}, good, { id: '../x' })));
-  assert.throws(() => lib.planRecord(Object.assign({}, good, { recognised: undefined })));
-  const c = mk({ firstSeen: 'first ' + CANARY, environment: 'env ' + CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { code: 'a\nb' })));
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueUrl: 'https://github.com/example/repo/issues/9' })));
+  assert.throws(() => lib.planRecord(Object.assign({}, good, { issueNumber: 2 ** 53 })));
+  assert.throws(() => lib.buildPullRequest({ recognised: false }), /not recognised/);
+  assert.throws(() => lib.buildPullRequest(Object.assign({}, good, { id: '../x' })), /not recognised/);
+  // regression: the object validatePlanForBuild returns has no recognised flag and must be accepted
+  const validated = lib.validatePlanForBuild({ action: 'open', id: good.id, code: good.code, issueNumber: good.issueNumber, issueUrl: good.issueUrl });
+  assert.strictEqual('recognised' in validated, false);
+  assert.deepStrictEqual(lib.planRecord(validated), lib.planRecord(good));
+  assert.deepStrictEqual(lib.buildPullRequest(validated), lib.buildPullRequest(good));
+  const c =mk({ firstSeen: 'first ' + CANARY, environment: 'env ' + CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x' });
   const plan = lib.planRecord(lib.recogniseIssue(ev(c.issue), CFG));
   assert.ok(plan.trigger.indexOf(CANARY) === -1);
   assert.ok(plan.summary.indexOf(CANARY) === -1);
   assert.ok(plan.tags.join(',').indexOf(CANARY) === -1);
+});
+
+test('U3c validatePlanForBuild never trusts the plan it receives', () => {
+  const id = crypto.randomUUID();
+  const url = 'https://github.com/example/repo/issues/7';
+  const good = { action: 'open', id: id, code: 'my_error', issueNumber: 7, issueUrl: url };
+  const bad = (over) => assert.throws(() => lib.validatePlanForBuild(Object.assign({}, good, over)), 'should throw for ' + JSON.stringify(over));
+  ['dry-run', 'skip', 'decline'].forEach((a) => bad({ action: a }));
+  bad({ id: id.toUpperCase() }); bad({ id: '../x' });
+  bad({ issueNumber: '7' }); bad({ issueNumber: 7.5 }); bad({ issueNumber: 0 }); bad({ issueNumber: 2 ** 53 });
+  bad({ issueUrl: 'https://github.com/example/repo/issues/17' });
+  bad({ issueUrl: 'https://evil.example/x/y/issues/7' });
+  bad({ code: 'a\nb' }); bad({ code: 'x'.repeat(121) });
+  [null, undefined, 'plan', 7].forEach((p) => assert.throws(() => lib.validatePlanForBuild(p)));
+  const out = lib.validatePlanForBuild(Object.assign({}, good, { action: 'rebuild', branch: '../x', record: {} }));
+  assert.deepStrictEqual(Object.keys(out).sort(), ['action', 'code', 'id', 'issueNumber', 'issueUrl']);
+  assert.strictEqual(out.action, 'rebuild');
 });
 
 test('U5 the pull request text holds only the code and the issue number; the hand-off holds only fixed fields', () => {
@@ -277,6 +306,14 @@ test('U14 the idempotency decision and its three distinct reasons', () => {
   assert.strictEqual(decide({ branches: [branch], openPullRequests: [{ headRefName: branch }] }).reason, 'pr-open');
   assert.deepStrictEqual(decide({}), { action: 'open', reason: 'new' });
   assert.strictEqual(new Set(['already-recorded', 'branch-exists', 'pr-open']).size, 3);
+  assert.deepStrictEqual(decide({ openPullRequests: [{ headRefName: branch, isCrossRepository: true }] }), { action: 'open', reason: 'new' });
+  assert.strictEqual(decide({ openPullRequests: [{ headRefName: branch, isCrossRepository: false }] }).reason, 'pr-open');
+  assert.throws(() => decide({ records: 'x' }), /bad facts/);
+  assert.throws(() => decide({ branches: {} }), /bad facts/);
+  assert.throws(() => decide({ openPullRequests: 'x' }), /bad facts/);
+  assert.deepStrictEqual(decide({ records: [null, rec([' PostHog:' + id + ' '])] }), { action: 'skip', reason: 'already-recorded' });
+  assert.throws(() => lib.decideIdempotency({ records: [rec(['posthog:undefined'])] }));
+  assert.throws(() => lib.decideIdempotency({ id: undefined, records: [rec(['posthog:undefined'])] }));
   const m = mk({ id: id });
   const p = planOf(m, { branches: [branch] });
   assert.strictEqual(p.action, 'skip'); assert.strictEqual(p.reason, 'branch-exists'); assert.strictEqual(p.record, null);
@@ -290,6 +327,9 @@ test('U14b the rebuild switch lifts only the branch and pull request skips', () 
   assert.deepStrictEqual(decide({ openPullRequests: [{ headRefName: branch }] }), { action: 'rebuild', reason: 'rebuild' });
   assert.deepStrictEqual(decide({ records: [{ tags: ['posthog:' + id] }], branches: [branch] }), { action: 'skip', reason: 'already-recorded' });
   assert.deepStrictEqual(decide({}), { action: 'open', reason: 'new' });
+  assert.deepStrictEqual(decide({ openPullRequests: [{ headRefName: branch, isCrossRepository: true }] }), { action: 'open', reason: 'new' });
+  assert.strictEqual(lib.decideIdempotency({ id: id, branches: [branch] }, { rebuild: 'false' }).action, 'skip');
+  assert.strictEqual(lib.decideIdempotency({ id: id, branches: [branch] }, { rebuild: 1 }).action, 'skip');
   const m = mk({ id: id });
   const p = planOf(m, { branches: [branch] }, { rebuild: true });
   assert.strictEqual(p.action, 'rebuild'); assert.strictEqual(p.branch, branch); assert.ok(p.pullRequest && p.record);

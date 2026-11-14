@@ -76,8 +76,19 @@ function branchNameFor(id) {
 }
 
 // The record fields handed to the existing incident recorder. Nothing but the fixed fields.
+// Field-based guard: accepts a recogniseIssue result or a validatePlanForBuild result, nothing else.
+function assertFields(r) {
+  if (!r || typeof r !== 'object' ||
+      typeof r.id !== 'string' || !UUID_RE.test(r.id) ||
+      codeProblem(r.code) !== null ||
+      !Number.isSafeInteger(r.issueNumber) || r.issueNumber <= 0 ||
+      typeof r.issueUrl !== 'string' || !ISSUE_URL_RE.test(r.issueUrl) || !r.issueUrl.endsWith('/issues/' + r.issueNumber)) {
+    throw new Error('not recognised');
+  }
+}
+
 function planRecord(r) {
-  if (!r || r.recognised !== true || typeof r.id !== 'string' || !UUID_RE.test(r.id)) throw new Error('not recognised');
+  assertFields(r);
   return {
     trigger: 'GitHub issue ' + r.issueUrl + ' (PostHog issue id ' + r.id + ')',
     summary: r.code,
@@ -87,6 +98,7 @@ function planRecord(r) {
 
 // Title and body use only the fixed code (inline code, one line, backticks replaced) and the issue number.
 function buildPullRequest(r) {
+  assertFields(r);
   const safe = String(r.code).replace(/`/g, "'");
   return {
     title: 'Incident record for `' + safe + '` (issue #' + r.issueNumber + ')',
@@ -99,16 +111,22 @@ function buildPullRequest(r) {
 function decideIdempotency(facts, options) {
   const f = facts || {};
   const o = options || {};
-  const tag = 'posthog:' + f.id;
-  const records = Array.isArray(f.records) ? f.records : [];
-  if (records.some((r) => r && Array.isArray(r.tags) && r.tags.indexOf(tag) !== -1)) return { action: 'skip', reason: 'already-recorded' };
   const branch = branchNameFor(f.id);
-  const branches = Array.isArray(f.branches) ? f.branches : [];
-  const prs = Array.isArray(f.openPullRequests) ? f.openPullRequests : [];
-  const prOpen = prs.some((p) => p && p.headRefName === branch);
+  const tag = 'posthog:' + f.id;
+  const list = (v) => {
+    if (v === undefined) return [];
+    if (!Array.isArray(v)) throw new Error('bad facts');
+    return v;
+  };
+  const records = list(f.records);
+  const branches = list(f.branches);
+  const prs = list(f.openPullRequests);
+  if (records.some((r) => r && Array.isArray(r.tags) && r.tags.some((t) => String(t).trim().toLowerCase() === tag))) return { action: 'skip', reason: 'already-recorded' };
+  // A fork pull request never counts: the id is public, so anyone could publish a fork branch with this name.
+  const prOpen = prs.some((p) => p && p.headRefName === branch && p.isCrossRepository !== true);
   const branchExists = branches.indexOf(branch) !== -1;
   if (prOpen || branchExists) {
-    if (o.rebuild) return { action: 'rebuild', reason: 'rebuild' };
+    if (o.rebuild === true) return { action: 'rebuild', reason: 'rebuild' };
     return { action: 'skip', reason: prOpen ? 'pr-open' : 'branch-exists' };
   }
   return { action: 'open', reason: 'new' };
