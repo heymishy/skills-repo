@@ -307,6 +307,26 @@
 **Made by:** Claude Sonnet 5.5 (recommended); a read-only permission added within the operator's signed-off design, reported to the operator for confirmation.
 ---
 
+---
+**2026-11-15 | RISK-ACCEPT | coha-s7 verify-completion: tests/check-cat-s1-core-trace-builder.js timing failure acknowledged as environmental**
+**Decision:** The 50 ms directory-walk assertion in tests/check-cat-s1-core-trace-builder.js failed in 3 of 3 full-suite runs on the final coha-s7 code (51.6, 68.3 and 65.4 ms) and is acknowledged as an environmental timing failure, not caused by coha-s7.
+**Evidence:** It passes alone at about 27 ms in 5 of 5 runs, and in earlier full runs on this branch and on coha-s6. A controlled A/B on identical code with and without coha-s7's one runner change (the sequential-exclusive entry) failed the same way (65.4 ms without the entry), so the change is not the cause; the runner runs its sequential phase alone before the pool, so the new file cannot overlap the test. This test already carries a documented history of sensitivity (the coha-s5 entry in scripts/run-all-tests.js). Likely cause: the machine was slower under load that day (many scratch folders and runs). The pull request's own CI on a quiet runner is the real arbiter.
+**Rationale:** Not in the baseline set acknowledged for coha-s7 (3 files at branch-setup: tfhc-s1 integrity, pcr-s1 timing, p3.5 PowerShell), so it needs its own acknowledgement; coha-s7's own 44 tests pass in every run.
+**Made by:** Claude Sonnet 5.5 (recommended), acknowledged by Hamish King (Platform Owner), 2026-11-15.
+**Revisit trigger:** the same failure in the pull request's CI, or on a later quiet run: then isolate it or raise its threshold through its own story.
+---
+**2026-11-15 | DESIGN | coha-s7: tests/check-coha-s7-error-issue-incident.js joins SEQUENTIAL_EXCLUSIVE_LIST (measured)**
+**Decision:** The new check file is added to SEQUENTIAL_EXCLUSIVE_LIST in scripts/run-all-tests.js so it runs alone in the sequential phase, as coha-s5's does.
+**Evidence (measured 2026-11-14, Windows, processes pinned to 2 cores by processor affinity):** the file takes about 14 s alone and spawns many child processes and real git. The timing-sensitive neighbour tests/check-rb-s3-harness-agnostic-instructions.js, run six times each: alone 0 of 6 failures (about 16.1 s); beside the new file 0 of 6 (about 21.2 s, 31 percent slower); beside tests/check-coha-s5-error-capture.js, the control already in the list, 5 of 6 failures (about 21.7 s).
+**Rationale:** The new file puts the same pressure on its neighbours as the control, though it did not cross that test's threshold in six runs; isolating it costs about 14 s of sequential time and protects timing-sensitive tests on the 2-slot CI pool. (Contrast coha-s6's file, which caused about 3 percent slowdown and was left in the pool.)
+**Made by:** Claude Sonnet 5.5 (measured), 2026-11-14.
+---
+**2026-11-15 | SCOPE | coha-s7 verify-completion: additions beyond the plan text**
+**Context:** Step 3 of /verify-completion compares the branch commits with the plan. Everything maps to a plan task, a review fix or an earlier 2026-11-14 decision; the additions beyond the plan's text, all from the per-task reviews, are logged here and will be listed in the pull request description.
+**Additions:** (1) Five extra tests (the plan said 39, the file has 44): U2b (url and number checks, pull_request key), U3b (record plan refuses unvalidated input), U3c (the validatePlanForBuild boundary), U19 (strict argument parsing), W13 (fork pull requests ignored in the record step). (2) Logic module hardening: safe-integer issue number, html_url must end with the issue number, a field-based guard in planRecord and buildPullRequest that reads each field once, decideIdempotency validating the id first, normalising tags, throwing on wrong-typed facts, and ignoring fork pull requests. (3) Script hardening: strict argument allow-list, build refuses without --incidents and refuses a duplicate record, guarded output writes, a fixed message when planning fails. (4) Workflow hardening: the recognise job also reads pull requests (decision logged 2026-11-14), fork pull requests excluded in the record step's open-pull-request check, pipefail via a default shell, issue number without leading zeros, and extra structural pins. (5) Test isolation: the real-git test ignores the developer's global git settings and proves a plain push is rejected. (6) The runner change above.
+**Made by:** Claude Sonnet 5.5, 2026-11-15 (all additions came from review findings; none adds a user-visible capability).
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
