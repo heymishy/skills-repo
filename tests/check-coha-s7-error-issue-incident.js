@@ -615,6 +615,7 @@ function makePool(owner, repo) {
     return { rows: [] };
   } };
 }
+// Note: this leaves the products route's adapters set process-wide (acceptable: no later test in this file depends on the defaults).
 async function renderPageWith(rawIncidents) {
   const realFetch = global.fetch;
   global.fetch = async function (url) {
@@ -635,7 +636,7 @@ async function renderPageWith(rawIncidents) {
     return html;
   } finally { global.fetch = realFetch; }
 }
-function buildRecord(m, s) {
+function buildRecord(s) {
   assert.strictEqual(run(planArgs(s)).status, 0);
   assert.strictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', s.out + '2'], { PLAN_JSON: readOut(s.out).plan }).status, 0);
 }
@@ -643,14 +644,14 @@ function buildRecord(m, s) {
 test('I2 the product page renders the new record as one distinct item, with its text escaped', async () => {
   const m = mk({ title: 'tenant_admin_bootstrap_failed' });
   const s = cliSetup(m);
-  buildRecord(m, s);
+  buildRecord(s);
   const html = await renderPageWith(fs.readFileSync(s.incidents, 'utf8'));
   assert.strictEqual((html.match(/data-incident-item/g) || []).length, 3, 'one item per record');
   assert.ok(html.indexOf('tenant_admin_bootstrap_failed') !== -1);
   assert.ok(/Status: open/.test(html));
   const m2 = mk({ title: '<b>x</b>' });
   const s2 = cliSetup(m2);
-  buildRecord(m2, s2);
+  buildRecord(s2);
   const html2 = await renderPageWith(fs.readFileSync(s2.incidents, 'utf8'));
   assert.ok(html2.indexOf('&lt;b&gt;x&lt;/b&gt;') !== -1 && html2.indexOf('<b>x</b>') === -1, 'the code appears as plain characters');
 });
@@ -658,7 +659,7 @@ test('I2 the product page renders the new record as one distinct item, with its 
 test('I3 the existing store loads and validates the new record', () => {
   const m = mk();
   const s = cliSetup(m);
-  buildRecord(m, s);
+  buildRecord(s);
   const loaded = store.loadIncidentRecords(s.incidents);
   assert.strictEqual(loaded.length, 3);
   assert.deepStrictEqual(store.withDefaultType(loaded[2]), loaded[2]);
@@ -666,7 +667,9 @@ test('I3 the existing store loads and validates the new record', () => {
   assert.strictEqual(store.loadRecords(s.incidents).length, 3);
 });
 
-function git(cwd, args) { const r = cp.spawnSync('git', args, { cwd: cwd, encoding: 'utf8' }); return { status: r.status, out: (r.stdout || '') + (r.stderr || ''), stdout: r.stdout || '' }; }
+// Isolated from the developer's git settings and any surrounding git hook environment.
+function gitEnv() { const e = Object.assign({}, process.env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: os.devNull, GIT_TERMINAL_PROMPT: '0' }); ['GIT_DIR', 'GIT_INDEX_FILE', 'GIT_WORK_TREE', 'GIT_OBJECT_DIRECTORY', 'GIT_COMMON_DIR'].forEach((k) => { delete e[k]; }); return e; }
+function git(cwd, args) { const r = cp.spawnSync('git', args, { cwd: cwd, encoding: 'utf8', env: gitEnv() }); return { status: r.status, out: (r.stdout || '') + (r.stderr || ''), stdout: r.stdout || '' }; }
 function gitOk(cwd, args) { const r = git(cwd, args); assert.strictEqual(r.status, 0, 'git ' + args.join(' ') + ': ' + r.out); return r; }
 
 test('I4 two branches from one base conflict; a rebuild from the current master merges cleanly', () => {
@@ -676,6 +679,8 @@ test('I4 two branches from one base conflict; a rebuild from the current master 
   gitOk(dir, ['init', '--bare', origin]);
   gitOk(origin, ['symbolic-ref', 'HEAD', 'refs/heads/master']);
   gitOk(dir, ['clone', origin, work]);
+  gitOk(work, ['config', 'core.autocrlf', 'false']); gitOk(work, ['config', 'core.safecrlf', 'false']); gitOk(work, ['config', 'core.hooksPath', tmpDir()]);
+  gitOk(work, ['config', 'commit.gpgsign', 'false']); gitOk(work, ['config', 'merge.conflictstyle', 'merge']);
   gitOk(work, ['config', 'user.name', 'test']); gitOk(work, ['config', 'user.email', 'test@example.com']);
   gitOk(work, ['checkout', '-B', 'master']);
   fs.mkdirSync(path.join(work, 'workspace'));
@@ -708,6 +713,8 @@ test('I4 two branches from one base conflict; a rebuild from the current master 
 
   const rebuilt = recordOn(b, 'rebuild', { branches: [branchB] });
   assert.strictEqual(rebuilt, branchB);
+  // This leg proves git's behaviour that the workflow relies on; the workflow's own push line is checked by tests W5 and W9 in a later task.
+  assert.notStrictEqual(git(work, ['push', 'origin', 'HEAD:refs/heads/' + branchB]).status, 0, 'a plain push of the rebuilt branch must be rejected as non-fast-forward, which is why the workflow force-pushes with a lease');
   const push = git(work, ['push', '--force-with-lease', 'origin', 'HEAD:refs/heads/' + branchB]);
   assert.strictEqual(push.status, 0, push.out);
   const remote = gitOk(work, ['ls-remote', '--heads', 'origin', branchB]).stdout.trim().split('\n').filter(Boolean);
