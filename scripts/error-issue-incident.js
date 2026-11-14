@@ -12,31 +12,47 @@
  * build: append one incident record to the given incident file (never a default path) through the real recorder.
  *
  * Issue text is untrusted data: it is read from a JSON file or an environment variable, never from an
- * argument, and never printed. Every run prints exactly one result line starting "error-issue-incident: ".
+ * argument, and it is never printed, with one exception. A dry run prints the validated one-line code and
+ * the pull request text inside a line that starts with the fixed prefix "error-issue-incident-dry-run: ",
+ * so that it can never form a workflow command. Every run prints exactly one line that starts with
+ * "error-issue-incident: ", and error messages are fixed text that never repeats input.
  */
 
 const fs = require('fs');
 const lib = require('./lib/error-issue-incident');
 const { recordIncident } = require('../src/modules/incident-recorder');
 
-const FLAGS = ['dry-run', 'rebuild'];
+const VALUE_OPTIONS = ['event', 'author', 'facts', 'incidents', 'github-output', 'out', 'plan-env'];
+const SWITCHES = ['dry-run', 'rebuild'];
 
 function fail(message) {
   process.stderr.write('error-issue-incident: ' + message + '\n');
   process.exit(1);
 }
 
+// Strict argument parsing: a fixed list of options, each given at most once, in null-prototype maps so that
+// no option can overwrite another or reach an inherited property. The command is only the first positional.
 function parseArgs(argv) {
-  const args = { command: argv[0], flags: {} };
+  const command = argv[0];
+  const opts = Object.create(null);
+  const flags = Object.create(null);
   for (let i = 1; i < argv.length; i++) {
     const a = argv[i];
-    if (typeof a !== 'string' || a.indexOf('--') !== 0) fail('unexpected argument');
+    if (a.indexOf('--') !== 0) fail('unexpected argument');
     const name = a.slice(2);
-    if (FLAGS.indexOf(name) !== -1) { args.flags[name] = true; continue; }
-    args[name] = argv[i + 1];
+    if (SWITCHES.indexOf(name) !== -1) {
+      if (flags[name]) fail('unexpected argument');
+      flags[name] = true;
+      continue;
+    }
+    if (VALUE_OPTIONS.indexOf(name) === -1 || name in opts) fail('unexpected argument');
+    const value = argv[i + 1];
+    if (typeof value !== 'string' || value.indexOf('--') === 0) fail('unexpected argument');
+    if (value === '' && name !== 'author') fail('unexpected argument');
+    opts[name] = value;
     i++;
   }
-  return args;
+  return { command: command, opts: opts, flags: flags };
 }
 
 function readJsonFile(file, what) {
@@ -65,45 +81,62 @@ function writeOutputs(file, pairs) {
     if (/[\r\n]/.test(v)) fail('an output value has a line break');
     return k + '=' + v;
   });
-  fs.appendFileSync(file, lines.join('\n') + '\n');
+  try { fs.appendFileSync(file, lines.join('\n') + '\n'); } catch (e) { fail('could not write outputs'); }
+}
+
+function writePlanFile(file, plan) {
+  if (!file) return;
+  try { fs.writeFileSync(file, JSON.stringify(plan, null, 2) + '\n'); } catch (e) { fail('could not write outputs'); }
+}
+
+function hasRecordFor(records, id) {
+  const tag = 'posthog:' + id;
+  return records.some((r) => r && Array.isArray(r.tags) && r.tags.some((t) => String(t).trim().toLowerCase() === tag));
 }
 
 function runPlan(args) {
-  const event = lib.normaliseEvent(readJsonFile(args.event, 'event file'));
-  const factsRaw = readJsonFile(args.facts, 'facts file') || {};
-  const records = readIncidents(args.incidents);
+  const o = args.opts;
+  const event = lib.normaliseEvent(readJsonFile(o.event, 'event file'));
+  const factsRaw = readJsonFile(o.facts, 'facts file') || {};
+  const records = readIncidents(o.incidents);
   let plan;
   try {
     plan = lib.planRun({
       event: event,
-      config: { bridgeAuthor: args.author },
+      config: { bridgeAuthor: o.author },
       facts: { branches: factsRaw.branches, openPullRequests: factsRaw.openPullRequests, records: records },
       options: { rebuild: !!args.flags.rebuild, dryRun: !!args.flags['dry-run'] }
     });
   } catch (e) {
     fail('could not plan: the facts or the event are not acceptable');
   }
+  // outputs first: a failed write must not leave a success line behind
+  writeOutputs(o['github-output'], { action: plan.action, reason: plan.reason, branch: plan.branch || '', plan: JSON.stringify(plan) });
+  writePlanFile(o.out, plan);
   process.stdout.write(resultLine(plan) + '\n');
   if (plan.action === 'dry-run') {
     process.stdout.write('error-issue-incident-dry-run: ' + JSON.stringify({ record: plan.record, pullRequest: plan.pullRequest, branch: plan.branch }) + '\n');
   }
-  writeOutputs(args['github-output'], { action: plan.action, reason: plan.reason, branch: plan.branch || '', plan: JSON.stringify(plan) });
-  if (args.out) fs.writeFileSync(args.out, JSON.stringify(plan, null, 2) + '\n');
 }
 
 function runBuild(args) {
-  const name = args['plan-env'];
+  const o = args.opts;
+  // explicit path first: the real recorder falls back to the real incident file when given none
+  if (typeof o.incidents !== 'string' || o.incidents === '') fail('missing incident file path');
+  const name = o['plan-env'];
   if (typeof name !== 'string' || !/^[A-Z_][A-Z0-9_]*$/.test(name)) fail('missing or invalid plan variable name');
   let plan;
   try { plan = JSON.parse(process.env[name] || ''); } catch (e) { fail('plan is not valid JSON'); }
   let checked;
   try { checked = lib.validatePlanForBuild(plan); } catch (e) { fail('plan is not acceptable'); }
-  readIncidents(args.incidents); // fails early on an unreadable or damaged file, before anything is written
+  const records = readIncidents(o.incidents); // fails early on an unreadable or damaged file, before anything is written
+  if (hasRecordFor(records, checked.id)) fail('a record for this id already exists');
   const record = lib.planRecord(checked);
   const pr = lib.buildPullRequest(checked);
-  try { recordIncident(record, args.incidents); } catch (e) { fail('could not record the incident'); }
+  // outputs before the record: a bad output path then leaves nothing half done
+  writeOutputs(o['github-output'], { branch: lib.branchNameFor(checked.id), pr_title: pr.title, pr_body: pr.body });
+  try { recordIncident(record, o.incidents); } catch (e) { fail('could not record the incident'); }
   process.stdout.write('error-issue-incident: recorded ' + checked.action + ' issue #' + checked.issueNumber + '\n');
-  writeOutputs(args['github-output'], { branch: lib.branchNameFor(checked.id), pr_title: pr.title, pr_body: pr.body });
 }
 
 const args = parseArgs(process.argv.slice(2));

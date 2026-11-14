@@ -393,6 +393,51 @@ test('U17 an explicit incident file path is required and the script has no defau
   assert.ok(missing.stderr.indexOf('could not read incident file') !== -1);
   const src = fs.readFileSync(SCRIPT, 'utf8');
   assert.ok(!/workspace/.test(src) && !/DEFAULT_INCIDENTS_FILE/.test(src), 'no code path may fall back to the real incident file');
+  // build must refuse without an explicit path (the real recorder would otherwise fall back to the real file)
+  run(planArgs(s));
+  const openPlan = readOut(s.out).plan;
+  const buildNoPath = run(['build', '--plan-env', 'PLAN_JSON'], { PLAN_JSON: openPlan });
+  assert.notStrictEqual(buildNoPath.status, 0);
+  assert.ok(buildNoPath.stderr.indexOf('missing incident file path') !== -1);
+  assert.strictEqual(resultLines(buildNoPath).length, 0);
+  // the path check comes before anything else: even a bad plan is not looked at first
+  const buildNoPathBadPlan = run(['build', '--plan-env', 'PLAN_JSON'], { PLAN_JSON: '{nope' });
+  assert.notStrictEqual(buildNoPathBadPlan.status, 0);
+  assert.ok(buildNoPathBadPlan.stderr.indexOf('missing incident file path') !== -1, 'the explicit path check runs first');
+});
+
+test('U19 arguments are strict: only known options, one value each, no switch can be overwritten', () => {
+  const fresh = () => cliSetup(mk());
+  const expectRefused = (res, label) => {
+    assert.notStrictEqual(res.status, 0, label);
+    assert.ok(res.stderr.indexOf('unexpected argument') !== -1, label + ': ' + res.stderr);
+    assert.strictEqual(resultLines(res).length, 0, label);
+  };
+  let s = fresh();
+  expectRefused(run(planArgs(s, ['--command', 'build'])), 'option named command');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['--dry-run', '--flags', 'x'])), 'option named flags');
+  s = fresh();
+  expectRefused(run(['plan', '--event', s.eventFile, '--author', '--dry-run', '--facts', s.factsFile, '--incidents', s.incidents, '--github-output', s.out]), 'value that begins with two dashes');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['--facts', s.factsFile])), 'repeated option');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['--dryrun'])), 'unknown option');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['--out'])), 'missing value at the end');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['--out', ''])), 'empty value for a path option');
+  s = fresh();
+  expectRefused(run(planArgs(s, ['stray'])), 'stray positional');
+  s = fresh();
+  const empty = run(planArgs(s, [], ''));
+  assert.strictEqual(empty.status, 0, empty.stderr);
+  assert.strictEqual(readOut(s.out).action, 'decline');
+  assert.strictEqual(readOut(s.out).reason, 'author');
+  s = fresh();
+  const ok = run(planArgs(s, ['--dry-run']));
+  assert.strictEqual(ok.status, 0, ok.stderr);
+  assert.strictEqual(readOut(s.out).action, 'dry-run');
 });
 
 test('U18 a hostile event run as a real child process executes nothing', () => {
@@ -525,6 +570,38 @@ test('N2 a failed run leaves nothing half done', () => {
   assert.strictEqual(resultLines(asBadFacts).length, 0);
   assert.ok(asBadFacts.stderr.indexOf('    at ') === -1, 'no stack trace');
   assert.ok(!fs.existsSync(badOut), 'nothing was written for unacceptable facts');
+  // a bad output path gives a fixed message, no stack trace and, for plan, no result line
+  const missingOut = path.join(s.dir, 'nodir', 'out.txt');
+  const planBadOut = run(planArgs(Object.assign({}, s, { out: missingOut })));
+  assert.notStrictEqual(planBadOut.status, 0);
+  assert.ok(planBadOut.stderr.indexOf('could not write outputs') !== -1);
+  assert.ok(planBadOut.stderr.indexOf('    at ') === -1, 'no stack trace');
+  assert.strictEqual(resultLines(planBadOut).length, 0);
+  const beforeBadOut = sha(s.incidents);
+  const buildBadOut = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', missingOut], { PLAN_JSON: plan });
+  assert.notStrictEqual(buildBadOut.status, 0);
+  assert.ok(buildBadOut.stderr.indexOf('    at ') === -1, 'no stack trace');
+  assert.strictEqual(sha(s.incidents), beforeBadOut, 'a failed output write leaves the record file unchanged');
+  // building the same plan twice never duplicates the record
+  const m2 = mk();
+  const s2 = cliSetup(m2);
+  run(planArgs(s2));
+  const plan2 = readOut(s2.out).plan;
+  const build1 = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s2.incidents], { PLAN_JSON: plan2 });
+  assert.strictEqual(build1.status, 0, build1.stderr);
+  const build2 = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s2.incidents], { PLAN_JSON: plan2 });
+  assert.notStrictEqual(build2.status, 0);
+  assert.ok(build2.stderr.indexOf('a record for this id already exists') !== -1);
+  const stored = JSON.parse(fs.readFileSync(s2.incidents, 'utf8'));
+  assert.strictEqual(stored.filter((r) => Array.isArray(r.tags) && r.tags.indexOf('posthog:' + m2.id) !== -1).length, 1);
+  // error messages never repeat issue or plan text
+  const badEvent = path.join(s.dir, 'badevent.json'); fs.writeFileSync(badEvent, '{not json ' + CANARY);
+  const asBadEvent = run(['plan', '--event', badEvent, '--author', AUTHOR, '--facts', s.factsFile, '--incidents', s.incidents]);
+  assert.notStrictEqual(asBadEvent.status, 0);
+  assert.ok(asBadEvent.stderr.indexOf(CANARY) === -1 && asBadEvent.stdout.indexOf(CANARY) === -1, 'event text not echoed');
+  const badPlanEnv = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents], { PLAN_JSON: '{nope ' + CANARY });
+  assert.notStrictEqual(badPlanEnv.status, 0);
+  assert.ok(badPlanEnv.stderr.indexOf(CANARY) === -1 && badPlanEnv.stdout.indexOf(CANARY) === -1, 'plan text not echoed');
 });
 
 // RUNNER
