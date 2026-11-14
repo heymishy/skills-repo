@@ -359,6 +359,174 @@ test('U15 a closed pull request: a gone branch allows a new attempt, a present b
   assert.strictEqual(p.action, 'skip'); assert.strictEqual(p.reason, 'branch-exists');
 });
 
+test('U16 a dry run prints the plan, creates nothing, and with the rebuild switch still changes nothing', () => {
+  const m = mk({ title: 'dry_error' });
+  const s = cliSetup(m);
+  const before = sha(s.incidents);
+  const res = run(planArgs(s, ['--dry-run']));
+  assert.strictEqual(res.status, 0, res.stderr);
+  const lines = resultLines(res);
+  assert.strictEqual(lines.length, 1);
+  assert.strictEqual(lines[0], 'error-issue-incident: dry-run would-open issue #77');
+  const dry = res.stdout.split('\n').find((l) => l.indexOf('error-issue-incident-dry-run: ') === 0);
+  const shown = JSON.parse(dry.slice('error-issue-incident-dry-run: '.length));
+  assert.strictEqual(shown.record.summary, 'dry_error');
+  assert.ok(shown.pullRequest.title.indexOf('dry_error') !== -1);
+  assert.strictEqual(readOut(s.out).action, 'dry-run');
+  assert.strictEqual(sha(s.incidents), before);
+  const s2 = cliSetup(m, { facts: { branches: ['incident/posthog-' + m.id], openPullRequests: [] } });
+  const before2 = sha(s2.incidents);
+  const res2 = run(planArgs(s2, ['--dry-run', '--rebuild']));
+  assert.strictEqual(resultLines(res2)[0], 'error-issue-incident: dry-run would-rebuild issue #77');
+  assert.strictEqual(sha(s2.incidents), before2);
+});
+
+test('U17 an explicit incident file path is required and the script has no default', () => {
+  const m = mk();
+  const s = cliSetup(m);
+  const noPath = run(['plan', '--event', s.eventFile, '--author', AUTHOR, '--facts', s.factsFile]);
+  assert.notStrictEqual(noPath.status, 0);
+  assert.ok(noPath.stderr.indexOf('missing incident file path') !== -1);
+  assert.ok(resultLines(noPath).length === 0);
+  const missing = run(planArgs(Object.assign({}, s, { incidents: path.join(s.dir, 'no', 'such', 'incidents.json') })));
+  assert.notStrictEqual(missing.status, 0);
+  assert.ok(missing.stderr.indexOf('could not read incident file') !== -1);
+  const src = fs.readFileSync(SCRIPT, 'utf8');
+  assert.ok(!/workspace/.test(src) && !/DEFAULT_INCIDENTS_FILE/.test(src), 'no code path may fall back to the real incident file');
+});
+
+test('U18 a hostile event run as a real child process executes nothing', () => {
+  const dir = tmpDir();
+  const sentinel = path.join(dir, 'SENTINEL');
+  const titles = ['$(touch ' + sentinel + ')', '`touch ' + sentinel + '`', '; touch ' + sentinel, '"; touch ' + sentinel + '; "', '${{ secrets.X }}'];
+  titles.forEach((title) => {
+    const m = mk({ title: title });
+    m.issue.body = m.issue.body + '\n```\n$(touch ' + sentinel + ')\n`touch ' + sentinel + '`\n```\n';
+    const s = cliSetup(m);
+    const p = run(planArgs(s));
+    assert.strictEqual(p.status, 0, p.stderr);
+    const plan = readOut(s.out).plan;
+    const b = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', s.out + '2'], { PLAN_JSON: plan });
+    assert.strictEqual(b.status, 0, b.stderr);
+    assert.ok(!fs.existsSync(sentinel), 'nothing was executed for title ' + title);
+    const recs = JSON.parse(fs.readFileSync(s.incidents, 'utf8'));
+    assert.strictEqual(recs[recs.length - 1].summary, title, 'the text is stored as inert data');
+    assert.ok((p.stdout + p.stderr + b.stdout + b.stderr).indexOf('touch') === -1, 'no issue text echoed');
+  });
+});
+
+test('I1 the real record creation against a temp copy adds exactly one valid record', () => {
+  const m = mk({ title: 'real_record_error' });
+  const s = cliSetup(m);
+  const seedsBefore = JSON.parse(fs.readFileSync(s.incidents, 'utf8'));
+  const p = run(planArgs(s));
+  assert.strictEqual(p.status, 0, p.stderr);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(s.incidents, 'utf8')), seedsBefore, 'plan writes nothing');
+  const b = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', s.out + '2'], { PLAN_JSON: readOut(s.out).plan });
+  assert.strictEqual(b.status, 0, b.stderr);
+  const after = JSON.parse(fs.readFileSync(s.incidents, 'utf8'));
+  assert.strictEqual(after.length, 3);
+  assert.deepStrictEqual(after.slice(0, 2), seedsBefore);
+  const rec = after[2];
+  assert.strictEqual(rec.type, 'incident'); assert.strictEqual(rec.status, 'open');
+  assert.strictEqual(rec.summary, 'real_record_error');
+  assert.ok(rec.tags.indexOf('production-error') !== -1 && rec.tags.indexOf('posthog:' + m.id) !== -1);
+  assert.ok(rec.trigger.indexOf(m.issue.html_url) !== -1 && rec.trigger.indexOf(m.id) !== -1);
+  assert.ok(typeof rec.triageSummary === 'string' && rec.triageSummary.length > 0, 'the triage drafter ran');
+  assert.doesNotThrow(() => store.validateRecord(rec));
+  const o = readOut(s.out + '2');
+  assert.strictEqual(o.branch, 'incident/posthog-' + m.id);
+  assert.ok(o.pr_title.indexOf('real_record_error') !== -1 && o.pr_body.indexOf('#77') !== -1);
+});
+
+test('I5 a hand start applies the same recognition as an automatic run', () => {
+  const verdict = (m, author) => { const s = cliSetup(m, { rest: true }); run(planArgs(s, [], author)); return readOut(s.out); };
+  assert.strictEqual(verdict(mk()).action, 'open');
+  const other = verdict(mk(), 'someone-else'); assert.strictEqual(other.action, 'decline'); assert.strictEqual(other.reason, 'author');
+  const noMarker = verdict(mk({ body: 'First seen: t\n' })); assert.strictEqual(noMarker.reason, 'marker');
+  const pr = mk(); pr.issue.pull_request = { url: 'x' };
+  const prOut = verdict(pr); assert.strictEqual(prOut.action, 'decline'); assert.strictEqual(prOut.reason, 'pull-request');
+});
+
+test('I6 the full script flow twice: one plan to open, the second run skips and writes nothing', () => {
+  const m = mk();
+  const s = cliSetup(m);
+  const first = run(planArgs(s));
+  assert.strictEqual(resultLines(first)[0], 'error-issue-incident: open new issue #77');
+  const planJson = JSON.parse(readOut(s.out).plan);
+  assert.strictEqual(planJson.branch, 'incident/posthog-' + m.id);
+  assert.strictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents, '--github-output', s.out + '2'], { PLAN_JSON: readOut(s.out).plan }).status, 0);
+  const afterBuild = sha(s.incidents);
+  const facts2 = writeJson(s.dir, 'facts2.json', { branches: ['incident/posthog-' + m.id], openPullRequests: [] });
+  const second = run(['plan', '--event', s.eventFile, '--author', AUTHOR, '--facts', facts2, '--incidents', s.incidents, '--github-output', s.out + '3']);
+  assert.strictEqual(second.status, 0, second.stderr);
+  assert.strictEqual(readOut(s.out + '3').action, 'skip');
+  assert.strictEqual(readOut(s.out + '3').reason, 'already-recorded');
+  assert.strictEqual(sha(s.incidents), afterBuild, 'the second run changed nothing');
+});
+
+test('N1 every outcome prints one result line with a fixed reason and never repeats issue text', () => {
+  const extra = 'extra ' + CANARY;
+  const variant = (over) => mk(Object.assign({ firstSeen: CANARY, environment: CANARY, link: 'https://us.posthog.com/project/' + CANARY + '/error-tracking/x', body: undefined }, over));
+  const noMarkerBody = 'First seen: ' + CANARY + '\nEnvironment: ' + CANARY + '\nPostHog: https://x/' + CANARY + '\n' + extra + '\n';
+  const idA = crypto.randomUUID(), idB = crypto.randomUUID();
+  const cases = [
+    { m: variant({}), extraArgs: [], expect: 'open new' },
+    { m: variant({}), facts: 'branch', expect: 'skip branch-exists' },
+    { m: variant({}), facts: 'recorded', expect: 'skip already-recorded' },
+    { m: variant({ login: 'someone' }), expect: 'decline author' },
+    { m: variant({ labels: [] }), expect: 'decline label' },
+    { m: variant({ body: noMarkerBody }), expect: 'decline marker' },
+    { m: variant({ body: 'PostHog issue id: ' + idA + '\nPostHog issue id: ' + idB + '\n' + extra }), expect: 'decline marker-ambiguous' },
+    { m: variant({ markerId: '../' + CANARY }), expect: 'decline id' },
+    { m: variant({}), extraArgs: ['--dry-run'], expect: 'dry-run would-open' }
+  ];
+  const seen = new Set();
+  cases.forEach((c) => {
+    const s = cliSetup(c.m);
+    if (c.facts === 'branch') fs.writeFileSync(s.factsFile, JSON.stringify({ branches: ['incident/posthog-' + c.m.id], openPullRequests: [] }));
+    if (c.facts === 'recorded') { const recs = JSON.parse(fs.readFileSync(s.incidents, 'utf8')); recs.push({ id: 'x', type: 'incident', tags: ['production-error', 'posthog:' + c.m.id] }); fs.writeFileSync(s.incidents, JSON.stringify(recs)); }
+    const res = run(planArgs(s, c.extraArgs));
+    assert.strictEqual(res.status, 0, res.stderr);
+    const lines = resultLines(res);
+    assert.strictEqual(lines.length, 1, 'one result line for ' + c.expect);
+    assert.strictEqual(lines[0], 'error-issue-incident: ' + c.expect + ' issue #77');
+    seen.add(lines[0]);
+    assert.ok((res.stdout + res.stderr + fs.readFileSync(s.out, 'utf8')).indexOf(CANARY) === -1, 'no issue text for ' + c.expect);
+  });
+  assert.strictEqual(seen.size, cases.length, 'every outcome has its own line');
+});
+
+test('N2 a failed run leaves nothing half done', () => {
+  const m = mk();
+  const s = cliSetup(m);
+  const asDir = run(planArgs(Object.assign({}, s, { incidents: s.dir })));
+  assert.notStrictEqual(asDir.status, 0); assert.strictEqual(resultLines(asDir).length, 0);
+  const bad = path.join(s.dir, 'bad.json'); fs.writeFileSync(bad, '{not json');
+  const before = sha(bad);
+  const asBad = run(planArgs(Object.assign({}, s, { incidents: bad })));
+  assert.notStrictEqual(asBad.status, 0); assert.strictEqual(sha(bad), before);
+  const plan = (() => { run(planArgs(s)); return readOut(s.out).plan; })();
+  const buildBad = run(['build', '--plan-env', 'PLAN_JSON', '--incidents', bad], { PLAN_JSON: plan });
+  assert.notStrictEqual(buildBad.status, 0); assert.strictEqual(sha(bad), before);
+  assert.notStrictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents], { PLAN_JSON: '{nope' }).status, 0);
+  const skipPlan = JSON.stringify(Object.assign(JSON.parse(plan), { action: 'skip' }));
+  assert.notStrictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents], { PLAN_JSON: skipPlan }).status, 0);
+  const badId = JSON.stringify(Object.assign(JSON.parse(plan), { id: '../x' }));
+  const beforeOk = sha(s.incidents);
+  assert.notStrictEqual(run(['build', '--plan-env', 'PLAN_JSON', '--incidents', s.incidents], { PLAN_JSON: badId }).status, 0);
+  assert.strictEqual(sha(s.incidents), beforeOk, 'a bad plan writes nothing');
+  // facts the planner cannot accept: fixed message, no result line, no stack trace
+  const badFacts = writeJson(s.dir, 'badfacts.json', { branches: 'x', openPullRequests: [] });
+  const badOut = s.out + '9';
+  const asBadFacts = run(['plan', '--event', s.eventFile, '--author', AUTHOR, '--facts', badFacts, '--incidents', s.incidents, '--github-output', badOut]);
+  assert.notStrictEqual(asBadFacts.status, 0);
+  assert.ok(asBadFacts.stderr.indexOf('could not plan: the facts or the event are not acceptable') !== -1);
+  assert.strictEqual(resultLines(asBadFacts).length, 0);
+  assert.ok(asBadFacts.stderr.indexOf('    at ') === -1, 'no stack trace');
+  assert.ok(!fs.existsSync(badOut), 'nothing was written for unacceptable facts');
+});
+
 // RUNNER
 (async () => {
   let passed = 0, failed = 0;
