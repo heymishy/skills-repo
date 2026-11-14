@@ -77,10 +77,19 @@ const GRANDFATHER_LIST = [
 // to 52-56ms (reproduced 3 of 4 runs on 2 CPUs; the same file alone is
 // 28ms), failing PR Checks. Running it in this phase keeps it from sharing
 // the machine with timing-sensitive files in the pool.
+//
+// Third kind of member (2026-11-14, coha-s7): a CPU-heavy file that spawns many
+// child processes and real git in temporary repositories (about 14s alone).
+// Measured on 2 pinned cores, a timing-sensitive neighbour
+// (tests/check-rb-s3-harness-agnostic-instructions.js) ran in about 21s beside it
+// versus about 16s alone, the same slowdown as beside tests/check-coha-s5-error-capture.js
+// (which failed that neighbour's 2-second assertion in 5 of 6 runs); it did not cross the
+// threshold in 6 runs, but the pressure is the same, so it runs in this phase too.
 const SEQUENTIAL_EXCLUSIVE_LIST = [
   'tests/check-lcdf-s1-build-time-learnings-count.js',
   'tests/check-lccf-s1-fail-open-learnings-count.js',
-  'tests/check-coha-s5-error-capture.js'
+  'tests/check-coha-s5-error-capture.js',
+  'tests/check-coha-s7-error-issue-incident.js'
 ];
 
 /**
