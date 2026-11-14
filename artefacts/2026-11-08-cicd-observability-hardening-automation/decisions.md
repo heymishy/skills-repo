@@ -299,6 +299,14 @@
 **Made by:** Claude Sonnet 5.5, 2026-11-14.
 ---
 
+---
+**2026-11-14 | DESIGN | coha-s7: the recognise job also gets pull-requests: read (amends the permission constraint)**
+**Decision:** The recognise job's permissions are contents read, issues read and pull-requests read, all read-only. The record job is unchanged (contents write, pull-requests write). The story's permission-separation constraint, the DoR coding-agent instructions, the contract, the test plan (W2) and the NFR profile are updated to say so.
+**Context:** The security review of the workflow (Task 6) found that the recognise job runs `gh pr list` to learn which pull requests are open, and any permission not listed is set to none. GitHub's documentation says only that some endpoints work on public resources without a permission; it does not confirm this one. If it were refused, every run would fail, including the declined runs for issues anyone opens, so the feature would never work and the repository would show a failed run on every outsider issue. A read-only permission removes the doubt at no meaningful risk.
+**Also recorded (platform facts checked in GitHub's documentation by the reviewer, 2026-11-14):** a pull request opened with the workflow's own token now creates pull_request runs in an approval-required state, so the required checks may be startable by a person with write access ("Approve workflows to run"), which could avoid the admin bypass; AC9 observes which happens. The workflow also gained fork-pull-request filtering in the record step, a stricter issue-number pattern, pipefail, and more structural pins in the tests.
+**Made by:** Claude Sonnet 5.5 (recommended); a read-only permission added within the operator's signed-off design, reported to the operator for confirmation.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
