@@ -46889,7 +46889,7 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-11-14T19:10:51.892Z",
+          "updatedAt": "2026-11-14T20:45:56.047Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46899,11 +46899,11 @@
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },
           "acTotal": 9,
-          "acVerified": 7,
+          "acVerified": 8,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "blocker": "Post-merge live checks outstanding: AC6 live PostHog run and AC9 first real production error; operator secrets, label and PostHog destination not yet set",
+          "blocker": "Post-merge live checks outstanding: AC9 first real production error; production Fly secrets and enabled PostHog destination not yet set (AC6 verified live on staging 2026-11-14)",
           "tasks": [
             {
               "id": "task-1",
