@@ -50127,21 +50127,22 @@
           "id": "ecg-s1",
           "slug": "ecg-s1",
           "name": "Report every server error to the error chain, not only the ones the router catches",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 8,
-          "acVerified": 0,
-          "updatedAt": "2026-11-15T09:11:57.853Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-15T09:20:11.710Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 13,
-            "passing": 0,
+            "passing": 13,
             "artefact": "artefacts/2026-11-15-error-capture-coverage/test-plans/ecg-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
