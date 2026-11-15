@@ -49892,12 +49892,21 @@
           "id": "pes-s1",
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
-          "stage": "definition",
+          "stage": "definition-of-ready",
           "health": "green",
           "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-15T03:35:27.072Z",
-          "blocker": ""
+          "updatedAt": "2026-11-15T03:59:48.048Z",
+          "blocker": "",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s1-test-plan.md"
+          },
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],

@@ -37,3 +37,5 @@
 {"skill":"test-plan","featureSlug":"2026-11-15-coha-s7-test-crlf-fix","storySlug":"cwt-s1","stage":"test-plan","timestamp":"2026-11-15T02:59:17.439Z","startedAt":"2026-11-15T02:49:17.438Z","durationMs":600001}
 {"skill":"definition-of-ready","featureSlug":"2026-11-15-coha-s7-test-crlf-fix","storySlug":"cwt-s1","stage":"definition-of-ready","timestamp":"2026-11-15T02:59:17.440Z","startedAt":"2026-11-15T02:49:17.440Z","durationMs":600000}
 {"skill":"verify-completion","featureSlug":"2026-11-15-coha-s7-test-crlf-fix","storySlug":"cwt-s1","stage":"verify-completion","timestamp":"2026-11-15T03:18:31.904Z","fullSuite":true,"startedAt":"2026-11-15T03:13:42.6626463Z","durationMs":289242}
+{"skill":"test-plan","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s1","stage":"test-plan","timestamp":"2026-11-15T03:59:48.365Z","startedAt":"2026-11-15T03:49:48.363Z","durationMs":600002}
+{"skill":"definition-of-ready","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s1","stage":"definition-of-ready","timestamp":"2026-11-15T03:59:48.366Z","startedAt":"2026-11-15T03:49:48.366Z","durationMs":600000}
