@@ -172,6 +172,7 @@ const DECISIONS = [
     return { html: () => html, status: () => status, writeHead: (s) => { status = s; }, end: (b) => { html = b; } };
   }
   async function renderProduct(pool) {
+    require('../src/web-ui/modules/decisions-reactive-source')._clearDecisionsCache(); // ppp-s1: each scenario sets its own fetch mock for the same slugs
     const res = makeRes();
     await productsRoute.handleGetProductView({ params: { id: 'p1' }, session: { tenantId: 't1', accessToken: 'tok' } }, res, null, pool);
     return res;

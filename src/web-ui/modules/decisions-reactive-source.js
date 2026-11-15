@@ -24,7 +24,10 @@ var HEADER_RE = /^\*\*(\d{4}-\d{2}-\d{2})\s*\|\s*([^|*]+?)\s*(?:\|\s*([^*]*?)\s*
 var DECISION_RE = /^\s*\*\*Decision:\*\*\s*(.*)$/;
 var SAFE_SLUG_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 var MAX_TITLE_LEN = 300;
-var FETCH_CONCURRENCY = 6;
+var FETCH_CONCURRENCY = 16;
+// ppp-s1: in-memory stale-while-revalidate cache for the product page. Key is owner/repo/slug only -- never the token.
+var DEFAULT_TTL_MS = 5 * 60 * 1000;
+var DEFAULT_MAX_ENTRIES = 2000;
 
 function _leadingCode(rawCode) {
   var m = /^[A-Za-z][A-Za-z-]*/.exec(rawCode.trim());
@@ -140,4 +143,93 @@ async function fetchReactiveDecisionsForFeatures(owner, repo, featureSlugs, toke
   return [].concat.apply([], results.filter(Boolean));
 }
 
-module.exports = { parseReactiveDecisions, fetchReactiveDecisionsForFeature, fetchReactiveDecisionsForFeatures };
+// ---------------- ppp-s1: cached, stale-while-revalidate reads ----------------
+var _cache = new Map();    // key -> { items, at }; insertion order = age of the last successful write
+var _inflight = new Map(); // key -> Promise of items; at most one fetch per key at a time
+var _now = function() { return Date.now(); };
+var _ttlMs = DEFAULT_TTL_MS;
+var _maxEntries = DEFAULT_MAX_ENTRIES;
+
+function _setClock(fn) { _now = typeof fn === 'function' ? fn : function() { return Date.now(); }; }
+function _setCacheConfig(cfg) {
+  cfg = cfg || {};
+  _ttlMs = typeof cfg.ttlMs === 'number' ? cfg.ttlMs : DEFAULT_TTL_MS;
+  _maxEntries = typeof cfg.maxEntries === 'number' ? cfg.maxEntries : DEFAULT_MAX_ENTRIES;
+}
+function _clearDecisionsCache() { _cache.clear(); _inflight.clear(); }
+function _cacheKeys() { return Array.from(_cache.keys()); }
+
+function _storeEntry(key, items) {
+  _cache.delete(key);
+  _cache.set(key, { items: items, at: _now() });
+  while (_cache.size > _maxEntries) { _cache.delete(_cache.keys().next().value); }
+}
+
+// One live read. { ok: true, items } for a parsed file or a missing file (both cacheable);
+// { ok: false } for a network, rate-limit or server failure (never cached).
+async function _loadFeature(owner, repo, featureSlug, token) {
+  try {
+    var content = await _artefactFetcher.fetchRepoPath(owner, repo, 'artefacts/' + featureSlug + '/decisions.md', token);
+    if (typeof content !== 'string') { return { ok: true, items: [] }; }
+    return { ok: true, items: parseReactiveDecisions(content, { featureSlug: featureSlug }) };
+  } catch (err) {
+    if (err instanceof _artefactFetcher.ArtefactNotFoundError) { return { ok: true, items: [] }; }
+    console.error('[urpv-s3] decisions.md fetch failed for feature "' + featureSlug + '": ' + (err && err.message ? err.message : 'unknown error'));
+    return { ok: false };
+  }
+}
+
+function _refreshFeature(key, owner, repo, featureSlug, token) {
+  if (_inflight.has(key)) { return _inflight.get(key); }
+  var p = _loadFeature(owner, repo, featureSlug, token).then(function(r) {
+    if (r.ok) { _storeEntry(key, r.items); return r.items; }
+    var old = _cache.get(key);
+    return old ? old.items : [];
+  }).then(function(items) { _inflight.delete(key); return items; });
+  _inflight.set(key, p);
+  return p;
+}
+
+async function _cachedFeature(owner, repo, featureSlug, token) {
+  if (!owner || !repo || !token || typeof featureSlug !== 'string' || !SAFE_SLUG_RE.test(featureSlug) || featureSlug.indexOf('..') !== -1) {
+    return [];
+  }
+  var key = owner + '/' + repo + '/' + featureSlug;
+  var entry = _cache.get(key);
+  if (entry) {
+    if (_now() - entry.at >= _ttlMs) { _refreshFeature(key, owner, repo, featureSlug, token); } // stale: serve now, refresh behind
+    return entry.items;
+  }
+  return _refreshFeature(key, owner, repo, featureSlug, token);
+}
+
+/**
+ * Cached variant of fetchReactiveDecisionsForFeatures for the product page: fresh entries cost no request,
+ * stale entries are served at once and refreshed in the background, a missing file is cached as empty, a failed
+ * fetch is never cached and never replaces a good entry. Always resolves to a flat array.
+ */
+async function fetchReactiveDecisionsForFeaturesCached(owner, repo, featureSlugs, token) {
+  var seen = {};
+  var slugs = (featureSlugs || []).filter(function(s) {
+    if (!s || seen[s]) { return false; }
+    seen[s] = true;
+    return true;
+  });
+  var results = new Array(slugs.length);
+  var next = 0;
+  async function worker() {
+    while (next < slugs.length) {
+      var idx = next++;
+      results[idx] = await _cachedFeature(owner, repo, slugs[idx], token);
+    }
+  }
+  var workers = [];
+  for (var w = 0; w < Math.min(FETCH_CONCURRENCY, slugs.length); w++) { workers.push(worker()); }
+  await Promise.all(workers);
+  return [].concat.apply([], results.filter(Boolean));
+}
+
+module.exports = {
+  parseReactiveDecisions, fetchReactiveDecisionsForFeature, fetchReactiveDecisionsForFeatures,
+  fetchReactiveDecisionsForFeaturesCached, _setClock, _setCacheConfig, _clearDecisionsCache, _cacheKeys
+};
