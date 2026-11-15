@@ -13,4 +13,12 @@
 **Decision:** the pull request may be opened and merged (it changes nothing live by itself, and staging has no allowlist), but PRODUCTION PROMOTION WAITS for the operator-approved read-only query of tenants with members and no admin row, and for each such tenant either a hand-inserted correct admin or a `tenant_admin_bootstrap` row to block the grant. No production read has been run; none will be without the operator's explicit approval each time.
 **Made by:** Claude Sonnet 5.5, 2026-11-15; operator to approve the query and the promotion.
 ---
+---
+**2026-11-15 | VERIFICATION | production tenants-without-admin check run (operator-approved, read-only): result clean, promotion hold released**
+**Decision:** with the operator's explicit approval in chat ("yes for production query while CI runs"), exactly one read-only query was run once inside the production app container (`fly ssh console`, `BEGIN READ ONLY`, 10 s statement timeout, rolled back; the database credential never left the container and nothing was written).
+**Result:** `tenants_with_members: 1, with_admin: 1, solo_no_admin: 0, shared_no_admin: 0`; `tenant_admin_bootstrap` rows: 0 (bootstrap has never succeeded); `people`: 1. No tenant names or personal data were printed (the shared-no-admin list was empty).
+**Consequence:** no existing tenant has members without an admin, so deploying tabf-s1 cannot grant admin over any existing tenant. The only effect is the designed one: the first user of a brand-new tenant (their own tenant, or a newly allowlisted organisation that has no members yet) becomes its admin. The hold on production promotion that this feature's activation-risk entry set is RELEASED for this reason; the operator still approves the promotion in the workflow, and AC7 (clean production login, issue #1101 closed) is checked after the deploy.
+**Residual (LOW, unverified):** a GitHub username of digits only colliding with a Google sub (reviewer's observation); with one person in the system this is not a present risk.
+**Made by:** Claude Sonnet 5.5 under the operator's approval, 2026-11-15.
+---
 ## Architecture Decision Records
