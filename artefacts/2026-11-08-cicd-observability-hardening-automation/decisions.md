@@ -365,6 +365,15 @@
 **Cleanup owed:** close issue #1096, and close pull request #1097 without merging (it holds a record for a fake test id) and delete its branch incident/posthog-00000000-0000-4000-8000-0000c0a56009.
 **Made by:** Hamish King (approved), executed by Claude Sonnet 5.5, 2026-11-15.
 ---
+---
+**2026-11-15 | FINDING | HIGH | the first real production error was absorbed into a staging-created PostHog issue, so it never alerted**
+**Evidence:** the operator triggered a known production error (login-time tenant_admin_bootstrap_failed for tenant heymishy, cause "inconsistent types deduced for parameter $1"). The production event at 2026-11-15 02:52:51 UTC was accepted by PostHog (no cymbal error; the scrubber fix works in production) and grouped into issue 01a1dd12-795d-7763-827f-9a246fad8d00, which a staging event had created at 02:38. PostHog fires `$error_tracking_issue_created` only for a new group, so the alert, the bridge, the GitHub issue and the incident record stayed silent. The app log shows no new bridge request.
+**Cause:** staging and production share PostHog project 10908, and PostHog groups across the whole project.
+**Immediate action (approved in chat):** issue 01a1dd12... set to resolved. A resolved issue fires `$error_tracking_issue_reopened` on its next occurrence, not "created"; the destination listens only to "created", so a retest would still not alert unless the destination also gets the reopened trigger (needs approval) or the issue is otherwise removed.
+**Real fix:** story pes-s1 (artefacts/2026-11-15-posthog-env-separation): give staging its own PostHog project.
+**Also noted:** the "see all products" click that redirects to the dashboard is not an error (no exception is thrown), so error capture correctly sees nothing; it is a separate product bug.
+**Made by:** Claude Sonnet 5.5, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
