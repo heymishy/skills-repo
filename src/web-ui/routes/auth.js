@@ -608,6 +608,13 @@ function authGuard(req, res, next) {
     return;
   }
   function handleGuardedError(err) {
+    // uid-s1: a malformed id in the url is a client mistake: answer 404, do not report it as a server error.
+    var invalidId = require('../utils/invalid-id-error');
+    if (invalidId.isInvalidIdError(err, req)) {
+      console.log('[authGuard] malformed id in the request url, answered 404');
+      invalidId.respondNotFound(res);
+      return;
+    }
     console.error('[authGuard] unhandled error in protected route handler:', err && err.stack ? err.stack : err);
     // ecg-s1: report the real error (this guard answers the 500 itself, so the router catch never sees it).
     try { require('../modules/error-capture').captureServerError(err, { url: req.url, req: req }); }
