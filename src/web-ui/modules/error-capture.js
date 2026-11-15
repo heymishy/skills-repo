@@ -5,7 +5,7 @@
 const NOT_WIRED = 'Adapter not wired: error-capture. Call initErrorCapture() with a real implementation before use.';
 const FIXED_DISTINCT_ID = 'server-error-capture';
 const KEPT_KEYS = ['$exception_list', '$exception_level', '$lib', '$lib_version',
-  '$is_server', '$geoip_disable', '$process_person_profile', 'environment', 'route', 'code'];
+  '$is_server', '$geoip_disable', '$process_person_profile', '$exception_fingerprint', 'environment', 'route', 'code'];
 const ALLOW_LISTED_MESSAGES = new Set(['tenant_admin_bootstrap_failed']);
 
 // First path segments of the real routes in src/web-ui/server.js, collected 2026-11-13 by grepping its
@@ -78,11 +78,13 @@ function scrubEvent(ev, environment) {
     if (typeof p.$lib_version === 'string' && RE_VERSION.test(p.$lib_version)) out.$lib_version = p.$lib_version;
     if (typeof p.$is_server === 'boolean') out.$is_server = p.$is_server;
     if (typeof p.$geoip_disable === 'boolean') out.$geoip_disable = p.$geoip_disable;
-    // $exception_fingerprint is deliberately never copied: a hex-shaped value cannot be told apart from tenant-derived text.
+    // An incoming $exception_fingerprint is deliberately never copied: a hex-shaped value cannot be told apart from tenant-derived text.
+    // pes-s1: the scrubber writes its own fingerprint below from fixed values only, so staging and production never share a PostHog issue.
     out.$exception_level = LEVELS.indexOf(p.$exception_level) >= 0 ? p.$exception_level : 'error';
     out.code = code;
     out.route = typeof p.route === 'string' ? routeLabel(p.route) : '/process';
     out.environment = environment;
+    out.$exception_fingerprint = [(environment === 'staging' || environment === 'production') ? environment : 'unknown', code, out.route];
     out.$process_person_profile = false;
     out.$exception_list = p.$exception_list.map(x => {
       const frames = ((x.stacktrace && Array.isArray(x.stacktrace.frames)) ? x.stacktrace.frames : []).map(scrubFrame);
