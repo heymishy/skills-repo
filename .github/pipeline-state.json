@@ -50310,6 +50310,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-16-artefact-not-found",
+      "name": "Answer artefact not found quickly, and never 503, for a link that cannot name an artefact",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T23:15:12.426Z",
+      "stories": [
+        {
+          "id": "anf-s1",
+          "slug": "anf-s1",
+          "name": "Answer artefact not found quickly, and never 503, for a link that cannot name an artefact",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T23:15:19.418Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-artefact-not-found/test-plans/anf-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
