@@ -46888,8 +46888,8 @@
           "epic": "coha-e1-detect-and-alert",
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
           "stage": "definition-of-done",
-          "health": "amber",
-          "updatedAt": "2026-11-15T00:03:51.387Z",
+          "health": "green",
+          "updatedAt": "2026-11-15T05:53:00.734Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46899,11 +46899,11 @@
             "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/test-plans/coha-s6-alert-to-github-issue-bridge-test-plan.md"
           },
           "acTotal": 9,
-          "acVerified": 8,
+          "acVerified": 9,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "blocker": "Only AC9 outstanding: first real production error to open exactly one issue. Production bridge LIVE since 2026-11-15 (test issue 1092). Rotate the GitHub token within 90 days.",
+          "blocker": "",
           "tasks": [
             {
               "id": "task-1",
@@ -46970,7 +46970,7 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1089",
           "dodStatus": "complete",
-          "releaseReady": false
+          "releaseReady": true
         },
         {
           "id": "coha-s7",
@@ -49932,7 +49932,7 @@
           "slug": "pes-s2",
           "name": "Send the environment-specific fingerprint as a string, because PostHog rejects an array",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 6,
@@ -49940,11 +49940,11 @@
             "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 4,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T05:28:33.891Z",
-          "blocker": "AC5 outstanding: production promotion approval and the known production login error",
+          "updatedAt": "2026-11-15T05:53:00.592Z",
+          "blocker": "",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49964,7 +49964,7 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1100",
           "dodStatus": "complete",
-          "releaseReady": false
+          "releaseReady": true
         }
       ],
       "metrics": [],

@@ -24,7 +24,7 @@ Verification-strength tags: `unit` is a test against stubs; `integration-real-co
 | AC6 | ✅ | Criterion: live PostHog test run opens exactly one issue. Evidence: 2026-11-14 20:39 UTC, a test invocation of the PostHog webhook destination (real HTTP, secret header added in the PostHog UI) against https://wuce-staging.fly.dev/webhook/error-alert with a made-up production event (id 00000000-0000-4000-8000-0000c0a56006) created exactly one issue, #1091 in heymishy/skills-repo: title tenant_admin_bootstrap_failed, label production-error, body holding only first-seen, environment, PostHog link and id line. Staging log: one line "created issue #1091". No second issue appeared after several minutes. Issue closed by the operator. | `live-verified` | PostHog logged attempt 1 as timed out and retried, yet the issue was created in that same second; deduplication held. Bridge response time on a cold machine is worth watching. |
 | AC7 | ✅ | Criterion: real startup wiring. Evidence: W1 (no database) and against real Postgres P6 and P7: the fake GitHub API received the right path, bearer token, title, body marker and label; two ids gave two different correct issues | `integration-real-code` | None |
 | AC8 | ✅ | Criterion: unwired adapter throws the exact message and is contained. Evidence: U23 (exact message), U24, the unwired-adapter-never-releases test, W1 (503 and "Adapter not wired" log) | `unit` and `integration-real-code` | None |
-| AC9 | ⚠️ | Criterion: first real production error opens exactly one issue. Evidence: Cannot be produced on demand. Accepted as a RISK-ACCEPT in decisions.md (2026-11-13) | none yet | Waiting for the first real production error: `production-observed` evidence still to come |
+| AC9 | ✅ | Criterion: the first real production error opens exactly one issue. Evidence: 2026-11-15 05:51 UTC a real production error (login-time tenant_admin_bootstrap_failed for tenant heymishy) opened exactly one GitHub issue, #1101 (label production-error, body with first-seen, environment, PostHog link and id), 15 seconds after PostHog created the issue 01a1ddc2-f17b-7c23-900b-0558af68b822; the bridge log shows one "created issue #1101". The repeat-of-the-same-error case (no second issue) was proven earlier by tests and the test issue #1092 flow, not by this event: only one production error occurred. Production release v187. | `production-observed` | None |
 
 **A deviation is any difference between implemented behaviour and the AC**, even if minor. Deviations are recorded here and will be surfaced by /trace.
 
@@ -73,7 +73,7 @@ Metric 4 (Production-defect detection latency) lists no contributing stories in 
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 Eight of nine ACs are satisfied: seven on `unit` and `integration-real-code` evidence, and AC6 on `live-verified` evidence from staging (2026-11-14). AC9 (the first real production error) is production-observed only and not yet seen. The staging run proves the bridge, secret, token and label work end to end; production still needs its own Fly secrets and an enabled PostHog destination.
 
@@ -108,3 +108,10 @@ Check:
 5. Is the outcome verdict (COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE) consistent with the AC and deviation rows?
 Report findings as HIGH / MEDIUM / LOW.
 ```
+
+
+---
+
+## Update 2026-11-15 (production observed)
+
+AC9 is satisfied: the first real production error opened issue #1101 and the chain ran end to end. The follow-ups about the PostHog destination, secrets and the label are done. Remaining optional items: the Postgres service in CI for the seven real-database tests, and the retry-while-in-flight accepted risk. Two defects found on the way are recorded in decisions.md: the scrubber filename (sff-s1) and the fingerprint wire type (pes-s1, pes-s2), plus the first_seen template field.
