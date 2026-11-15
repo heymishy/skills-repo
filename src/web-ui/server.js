@@ -71,6 +71,7 @@ const { setPlanStateAdapter }                                        = require('
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const _errorCapture                                                   = require('./modules/error-capture'); // coha-s5
+const _invalidIdError                                                 = require('./utils/invalid-id-error'); // uid-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { setPipelineStateFetchAdapter, realFetchPipelineState, setPipelineStateBlobFetchAdapter, realFetchBlobBySha } = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2, psbf-s1
 const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
@@ -5286,6 +5287,11 @@ function createApp(options) {
   return http.createServer((req, res) => {
     _watch5xx(req, res); // ecg-s1
     _router(req, res).catch((err) => {
+      if (_invalidIdError.isInvalidIdError(err, req)) { // uid-s1: malformed id in the url -> 404, not a server error
+        console.log('[router] malformed id in the request url, answered 404');
+        _invalidIdError.respondNotFound(res);
+        return;
+      }
       console.error('[router error]', err.message, err.stack);
       try { _errorCapture.captureServerError(err, { url: req.url, req: req }); } // coha-s5, ecg-s1: req so a second report is suppressed
       catch (captureErr) { console.error('[error-capture] capture failed:', captureErr.message); } // never changes the 500
