@@ -134,7 +134,9 @@ function persistSession(id) {
   const data = _sessions.get(id);
   if (!data) return Promise.resolve();
 
-  const write = adapter.writeSession(id, _sanitiseForRedis(data)).catch(function(err) {
+  // sps-s1: the session data object still carries no token; the token travels as a separate argument so the adapter alone
+  // decides whether to store it (encrypted, only when a valid key is configured) or drop it.
+  const write = adapter.writeSession(id, _sanitiseForRedis(data), data.accessToken).catch(function(err) {
     console.error('[session] Redis write error:', err.message);
   });
 
@@ -193,8 +195,10 @@ function _parseSessionId(cookieHeader) {
  * like oauthState (the pre-login CSRF value) that were already persisted
  * via persistSession() but never reloaded per-request -- previously only
  * loadSessionsFromRedis() at server startup did that. accessToken is
- * deliberately never restored this way (see _sanitise/_sanitiseForRedis) --
- * an operator-confirmed scope boundary, not an oversight (see decisions.md).
+ * restored only when the adapter can decrypt it (sps-s1: stored encrypted,
+ * and only when SESSION_ENCRYPTION_KEY is set); otherwise it stays absent and
+ * the person signs in again, as before (srf-s1 decision, superseded for the
+ * token by sps-s1, see artefacts/2026-11-16-session-persistence/decisions.md).
  *
  * @param {object} req
  * @param {object} res

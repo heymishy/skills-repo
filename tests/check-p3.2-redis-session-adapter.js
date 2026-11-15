@@ -93,7 +93,7 @@ console.log('\nAC1 — session is written to Redis when persistSession is called
 
 // ── AC2: accessToken never written to Redis ───────────────────────────────────
 
-console.log('\nAC2 — accessToken is never written to Redis');
+console.log('\nAC2 — accessToken is never in the session data written to Redis (sps-s1: it travels separately and is stored only as ciphertext, see check-sps-s1)');
 return (async function() {
   session._clearForTesting();
   var stub = makeRedisStubV2();
