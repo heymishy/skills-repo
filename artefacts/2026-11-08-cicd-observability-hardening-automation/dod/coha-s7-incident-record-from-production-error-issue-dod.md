@@ -24,7 +24,7 @@ Verification-strength tags: `unit` is a test against stubs; `integration-real-co
 | AC6 | ✅ | Criterion: hostile text inert; bad id creates no branch; code in inline code. Evidence: U12, U13, U18 (real child process with a sentinel file), W4 | `integration-real-code` | None |
 | AC7 | ✅ | Criterion: simultaneous issues independent; conflicted record rebuilt. Evidence: I4 (real git: second merge conflicts, rebuild with force-with-lease merges cleanly), I5, U14b, W3, W9 | `integration-real-code` | None |
 | AC8 | ✅ | Criterion: dry run prints the result and creates nothing. Evidence: 2026-11-15 on GitHub. Test issue #1093 opened by hand without the label: the automatic run declined it ("decline label issue #1093"). After adding the label no run started. A hand-started run with dry_run=true (run 43657093638) logged "dry-run would-open issue #1093" with the record (summary coha_s7_live_test_error, tags production-error and posthog:00000000-0000-4000-8000-000000000009) and branch incident/posthog-00000000-0000-4000-8000-000000000009; the record job was skipped and no branch or pull request exists. Variable ERROR_BRIDGE_AUTHOR=heymishy was set first. | `live-verified` | None |
-| AC9 | ⚠️ | Criterion: live real run: one branch, one pull request, repeat creates nothing, cleaned up. Evidence: W2, W5, W9, W13 and I6 cover the structure and real-git behaviour; the live real run (scenario 9) has not been run; it needs the operator's approval immediately before | `integration-real-code` only so far | Live-only: not verified |
+| AC9 | ✅ | Criterion: live real run opens one branch and one pull request, a repeat creates nothing, and cleanup leaves nothing. Evidence: 2026-11-15 on GitHub, issue #1093. Hand-started run 43657653258 (dry run off) created exactly one branch incident/posthog-00000000-0000-4000-8000-000000000009 and one pull request, #1094 into master, authored by github-actions[bot], one commit, changing only workspace/incidents.json by one added record (summary coha_s7_live_test_error, tags production-error and posthog:...0009). A second run 43657787348 logged "skip pr-open issue #1093" and created nothing. After cleanup (PR closed unmerged, branch deleted, issue closed) no incident branch remains and master incidents.json has no trace of the test id. | `live-verified` | None |
 
 **A deviation is any difference between implemented behaviour and the AC**, even if minor. Deviations are recorded here and will be surfaced by /trace.
 
@@ -77,14 +77,14 @@ Metric 4 (Production-defect detection latency) lists no contributing stories in 
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-Eight of nine ACs are satisfied: seven on `unit` and `integration-real-code` evidence and AC8 on `live-verified` evidence (2026-11-15). AC9 is live-only and not yet run; the claimed real-world effect (the workflow opening one record pull request on GitHub for a real labelled issue) has not been observed.
+All nine acceptance criteria are satisfied: seven on `unit` and `integration-real-code` evidence, and AC8 (dry run) and AC9 (real run) on `live-verified` evidence from GitHub on 2026-11-15. Nothing was left behind by the live tests. The additions beyond the plan text are recorded in decisions.md and are not AC deviations.
 
 **Follow-up actions:**
 1. Operator: create the repository variable `ERROR_BRIDGE_AUTHOR` holding the bridge account's exact login, letter case included. Until it is set the workflow declines every issue, by design.
 2. DONE 2026-11-15 (AC8 passed; the variable was created first). Original step: the AC8 live dry run (verification scenario 8): open the test issue WITHOUT the label, add the label afterwards, start the workflow by hand with `dry_run` on. Confirm it prints the result and creates no branch or pull request.
-3. Operator: approve, immediately before, the AC9 live real run (scenario 9) with the fake id `00000000-0000-4000-8000-000000000009`: confirm one branch and one pull request, that a repeat creates nothing, then close the pull request and delete the branch. Record whether the required checks on the workflow-made pull request need approval to start, and merge real record pull requests with the admin bypass. Upgrades AC1, AC2 and AC7 to `live-verified`.
+3. DONE 2026-11-15 (AC9 passed). Finding recorded in decisions.md: GitHub created all six pull_request workflow runs on the workflow-made pull request but held every one as action_required (waiting for approval), so the required checks (Run assurance gate, Scenario A and B E2E) can be started by approving the runs on the pull request page and the merge need not use the admin bypass; the pull request showed merge state BLOCKED until then.
 4. Decision pending: the triage drafter links every new record to every earlier one because all records share the `production-error` tag (similarity 0.33 against a 0.3 threshold). Needs a threshold or tag change before it matters.
 5. Follow-up: add bidirectional-text and zero-width character ranges to the code check in both the producer (coha-s6) and the consumer (coha-s7).
 

@@ -334,6 +334,13 @@
 **Rationale:** The bridge is the live path from a new production error to a GitHub issue; enabling was approved by the operator in chat after the passing test. The destination can be disabled in PostHog at any time to stop it.
 **Made by:** Hamish King (approval in chat), executed by Claude Sonnet 5.5, 2026-11-15.
 ---
+---
+**2026-11-15 | VERIFICATION | coha-s7 live checks passed; required checks on workflow-made pull requests are held for approval, not absent**
+**Decision:** AC8 (dry run, run 43657093638) and AC9 (real run 43657653258, repeat run 43657787348) passed on GitHub on 2026-11-15 using test issue 1093 and fake id 00000000-0000-4000-8000-000000000009; the test pull request (1094) was closed unmerged and its branch deleted.
+**Finding (the question left open at the 2026-11-14 admin-bypass decision):** all six pull_request workflow runs on the workflow-made pull request were created and held as action_required (waiting for approval); none ran. Merge state was BLOCKED. So the required checks (Run assurance gate, Scenario A E2E (staging), Scenario B E2E (staging)) can be started by approving the held runs on the pull request page ("Approve and run workflows"), after which a normal merge is possible; the admin bypass remains an alternative. Approving runs workflows from the incident branch, which contains only the one-record change to workspace/incidents.json, but the operator should glance at the diff first.
+**Observation:** the workflow logs a warning that actions/checkout@v4 targets Node 20, which GitHub is forcing onto Node 24; still works; revisit when a newer checkout major version is adopted repo-wide.
+**Made by:** Claude Sonnet 5.5, with the live runs approved by Hamish King in chat, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
