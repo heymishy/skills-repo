@@ -103,9 +103,9 @@ const NAV_ITEMS = [
 // ability to reach the tenant-wide kanban board via the UI (previously the
 // sidebar's Home toggle was the ONLY way to reach it -- confirmed
 // _renderProductDashboard's own page body has no such toggle).
-function renderSeeAllProductsRow() {
+function renderSeeAllProductsRow(active) {
   return [
-    '<a href="/dashboard" class="sw-see-all-products">See all products →</a>',
+    '<a href="/products" class="sw-see-all-products' + (active === 'products' ? ' sw-see-all-products--active" aria-current="page' : '') + '">See all products →</a>',
     '<div class="sw-nav-subrow" role="group" aria-label="All-products view">',
       '<a href="/dashboard" class="sw-nav-subitem">List</a>',
       '<a href="/dashboard?view=board" class="sw-nav-subitem">Board</a>',
@@ -140,7 +140,7 @@ function _renderProductNavItem(product, activeProductId) {
  * @param {string} [activeProductId]
  * @param {number} [noProductJourneyCount]
  */
-function renderProductsSection(products, activeProductId, noProductJourneyCount) {
+function renderProductsSection(products, activeProductId, noProductJourneyCount, active) {
   if (!products) return '';
   const rows = products.map(function(p) { return _renderProductNavItem(p, activeProductId); }).join('');
   const noProductActive = activeProductId == null && noProductJourneyCount != null;
@@ -159,7 +159,7 @@ function renderProductsSection(products, activeProductId, noProductJourneyCount)
       '<a href="/products/new" class="sw-add-product" title="New product">+</a>',
     '</div>',
     '<nav class="sw-product-nav-list" aria-label="Products">' + rows + noProductRow + '</nav>',
-    renderSeeAllProductsRow(),
+    renderSeeAllProductsRow(active),
   ].join('');
 }
 
@@ -196,7 +196,7 @@ function renderSidebar(active, login, isAdmin, products, activeProductId, noProd
     return item.section === 'account' && (!item.adminOnly || isAdmin);
   });
 
-  const productsSection = renderProductsSection(products, activeProductId, noProductJourneyCount);
+  const productsSection = renderProductsSection(products, activeProductId, noProductJourneyCount, active);
   const items = productItems.map(function(item) { return _renderNavLink(item, active); }).join('');
   const accountNav = accountItems.length
     ? '<nav class="sw-nav-account" aria-label="Account navigation">' +
@@ -572,6 +572,7 @@ a { color: inherit; }
 .sw-product-count { font-size: 11px; color: var(--muted-2); font-variant-numeric: tabular-nums; }
 .sw-see-all-products { display: block; font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; padding: 6px 10px 0; }
 .sw-see-all-products:hover { text-decoration: underline; }
+      .sw-see-all-products--active { font-weight: 700; text-decoration: underline; }
 /* b2: account-level nav section (Settings + the admin-only entry) -- visually
    distinct from the product nav above via a top divider, pushed to the sidebar
    bottom (margin-top: auto) directly above the identity block. */
