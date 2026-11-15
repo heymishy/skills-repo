@@ -20,4 +20,9 @@
 **Finding:** since dsa-s2, `_renderProductDashboard` (routes/products.js lines 193-209) renders the dashboard body without a product card grid ("product navigation is already fully served by renderShell's own sidebar"). So no page body lists products; the sidebar's Products section is the only list, and it disappears on any page that calls `renderShell` without the product list (72 direct `renderShell` calls remain in the route files, 36 in journey.js and 16 in skills.js; not yet audited). The new `/products` page is a real, stable list; the sidebar gap is a separate follow-up.
 **Made by:** Claude Sonnet 5.5, 2026-11-15.
 ---
+---
+**2026-11-15 | RISK-ACCEPT | branch-setup baseline: the same acknowledged pre-existing failing files**
+**Decision:** A full `npm test` in the new worktree (854 files, 335 s) failed five files, all already acknowledged by the operator earlier today: `scripts/check-pipeline-state-integrity.js` (tfhc-s1), `tests/check-pcr-s1-test-runner.js` (machine-specific timing), `tests/check-p4-enf-second-line.js` (timing under load), `tests/check-p3.5-validate-trace.js` (PowerShell 5), `tests/check-rtvap-s1-archived-test-plan-coverage.js` (no WSL bash). None touch the products routes or the shell. Proceeding under the same acknowledgement; `/verify-completion` compares against this list.
+**Made by:** recorded by Claude Sonnet 5.5, 2026-11-15; operator acknowledgement of the same set given in chat for sff-s1.
+---
 ## Architecture Decision Records
