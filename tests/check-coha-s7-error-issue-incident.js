@@ -748,6 +748,18 @@ function splitJobs(content) {
 const jobs = splitJobs(wf);
 const jobText = (id) => { const j = jobs.find((x) => x.id === id); return j ? j.lines.join('\n') : ''; };
 const topText = wf.split(/^jobs:/m)[0];
+
+// cwt-s1: a Windows checkout (core.autocrlf=true) gives the workflow CRLF endings; the pins below match with ^, $ and \n.
+test('cwt_UT1 the workflow text the structural tests read contains no carriage return', () => {
+  assert.strictEqual(wf.indexOf('\r'), -1, 'the workflow text must be read with line endings normalised to LF');
+});
+test('cwt_UT2 normalising line endings keeps the W3 concurrency pin strong', () => {
+  const w3 = (text) => /^concurrency:\s*\n  group:\s*(.+)\n  cancel-in-progress:\s*false\s*$/m.test(text.split(/^jobs:/m)[0]);
+  const lf = wf.replace(/\r\n/g, '\n');
+  assert.ok(w3(lf), 'the real workflow must satisfy the pin');
+  assert.ok(w3(lf.replace(/\n/g, '\r\n').replace(/\r\n/g, '\n')), 'a CRLF copy, once normalised, must satisfy the pin');
+  assert.ok(!w3(lf.replace('cancel-in-progress: false', 'cancel-in-progress: true')), 'a workflow that cancels in progress must still fail the pin');
+});
 function jobPermissions(text) {
   const lines = text.split('\n'); const i = lines.findIndex((l) => /^    permissions:\s*$/.test(l));
   const out = {}; if (i === -1) return null;
