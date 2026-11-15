@@ -1,0 +1,10 @@
+{
+  "_comment": "Frame shapes captured from PostHog project 10908 on 2026-11-15 ($exception_list of production events for /skills/:p/:p/:p/:p that PostHog left unprocessed with 'serde error: missing field function'). The first frame is an anonymous arrow function at src/web-ui/server.js line 3775 and has NO function key: that is the live defect. The readback was truncated after the shapes below; the later frames are written to the same shapes.",
+  "frames": [
+    { "colno": 39, "filename": "src/web-ui/server.js", "in_app": true, "lineno": 3775, "platform": "node:javascript" },
+    { "colno": 5, "filename": "[redacted]", "function": "process.processTicksAndRejections", "in_app": false, "lineno": 95, "platform": "node:javascript" },
+    { "colno": 9, "filename": "src/web-ui/routes/skills.js", "function": "handleGetResultHtml", "in_app": true, "lineno": 1722, "platform": "node:javascript" },
+    { "colno": 56, "filename": "src/web-ui/server.js", "function": "res.writeHead", "in_app": true, "lineno": 5272, "platform": "node:javascript" },
+    { "colno": 7, "filename": "src/web-ui/server.js", "function": "_report5xx", "in_app": true, "lineno": 5266, "platform": "node:javascript" }
+  ]
+}
