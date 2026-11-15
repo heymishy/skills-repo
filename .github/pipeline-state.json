@@ -50163,15 +50163,15 @@
           "stage": "branch-complete",
           "health": "green",
           "acTotal": 8,
-          "acVerified": 6,
-          "updatedAt": "2026-11-15T18:00:14.926Z",
+          "acVerified": 8,
+          "updatedAt": "2026-11-15T18:09:20.280Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 11,
-            "passing": 10,
+            "passing": 11,
             "artefact": "artefacts/2026-11-15-invalid-id-not-found/test-plans/uid-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
