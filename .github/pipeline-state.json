@@ -49893,11 +49893,11 @@
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
           "stage": "branch-complete",
-          "health": "green",
+          "health": "amber",
           "acTotal": 6,
           "acVerified": 4,
-          "updatedAt": "2026-11-15T04:24:47.153Z",
-          "blocker": "AC5 and AC6 live checks outstanding after merge and deploy",
+          "updatedAt": "2026-11-15T04:47:04.421Z",
+          "blocker": "REGRESSION: PostHog rejects the array fingerprint (needs string); follow-up pes-s2",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -49922,7 +49922,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1099"
         }
       ],

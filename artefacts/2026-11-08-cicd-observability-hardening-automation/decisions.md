@@ -374,6 +374,13 @@
 **Also noted:** the "see all products" click that redirects to the dashboard is not an error (no exception is thrown), so error capture correctly sees nothing; it is a separate product bug.
 **Made by:** Claude Sonnet 5.5, 2026-11-15.
 ---
+---
+**2026-11-15 | FINDING | HIGH | pes-s1 regression: PostHog rejects an array `$exception_fingerprint`, so new error events are rejected again (staging and production)**
+**Evidence:** after the pes-s1 merge (PR 1099, 04:33 UTC) deployed to staging (v1299) and production (v186), 9 of 9 new staging `$exception` events (04:35 to 04:36 UTC) carry the intended fingerprint `["staging","tenant_admin_bootstrap_failed","/auth/:p"]` but PostHog rejects each with `$cymbal_errors` = "serde error: invalid type: sequence, expected a string", and none has an issue id. PostHog's own reference lists `$exception_fingerprint` as a String (its Python example passes a list through a different mechanism). No production event has arrived since the deploy, so production is exposed but untested: any production error now would be rejected and never alert.
+**Cause:** my error. The story and tests specified an array because one doc example showed a list; I did not check the wire type against a real accepted event, and the unit tests asserted the array I wrote (the mock-shape rule again).
+**Fix (needs the operator's go):** a short-track follow-up, pes-s2: make the fingerprint a single string built from the same three fixed values (for example `staging|tenant_admin_bootstrap_failed|/auth/:p`), update the five tests, deploy, and verify live that new staging events are accepted AND carry a new issue id. Until it ships, the operator should NOT trigger the production login error test (it would be rejected and burn the test).
+**Made by:** Claude Sonnet 5.5, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
