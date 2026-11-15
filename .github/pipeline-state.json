@@ -50112,6 +50112,38 @@
           "blocker": "deferred: see decisions.md (not worth building at 5 products; revisit at dozens)"
         }
       ]
+    },
+    {
+      "slug": "2026-11-15-error-capture-coverage",
+      "name": "Report every server error to the error chain (authGuard, safety net, unhandled rejections)",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T09:11:57.198Z",
+      "stories": [
+        {
+          "id": "ecg-s1",
+          "slug": "ecg-s1",
+          "name": "Report every server error to the error chain, not only the ones the router catches",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T09:11:57.853Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 13,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-error-capture-coverage/test-plans/ecg-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
