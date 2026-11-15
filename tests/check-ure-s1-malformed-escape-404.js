@@ -122,7 +122,7 @@ test('T5 a response that has already ended is not written twice and nothing thro
 test('T6a the real route table answers 404 for broken escapes on three decoding routes (AC6)', async () => {
   const calls = wire(); const restore = quiet();
   try {
-    for (const url of ['/journey/x/stage/' + BROKEN, '/products/x/playback-evidence/' + BROKEN, '/skills/discovery/sessions/' + BROKEN + '/commit-preview']) {
+    for (const url of ['/journey/x/stage/' + BROKEN, '/products/x/playback-evidence/' + BROKEN, '/playback-media/' + BROKEN]) {
       const r = await request(null, url);
       assert.strictEqual(r.status, 404, url + ' answered ' + r.status);
       assert.strictEqual(r.body, NOT_FOUND_BODY);
