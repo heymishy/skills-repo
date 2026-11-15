@@ -609,6 +609,9 @@ function authGuard(req, res, next) {
   }
   function handleGuardedError(err) {
     console.error('[authGuard] unhandled error in protected route handler:', err && err.stack ? err.stack : err);
+    // ecg-s1: report the real error (this guard answers the 500 itself, so the router catch never sees it).
+    try { require('../modules/error-capture').captureServerError(err, { url: req.url, req: req }); }
+    catch (_captureErr) { /* capture must never change the 500 */ }
     if (!res.headersSent) {
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');

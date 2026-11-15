@@ -138,6 +138,8 @@ function captureServerError(err, context) {
   if (!_state.client) return;  // initialised without a key: deliberate no-op
   context = context || {};
   if (isE2ETestIdentity(context.identity)) return;
+  // ecg-s1: at most one report per request, whichever path (guard, router catch, 5xx safety net) gets there first.
+  if (context.req) { if (context.req._errorCaptured) return; context.req._errorCaptured = true; }
   _state.client.captureException(err, FIXED_DISTINCT_ID, {
     code: context.code || 'request_error', route: routeLabel(context.url),
     environment: _state.environment, $process_person_profile: false

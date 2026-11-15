@@ -5258,12 +5258,36 @@ async function router(req, res) {
 }
 
 /** Create and return the HTTP server instance. */
+// ecg-s1: report a 5xx that no code path reported with its real error (about 48 routes answer 500 directly, and
+// 502/503/504 elsewhere). Runs beside the response, never before or instead of it; a failing capture changes nothing.
+function _report5xx(req, status) {
+  if (req._errorCaptured) { return; }
+  try { _errorCapture.captureServerError(new Error('http_' + status), { code: 'http_5xx', url: req.url, req: req }); }
+  catch (_captureErr) { /* capture must never change the response */ }
+}
+function _watch5xx(req, res) {
+  const origWriteHead = res.writeHead;
+  res.writeHead = function (status) {
+    if (typeof status === 'number' && status >= 500) { _report5xx(req, status); }
+    return origWriteHead.apply(this, arguments);
+  };
+  res.on('finish', () => { if (res.statusCode >= 500) { _report5xx(req, res.statusCode); } }); // statusCode set, then end()
+}
+
+// ecg-s1: the process-level handler body, exported so it can be tested; logs as before, reports, never exits.
+function handleUnhandledRejection(reason) {
+  console.error('[unhandledRejection]', reason && reason.stack ? reason.stack : reason);
+  try { _errorCapture.captureServerError(reason instanceof Error ? reason : new Error('unhandled_rejection'), { code: 'unhandled_rejection' }); }
+  catch (_captureErr) { /* capture must never change behaviour */ }
+}
+
 function createApp(options) {
   const _router = (options && options.router) || router; // coha-s5: test seam, defaults to the real router
   return http.createServer((req, res) => {
+    _watch5xx(req, res); // ecg-s1
     _router(req, res).catch((err) => {
       console.error('[router error]', err.message, err.stack);
-      try { _errorCapture.captureServerError(err, { url: req.url }); } // coha-s5
+      try { _errorCapture.captureServerError(err, { url: req.url, req: req }); } // coha-s5, ecg-s1: req so a second report is suppressed
       catch (captureErr) { console.error('[error-capture] capture failed:', captureErr.message); } // never changes the 500
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
@@ -5289,9 +5313,7 @@ function wireErrorCapture(env, deps) {
 }
 
 if (require.main === module) {
-  process.on('unhandledRejection', function(reason) {
-    console.error('[unhandledRejection]', reason && reason.stack ? reason.stack : reason);
-  });
+  process.on('unhandledRejection', handleUnhandledRejection); // ecg-s1: logs and reports
   process.on('uncaughtException', function(err) {
     console.error('[uncaughtException]', err && err.stack ? err.stack : err);
   });
@@ -5328,6 +5350,7 @@ if (require.main === module) {
 
 module.exports = {
   createApp,
+  handleUnhandledRejection,
   wireErrorCapture,
   router,
   // dss-s1: exported for direct unit testing of the gate logic itself
