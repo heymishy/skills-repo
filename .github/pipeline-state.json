@@ -50131,7 +50131,7 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 7,
-          "updatedAt": "2026-11-15T09:20:11.710Z",
+          "updatedAt": "2026-11-15T09:31:07.024Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50142,7 +50142,7 @@
             "artefact": "artefacts/2026-11-15-error-capture-coverage/test-plans/ecg-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
