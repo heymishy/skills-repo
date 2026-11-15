@@ -49881,7 +49881,7 @@
     },
     {
       "slug": "2026-11-15-posthog-env-separation",
-      "name": "Send staging errors to a separate PostHog project so production errors always start their own error group",
+      "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
       "track": "short",
       "stage": "definition",
       "health": "green",
@@ -49889,10 +49889,10 @@
         {
           "id": "pes-s1",
           "slug": "pes-s1",
-          "name": "Send staging errors to a separate PostHog project so production errors always start their own error group",
+          "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
           "stage": "definition",
           "health": "green",
-          "acTotal": 5,
+          "acTotal": 6,
           "acVerified": 0,
           "updatedAt": "2026-11-15T03:35:27.072Z",
           "blocker": ""
