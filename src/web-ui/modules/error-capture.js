@@ -23,6 +23,7 @@ const RE_IDENT = /^[A-Za-z_$][\w$.<>]{0,80}$/;
 const ALLOWED_CODES = new Set(Array.from(ALLOW_LISTED_MESSAGES).concat(['request_error', 'unhandled_exception']));
 const ALLOWED_TYPES = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'EvalError', 'URIError', 'AggregateError']);
 const MAX_ROUTE_SEGMENTS = 8;
+const REDACTED_FILENAME = '[redacted]';  // sff-s1: PostHog requires a string filename on every frame; this fixed value is the only thing sent when the real path must not be
 
 // From the LAST 'src/' or 'node_modules/' at a segment boundary, else the basename; the caller keeps
 // the result only if it starts with src/ or node_modules/ (a basename never does, so it is omitted).
@@ -51,11 +52,12 @@ function routeLabel(url) {
 
 function scrubFrame(f) {
   const g = {};
-  if (!f || typeof f !== 'object') return g;
+  if (!f || typeof f !== 'object') { g.filename = REDACTED_FILENAME; return g; }
   ['filename', 'abs_path'].forEach(k => {
     const v = typeof f[k] === 'string' ? repoRelative(f[k]) : null;
     if (v && RE_REPO_PATH.test(v)) g[k] = v;
   });
+  if (typeof g.filename !== 'string') g.filename = REDACTED_FILENAME;  // keep the key, never the value
   // coha-s5 review round 3: accepted risk, frame function names are code-defined. An identifier-shaped
   // name cannot be PROVEN free of tenant text, but it is the code's own symbol, so it is kept.
   if (typeof f.function === 'string' && RE_IDENT.test(f.function)) g.function = f.function;

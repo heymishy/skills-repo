@@ -1,0 +1,9 @@
+{
+  "_comment": "Frame shapes captured from PostHog project 10908 on 2026-11-15 ($exception_list of a staging event rejected with 'missing field filename'). The readback was truncated after four frames; frames beyond those are written to the same shapes. The Node internal frame has NO filename and in_app false: that is the live defect.",
+  "frames": [
+    { "colno": 5, "filename": "src/web-ui/server.js", "function": "router", "in_app": true, "lineno": 3444, "platform": "node:javascript" },
+    { "colno": 27, "filename": "src/web-ui/routes/auth.js", "function": "handleAuthCallback", "in_app": true, "lineno": 398, "platform": "node:javascript" },
+    { "colno": 5, "function": "process.processTicksAndRejections", "in_app": false, "lineno": 95, "platform": "node:javascript" },
+    { "colno": 66, "filename": "src/web-ui/routes/auth.js", "function": "handleAuthCallback", "in_app": true, "lineno": 398, "platform": "node:javascript" }
+  ]
+}
