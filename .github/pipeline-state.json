@@ -50263,7 +50263,7 @@
           "health": "green",
           "acTotal": 9,
           "acVerified": 8,
-          "updatedAt": "2026-11-15T20:31:18.367Z",
+          "updatedAt": "2026-11-15T21:02:52.066Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50274,7 +50274,7 @@
             "artefact": "artefacts/2026-11-16-session-persistence/test-plans/sps-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
