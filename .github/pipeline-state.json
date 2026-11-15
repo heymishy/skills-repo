@@ -50068,6 +50068,49 @@
       "metrics": [],
       "guardrails": [],
       "updatedAt": "2026-11-15T07:22:27.003Z"
+    },
+    {
+      "slug": "2026-11-15-product-page-performance",
+      "name": "Make the product page fast (decisions cache, parallel reads, sidebar query, page weight)",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T08:23:42.474Z",
+      "stories": [
+        {
+          "id": "ppp-s1",
+          "slug": "ppp-s1",
+          "name": "Make the product page fast by caching per-feature decisions and running independent reads in parallel",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T08:23:55.640Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-product-page-performance/test-plans/ppp-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        },
+        {
+          "id": "ppp-s2",
+          "slug": "ppp-s2",
+          "name": "Remove the sidebar N+1 query, the duplicate nav read and the product page weight",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 0,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T08:23:42.474Z",
+          "blocker": "written, not yet through test-plan or DoR"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
