@@ -26,7 +26,7 @@ test('scrubEvent_keepsOnlyNamedKeys_andFixedDistinctId', () => {
   assert.strictEqual(out.properties.route, '/:p');
   const keys = Object.keys(out.properties).sort();
   assert.deepStrictEqual(keys, ['$exception_level','$exception_list','$geoip_disable','$is_server','$lib','$lib_version',
-    '$process_person_profile','code','environment','route'].sort());
+    '$process_person_profile','$exception_fingerprint','code','environment','route'].sort());
   assert.strictEqual(out.distinctId, 'server-error-capture');
   assert.strictEqual(out.properties.$process_person_profile, false);
   assert.strictEqual(out.properties.environment, 'production');
@@ -852,6 +852,52 @@ test('sff_IT1_throwingRequest_sinkEventEveryFrameHasFilename', async () => {
     await new Promise(r2 => setTimeout(r2, 300));
     assert.strictEqual(sink.events.length, 1);
     assert.strictEqual(everyFrameHasFilename(sink.events[0]), true, 'a frame reached the sink without a filename');
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
+
+// ---- pes-s1: an environment-specific fingerprint so a production error never joins a staging error group ----
+const fpOf = (e, env) => ec.scrubEvent(e, env).properties.$exception_fingerprint;
+test('pes_UT1_fingerprintIsEnvironmentCodeRoute', () => {
+  const mk = () => sdkEvent('m', { code: 'tenant_admin_bootstrap_failed', route: '/auth/callback' });
+  assert.deepStrictEqual(fpOf(mk(), 'production'), ['production', 'tenant_admin_bootstrap_failed', '/auth/:p']);
+  assert.strictEqual(fpOf(mk(), 'staging')[0], 'staging');
+});
+test('pes_UT2_twoEnvironmentsNeverShareAFingerprint', () => {
+  const mk = () => sdkEvent('m', { code: 'tenant_admin_bootstrap_failed', route: '/auth/callback' });
+  const a = fpOf(mk(), 'staging'), b = fpOf(mk(), 'production');
+  assert.notDeepStrictEqual(a, b);
+  assert.deepStrictEqual(a.slice(1), b.slice(1));
+});
+test('pes_UT3_canariesNeverReachTheFingerprint_andAnIncomingFingerprintIsIgnored', () => {
+  const c = 'canary-' + seed;
+  [['hex-' + c], 'hex-' + c, 42, null].forEach(incoming => {
+    const e = sdkEvent('failed for ' + c, { route: '/tenants/' + c + '/x', code: c, $exception_fingerprint: incoming });
+    const out = ec.scrubEvent(e, 'production');
+    assert.ok(!JSON.stringify(out).includes(c), 'canary leaked');
+    assert.deepStrictEqual(out.properties.$exception_fingerprint, ['production', 'unhandled_exception', '/:p/:p/:p']);
+  });
+});
+test('pes_UT4_anUnexpectedEnvironmentCannotEnterTheFingerprint', () => {
+  const mk = () => sdkEvent('m', { code: 'request_error', route: '/x' });
+  ['prod uction', 'x'.repeat(200), undefined, 42, 'Production', 'tenant-' + seed].forEach(env => {
+    assert.strictEqual(fpOf(mk(), env)[0], 'unknown');
+  });
+  assert.strictEqual(fpOf(mk(), 'production')[0], 'production');
+  assert.strictEqual(fpOf(mk(), 'staging')[0], 'staging');
+});
+test('pes_IT1_throwingRequest_sinkEventCarriesTheEnvironmentFingerprint', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/boom/' + seed);
+    assert.strictEqual(r.status, 500);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no event reached the sink within 5s');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1);
+    const p = sink.events[0].properties;
+    assert.strictEqual(p.environment, 'production');
+    assert.deepStrictEqual(p.$exception_fingerprint, [p.environment, p.code, p.route]);
+    assert.ok(!JSON.stringify(sink.events).includes(seed));
   } finally { if (ch) await ch.stop(); await sink.stop(); }
 });
 
