@@ -327,6 +327,13 @@
 **Made by:** Claude Sonnet 5.5, 2026-11-15 (all additions came from review findings; none adds a user-visible capability).
 ---
 
+---
+**2026-11-15 | OPERATIONS | coha-s6 bridge enabled on production**
+**Decision:** The PostHog destination for the bridge was pointed at https://skills-framework.fly.dev/webhook/error-alert and enabled on 2026-11-15, after a production test passed (issue 1092, one issue, no duplicate, 1.5 seconds). Staging test passed earlier (issue 1091, 2026-11-14). Production was deployed first (it had no coha-s5 or coha-s6 code before: last release v180 on Nov 12).
+**Setback recorded:** the first production secret pasted into the PostHog header was refused by PostHog's HTTP client as an invalid header value before any request was sent (probably a stray whitespace character; cause not confirmed). A freshly generated secret, trimmed, set in Fly and PostHog, worked. Lesson: after pasting a secret, run a test before enabling; an invalid value fails closed (nothing sent).
+**Rationale:** The bridge is the live path from a new production error to a GitHub issue; enabling was approved by the operator in chat after the passing test. The destination can be disabled in PostHog at any time to stop it.
+**Made by:** Hamish King (approval in chat), executed by Claude Sonnet 5.5, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

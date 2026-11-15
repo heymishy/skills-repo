@@ -46889,7 +46889,7 @@
           "artefact": "artefacts/2026-11-08-cicd-observability-hardening-automation/stories/coha-s6-alert-to-github-issue-bridge.md",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-11-14T20:45:56.047Z",
+          "updatedAt": "2026-11-15T00:03:51.387Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -46903,7 +46903,7 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "blocker": "Post-merge live checks outstanding: AC9 first real production error; production Fly secrets and enabled PostHog destination not yet set (AC6 verified live on staging 2026-11-14)",
+          "blocker": "Only AC9 outstanding: first real production error to open exactly one issue. Production bridge LIVE since 2026-11-15 (test issue 1092). Rotate the GitHub token within 90 days.",
           "tasks": [
             {
               "id": "task-1",
