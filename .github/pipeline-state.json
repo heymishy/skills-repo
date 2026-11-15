@@ -50296,7 +50296,7 @@
           "health": "green",
           "acTotal": 7,
           "acVerified": 6,
-          "updatedAt": "2026-11-15T21:22:49.393Z",
+          "updatedAt": "2026-11-15T23:13:01.678Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50307,7 +50307,7 @@
             "artefact": "artefacts/2026-11-16-error-issue-title/test-plans/eit-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
