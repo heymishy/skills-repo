@@ -49892,11 +49892,11 @@
           "id": "pes-s1",
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
           "acVerified": 4,
-          "updatedAt": "2026-11-15T04:20:25.378Z",
+          "updatedAt": "2026-11-15T04:24:47.153Z",
           "blocker": "AC5 and AC6 live checks outstanding after merge and deploy",
           "testPlan": {
             "status": "all-passing",
@@ -49921,7 +49921,9 @@
               "file": "artefacts/2026-11-15-posthog-env-separation/plans/pes-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1099"
         }
       ],
       "metrics": [],
