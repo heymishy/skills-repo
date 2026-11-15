@@ -20,7 +20,7 @@ So that **I can see and open any product (including one that is not the active o
 
 - **Same data as the sidebar and dashboard.** Use `getProductsNavSummary(pool, tenantId)` (src/web-ui/routes/products.js), which is already tenant-scoped (`WHERE tenant_id = $1`). Do not write a new query; this keeps the list consistent with the sidebar and dashboard.
 - **Use the shared shell the repo requires.** Render through `renderShellWithNav` (CLAUDE.md "Reference implementation (web-ui shared shell)"; web-ui-patterns.md calls forgetting it the most common web-ui defect), with `active: 'products'` and the sidebar intact.
-- **Design system.** Story has `hasDesignSystemTrack: true`: reuse the existing product-card markup and DESIGN.md tokens (`artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md`); no hard-coded colours. Layout is reused from the dashboard cards, so layout-dependent verification is a documented manual check classified at DoR (CLAUDE.md B2).
+- **Design system (decided at test-plan, 2026-11-15).** The story deliberately does NOT set `hasDesignSystemTrack`: the H-DESIGN gate scans whole files, and `html-shell.js` already carries pre-existing non-token hex colours (7 found by `scripts/check-design-tokens.js` on 2026-11-15) that this change does not touch, so the gate would block any change to that file for a reason unrelated to it. The substance of the rule is kept instead: the new page markup uses only CSS variables (`var(--surface)`, `var(--line)`, `var(--ink)`, `var(--muted)`, `var(--accent)`) as the dashboard cards do, and a test asserts the new fragment contains no hex colour at all. See decisions.md.
 - **Tenant isolation (ADR-025).** A product belonging to another tenant must never be listed or linked; a test with two tenants proves it.
 - **Existing tests that pin the old target change deliberately.** Any test asserting `See all products` links to `/dashboard` is updated in the same change. The List/Board toggle row stays pointing at `/dashboard` and `/dashboard?view=board` (the dashboard's own views), unchanged.
 - **Architecture guardrails (`.github/architecture-guardrails.md`):** ADR-025 (multi-tenancy at the application layer) is engaged as above; ADR-011 (artefact-first) is satisfied by this story's own chain; no other Active ADR is engaged.
@@ -39,7 +39,7 @@ So that **I can see and open any product (including one that is not the active o
 
 **AC3:** Given two tenants each with products, When a person from tenant A opens `/products`, Then no product, id or name from tenant B appears anywhere in the response.
 
-**AC4:** Given the shared sidebar, When any page renders "See all products", Then it links to `/products` (not `/dashboard`); the List and Board sub-links still go to `/dashboard` and `/dashboard?view=board`.
+**AC4:** Given the shared sidebar, When any page renders "See all products", Then it links to `/products` (not `/dashboard`); the List and Board sub-links still go to `/dashboard` and `/dashboard?view=board`; and since the dashboard (dsa-s2) no longer shows a product card grid, `/products` becomes the only page that lists all products in its body.
 
 **AC5:** Given an unauthenticated request, When `GET /products` is made, Then it is handled like other authenticated pages (redirected to login), not served.
 

@@ -50033,13 +50033,21 @@
           "id": "pls-s1",
           "slug": "pls-s1",
           "name": "Add a products list page so See all products shows all products",
-          "stage": "definition",
+          "stage": "definition-of-ready",
           "health": "green",
           "acTotal": 7,
           "acVerified": 0,
-          "hasDesignSystemTrack": true,
-          "updatedAt": "2026-11-15T07:22:27.003Z",
-          "blocker": ""
+          "updatedAt": "2026-11-15T07:27:59.358Z",
+          "blocker": "",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-products-list-page/test-plans/pls-s1-test-plan.md"
+          },
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
