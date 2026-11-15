@@ -17,6 +17,10 @@ function _getClient() {
   return _client;
 }
 
+// sps-s1: test seam, lets tests supply a recording double instead of the real @upstash/redis client.
+function _setClientForTesting(c) { _client = c || null; _testClient = !!c; }
+let _testClient = false;
+
 function _sanitise(data) {
   const safe = Object.assign({}, data);
   delete safe.accessToken;
@@ -74,4 +78,4 @@ async function loadAllSessions() {
   return results;
 }
 
-module.exports = { writeSession, deleteSession, loadAllSessions, readSession, SESSION_TTL_SECONDS, KEY_PREFIX };
+module.exports = { writeSession, deleteSession, loadAllSessions, readSession, SESSION_TTL_SECONDS, KEY_PREFIX, _setClientForTesting };
