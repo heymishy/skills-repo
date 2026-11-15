@@ -50244,6 +50244,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-16-session-persistence",
+      "name": "Keep people signed in across deploys by storing the login token encrypted",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T20:17:43.937Z",
+      "stories": [
+        {
+          "id": "sps-s1",
+          "slug": "sps-s1",
+          "name": "Keep people signed in across deploys by storing the login token encrypted",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 9,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T20:17:44.606Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-session-persistence/test-plans/sps-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
