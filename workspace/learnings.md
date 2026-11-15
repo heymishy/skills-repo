@@ -3588,3 +3588,13 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** tab-s1's bootstrap statement used one parameter in two places with different implied types, so Postgres rejected it on every real database. The call sits in a try/catch that only logs and captures a fixed code, so login worked and nobody noticed for weeks. Its tests used a pool double, so they never prepared the statement. The first real production error caught by the new error pipeline, plus a real-Postgres test, found it in under an hour. Fixing it revived a never-run path that grants admin, so the story needed a read-only production check (one tenant, already with an admin) before promotion.
 
 **Rule:** (1) Any SQL a story adds or changes must be run at least once against a real Postgres in its own tests; a pool double only proves the calling code. (2) A "never blocks login, only logs" wrapper must also count or alert on its failures, so a permanently failing step cannot hide. (3) The DoR for a fix that revives never-run code must state what the code will now do and require a read-only check of the existing data before production promotion.
+---
+
+## D64 - Measure before splitting a performance story; the biggest cost is rarely the first one found
+
+**Date:** 2026-11-15
+**Observed at:** `product-page-performance` (ppp-s1), triggered by the operator calling the product page "very slow".
+
+**What happened:** a 20-second code read pointed at a per-view GitHub fetch for about 355 features; a 15-minute read-only measurement confirmed 16 s against 0.5 s for other pages and then corrected two assumptions: the "deferred section" fix would have broken the pod rollup that shares the same data, and the 2.9 MB HTML is only 154 KB on the wire because the host already compresses it. The follow-up story built on the first read (sidebar query, page weight, log noise) turned out not to be worth building once each item was re-checked against numbers. The fix that mattered (a stale-while-revalidate cache) took the page from 16 s to under 0.5 s with no UI change.
+
+**Rule:** (1) For a performance report, take one read-only timing (and transferred size, not decoded size) before designing the fix, and a second after deploy; put both in the DoD. (2) Before building a "while we are here" companion story, re-check each item against a measurement and defer with the evidence and a named revisit trigger when it does not earn its cost. (3) Check what else consumes the data before deferring or splitting its fetch.
