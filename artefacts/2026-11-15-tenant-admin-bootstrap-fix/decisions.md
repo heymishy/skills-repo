@@ -6,4 +6,11 @@
 **Made by:** recorded by Claude Sonnet 5.5, 2026-11-15; operator acknowledgement of the same set given in chat for sff-s1.
 ---
 
+---
+**2026-11-15 | RISK | HIGH | activating tenant-admin bootstrap: check shared tenants for a missing admin before production promotion**
+**Context:** the fix makes `bootstrapTenantAdminIfNeeded` work for the first time on a real database (red-then-green proven against a real Postgres).
+**Finding:** production has `TENANT_ORG_ALLOWLIST` set, so its tenants are shared GitHub organisations, and no tenant has ever had a bootstrap row. Any existing tenant with members but no admin row would make its first member to log in after the deploy the admin. An independent reviewer reached the same conclusion from the code (callers auth.js:398 and :541, auth-email.js:346).
+**Decision:** the pull request may be opened and merged (it changes nothing live by itself, and staging has no allowlist), but PRODUCTION PROMOTION WAITS for the operator-approved read-only query of tenants with members and no admin row, and for each such tenant either a hand-inserted correct admin or a `tenant_admin_bootstrap` row to block the grant. No production read has been run; none will be without the operator's explicit approval each time.
+**Made by:** Claude Sonnet 5.5, 2026-11-15; operator to approve the query and the promotion.
+---
 ## Architecture Decision Records
