@@ -49849,7 +49849,7 @@
           "id": "cwt-s1",
           "slug": "cwt-s1",
           "name": "Make the coha-s7 structural tests pass in a Windows checkout with CRLF line endings",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49861,9 +49861,17 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T02:59:17.094Z",
+          "updatedAt": "2026-11-15T03:12:37.104Z",
           "blocker": "",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Normalised workflow read plus UT1 and UT2 (AC1-AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-coha-s7-test-crlf-fix/plans/cwt-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
