@@ -138,11 +138,11 @@ leakCheck('filenameTenantDir', (ev, c) => { const f = x0(ev).stacktrace.frames[0
 leakCheck('functionAtOrSpace', (ev, c) => { x0(ev).stacktrace.frames[0].function = c + ' for tenant'; });
 test('scrubEvent_filename_keptOnlyWhenRepoRelative', () => {
   const fr = (fn) => { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].filename = fn; return ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].filename; };
-  assert.strictEqual(fr('/tenants/' + hex() + '/a.js'), undefined);  // no basename fallback
+  assert.strictEqual(fr('/tenants/' + hex() + '/a.js'), '[redacted]');  // no basename fallback, fixed placeholder instead
   assert.strictEqual(fr('/app/src/web-ui/server.js'), 'src/web-ui/server.js');
   assert.strictEqual(fr('/app/src/x/node_modules/pkg/i.js'), 'node_modules/pkg/i.js');
   assert.strictEqual(fr('C:\\work\\src\\web-ui\\s.js'), 'src/web-ui/s.js');
-  assert.strictEqual(fr('/home/mysrc/a.js'), undefined);  // 'src/' must sit at a segment boundary
+  assert.strictEqual(fr('/home/mysrc/a.js'), '[redacted]');  // 'src/' must sit at a segment boundary
 });
 test('scrubEvent_function_identifierShapedOnly', () => {
   // A pure identifier is defined by the code itself and cannot carry tenant text; anything else is dropped.
@@ -793,6 +793,54 @@ test('nfr_noKeyOrSourceLinesInChildOutputOrSinkPayloads', async () => {
   assert.ok(b.events.length >= 1 && b.output.includes('[router error]'));
   assert.ok(!b.payload.includes(FAKE_PROD), 'key embedded in an error message reached the sink');
   noSourceKeys(b.payload);
+});
+
+// ---- sff-s1: every scrubbed frame carries a string filename (PostHog rejects frames without one) ----
+const _fx = require('./fixtures/sff-s1-posthog-frames.json');
+// The only consumer rule evidenced on 2026-11-15: every frame of every $exception_list entry has a string filename.
+function everyFrameHasFilename(ev) {
+  const list = ev && ev.properties && ev.properties.$exception_list;
+  if (!Array.isArray(list) || !list.length) return false;
+  return list.every(x => x && x.stacktrace && Array.isArray(x.stacktrace.frames) &&
+    x.stacktrace.frames.every(f => f && typeof f === 'object' && typeof f.filename === 'string'));
+}
+function eventWithFrames(frames) { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames = frames; return e; }
+const outFrames = (e) => ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames;
+
+test('sff_UT1_repoFrames_keepRepoRelativeFilename', () => {
+  const f = outFrames(eventWithFrames([{ filename: '/app/src/web-ui/server.js' }, { filename: '/app/src/x/node_modules/pkg/i.js' }]));
+  assert.strictEqual(f[0].filename, 'src/web-ui/server.js');
+  assert.strictEqual(f[1].filename, 'node_modules/pkg/i.js');
+});
+test('sff_UT2_frameWithNoFilename_getsRedactedPlaceholder_keepsOtherFields', () => {
+  const f = outFrames(eventWithFrames([{ function: 'process.processTicksAndRejections', in_app: false, lineno: 95, platform: 'node:javascript' }]))[0];
+  assert.strictEqual(f.filename, '[redacted]');
+  assert.strictEqual(f.function, 'process.processTicksAndRejections');
+  assert.strictEqual(f.in_app, false);
+  assert.strictEqual(f.lineno, 95);
+  assert.strictEqual(f.platform, 'node:javascript');
+});
+test('sff_UT3_outsideRepoNonStringAndNonObjectFrames_allGetPlaceholder', () => {
+  const frames = [{ filename: 'node:internal/process/task_queues' }, { filename: '/tenants/' + seed + '/a.js' }, { filename: '/home/mysrc/a.js' },
+    { filename: 123 }, { filename: null }, null, 'str', 42];
+  const f = outFrames(eventWithFrames(frames));
+  assert.strictEqual(f.length, frames.length);
+  f.forEach((fr, i) => { assert.strictEqual(typeof fr, 'object'); assert.strictEqual(fr.filename, '[redacted]', 'frame ' + i); });
+});
+test('sff_UT4_canariesInPathLikeFields_neverReachTheOutput', () => {
+  const c = 'canary-' + seed;
+  const frames = [{ filename: '/tenants/' + c + '/a.js', abs_path: '/tenants/' + c + '/a.js', module: c, function: 'f ' + c, context_line: c, pre_context: [c], post_context: [c] }, { module: c }];
+  const out = ec.scrubEvent(eventWithFrames(frames), 'production');
+  assert.ok(!JSON.stringify(out).includes(c), 'canary leaked');
+  assert.strictEqual(out.properties.$exception_list[0].stacktrace.frames[0].filename, '[redacted]');
+});
+test('sff_UT6_realCapturedShapes_schemaCheckTrueAfterFalseBefore', () => {
+  const scrubbed = ec.scrubEvent(eventWithFrames(_fx.frames.map(x => Object.assign({}, x))), 'production');
+  assert.strictEqual(everyFrameHasFilename(scrubbed), true);
+  // Negative control: the OLD frame logic (filename kept only when repo-relative, otherwise omitted) must fail the check.
+  const oldStyle = JSON.parse(JSON.stringify(scrubbed));
+  oldStyle.properties.$exception_list[0].stacktrace.frames.forEach(fr => { if (fr.filename === '[redacted]') delete fr.filename; });
+  assert.strictEqual(everyFrameHasFilename(oldStyle), false, 'the check must fail for frames with no filename');
 });
 
 // ---- runner (supports async tests; runs sequentially) ----
