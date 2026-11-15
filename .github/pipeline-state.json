@@ -49892,11 +49892,11 @@
           "id": "pes-s1",
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-15T03:59:48.048Z",
+          "updatedAt": "2026-11-15T04:13:55.456Z",
           "blocker": "",
           "testPlan": {
             "status": "written",
@@ -49906,7 +49906,21 @@
           },
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Tests UT1-UT4, IT1 and key-list edit, red (AC1-AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-posthog-env-separation/plans/pes-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Add the environment-specific fingerprint in scrubEvent, green (AC1-AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-posthog-env-separation/plans/pes-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
