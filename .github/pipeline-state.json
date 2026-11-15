@@ -49849,7 +49849,7 @@
           "id": "cwt-s1",
           "slug": "cwt-s1",
           "name": "Make the coha-s7 structural tests pass in a Windows checkout with CRLF line endings",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "testPlan": {
             "status": "all-passing",
@@ -49861,7 +49861,7 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T03:18:31.771Z",
+          "updatedAt": "2026-11-15T03:58:46.619Z",
           "blocker": "AC2 confirmed by CI on the pull request",
           "dorStatus": "signed-off",
           "tasks": [
@@ -49872,7 +49872,9 @@
               "file": "artefacts/2026-11-15-coha-s7-test-crlf-fix/plans/cwt-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1098"
         }
       ],
       "metrics": [],
