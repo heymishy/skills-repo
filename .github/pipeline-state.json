@@ -49861,7 +49861,7 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T03:58:46.619Z",
+          "updatedAt": "2026-11-15T04:55:48.810Z",
           "blocker": "AC2 confirmed by CI on the pull request",
           "dorStatus": "signed-off",
           "tasks": [
@@ -49873,7 +49873,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1098"
         }
       ],
@@ -49924,6 +49924,26 @@
           "verifyStatus": "passed",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1099"
+        },
+        {
+          "id": "pes-s2",
+          "slug": "pes-s2",
+          "name": "Send the environment-specific fingerprint as a string, because PostHog rejects an array",
+          "stage": "definition-of-ready",
+          "health": "amber",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-11-15T04:56:55.613Z",
+          "blocker": "Urgent regression fix: PostHog rejects the array fingerprint",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
