@@ -50033,16 +50033,16 @@
           "id": "pls-s1",
           "slug": "pls-s1",
           "name": "Add a products list page so See all products shows all products",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-15T07:36:54.158Z",
+          "acVerified": 6,
+          "updatedAt": "2026-11-15T07:48:45.469Z",
           "blocker": "",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0,
+            "passing": 8,
             "artefact": "artefacts/2026-11-15-products-list-page/test-plans/pls-s1-test-plan.md"
           },
           "hasLayoutDependentGaps": false,
@@ -50052,13 +50052,13 @@
             {
               "id": "task-1",
               "name": "Tests T1-T8 and edited jcn-s1 assertions, red (AC1-AC6)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-15-products-list-page/plans/pls-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Products list page, route and See all products link, green (AC1-AC6)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-15-products-list-page/plans/pls-s1-plan.md"
             }
           ]
