@@ -156,6 +156,7 @@ function logCapture() { const calls = []; const fn = (m) => calls.push(m); fn.ca
     return { html: () => html, status: () => status, writeHead: (s) => { status = s; }, end: (b) => { html = b; } };
   }
   async function renderProduct(pool, token) {
+    src._clearDecisionsCache(); // ppp-s1: each scenario sets its own fetch mock for the same slugs
     const res = makeRes();
     await productsRoute.handleGetProductView({ params: { id: 'p1' }, session: { tenantId: 't1', accessToken: token } }, res, null, pool);
     return res;

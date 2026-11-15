@@ -3124,25 +3124,37 @@ async function handleGetProductView(req, res, _next, pool) {
   // so this query (scoped by product_id) is tenant-safe by construction.
   // Earliest journey only (AC2's own "first associated journey" wording) --
   // multiple-journey-link UI is explicit story Out of Scope.
-  var firstJourneyRow = (await _pool.query(
+  // ppp-s1: every read below that does not depend on another is STARTED here, together, and awaited at the
+  // point it was awaited before (same error behaviour, same fallbacks). _early() marks a started promise as
+  // handled so an earlier await throwing can never leave it as an unhandled rejection.
+  var _early = function(p) { p.catch(function() {}); return p; };
+  var _pFirstJourney = _early(_pool.query(
     'SELECT id FROM customer_journeys WHERE product_id = $1 ORDER BY created_at ASC LIMIT 1',
     [productId]
-  )).rows[0];
-  var firstJourneyId = firstJourneyRow ? firstJourneyRow.id : null;
-  var rollupRow = (await _pool.query(
+  ));
+  var _pRollup = _early(_pool.query(
     'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
-  )).rows[0] || null;
+  ));
+  var _pRows = _early(_pool.query(
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
+    [productId]
+  ));
+  var _pModules = _early(Promise.resolve().then(function() { return _modulesAdapter.listModules(productId, tenantId); }));
+  var _pAssignments = _early(Promise.resolve().then(function() { return _modulesAdapter.getFeatureModuleAssignments(productId, tenantId); }));
+  var _pDefaultPod = _early(Promise.resolve().then(function() { return getProductDefaultPod(_pool, tenantId, productId); }));
+  var _pNav = res.json ? null : _early(Promise.resolve().then(function() { return getProductsNavSummary(_pool, tenantId); }));
+  var _pIncidents = res.json ? null : _early(Promise.resolve().then(function() { return _fetchIncidentStoreRaw(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken); }));
+  var firstJourneyRow = (await _pFirstJourney).rows[0];
+  var firstJourneyId = firstJourneyRow ? firstJourneyRow.id : null;
+  var rollupRow = (await _pRollup).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);
   // tmc-s1 (AC8, unification revision): module assignment for journeys is no
   // longer read from journeys.module_id directly -- that column is inert
   // (see decisions.md REVISION entry). featureModuleAssignments (fetched
   // below, keyed by feature_slug) is consulted instead, the same map the
   // taxonomy section uses -- one read path for both sections.
-  var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
-    [productId]
-  )).rows;
+  var rows = (await _pRows).rows;
   // a4 -- fetch the product's curated modules (A1) for module-grouped
   // rendering (AC1). The adapter's stub default throws (D37) when unwired;
   // production server.js always wires it unconditionally (a1), so this only
@@ -3151,7 +3163,7 @@ async function handleGetProductView(req, res, _next, pool) {
   // than masking a real production misconfiguration.
   var modules = [];
   try {
-    modules = await _modulesAdapter.listModules(productId, tenantId);
+    modules = await _pModules;
   } catch (_) {
     modules = [];
   }
@@ -3162,7 +3174,7 @@ async function handleGetProductView(req, res, _next, pool) {
   // the same map journeys-sourced epics now use instead of journeys.module_id.
   var featureModuleAssignments = {};
   try {
-    featureModuleAssignments = await _modulesAdapter.getFeatureModuleAssignments(productId, tenantId);
+    featureModuleAssignments = await _pAssignments;
   } catch (_) {
     featureModuleAssignments = {};
   }
@@ -3177,13 +3189,22 @@ async function handleGetProductView(req, res, _next, pool) {
     };
   });
   if (res.json) {
-    var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
+    var defaultPod = await _pDefaultPod;
     res.json({ features: features, defaultPod: defaultPod });
   } else {
     // fix-forward (post-a1): the module-management form needs a CSRF token
     // to submit create/rename/delete, matching every other mutating form in
     // this app (settings.js's Credits/Billing tabs, etc.).
     var csrfToken = await _csrf.generateCsrfToken(req);
+    // ppp-s1: the decisions read (cached; a cold slug costs one GitHub request) is the slowest independent read, so
+    // it is started here, as soon as the slugs are known, and awaited below where it was consumed before.
+    var _pDecisions = _early(Promise.resolve().then(function() {
+      var _drToken = req.session && req.session.accessToken;
+      if (!(prodRow.repo_owner && prodRow.repo_name && _drToken)) { return []; }
+      var _drTaxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
+      var _drSlugs = _productRollup.mergeFeatureSources(_drTaxonomy, features).map(function(item) { return item.featureSlug || item.slug; });
+      return _decisionsReactiveSource.fetchReactiveDecisionsForFeaturesCached(prodRow.repo_owner, prodRow.repo_name, _drSlugs, _drToken);
+    }));
     // fps-s1 (AC6): ONE batched artefact-count read for the whole render,
     // reusing s2.2's existing seam (same pattern already used for the
     // kanban board) -- never a per-row query. AC4: a failed/unavailable
@@ -3221,16 +3242,11 @@ async function handleGetProductView(req, res, _next, pool) {
     // synchronous. Any failure degrades to [] -- never blocks the page.
     var decisionsReactiveItems = [];
     try {
-      var _drToken = req.session && req.session.accessToken;
-      if (prodRow.repo_owner && prodRow.repo_name && _drToken) {
-        var _drTaxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
-        var _drSlugs = _productRollup.mergeFeatureSources(_drTaxonomy, features).map(function(item) { return item.featureSlug || item.slug; });
-        decisionsReactiveItems = await _decisionsReactiveSource.fetchReactiveDecisionsForFeatures(prodRow.repo_owner, prodRow.repo_name, _drSlugs, _drToken);
-      }
+      decisionsReactiveItems = await _pDecisions;
     } catch (_) {
       decisionsReactiveItems = [];
     }
-    var navSummary = await getProductsNavSummary(_pool, tenantId);
+    var navSummary = await _pNav;
     // mtrr-s2 (AC1/AC3): only attempt the picker when there's no repo
     // connected yet and the session actually has a GitHub accessToken --
     // a session with no token (Google/email login) falls straight to the
@@ -3247,10 +3263,10 @@ async function handleGetProductView(req, res, _next, pool) {
     }
     // ep1-s2 (Task 6, 3d): fetch the product's current default pod for the
     // "Pod & Team" section's initial (non-AJAX) render.
-    var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
+    var defaultPod = await _pDefaultPod;
     // itar-s3: incident records from the connected repo (silent fallback to []).
     // ddft-s5: ONE fetch of the shared store feeds both the incidents and deferred-items sections.
-    var incidentStoreRaw = await _fetchIncidentStoreRaw(prodRow.repo_owner, prodRow.repo_name, req.session && req.session.accessToken);
+    var incidentStoreRaw = await _pIncidents;
     var incidents = _parseIncidentRecords(incidentStoreRaw);
     var deferredItems = _parseDeferredItemRecords(incidentStoreRaw);
     // urpv-s4: pod attribution for the reactive-vs-planned rollup. Reuses the default pod read above (no second read).
