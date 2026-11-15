@@ -49780,6 +49780,37 @@
       "metrics": [],
       "guardrails": [],
       "updatedAt": "2026-11-12T05:01:12.014Z"
+    },
+    {
+      "slug": "2026-11-15-coha-scrubber-filename-fix",
+      "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "sff-s1",
+          "slug": "sff-s1",
+          "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
+          "stage": "test-plan",
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-coha-scrubber-filename-fix/test-plans/sff-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-11-15T01:16:45.167Z",
+          "blocker": ""
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T01:16:45.167Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

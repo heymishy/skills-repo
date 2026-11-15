@@ -35,7 +35,7 @@ So that **PostHog's issue processor accepts the events, creates Error Tracking i
 
 **AC1:** Given a raw exception whose frames include repository files, Node internal frames with no filename, frames with a `node:` or absolute outside-the-repo path, and an entry that is not an object, When the event is scrubbed, Then every frame in the output has a string `filename`: the repository-relative path when it starts with `src/` or `node_modules/`, otherwise exactly `[redacted]`.
 
-**AC2:** Given the same raw exception seeded with canary text in every filename, module and path field, When it is scrubbed, Then no canary text appears anywhere in the output (the existing coha-s5 canary tests pass unchanged, plus one new case for the placeholder path).
+**AC2:** Given the same raw exception seeded with canary text in every filename, module and path field, When it is scrubbed, Then no canary text appears anywhere in the output (every existing coha-s5 canary test passes unchanged; the single existing assertion that a non-repository filename comes out `undefined`, in `scrubEvent_filename_keptOnlyWhenRepoRelative`, is deliberately changed to expect `[redacted]`, and one new case covers a frame with no filename at all).
 
 **AC3:** Given the three real `$exception_list` shapes captured from PostHog on 2026-11-15 (committed as a fixture in `tests/fixtures/`), When their raw equivalents are scrubbed, Then a check function asserting "every frame is an object with a string `filename`" returns true for the new output and false for the old output (a test that fails against the unfixed scrubber).
 
