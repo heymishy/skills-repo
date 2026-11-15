@@ -49792,20 +49792,20 @@
           "id": "sff-s1",
           "slug": "sff-s1",
           "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 7,
-            "passing": 0,
+            "passing": 7,
             "artefact": "artefacts/2026-11-15-coha-scrubber-filename-fix/test-plans/sff-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T02:09:29.991Z",
-          "blocker": "",
+          "updatedAt": "2026-11-15T02:14:42.547Z",
+          "blocker": "AC5 and AC6 live checks outstanding after merge and staging deploy",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49826,7 +49826,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-11-15-coha-scrubber-filename-fix/plans/sff-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
