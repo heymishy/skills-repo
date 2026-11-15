@@ -33,3 +33,4 @@
 {"skill":"branch-setup","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"branch-setup","timestamp":"2026-11-15T01:32:21.886Z","startedAt":"2026-11-15T01:20:41.884Z","durationMs":700002}
 {"skill":"implementation-plan","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"implementation-plan","timestamp":"2026-11-15T02:03:09.204Z","startedAt":"2026-11-15T01:53:09.202Z","durationMs":600002}
 {"skill":"verify-completion","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"verify-completion","timestamp":"2026-11-15T02:14:42.813Z","fullSuite":true,"startedAt":"2026-11-15T02:09:41.3355907Z","durationMs":301478}
+{"skill":"definition-of-done","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"definition-of-done","timestamp":"2026-11-15T02:43:23.365Z","startedAt":"2026-11-15T02:28:23.363Z","durationMs":900002}

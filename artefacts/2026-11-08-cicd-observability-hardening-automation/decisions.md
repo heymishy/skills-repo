@@ -350,6 +350,14 @@
 **Rationale:** The defect is a single, cheap-to-fix schema gap, but fixing it touches the scrubber's tested privacy behaviour and must go through the pipeline.
 **Made by:** Claude Sonnet 5.5, 2026-11-15; operator to approve the follow-up story.
 ---
+---
+**2026-11-15 | FINDING | HIGH | coha-s6 bridge body reads a property that processed events do not carry (first_seen)**
+**Context:** Verifying sff-s1 live (9 staging events accepted by PostHog after the scrubber fix) showed what a processed `$exception` event really contains.
+**Evidence (PostHog project 10908, queried 2026-11-15):** processed events carry `$exception_issue_id`, `$exception_values` (`["tenant_admin_bootstrap_failed"]`), `$exception_types`, `$exception_list`, `code`, `environment`, `route` and fingerprint fields; they do NOT carry `exception_timestamp`. The coha-s6 destination body template sets `first_seen` from `{event.properties.exception_timestamp}`, and the bridge returns 400 "first seen" when `first_seen` is not a valid timestamp (src/web-ui/routes/error-bridge.js line 130). The `$error_tracking_issue_created` event is internal and its properties are not stored, so what it carries could not be read directly; PostHog's own GitHub template for it reads only `$exception_issue_id`, `$exception_values`, `$exception_types`, `$exception_list`, `$browser`, `$os`, `$exception_release` and `$session_id`.
+**Consequence:** if the real alert event also lacks `exception_timestamp`, every real alert gets 400 and no issue opens, even though capture now works. The live tests used a mock event written by us that included the field.
+**Proposed fix (needs the operator's approval; it changes the live PostHog destination 01a1d3ce-ad2c-0000-64b2-d32e9b55609b):** set `first_seen` to `{event.timestamp}`, a field every event has (the destination test panel's sample shows it as an ISO string such as 2026-11-14T20:18:58.505Z, which the bridge's check should accept). Then test with a production-shaped invocation that has NO `exception_timestamp` property, as the real event would, and confirm one issue opens. Also remember to close the test issue afterwards.
+**Made by:** Claude Sonnet 5.5, 2026-11-15; operator to approve the destination change.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
