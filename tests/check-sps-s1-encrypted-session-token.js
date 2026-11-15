@@ -50,7 +50,7 @@ function restoreConsole() { Object.assign(console, realConsole); }
 test('T1 with a key the stored value has accessTokenEnc and no plaintext token (AC1)', async () => {
   const key = newKey(); const client = setup(key);
   try {
-    await adapter.writeSession('sid1', { login: 'u', tenantId: 't', accessToken: CANARY });
+    await adapter.writeSession('sid1', { login: 'u', tenantId: 't' }, CANARY);
     const raw = client.store.get(adapter.KEY_PREFIX + 'sid1');
     assert.strictEqual(typeof raw, 'string', 'the adapter stores a JSON string');
     const stored = JSON.parse(raw);
@@ -59,7 +59,7 @@ test('T1 with a key the stored value has accessTokenEnc and no plaintext token (
     assert.strictEqual(stored.login, 'u'); assert.strictEqual(stored.tenantId, 't');
     assert.ok(raw.indexOf(CANARY) === -1, 'the token text appears nowhere in the stored value');
     assert.strictEqual(client.ttls.get(adapter.KEY_PREFIX + 'sid1'), adapter.SESSION_TTL_SECONDS);
-    await adapter.writeSession('sid1', { login: 'u', tenantId: 't', accessToken: CANARY });
+    await adapter.writeSession('sid1', { login: 'u', tenantId: 't' }, CANARY);
     assert.notStrictEqual(JSON.parse(client.store.get(adapter.KEY_PREFIX + 'sid1')).accessTokenEnc, stored.accessTokenEnc, 'a fresh nonce on every write');
   } finally { teardown(); }
 });
@@ -67,7 +67,7 @@ test('T1 with a key the stored value has accessTokenEnc and no plaintext token (
 test('T2 read and load-all restore the token and every other field (AC2)', async () => {
   const key = newKey(); setup(key);
   try {
-    await adapter.writeSession('sid2', { login: 'octocat', userId: 42, tenantId: 't', accessToken: CANARY });
+    await adapter.writeSession('sid2', { login: 'octocat', userId: 42, tenantId: 't' }, CANARY);
     const one = await adapter.readSession('sid2');
     assert.strictEqual(one.accessToken, CANARY); assert.strictEqual(one.login, 'octocat'); assert.strictEqual(one.userId, 42);
     assert.strictEqual(one.accessTokenEnc, undefined, 'the ciphertext field is not exposed on read');
@@ -80,7 +80,7 @@ test('T2 read and load-all restore the token and every other field (AC2)', async
 test('T3 a ciphertext moved to another session id yields no token (AC3)', async () => {
   const key = newKey(); const client = setup(key);
   try {
-    await adapter.writeSession('sidA', { login: 'a', accessToken: CANARY });
+    await adapter.writeSession('sidA', { login: 'a' }, CANARY);
     client.store.set(adapter.KEY_PREFIX + 'sidB', client.store.get(adapter.KEY_PREFIX + 'sidA'));
     const b = await adapter.readSession('sidB');
     assert.strictEqual(b.accessToken, undefined, 'bound to the session id');
@@ -91,7 +91,7 @@ test('T3 a ciphertext moved to another session id yields no token (AC3)', async 
 test('T4 wrong key, corruption, tampering, unknown version and bad key length yield no token and never throw (AC4)', async () => {
   const key = newKey(); const client = setup(key);
   try {
-    await adapter.writeSession('sid4', { login: 'u', accessToken: CANARY });
+    await adapter.writeSession('sid4', { login: 'u' }, CANARY);
     const good = JSON.parse(client.store.get(adapter.KEY_PREFIX + 'sid4'));
     const parts = good.accessTokenEnc.split('.');
     const flip = (s) => (s[0] === 'A' ? 'B' : 'A') + s.slice(1);
@@ -113,7 +113,7 @@ test('T4 wrong key, corruption, tampering, unknown version and bad key length yi
       process.env[KEY_ENV] = bad;
       const r = await adapter.readSession('sid4');
       assert.strictEqual(r.accessToken, undefined, 'an invalid key (' + bad.length + ' chars) yields no token'); assert.strictEqual(r.login, 'u');
-      await adapter.writeSession('sid4b', { login: 'u', accessToken: CANARY });
+      await adapter.writeSession('sid4b', { login: 'u' }, CANARY);
       const raw = client.store.get(adapter.KEY_PREFIX + 'sid4b');
       assert.ok(raw.indexOf(CANARY) === -1 && raw.indexOf('accessTokenEnc') === -1, 'an invalid key never stores the token');
     }
@@ -125,7 +125,7 @@ test('T4 wrong key, corruption, tampering, unknown version and bad key length yi
 test('T5 with no key the token is stripped as today and one warning is logged (AC5)', async () => {
   const client = setup(null);
   try {
-    await adapter.writeSession('sid5', { login: 'u', accessToken: CANARY });
+    await adapter.writeSession('sid5', { login: 'u' }, CANARY);
     const raw = client.store.get(adapter.KEY_PREFIX + 'sid5');
     assert.ok(raw.indexOf(CANARY) === -1 && raw.indexOf('accessToken') === -1, 'neither accessToken nor accessTokenEnc is stored');
     assert.strictEqual(JSON.parse(raw).login, 'u');
@@ -198,11 +198,11 @@ test('T8 the token, the key and any ciphertext never appear in any log line (NFR
   const key = newKey(); const client = setup(key);
   captureConsole();
   try {
-    await adapter.writeSession('sid8', { login: 'u', accessToken: CANARY });
+    await adapter.writeSession('sid8', { login: 'u' }, CANARY);
     const enc = JSON.parse(client.store.get(adapter.KEY_PREFIX + 'sid8')).accessTokenEnc;
     client.store.set(adapter.KEY_PREFIX + 'bad8', JSON.stringify({ login: 'u', accessTokenEnc: enc.slice(0, 20) }));
     await adapter.readSession('sid8'); await adapter.readSession('bad8'); await adapter.loadAllSessions();
-    process.env[KEY_ENV] = 'x'; await adapter.writeSession('sid8b', { accessToken: CANARY }); adapter.logKeyStatus(console);
+    process.env[KEY_ENV] = 'x'; await adapter.writeSession('sid8b', {}, CANARY); adapter.logKeyStatus(console);
     restoreConsole();
     const text = logged.join('\n');
     for (const secret of [CANARY, key, Buffer.from(key, 'base64').toString('latin1'), enc, enc.split('.')[3]]) {

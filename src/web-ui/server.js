@@ -1693,6 +1693,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _sessionRedis = require('./adapters/session-redis');
     const { setRedisAdapter, loadSessionsFromRedis } = require('./middleware/session');
     setRedisAdapter(_sessionRedis);
+    _sessionRedis.logKeyStatus(console); // sps-s1: one warning if SESSION_ENCRYPTION_KEY is missing (logins then end on each deploy)
     loadSessionsFromRedis().catch(function(err) {
       console.error('[server] loadSessionsFromRedis failed:', err.message);
     });
