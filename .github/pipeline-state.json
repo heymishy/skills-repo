@@ -49986,7 +49986,7 @@
           "health": "green",
           "acTotal": 7,
           "acVerified": 6,
-          "updatedAt": "2026-11-15T07:01:59.078Z",
+          "updatedAt": "2026-11-15T07:02:40.839Z",
           "blocker": "AC7 live check outstanding after merge, promotion and a production login",
           "testPlan": {
             "status": "all-passing",
@@ -50012,7 +50012,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/1103"
         }
       ],

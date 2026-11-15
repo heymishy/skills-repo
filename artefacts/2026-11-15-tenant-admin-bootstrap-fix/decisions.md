@@ -21,4 +21,10 @@
 **Residual (LOW, unverified):** a GitHub username of digits only colliding with a Google sub (reviewer's observation); with one person in the system this is not a present risk.
 **Made by:** Claude Sonnet 5.5 under the operator's approval, 2026-11-15.
 ---
+---
+**2026-11-15 | VERIFICATION | tabf-s1 live on staging: bootstrap works for the first time**
+**Evidence:** PR 1103 merged (f67b7b2cf, 07:02 UTC); staging deployed (v1307); after the deploy the staging log shows two `admin_bootstrap_granted` lines (07:09:34Z and 07:09:40Z) and ZERO `tenant_admin_bootstrap_failed` lines in the same window, and PostHog received no new `$exception` events since 06:55 UTC (before the fix every staging E2E login produced one). The post-deploy real-staging E2E confirmation passed. This is the first `admin_bootstrap_granted` ever logged in any environment.
+**Status:** production promotion is waiting for the operator's approval of the Staging Deploy "Promote to production" step (run 43688125681); AC7 (a clean production login) follows it.
+**Made by:** Claude Sonnet 5.5, 2026-11-15.
+---
 ## Architecture Decision Records
