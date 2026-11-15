@@ -20,7 +20,8 @@ const RE_VERSION = /^\d+\.\d+\.\d+([.\-][\w.\-]{0,20})?$/;
 const RE_REPO_PATH = /^(src|node_modules)\/[\w.\-\/]{1,150}$/;  // anything not under src/ or node_modules/ is omitted
 const KNOWN_PLATFORMS = new Set(['node:javascript', 'javascript']);
 const RE_IDENT = /^[A-Za-z_$][\w$.<>]{0,80}$/;
-const ALLOWED_CODES = new Set(Array.from(ALLOW_LISTED_MESSAGES).concat(['request_error', 'unhandled_exception']));
+// eit-s1: http_5xx and unhandled_rejection are ecg-s1's own codes; without them here they were rewritten to unhandled_exception.
+const ALLOWED_CODES = new Set(Array.from(ALLOW_LISTED_MESSAGES).concat(['request_error', 'unhandled_exception', 'http_5xx', 'unhandled_rejection']));
 const ALLOWED_TYPES = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'EvalError', 'URIError', 'AggregateError']);
 const MAX_ROUTE_SEGMENTS = 8;
 const ANONYMOUS_FUNCTION = '<anonymous>';  // ecf-s1: fixed value sent when a frame has no function name that is safe to send
@@ -96,7 +97,9 @@ function scrubEvent(ev, environment) {
       if (x.mechanism && typeof x.mechanism.type === 'string' && /^[a-z_]{1,30}$/.test(x.mechanism.type)) mech.type = x.mechanism.type;
       const item = {
         type: ALLOWED_TYPES.has(x.type) ? x.type : 'Error',
-        value: ALLOW_LISTED_MESSAGES.has(x.value) ? x.value : code,
+        // eit-s1: this value becomes the GitHub issue title (the alert destination sends $exception_values[1]), so it says what
+        // failed and where, from fixed-vocabulary pieces only: the allow-listed code, the allow-listed type and the scrubbed route.
+        value: ALLOW_LISTED_MESSAGES.has(x.value) ? x.value : code + ': ' + (ALLOWED_TYPES.has(x.type) ? x.type : 'Error') + ' at ' + out.route,
         mechanism: mech
       };
       if (x.stacktrace) item.stacktrace = { type: 'raw', frames };
