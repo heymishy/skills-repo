@@ -3456,3 +3456,113 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** This feature continues `test-suite-infra-refactor`'s exact proven mechanism (fixture + self-test + structural check), and the reflex was to default to the same "Walking skeleton" slicing strategy the original epic used. But the original epic's 3 stories had real sequential dependencies (story 2 and 3 both required story 1's fixture module to exist first) — this continuation's items (E2E fixture, `journey.js` retrofit, `skills.js` extension, classification, 2 spikes) have no dependencies on each other at all; each is independently shippable.
 
 **Rule:** Slicing strategy is a property of the *dependency graph between this feature's own stories*, not a property inherited from a prior feature that happened to use the same implementation pattern. Check for real sequential dependencies before defaulting to walking-skeleton just because an earlier, similar-looking epic used it.
+
+---
+
+## D52 - A test that supplies the integration's own input shape proves nothing about the integration; the processor's own output is the acceptance evidence
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, post-merge live validation of coha-s5, coha-s6 and coha-s7.
+
+**What happened:** coha-s5 (error capture) and coha-s6 (alert-to-issue bridge) both passed all their automated tests and a live staging and production test of the bridge, yet the real pipeline could never fire. The live bridge tests used a mock `$error_tracking_issue_created` event that WE wrote, with `$exception_values` and `$exception_issue_id` filled in. Real staging events (207 of them in 3 days) were rejected by PostHog's own grouping step (`serde error: missing field filename`), so PostHog created zero Error Tracking issues, never produced the alert event, and the bridge would never have been called for a real error. The coha-s5 DoD had already named "confirm an event appears in PostHog Error Tracking" as the follow-up that would catch this; it was not run, and 207 failing events sat in PostHog for a day.
+
+**Rule:** For any story whose output is consumed by a third-party processor, one acceptance check must read the processor's own result for a real input (here: an Error Tracking issue exists for a real staging error), not a local sink and not a mock written by us. "Live-verified" applies to the last hop only; it must not be reported as end-to-end. When a DoD names such a check as a follow-up, run it the same session as the merge if it is cheap (it was a single SQL query).
+
+---
+
+## D53 - A fail-closed scrubber can delete a field the consumer requires; keep a placeholder for required keys
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, coha-s5 scrubber (`src/web-ui/modules/error-capture.js`, `scrubFrame`).
+
+**What happened:** `scrubFrame` copies a stack frame's `filename` only when it looks like a repository file. Node internal frames (`process.processTicksAndRejections`) have none, so the scrubbed frame had no `filename`, and PostHog's processor requires one on every frame. The scrubber's tests asserted what was removed (canary text absent), never that the result was still schema-valid for its consumer.
+
+**Rule:** When a scrubber or filter removes values, it must replace a required key's value with a fixed placeholder (for example `[redacted]` or `unknown`), never drop the key. Pair every "nothing leaks" test with a "still valid for the consumer" test that validates the scrubbed output against the consumer's real schema or a captured real rejection.
+
+---
+
+## D54 - When the real signal already exists in a data store, query it before designing another test
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, live validation.
+
+**What happened:** Three SQL queries against PostHog (event counts by environment, the property keys on real events, the cymbal error column) found the D52 and D53 defect in minutes, after days of tests that never looked at real data. PostHog's own GitHub template, read from its source, also confirmed which event properties the bridge may rely on.
+
+**Rule:** At `/verify-completion` and `/definition-of-done` for anything that emits data, run at least one query against the real destination for the real emitted data (counts, the keys present, the processor's error column) and read the upstream vendor's own template or source for the property names, before relying on mock fixtures.
+
+---
+
+## D55 - Operational lessons from setting secrets through a browser and a CLI
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, bridge go-live on staging and production.
+
+**What happened:** (1) Chrome autofilled a saved email and password into a new "secret header" key and value row, twice; it had to be overwritten and checked each time. (2) A secret pasted into PostHog was refused by PostHog's HTTP client as an invalid header value before any request was sent (probably stray whitespace; cause unconfirmed), and a freshly generated, trimmed secret set in both places worked. (3) `fly secrets set --stage` marks secrets Staged, not live: the route answered 401 for both "secret wrong" and "secret not configured", so only `fly secrets list` showing Deployed proved the secret was live. (4) The first clipboard paste showed 6 dots instead of 64, which caught a clipboard that no longer held the secret.
+
+**Rule:** After any secret paste, check the dot count, never accept autofill on a credential-shaped row, run a test invocation before enabling anything live, and treat `fly secrets list` Deployed as the only proof a secret is live. Prefer generating a fresh secret over debugging a suspect one.
+
+---
+
+## D56 - A "partial update" to an external service can replace a whole nested object
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, PostHog destination edit.
+
+**What happened:** Updating only `url` and `headers` through PostHog's partial-update tool replaced the entire `inputs` object and set `body` and `method` to null. It was caught by reading the result straight back and fixed in one more call, and only because the destination was disabled while being edited.
+
+**Rule:** Before editing a nested object on an external service through an API, assume the whole object is replaced: send every sibling field, edit while the thing is disabled, and read the full result back after each write.
+
+---
+
+## D57 - A merge deploys staging only; every DoD must say which environment each criterion was proven in
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, production go-live.
+
+**What happened:** Production was still on release v180 (Nov 12) a day after coha-s5 and coha-s6 merged, so neither ran there; the bridge route returned the normal site page (HTTP 200) on production and 401 on staging. A `fly releases` check and one `curl` revealed this.
+
+**Rule:** DoD AC tables should name the environment of each piece of live evidence (staging or production), and "deployed to production" is a separate, checked fact (`fly releases` date after the merge, and the new route or log line present), never inferred from the merge.
+
+---
+
+## D58 - Always-red master workflows hide new red
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, post-merge CI check.
+
+**What happened:** "Deploy dashboards to GitHub Pages" (Pages is not enabled for the repo) and "Improvement Agent - Scheduled Dreaming" (it tries to push trace files straight to master, which branch rules refuse) have failed on every master push, including commits before this feature. Two permanent failures make a third indistinguishable.
+
+**Rule:** Triage workflows that fail on every push: fix, disable or scope them (or record an accepted exception), so a red master means something. Re-check master's workflow list after every merge sequence and name any failure as pre-existing with evidence.
+
+---
+
+## D59 - Attribute a flaky failure with a controlled A/B on identical code
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, coha-s7 `/verify-completion` (`tests/check-cat-s1-core-trace-builder.js`, a hard 50 ms assertion).
+
+**What happened:** The timing test failed in 3 of 3 full-suite runs. Running identical code with and without coha-s7's one runner change (the sequential-exclusive entry) failed the same way (65.4 ms), and the test passes alone at about 27 ms, which proved the change was not the cause. The pull request's own CI on a quiet runner passed.
+
+**Rule:** To decide whether a change caused a timing failure, run the same code with and without that single change, alone and in the full suite, several times; record the numbers in `decisions.md`; let CI on a quiet runner arbitrate. A runner-slot decision should be measured (a neighbour test run alone, beside the new file, and beside a control), not assumed.
+
+---
+
+## D60 - The Write and Edit tools can convert escape sequences into literal characters; verify ASCII after every edit
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, coha-s6 and coha-s7 inner loops.
+
+**What happened:** Backslash-u escapes in source and test files were repeatedly turned into literal characters by the file tools, which silently changed what a regex or fixture meant. It was caught by counting non-ASCII characters and checking that the intended escape text was intact after every edit, and by doing sensitive edits with scripts.
+
+**Rule:** For files that must stay plain ASCII or contain escape text, verify with a non-ASCII count and a grep for the intended escape text after each edit; use a script for the edit when the content has backslashes. Also independently verify subagent reports (commits, tests) rather than trusting their narration.
+
+---
+
+## D61 - Tests that read a checked-in file with line-anchored regexes must normalise line endings (Windows autocrlf)
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, validation of master after the coha-s7 merge.
+
+**What happened:** `tests/check-coha-s7-error-issue-incident.js` passed 44 of 44 in the story's worktree (files with LF endings) and in CI (Linux), but fails W3 and W5 in the main Windows checkout, where `core.autocrlf=true` gives the workflow file CRLF endings: line 732 reads the workflow with no normalisation and W3 matches `\n`-anchored patterns. Any Windows developer cloning the repo gets two red tests. Nothing in the pipeline caught it because the worktree and CI both had LF files.
+
+**Rule:** Any test that reads a checked-in text file and matches it with `^`, `$` or `\n`-anchored patterns must first normalise with `.replace(/\r\n/g, '\n')`. Run new tests once in a fresh clone or the main Windows checkout, not only in the story worktree, before `/verify-completion` signs off.
