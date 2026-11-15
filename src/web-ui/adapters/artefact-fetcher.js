@@ -234,11 +234,18 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride, tim
   }
 
   if (artefactType.indexOf('/') === -1) {
+    // anf-s1: all probes start together (at most 22, so 24 requests in all) and are read back in the original priority order,
+    // so the answer is the same as the sequential loop gave, in one round trip instead of up to 22 (about 6 s for an unknown name).
+    const probes = [];
     for (const prefix of prefixes) {
       for (const dir of ARTEFACT_SUBDIRS) {
-        const result = await _tryFetchAtPath(`${prefix}/${featureSlug}/${dir}/${artefactType}.md`, targetRepo, token, featureSlug, artefactType, FALLBACK_PROBE_TIMEOUT_MS);
-        if (result !== null) return result;
+        probes.push(_tryFetchAtPath(`${prefix}/${featureSlug}/${dir}/${artefactType}.md`, targetRepo, token, featureSlug, artefactType, FALLBACK_PROBE_TIMEOUT_MS));
       }
+    }
+    const settled = await Promise.allSettled(probes);
+    for (const s of settled) {
+      if (s.status === 'rejected') throw s.reason;  // an earlier failure than any hit still raises, as the sequential loop did
+      if (s.value !== null) return s.value;
     }
   }
 
