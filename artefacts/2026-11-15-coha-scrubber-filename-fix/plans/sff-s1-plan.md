@@ -207,7 +207,7 @@ and, immediately after the `['filename', 'abs_path'].forEach(...)` block (before
 node tests/check-coha-s5-error-capture.js
 ```
 
-Expected: `0 failed` and a total of 77 + 6 + 1 = 84 passed (UT1, UT2, UT3, UT4, UT6, IT1 are 6 new tests; if the count differs, count the `ok` lines and explain).
+Expected: `0 failed` and a total of 77 + 6 = 83 passed (UT1, UT2, UT3, UT4, UT6 and IT1 are the 6 new tests).
 
 - [ ] **Step 4: Run the neighbouring files and ASCII check**
 
