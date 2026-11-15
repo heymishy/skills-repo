@@ -842,6 +842,18 @@ test('sff_UT6_realCapturedShapes_schemaCheckTrueAfterFalseBefore', () => {
   oldStyle.properties.$exception_list[0].stacktrace.frames.forEach(fr => { if (fr.filename === '[redacted]') delete fr.filename; });
   assert.strictEqual(everyFrameHasFilename(oldStyle), false, 'the check must fail for frames with no filename');
 });
+test('sff_IT1_throwingRequest_sinkEventEveryFrameHasFilename', async () => {
+  const sink = await sinkLib.start(); let ch;
+  try {
+    ch = await spawnChild({ POSTHOG_KEY_PROD: FAKE_PROD, POSTHOG_HOST: sink.url });
+    const r = await get(ch.port, '/boom/' + seed);
+    assert.strictEqual(r.status, 500);
+    assert.ok(await waitFor(() => sink.events.length >= 1, 5000), 'no event reached the sink within 5s');
+    await new Promise(r2 => setTimeout(r2, 300));
+    assert.strictEqual(sink.events.length, 1);
+    assert.strictEqual(everyFrameHasFilename(sink.events[0]), true, 'a frame reached the sink without a filename');
+  } finally { if (ch) await ch.stop(); await sink.stop(); }
+});
 
 // ---- runner (supports async tests; runs sequentially) ----
 (async () => {
