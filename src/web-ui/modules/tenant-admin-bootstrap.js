@@ -68,8 +68,8 @@ async function bootstrapTenantAdminIfNeeded(pool, tenantId, personId, logger) {
 
     var claim = await client.query(
       'INSERT INTO tenant_admin_bootstrap (tenant_id, admin_person_id) ' +
-      'SELECT $1, $2 WHERE NOT EXISTS (' +
-      '  SELECT 1 FROM team_memberships WHERE tenant_id = $1 AND role = \'admin\'' +
+      'SELECT $1::varchar, $2::integer WHERE NOT EXISTS (' +
+      '  SELECT 1 FROM team_memberships WHERE tenant_id = $1::varchar AND role = \'admin\'' +
       ') ON CONFLICT (tenant_id) DO NOTHING RETURNING admin_person_id',
       [tenantId, personId]
     );
