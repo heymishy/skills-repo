@@ -3577,3 +3577,14 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** Three fixes in a row for the same PostHog pipeline each shipped with green tests and then failed on the first live query: sff-s1 (a missing `filename`), pes-s1 (an array `$exception_fingerprint` where PostHog's reference says String, rejected with "expected a string"), and the original coha-s6 template (a property, `exception_timestamp`, that processed events do not carry). In each case the unit tests asserted the shape I had written, so they proved only that my code matched my own assumption. What caught every one was a live PostHog query on real events after a staging deploy, and the rule that production promotion waits for that query.
 
 **Rule:** For any value sent to a third party, before writing tests that fix its type or shape, find one real accepted example (a query of an accepted event, the vendor's reference table, or a live probe on staging) and cite it in the story. Keep the live acceptance check as its own acceptance criterion with an explicit "do not promote to production until it passes". Treat documentation examples across languages as unreliable evidence for the wire type.
+
+---
+
+## D63 - A failure that is caught and only logged can hide a feature that never worked; test new SQL against a real database once
+
+**Date:** 2026-11-15
+**Observed at:** `tenant-admin-bootstrap` (tab-s1) found by the coha error chain; fixed as tabf-s1.
+
+**What happened:** tab-s1's bootstrap statement used one parameter in two places with different implied types, so Postgres rejected it on every real database. The call sits in a try/catch that only logs and captures a fixed code, so login worked and nobody noticed for weeks. Its tests used a pool double, so they never prepared the statement. The first real production error caught by the new error pipeline, plus a real-Postgres test, found it in under an hour. Fixing it revived a never-run path that grants admin, so the story needed a read-only production check (one tenant, already with an admin) before promotion.
+
+**Rule:** (1) Any SQL a story adds or changes must be run at least once against a real Postgres in its own tests; a pool double only proves the calling code. (2) A "never blocks login, only logs" wrapper must also count or alert on its failures, so a permanently failing step cannot hide. (3) The DoR for a fix that revives never-run code must state what the code will now do and require a read-only check of the existing data before production promotion.
