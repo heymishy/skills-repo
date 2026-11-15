@@ -49892,16 +49892,16 @@
           "id": "pes-s1",
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-15T04:13:55.456Z",
-          "blocker": "",
+          "acVerified": 4,
+          "updatedAt": "2026-11-15T04:20:25.378Z",
+          "blocker": "AC5 and AC6 live checks outstanding after merge and deploy",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s1-test-plan.md"
           },
           "hasLayoutDependentGaps": false,
@@ -49911,16 +49911,17 @@
             {
               "id": "task-1",
               "name": "Tests UT1-UT4, IT1 and key-list edit, red (AC1-AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-15-posthog-env-separation/plans/pes-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Add the environment-specific fingerprint in scrubEvent, green (AC1-AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-11-15-posthog-env-separation/plans/pes-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
