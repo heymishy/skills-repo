@@ -49837,6 +49837,38 @@
       "metrics": [],
       "guardrails": [],
       "updatedAt": "2026-11-15T01:16:45.167Z"
+    },
+    {
+      "slug": "2026-11-15-coha-s7-test-crlf-fix",
+      "name": "Make the coha-s7 structural tests pass in a Windows checkout with CRLF line endings",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "cwt-s1",
+          "slug": "cwt-s1",
+          "name": "Make the coha-s7 structural tests pass in a Windows checkout with CRLF line endings",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-coha-s7-test-crlf-fix/test-plans/cwt-s1-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-11-15T02:59:17.094Z",
+          "blocker": "",
+          "dorStatus": "signed-off"
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T02:59:15.917Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

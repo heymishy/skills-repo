@@ -34,3 +34,5 @@
 {"skill":"implementation-plan","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"implementation-plan","timestamp":"2026-11-15T02:03:09.204Z","startedAt":"2026-11-15T01:53:09.202Z","durationMs":600002}
 {"skill":"verify-completion","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"verify-completion","timestamp":"2026-11-15T02:14:42.813Z","fullSuite":true,"startedAt":"2026-11-15T02:09:41.3355907Z","durationMs":301478}
 {"skill":"definition-of-done","featureSlug":"2026-11-15-coha-scrubber-filename-fix","storySlug":"sff-s1","stage":"definition-of-done","timestamp":"2026-11-15T02:43:23.365Z","startedAt":"2026-11-15T02:28:23.363Z","durationMs":900002}
+{"skill":"test-plan","featureSlug":"2026-11-15-coha-s7-test-crlf-fix","storySlug":"cwt-s1","stage":"test-plan","timestamp":"2026-11-15T02:59:17.439Z","startedAt":"2026-11-15T02:49:17.438Z","durationMs":600001}
+{"skill":"definition-of-ready","featureSlug":"2026-11-15-coha-s7-test-crlf-fix","storySlug":"cwt-s1","stage":"definition-of-ready","timestamp":"2026-11-15T02:59:17.440Z","startedAt":"2026-11-15T02:49:17.440Z","durationMs":600000}

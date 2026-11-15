@@ -21,6 +21,7 @@ So that **the test suite is not red for a reason unrelated to the code, and a re
 - **Normalise at the read, not in each test.** One change where the workflow text is read (`.replace(/\r\n/g, '\n')`), so every structural pin sees the same text on every platform.
 - **Do not weaken any pin.** No assertion is loosened, removed or made optional.
 - **Do not change the workflow, the script or the library.** Test file only.
+- **Architecture guardrails (.github/architecture-guardrails.md):** ADR-011 (artefact-first) is satisfied by this story's own chain; no other Active ADR is engaged (test file only, no src, workflow or schema change).
 - **Zero new npm dependencies.**
 
 ## Dependencies
