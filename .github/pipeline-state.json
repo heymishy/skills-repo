@@ -49792,7 +49792,7 @@
           "id": "sff-s1",
           "slug": "sff-s1",
           "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49804,9 +49804,29 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T01:32:21.754Z",
+          "updatedAt": "2026-11-15T02:03:08.851Z",
           "blocker": "",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Fixture, unit tests UT1-UT6 and edited assertions, red (AC1-AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-coha-scrubber-filename-fix/plans/sff-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "End-to-end test IT1 through real createApp, red (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-coha-scrubber-filename-fix/plans/sff-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Fix scrubFrame so every frame has a string filename, green (AC1-AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-11-15-coha-scrubber-filename-fix/plans/sff-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
