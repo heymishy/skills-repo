@@ -107,10 +107,12 @@ test('T5 See all products links to /products; the List and Board links keep poin
 test('T6 the new page keeps the sidebar and marks See all products active', async () => {
   const res = await getPage('tenant-a');
   assert.ok(res._body.indexOf('aria-label="Products"') !== -1, 'the Products sidebar section is present');
-  assert.ok(/class="sw-see-all-products[^"]*sw-see-all-products--active[^"]*"/.test(res._body) || /sw-see-all-products--active/.test(res._body), 'See all products carries the active class');
-  assert.ok(/aria-current="page"[^>]*>See all products|sw-see-all-products[^>]*aria-current="page"/.test(res._body), 'aria-current on the active link');
+  // Match the link TAG itself: the stylesheet also mentions the class name, so a bare substring check would prove nothing.
+  const activeLink = /<a href="\/products" class="sw-see-all-products sw-see-all-products--active" aria-current="page">See all products/;
+  assert.ok(activeLink.test(res._body), 'the See all products link carries the active class and aria-current');
   const other = shellFor('dashboard');
-  assert.ok(other.indexOf('sw-see-all-products--active') === -1, 'not active on other pages');
+  assert.ok(!/<a [^>]*sw-see-all-products--active/.test(other), 'not active on other pages');
+  assert.ok(!/<a [^>]*aria-current="page"[^>]*>See all products/.test(other), 'no aria-current on other pages');
 });
 
 test('T7 the new list markup uses no hard-coded hex colours', () => {

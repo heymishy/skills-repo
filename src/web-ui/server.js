@@ -99,7 +99,7 @@ const { requireAdmin, setGetCurrentRole }                            = require('
 const { requireNonViewer, setLogger: setViewerGateLogger }           = require('./middleware/require-non-viewer'); // vrne-s1
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handleGetProductSyncStatus, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion, handleCreateGrant, handleListSharedProducts, handleGetSharedProduct, handleMutateSharedProduct, handleRevokeGrant, handleCreateSharedComment, handleListSharedComments, handleCreateAgencyComment, handleListAgencyComments } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11) / gcw-s1 -- story-2/story-5's already-built grant/comment handlers, wired for the first time
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductsList, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handleGetProductSyncStatus, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion, handleCreateGrant, handleListSharedProducts, handleGetSharedProduct, handleMutateSharedProduct, handleRevokeGrant, handleCreateSharedComment, handleListSharedComments, handleCreateAgencyComment, handleListAgencyComments } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11) / gcw-s1 -- story-2/story-5's already-built grant/comment handlers, wired for the first time
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -4529,6 +4529,10 @@ async function router(req, res) {
       if (!_raOk) return;
       await _impersonationHandlers.handleGetImpersonationAuditList(req, res);
     }
+
+  } else if (pathname === '/products' && req.method === 'GET') {
+    // pls-s1 -- products list page ("See all products" target)
+    authGuard(req, res, async () => { await handleGetProductsList(req, res, null, _pshPool); });
 
   } else if (pathname === '/products/new' && req.method === 'GET') {
     // psh-s3 — product creation form

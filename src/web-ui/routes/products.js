@@ -3047,6 +3047,46 @@ async function handleGetDashboard(req, res, _next, pool) {
   }
 }
 
+// pls-s1: the page body for GET /products. Since dsa-s2 the dashboard body no longer lists products (the
+// sidebar does), so this is the one page whose body lists every product the tenant owns. CSS variables only
+// (no hard-coded colours); product names are escaped; links go to the existing product page.
+function _renderProductsList(products) {
+  if (!products || products.length === 0) {
+    return '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
+        '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
+        '<p style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product organizes your epics, features, and journeys.</p>' +
+        '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--line);border-radius:6px;text-decoration:none;font-weight:500">Create your first product</a>' +
+      '</div>';
+  }
+  var cards = products.map(function(p) {
+    var count = p.journeyCount === 1 ? '1 feature' : String(p.journeyCount || 0) + ' features';
+    var updated = p.lastUpdated ? 'Updated ' + _escapeHtml(String(p.lastUpdated).slice(0, 10)) : 'No activity yet';
+    return '<a href="/products/' + _escapeHtml(encodeURIComponent(String(p.productId))) + '" style="display:block;padding:16px 20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink)">' +
+        '<span style="display:block;font-size:16px;font-weight:600">' + _escapeHtml(p.name) + '</span>' +
+        '<span style="display:block;margin-top:4px;font-size:13px;color:var(--muted)">' + count + ' &middot; ' + updated + '</span>' +
+      '</a>';
+  }).join('');
+  return '<div style="display:grid;gap:12px">' + cards + '</div>';
+}
+
+async function handleGetProductsList(req, res, _next, pool) {
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
+  // Same tenant-scoped helper the sidebar and dashboard use; renderShellWithNav fetches it again for the sidebar
+  // (a handful of products, same cost every page already pays).
+  var navSummary = await getProductsNavSummary(pool, tenantId);
+  var html = await renderShellWithNav(pool, tenantId, {
+    title: 'Products',
+    bodyContent: '<div style="max-width:1040px"><h1 style="margin:0 0 20px;font-size:24px">Products</h1>' + _renderProductsList(navSummary.products) + '</div>',
+    user: { login: login },
+    active: 'products',
+    isAdmin: isAdmin
+  });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 async function handleGetProductNew(req, res, pool) {
   var login = req.session && req.session.login;
   var tenantId = req.session && req.session.tenantId;
@@ -4984,6 +5024,9 @@ module.exports = {
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
+  // pls-s1: products list page (body renderer exported for direct unit testing)
+  _renderProductsList,
+  handleGetProductsList,
   // pan-s1: shared products-for-sidebar summary, also consumed by routes/journey.js
   getProductsNavSummary,
   // pncg-s1: shared renderShell + nav-fetch wrapper, also consumed by every
