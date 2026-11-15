@@ -119,8 +119,8 @@ await checkAsync('AC1: handleGetJourneyStageView_withPool_rendersProductsNavSect
   assert.ok(result.body.indexOf('Product One') !== -1, 'expected the real product name in the rendered nav');
 });
 
-// ── AC2: "See all products" link points at /dashboard ──
-await checkAsync('AC2: handleGetJourneyStageView_seeAllProductsLink_pointsAtDashboard', async () => {
+// ── AC2: "See all products" link points at /products (pls-s1: was /dashboard) ──
+await checkAsync('AC2: handleGetJourneyStageView_seeAllProductsLink_pointsAtProductsList', async () => {
   var journey = makeCompletedJourneyFixture(
     'jcn-s1-ac2-feature', 'definition', 'artefacts/jcn-s1-ac2-feature/definition.md',
     '# Definition\n\nAC2 fixture content.'
@@ -134,7 +134,7 @@ await checkAsync('AC2: handleGetJourneyStageView_seeAllProductsLink_pointsAtDash
   var result = res._get();
 
   assert.ok(result.body.indexOf('See all products') !== -1, 'expected a "See all products" link');
-  assert.ok(result.body.indexOf('href="/dashboard"') !== -1, 'expected the See-all-products link to point at /dashboard');
+  assert.ok(result.body.indexOf('href="/products" class="sw-see-all-products') !== -1, 'expected the See-all-products link to point at /products');
 });
 
 // ── AC3: journey-complete page nav includes the same products section ──
@@ -150,7 +150,7 @@ await checkAsync('AC3: handleGetJourneyComplete_withPool_rendersProductsNavSecti
 
   assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
   assert.ok(result.body.indexOf('Product One') !== -1, 'expected the real product name in the rendered nav');
-  assert.ok(result.body.indexOf('href="/dashboard"') !== -1, 'expected the See-all-products link to point at /dashboard');
+  assert.ok(result.body.indexOf('href="/products" class="sw-see-all-products') !== -1, 'expected the See-all-products link to point at /products');
 });
 
 // ── AC4: zero-products state matches the rest of the app ──
