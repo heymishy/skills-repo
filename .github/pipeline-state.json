@@ -50164,7 +50164,7 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 6,
-          "updatedAt": "2026-11-15T09:43:43.548Z",
+          "updatedAt": "2026-11-15T18:00:14.926Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50175,7 +50175,7 @@
             "artefact": "artefacts/2026-11-15-invalid-id-not-found/test-plans/uid-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
