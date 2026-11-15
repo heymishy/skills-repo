@@ -49929,21 +49929,36 @@
           "id": "pes-s2",
           "slug": "pes-s2",
           "name": "Send the environment-specific fingerprint as a string, because PostHog rejects an array",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "amber",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T04:56:55.613Z",
-          "blocker": "Urgent regression fix: PostHog rejects the array fingerprint",
-          "dorStatus": "signed-off"
+          "updatedAt": "2026-11-15T05:10:23.565Z",
+          "blocker": "AC4 and AC5 live checks outstanding after merge and deploy; array fingerprint still live until this ships",
+          "dorStatus": "signed-off",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Edit pes tests to expect a string, add UT5, red (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Join the fingerprint into a string, green (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
