@@ -11,5 +11,5 @@
 
 **2026-11-16 | ARCH | The adapter becomes the single place that decides what reaches Redis**
 **Context:** the token was stripped in two places (`session.js` and `session-redis.js`), so encrypting in one would still lose it in the other.
-**Decision:** `persistSession` hands the adapter the full session; the adapter encrypts the token or strips it. Existing tests that asserted "never written to Redis" are updated to "never written in plaintext" (listed in the contract).
+**Decision (as built, refining the plan):** `persistSession` keeps handing the adapter a sanitised session-data object (no token) and passes the token as a separate third argument, `writeSession(id, data, accessToken)`; the adapter encrypts it or drops it. The plan had been to pass the full session and edit the existing tests that pinned token stripping; passing the token separately keeps `_sanitiseForRedis` and those tests (lab-s1.3 NFR1, p3.2 AC2, srf-s1 AC4) true unchanged, so only one test label was edited (p3.2 AC2's title). The adapter also never trusts a plaintext `accessToken` read back from Redis.
 **Follow-up at DoD:** record the changed token-at-rest rule as a repo-level ADR note in `.github/architecture-guardrails.md`.

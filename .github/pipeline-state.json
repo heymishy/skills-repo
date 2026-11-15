@@ -50259,21 +50259,22 @@
           "id": "sps-s1",
           "slug": "sps-s1",
           "name": "Keep people signed in across deploys by storing the login token encrypted",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 9,
-          "acVerified": 0,
-          "updatedAt": "2026-11-15T20:17:44.606Z",
+          "acVerified": 8,
+          "updatedAt": "2026-11-15T20:31:18.367Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-16-session-persistence/test-plans/sps-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
