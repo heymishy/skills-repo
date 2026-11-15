@@ -40,5 +40,21 @@
     "revisitCondition": "deferred to a broader `product/` refresh later",
     "linkedFeature": null,
     "linkedStory": null
+  },
+  {
+    "id": "8be43cc2-eba9-480b-8702-c2bd4ded6f36",
+    "type": "incident",
+    "trigger": "GitHub issue https://github.com/heymishy/skills-repo/issues/1110 (PostHog issue id 01a1e082-2a3b-77d1-b7dc-c626fabeec23)",
+    "summary": "unhandled_exception",
+    "tags": [
+      "production-error",
+      "posthog:01a1e082-2a3b-77d1-b7dc-c626fabeec23"
+    ],
+    "priorIncidentLinks": [],
+    "status": "open",
+    "triageSummary": "No relevant prior incident was found for this record's tags.",
+    "confirmationStatus": null,
+    "createdAt": "2026-11-15T18:40:19.839Z",
+    "updatedAt": "2026-11-15T18:40:19.844Z"
   }
 ]
