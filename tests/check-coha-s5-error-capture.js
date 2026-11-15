@@ -859,14 +859,15 @@ test('sff_IT1_throwingRequest_sinkEventEveryFrameHasFilename', async () => {
 const fpOf = (e, env) => ec.scrubEvent(e, env).properties.$exception_fingerprint;
 test('pes_UT1_fingerprintIsEnvironmentCodeRoute', () => {
   const mk = () => sdkEvent('m', { code: 'tenant_admin_bootstrap_failed', route: '/auth/callback' });
-  assert.deepStrictEqual(fpOf(mk(), 'production'), ['production', 'tenant_admin_bootstrap_failed', '/auth/:p']);
-  assert.strictEqual(fpOf(mk(), 'staging')[0], 'staging');
+  assert.strictEqual(typeof fpOf(mk(), 'production'), 'string', 'PostHog requires a string $exception_fingerprint');
+  assert.strictEqual(fpOf(mk(), 'production'), 'production|tenant_admin_bootstrap_failed|/auth/:p');
+  assert.ok(fpOf(mk(), 'staging').startsWith('staging|'));
 });
 test('pes_UT2_twoEnvironmentsNeverShareAFingerprint', () => {
   const mk = () => sdkEvent('m', { code: 'tenant_admin_bootstrap_failed', route: '/auth/callback' });
   const a = fpOf(mk(), 'staging'), b = fpOf(mk(), 'production');
-  assert.notDeepStrictEqual(a, b);
-  assert.deepStrictEqual(a.slice(1), b.slice(1));
+  assert.notStrictEqual(a, b);
+  assert.strictEqual(a.slice(a.indexOf('|')), b.slice(b.indexOf('|')));
 });
 test('pes_UT3_canariesNeverReachTheFingerprint_andAnIncomingFingerprintIsIgnored', () => {
   const c = 'canary-' + seed;
@@ -874,16 +875,25 @@ test('pes_UT3_canariesNeverReachTheFingerprint_andAnIncomingFingerprintIsIgnored
     const e = sdkEvent('failed for ' + c, { route: '/tenants/' + c + '/x', code: c, $exception_fingerprint: incoming });
     const out = ec.scrubEvent(e, 'production');
     assert.ok(!JSON.stringify(out).includes(c), 'canary leaked');
-    assert.deepStrictEqual(out.properties.$exception_fingerprint, ['production', 'unhandled_exception', '/:p/:p/:p']);
+    assert.strictEqual(out.properties.$exception_fingerprint, 'production|unhandled_exception|/:p/:p/:p');
   });
 });
 test('pes_UT4_anUnexpectedEnvironmentCannotEnterTheFingerprint', () => {
   const mk = () => sdkEvent('m', { code: 'request_error', route: '/x' });
   ['prod uction', 'x'.repeat(200), undefined, 42, 'Production', 'tenant-' + seed].forEach(env => {
-    assert.strictEqual(fpOf(mk(), env)[0], 'unknown');
+    assert.ok(String(fpOf(mk(), env)).startsWith('unknown|'), 'environment ' + String(env).slice(0, 20));
   });
-  assert.strictEqual(fpOf(mk(), 'production')[0], 'production');
-  assert.strictEqual(fpOf(mk(), 'staging')[0], 'staging');
+  assert.ok(fpOf(mk(), 'production').startsWith('production|'));
+  assert.ok(fpOf(mk(), 'staging').startsWith('staging|'));
+});
+test('pes_UT5_theSeparatorAppearsExactlyTwice', () => {
+  const codes = ['tenant_admin_bootstrap_failed', 'request_error', 'unhandled_exception', 'not-allow-listed ' + seed];
+  const routes = ['/auth/callback', '/x', '/products/' + seed, '/a/b/c/d/e/f/g/h/i/j/k', '/tenants/' + seed + '/x', undefined];
+  codes.forEach(code => routes.forEach(route => ['staging', 'production', 'weird|env'].forEach(env => {
+    const fp = fpOf(sdkEvent('m', { code, route }), env);
+    assert.strictEqual(typeof fp, 'string');
+    assert.strictEqual(fp.split('|').length, 3, fp);
+  })));
 });
 test('pes_IT1_throwingRequest_sinkEventCarriesTheEnvironmentFingerprint', async () => {
   const sink = await sinkLib.start(); let ch;
@@ -896,7 +906,8 @@ test('pes_IT1_throwingRequest_sinkEventCarriesTheEnvironmentFingerprint', async 
     assert.strictEqual(sink.events.length, 1);
     const p = sink.events[0].properties;
     assert.strictEqual(p.environment, 'production');
-    assert.deepStrictEqual(p.$exception_fingerprint, [p.environment, p.code, p.route]);
+    assert.strictEqual(typeof p.$exception_fingerprint, 'string');
+    assert.strictEqual(p.$exception_fingerprint, [p.environment, p.code, p.route].join('|'));
     assert.ok(!JSON.stringify(sink.events).includes(seed));
   } finally { if (ch) await ch.stop(); await sink.stop(); }
 });

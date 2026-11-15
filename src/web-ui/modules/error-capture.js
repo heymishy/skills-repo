@@ -84,7 +84,8 @@ function scrubEvent(ev, environment) {
     out.code = code;
     out.route = typeof p.route === 'string' ? routeLabel(p.route) : '/process';
     out.environment = environment;
-    out.$exception_fingerprint = [(environment === 'staging' || environment === 'production') ? environment : 'unknown', code, out.route];
+    // PostHog requires $exception_fingerprint to be a STRING (an array is rejected: "expected a string"); join the three fixed values with '|'.
+    out.$exception_fingerprint = [(environment === 'staging' || environment === 'production') ? environment : 'unknown', code, out.route].join('|');
     out.$process_person_profile = false;
     out.$exception_list = p.$exception_list.map(x => {
       const frames = ((x.stacktrace && Array.isArray(x.stacktrace.frames)) ? x.stacktrace.frames : []).map(scrubFrame);
