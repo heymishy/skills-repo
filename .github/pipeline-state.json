@@ -50160,21 +50160,22 @@
           "id": "uid-s1",
           "slug": "uid-s1",
           "name": "Answer 404 Not Found, not 500, when a malformed id is in the URL",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 8,
-          "acVerified": 0,
-          "updatedAt": "2026-11-15T09:33:32.212Z",
+          "acVerified": 6,
+          "updatedAt": "2026-11-15T09:43:43.548Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 11,
-            "passing": 0,
+            "passing": 10,
             "artefact": "artefacts/2026-11-15-invalid-id-not-found/test-plans/uid-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
