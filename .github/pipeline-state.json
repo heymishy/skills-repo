@@ -49982,11 +49982,11 @@
           "id": "tabf-s1",
           "slug": "tabf-s1",
           "name": "Make the tenant-admin bootstrap statement valid on a real Postgres so a new tenant first user can be granted admin",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "amber",
           "acTotal": 7,
           "acVerified": 6,
-          "updatedAt": "2026-11-15T06:49:35.187Z",
+          "updatedAt": "2026-11-15T06:55:44.066Z",
           "blocker": "Production promotion waits for the approved read-only check of tenants with members but no admin; AC7 live after deploy",
           "testPlan": {
             "status": "all-passing",
@@ -50011,7 +50011,9 @@
               "file": "artefacts/2026-11-15-tenant-admin-bootstrap-fix/plans/tabf-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1103"
         }
       ],
       "metrics": [],
