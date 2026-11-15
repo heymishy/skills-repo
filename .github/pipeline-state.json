@@ -50021,6 +50021,30 @@
       "metrics": [],
       "guardrails": [],
       "updatedAt": "2026-11-15T06:01:57.297Z"
+    },
+    {
+      "slug": "2026-11-15-products-list-page",
+      "name": "Add a products list page so See all products shows all products",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pls-s1",
+          "slug": "pls-s1",
+          "name": "Add a products list page so See all products shows all products",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "hasDesignSystemTrack": true,
+          "updatedAt": "2026-11-15T07:22:27.003Z",
+          "blocker": ""
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T07:22:27.003Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
