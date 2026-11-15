@@ -3055,7 +3055,7 @@ function _renderProductsList(products) {
     return '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
         '<p style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product organizes your epics, features, and journeys.</p>' +
-        '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--line);border-radius:6px;text-decoration:none;font-weight:500">Create your first product</a>' +
+        '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;text-decoration:none;font-weight:500">Create your first product</a>' +
       '</div>';
   }
   var cards = products.map(function(p) {
