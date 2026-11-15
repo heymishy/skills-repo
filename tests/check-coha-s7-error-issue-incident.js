@@ -729,7 +729,7 @@ test('I4 two branches from one base conflict; a rebuild from the current master 
 });
 
 // ---- workflow file wiring tests (text based, in the style of tests/check-cif-s1-deploy-concurrency-guard.js) ----
-const wf = fs.existsSync(WORKFLOW) ? fs.readFileSync(WORKFLOW, 'utf8') : '';
+const wf = (fs.existsSync(WORKFLOW) ? fs.readFileSync(WORKFLOW, 'utf8') : '').replace(/\r\n/g, '\n');
 const indentOf = (l) => l.length - l.trimStart().length;
 function splitJobs(content) {
   const lines = content.split(/\r?\n/);
