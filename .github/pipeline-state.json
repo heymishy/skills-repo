@@ -49792,7 +49792,7 @@
           "id": "sff-s1",
           "slug": "sff-s1",
           "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "testPlan": {
             "status": "written",
@@ -49804,7 +49804,7 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T01:23:34.950Z",
+          "updatedAt": "2026-11-15T01:32:21.754Z",
           "blocker": "",
           "dorStatus": "signed-off"
         }
