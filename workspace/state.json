@@ -1,6 +1,6 @@
 {
   "currentPhase": "2026-11-04-inner-loop-cycle-efficiency: all 4 stories (ilce-s1 through ilce-s4) plus the short-track follow-up fix bcfx-s1 are now dodStatus=complete, all 3 epics complete. Running /definition-of-done for each surfaced a real structural bug in ilce-s2's own freshness mechanism (fixed via bcfx-s1) and a materially larger-than-expected live-reconciliation backlog via ilce-s4's own mechanism -- see pendingActions below. 2026-10-20-production-playback-capture's own currentPhase note (preserved below in the cycle block) is from an earlier session segment and is stale relative to this one; see that feature's own cycle entry for its last-known status.",
-  "lastUpdated": "2026-11-15T00:55:33.654Z",
+  "lastUpdated": "2026-11-15T01:02:03.169Z",
   "activeFeature": "2026-11-04-inner-loop-cycle-efficiency",
   "previousFeature": "2026-10-19-real-playback-capture-automation",
   "cycle": {
@@ -53,8 +53,8 @@
   },
   "checkpoint": {
     "writtenAt": "2026-11-15",
-    "contextAtWrite": "coha-s5, coha-s6 and coha-s7 merged, live-verified where possible and DoD written; bridge enabled on production; learnings D52 to D60 written; live validation found that PostHog rejects every scrubbed event (blocker for the real pipeline).",
-    "resumeInstruction": "Start with the HIGH pending action: write the short-track fix story for the coha-s5 scrubber (placeholder filename on every frame), then /test-plan, /definition-of-ready and the inner loop. Everything else under coha is live and verified except coha-s6 AC9, which waits on that fix.",
+    "contextAtWrite": "coha-s5, coha-s6, coha-s7 merged, DoD written, live-verified where possible; bridge enabled on production; learnings D52 to D61 written; live validation found PostHog rejects every scrubbed event (missing filename); two short-track stories written (sff-s1 scrubber fix, cwt-s1 coha-s7 test CRLF fix) but no test plans yet. Session ended at the operator weekly usage limit (account swap).",
+    "resumeInstruction": "Resume at /test-plan for sff-s1 (artefacts/2026-11-15-coha-scrubber-filename-fix/stories/sff-s1-keep-a-filename-on-every-scrubbed-frame.md): use real frame shapes captured from PostHog (frames with and without filename; the Node internal frame process.processTicksAndRejections has no filename) as the fixture; include a check that fails against the unfixed scrubber; then /definition-of-ready, inner loop, draft PR (operator merges), staging verification (AC5), operator deploys production. Then the same for cwt-s1 (artefacts/2026-11-15-coha-s7-test-crlf-fix). Do not enable or change anything live without fresh approval; the PostHog destination 01a1d3ce-ad2c-0000-64b2-d32e9b55609b is LIVE on production.",
     "pendingActions": [
       "DONE with one open question (2026-11-12): smt-s1 promoted to production (v177, 2026-11-11 18:59 UTC); production schema_migrations has 14 rows, correct shape. UNEXPLAINED: the v177 boot recorded only 3 of the 14 migrations; the other 11 were recorded by the v178 boot 11h later (staging recorded all 14 in one boot). Boot logs for v177 were gone before checking. Next production deploy: capture boot logs within a minute (fly logs -a skills-framework --no-tail) and compare with schema_migrations. Details in smt-s1 DoD Production Observation Addendum.",
       "WAVE 3 COMPLETE (2026-11-12): all eight stories merged and DoD written, all COMPLETE WITH DEVIATIONS (amber, releaseReady=false): ddft-s2 #1079, ddft-s4 #1080, urpv-s3 #1081, itar-s3 #1082, ddft-s3 #1083, urpv-s4 #1084, itar-s4 #1085, ddft-s5 #1086. Remaining work is operator decisions (listed in the OPERATOR items) and production promotion; Teams-dependent coha-s2/s3/s4 stay on hold.",
