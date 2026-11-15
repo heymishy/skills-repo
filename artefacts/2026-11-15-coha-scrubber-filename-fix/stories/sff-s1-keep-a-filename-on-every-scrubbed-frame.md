@@ -23,6 +23,7 @@ So that **PostHog's issue processor accepts the events, creates Error Tracking i
 - **Frames that are not objects** (already scrubbed to an empty object today) must also come out schema-valid (a placeholder `filename` and nothing else), because a bare `{}` frame would be rejected the same way.
 - **Do not guess the consumer's whole schema.** The rejection message names one missing field, and that parser reports the first problem it meets. Assert only what is evidenced (`filename` is a string on every frame) and treat any other message PostHog returns after this fix as new information, recorded and handled in a follow-up (see AC6).
 - **Mock-shape verification (CLAUDE.md rule):** the test fixture frames must be copied from the real shapes captured from PostHog on 2026-11-15, not invented to suit the fix.
+- **Architecture guardrails (.github/architecture-guardrails.md):** ADR-025 (multi-tenancy at the application layer) is why the scrubber must never let tenant text leave the app, so the fail-closed rule above is binding; ADR-011 (artefact-first) is satisfied by this story's own chain; no other Active ADR is engaged (no route, adapter, schema or workflow changes).
 - **Zero new npm dependencies.**
 
 ## Dependencies
