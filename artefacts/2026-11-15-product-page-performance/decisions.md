@@ -10,3 +10,9 @@
 
 **2026-11-15 | SCOPE | Split into ppp-s1 and ppp-s2**
 **Decision:** ppp-s1 covers the 16-second load (cache and parallel reads). ppp-s2 covers the sidebar N+1 query, the duplicate nav read on `/products`, the 2.9 MB HTML and the log noise; written, not yet taken through the pipeline.
+
+**2026-11-15 | SCOPE | ppp-s2 deferred, items dropped or absorbed**
+**Context:** after ppp-s1 was built, each ppp-s2 item was re-checked against measurements instead of the first read of the code.
+**Evidence (read-only, production v189):** compressed transfer of the 2,972 KB product page is 154 KB (Fly's proxy already applies zstd), 25,412 DOM nodes; `/dashboard` (which pays the sidebar query) is 0.49 s and `/products` 0.57 s with 5 products, so the sidebar's N+1 is about 7 small queries per page. The per-view log noise came from the per-feature fetches, which ppp-s1's cache removes (failures now log once per refresh, not once per view).
+**Decision:** (1) page weight: dropped, 154 KB on the wire does not justify a styling refactor with visual risk; (2) log noise: absorbed by ppp-s1; (3) sidebar N+1 and the duplicate nav read on `/products`: deferred, because changing the SQL shape touches mocks in about 50 test files for a saving too small to measure at this size.
+**Revisit when:** a tenant has dozens of products, or a measurement shows the sidebar query among the slow parts of a page. At that point the grouped query (COUNT and MAX by product, tested against a real Postgres per learning D63) is the fix.

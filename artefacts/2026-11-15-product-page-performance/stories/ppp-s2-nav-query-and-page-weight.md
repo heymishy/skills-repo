@@ -1,6 +1,6 @@
 ## Story: Remove the sidebar N+1 query, the duplicate nav read and the product page weight
 
-**Status:** written, not yet taken through test-plan or DoR. Follows `ppp-s1` (which fixes the 16-second load). Short-track, domain [web-ui].
+**Status:** DEFERRED (decided 2026-11-15, see decisions.md): not worth building now; revisit if a tenant has dozens of products or the sidebar shows up in a slow-page measurement. Short-track, domain [web-ui].
 
 **Why:** the same read-only measurement and code read that found the main cause also found smaller costs that every page pays or that make the product page heavy.
 

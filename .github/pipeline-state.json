@@ -50108,8 +50108,8 @@
           "health": "green",
           "acTotal": 0,
           "acVerified": 0,
-          "updatedAt": "2026-11-15T08:23:42.474Z",
-          "blocker": "written, not yet through test-plan or DoR"
+          "updatedAt": "2026-11-15T08:44:25.576Z",
+          "blocker": "deferred: see decisions.md (not worth building at 5 products; revisit at dozens)"
         }
       ]
     }
