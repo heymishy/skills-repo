@@ -1,0 +1,20 @@
+# Production error sweep 2 findings
+
+Date: 2026-11-16 (event timestamps in PostHog and GitHub read 2026-11-15). Target: skills-framework.fly.dev with ecg-s1 and uid-s1 live. Operator-approved, including requests that open real GitHub issues. Method: GET requests only from a signed-in Chrome tab (no form submits, deletes, syncs or sign-out).
+
+## What was run
+
+- Link crawl: 40 links from 6 seed pages, then 487 more found on those pages. Every one returned 200 or a redirect. Nothing slow except one cold product page (6.4 s, first load after the deploy, the known cache-empty cost).
+- Edge-case fuzz: 36 route patterns with an id or slug segment, each with 6 bad values (`not-a-uuid`, `%00`, broken escape `%E0%A4%A`, a well-formed unknown uuid, a 300-character value, an encoded path traversal): 216 requests. Results: 96 x 200, 98 x 404, 6 x 400, 6 x 401, 8 x 500, 2 x 503.
+
+## Findings (each 5xx now reaches the error chain; ecg-s1 AC8 observed live)
+
+1. **Commit result page always fails (high, user-visible).** `GET /skills/:name/sessions/:id/result` returns 500 for every request, including well-formed ids. Cause: `getCommitResult` is never wired in `server.js` (only `setGetCommitPreview` and `setCommitSession` are), so the adapter's stub throws "Adapter not wired: getCommitResult" and the handler shows that text. `handlePostCommitHtml` redirects (303) to this page after every successful commit, so the commit flow ends on an error page. This is exactly the Injectable adapter rule (D37) gap in CLAUDE.md: stub throws (good) but no production wiring task or test. Candidate story `scr-s1`.
+2. **Broken percent-escape returns 500 on routes that decode a segment (medium).** `/journey/<x>/stage/%E0%A4%A` (GitHub issue #1109) and `/products/<x>/playback-evidence/%E0%A4%A` (issue #1108) fail with a `URIError` from `decodeURIComponent`. A client mistake that should be 404 or 400, same class as uid-s1. Candidate story `ure-s1` (one central translation, like uid-s1).
+3. **Artefact route answers 503 for `%00` and a broken escape (medium).** `/artefact/%00/%00` and `/artefact/%E0%A4%A/...` (issue #1110). Also still 6 s for unknown artefacts (earlier finding, `anf-s1`). Candidate: fold both into `anf-s1`.
+4. **Issue quality (medium).** The GitHub issues carry only the code (`request_error`, `unhandled_exception`), a time and a PostHog link. The route is in the event but not in the issue title or body, so issues #1108 and #1109 look identical and cannot be triaged without opening PostHog. Messages are withheld on purpose by the privacy scrubber, so the route and error type must carry the triage. Candidate story `eit-s1`: title and body include the route label and error type.
+5. **The most important bug, `/skills/.../result`, never became a GitHub issue (high, ecg-s1 follow-up).** All 7 events (6 from the fuzz, 1 from a single later request, so not a race) reached PostHog with no `$exception_types` and no issue id. PostHog processed the artefact events (their frames carry `raw_id` and `resolved`) but left these untouched. The one visible difference: the first frame of each `/skills` event is an anonymous arrow function (`server.js` line 3775) with no `function` name, whereas the artefact events' frames all have one. Hypothesis (not proven): PostHog's exception processing rejects an event containing a frame with no `function`, so errors thrown from anonymous callbacks are reported but never grouped into an issue. Spike first: replay one event with and without a `function` value on the frame and see which one gets an issue id. If confirmed, `scrubFrame` should set a fixed placeholder name (for example `<anonymous>`) when `function` is missing. Candidate story `ecf-s1`. This means ecg-s1's goal ("every 5xx becomes an issue") is true only for 5xx whose first frame is a named function.
+
+## Side effects of this sweep (operator action)
+
+- GitHub issues #1108, #1109, #1110 and incident-record draft PRs #1111, #1112, #1113 were opened by the error chain as designed. They are test artefacts of this sweep: close them with the fix stories, or close now.
