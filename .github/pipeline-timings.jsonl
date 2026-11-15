@@ -44,3 +44,5 @@
 {"skill":"definition-of-ready","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s2","stage":"definition-of-ready","timestamp":"2026-11-15T04:57:03.820Z","startedAt":"2026-11-15T04:48:43.820Z","durationMs":500000}
 {"skill":"branch-setup","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s2","stage":"branch-setup","timestamp":"2026-11-15T05:10:23.698Z","startedAt":"2026-11-15T04:45:23.696Z","durationMs":1500002}
 {"skill":"verify-completion","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s2","stage":"verify-completion","timestamp":"2026-11-15T05:10:23.698Z","fullSuite":true,"startedAt":"2026-11-15T05:05:34.0805077Z","durationMs":289618}
+{"skill":"definition-of-done","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s1","stage":"definition-of-done","timestamp":"2026-11-15T05:28:51.809Z","startedAt":"2026-11-15T05:18:51.807Z","durationMs":600002}
+{"skill":"definition-of-done","featureSlug":"2026-11-15-posthog-env-separation","storySlug":"pes-s2","stage":"definition-of-done","timestamp":"2026-11-15T05:28:51.810Z","startedAt":"2026-11-15T05:18:51.810Z","durationMs":600000}

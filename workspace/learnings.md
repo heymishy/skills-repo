@@ -3566,3 +3566,14 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** `tests/check-coha-s7-error-issue-incident.js` passed 44 of 44 in the story's worktree (files with LF endings) and in CI (Linux), but fails W3 and W5 in the main Windows checkout, where `core.autocrlf=true` gives the workflow file CRLF endings: line 732 reads the workflow with no normalisation and W3 matches `\n`-anchored patterns. Any Windows developer cloning the repo gets two red tests. Nothing in the pipeline caught it because the worktree and CI both had LF files.
 
 **Rule:** Any test that reads a checked-in text file and matches it with `^`, `$` or `\n`-anchored patterns must first normalise with `.replace(/\r\n/g, '\n')`. Run new tests once in a fresh clone or the main Windows checkout, not only in the story worktree, before `/verify-completion` signs off.
+
+---
+
+## D62 - Before a third-party call's tests fix its data type, find one real accepted example (a documentation sample is not enough)
+
+**Date:** 2026-11-15
+**Observed at:** `cicd-observability-hardening-automation` feature, pes-s1 and pes-s2 (and sff-s1 before them).
+
+**What happened:** Three fixes in a row for the same PostHog pipeline each shipped with green tests and then failed on the first live query: sff-s1 (a missing `filename`), pes-s1 (an array `$exception_fingerprint` where PostHog's reference says String, rejected with "expected a string"), and the original coha-s6 template (a property, `exception_timestamp`, that processed events do not carry). In each case the unit tests asserted the shape I had written, so they proved only that my code matched my own assumption. What caught every one was a live PostHog query on real events after a staging deploy, and the rule that production promotion waits for that query.
+
+**Rule:** For any value sent to a third party, before writing tests that fix its type or shape, find one real accepted example (a query of an accepted event, the vendor's reference table, or a live probe on staging) and cite it in the story. Keep the live acceptance check as its own acceptance criterion with an explicit "do not promote to production until it passes". Treat documentation examples across languages as unreliable evidence for the wire type.

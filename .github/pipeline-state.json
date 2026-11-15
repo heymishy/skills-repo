@@ -49892,12 +49892,12 @@
           "id": "pes-s1",
           "slug": "pes-s1",
           "name": "Give every captured error an environment-specific fingerprint so a production error never joins a staging error group",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "amber",
           "acTotal": 6,
           "acVerified": 4,
-          "updatedAt": "2026-11-15T04:47:04.421Z",
-          "blocker": "REGRESSION: PostHog rejects the array fingerprint (needs string); follow-up pes-s2",
+          "updatedAt": "2026-11-15T05:28:33.641Z",
+          "blocker": "Superseded in part by pes-s2 (array fingerprint rejected by PostHog)",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -49923,13 +49923,15 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1099"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1099",
+          "dodStatus": "complete",
+          "releaseReady": false
         },
         {
           "id": "pes-s2",
           "slug": "pes-s2",
           "name": "Send the environment-specific fingerprint as a string, because PostHog rejects an array",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "amber",
           "testPlan": {
             "status": "all-passing",
@@ -49938,11 +49940,11 @@
             "artefact": "artefacts/2026-11-15-posthog-env-separation/test-plans/pes-s2-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 3,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T05:12:44.599Z",
-          "blocker": "AC4 and AC5 live checks outstanding after merge and deploy; array fingerprint still live until this ships",
+          "updatedAt": "2026-11-15T05:28:33.891Z",
+          "blocker": "AC5 outstanding: production promotion approval and the known production login error",
           "dorStatus": "signed-off",
           "tasks": [
             {
@@ -49959,8 +49961,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/1100"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1100",
+          "dodStatus": "complete",
+          "releaseReady": false
         }
       ],
       "metrics": [],
