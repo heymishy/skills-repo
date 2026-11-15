@@ -148,8 +148,8 @@ test('scrubEvent_function_identifierShapedOnly', () => {
   // A pure identifier is defined by the code itself and cannot carry tenant text; anything else is dropped.
   const fn = (v) => { const e = sdkEvent('m'); e.properties.$exception_list[0].stacktrace.frames[0].function = v; return ec.scrubEvent(e, 'production').properties.$exception_list[0].stacktrace.frames[0].function; };
   assert.strictEqual(fn('Object.handle'), 'Object.handle');
-  assert.strictEqual(fn('a@b'), undefined);
-  assert.strictEqual(fn('a b'), undefined);
+  assert.strictEqual(fn('a@b'), '<anonymous>');  // ecf-s1: the text is still dropped; PostHog requires the key, so a fixed placeholder is sent
+  assert.strictEqual(fn('a b'), '<anonymous>');
 });
 test('scrubEvent_codeAndType_allowListsOnly', () => {
   const o = (c, t) => { const e = sdkEvent('m', { code: c }); e.properties.$exception_list[0].type = t; return ec.scrubEvent(e, 'production'); };
