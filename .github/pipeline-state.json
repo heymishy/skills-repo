@@ -49970,6 +49970,29 @@
       "metrics": [],
       "guardrails": [],
       "updatedAt": "2026-11-15T03:35:27.072Z"
+    },
+    {
+      "slug": "2026-11-15-tenant-admin-bootstrap-fix",
+      "name": "Make the tenant-admin bootstrap statement valid on a real Postgres so a new tenant first user can be granted admin",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "stories": [
+        {
+          "id": "tabf-s1",
+          "slug": "tabf-s1",
+          "name": "Make the tenant-admin bootstrap statement valid on a real Postgres so a new tenant first user can be granted admin",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T06:01:57.297Z",
+          "blocker": ""
+        }
+      ],
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T06:01:57.297Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
