@@ -553,7 +553,7 @@ test('unhandledRejection_isCaptured_processKeepsRunning', async () => {
     assert.strictEqual(sink.events.length, 1, 'expected exactly one event, got ' + sink.events.length);
     const ev = sink.events[0]; const p = ev.properties;
     assert.strictEqual(ev.event, '$exception');
-    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception');
+    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception: Error at /process'); // eit-s1: the value is the issue title: code, type, route
     assert.strictEqual(p.code, 'unhandled_exception');
     assert.strictEqual(p.route, '/process');
     assert.strictEqual(p.environment, 'production');
@@ -686,7 +686,7 @@ test('uncaughtException_isCaptured_processKeepsRunning', async () => {
     await new Promise(r2 => setTimeout(r2, 300));
     assert.strictEqual(sink.events.length, 1, 'expected exactly one event, got ' + sink.events.length);
     const p = sink.events[0].properties;
-    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception');
+    assert.strictEqual(p.$exception_list[0].value, 'unhandled_exception: Error at /process'); // eit-s1: the value is the issue title: code, type, route
     assert.strictEqual(p.code, 'unhandled_exception');
     assert.strictEqual(p.route, '/process');
     assert.ok(!JSON.stringify(sink.events).includes(c), 'canary leaked');
