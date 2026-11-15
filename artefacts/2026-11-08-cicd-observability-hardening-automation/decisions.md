@@ -381,6 +381,13 @@
 **Fix (needs the operator's go):** a short-track follow-up, pes-s2: make the fingerprint a single string built from the same three fixed values (for example `staging|tenant_admin_bootstrap_failed|/auth/:p`), update the five tests, deploy, and verify live that new staging events are accepted AND carry a new issue id. Until it ships, the operator should NOT trigger the production login error test (it would be rejected and burn the test).
 **Made by:** Claude Sonnet 5.5, 2026-11-15.
 ---
+---
+**2026-11-15 | SPIKE | issue-to-fix automation spike: PROCEED, staged (fully automatic option deferred)**
+**Question:** can the platform safely start an automated short-track attempt from a bridge-opened production error issue, ending in a draft pull request with the merge and production promotion kept human?
+**Outcome:** PROCEED in stages: (1) enrich the incident record with the scrubbed top frames and add a handoff instruction block (no new credentials); (2) later, an optional workflow that opens a draft story and test-plan pull request for a recognised bridge issue; (3) revisit a fully automatic agent only after both have run on real errors and a credential, quota and eligibility model exists. Full reasoning, options table and controls: artefacts/2026-11-15-issue-to-fix-automation/spikes/issue-to-fix-automation-outcome.md.
+**Key finding:** the scrubbing that protects tenants also withholds the cause from any agent: for issue #1101 the real database error exists only in the private Fly log line next to the tenant id, not in PostHog or the issue.
+**Made by:** Claude Sonnet 5.5 with the operator's confirmation in chat, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->

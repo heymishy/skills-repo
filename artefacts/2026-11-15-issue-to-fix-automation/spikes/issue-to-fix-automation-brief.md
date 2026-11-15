@@ -2,7 +2,7 @@
 
 **Parent feature:** the coha chain (artefacts/2026-11-08-cicd-observability-hardening-automation/) as extended on 2026-11-15
 **Spike slug:** issue-to-fix-automation
-**Status:** PROPOSED. The /spike skill requires you to confirm the question, scope and done condition before any investigation starts (Step 7).
+**Status:** CONFIRMED by the operator in chat on 2026-11-15 ("can we do spike while I do that"), run the same day; outcome in `issue-to-fix-automation-outcome.md` (PROCEED, staged).
 
 ## Context
 
