@@ -49792,7 +49792,7 @@
           "id": "sff-s1",
           "slug": "sff-s1",
           "name": "Keep a placeholder filename on every scrubbed stack frame so PostHog accepts the error events",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "testPlan": {
             "status": "all-passing",
@@ -49804,7 +49804,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-11-15T02:14:42.547Z",
+          "updatedAt": "2026-11-15T02:18:53.793Z",
           "blocker": "AC5 and AC6 live checks outstanding after merge and staging deploy",
           "dorStatus": "signed-off",
           "tasks": [
@@ -49827,7 +49827,9 @@
               "file": "artefacts/2026-11-15-coha-scrubber-filename-fix/plans/sff-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/1095"
         }
       ],
       "metrics": [],
