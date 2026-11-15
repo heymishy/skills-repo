@@ -358,6 +358,13 @@
 **Proposed fix (needs the operator's approval; it changes the live PostHog destination 01a1d3ce-ad2c-0000-64b2-d32e9b55609b):** set `first_seen` to `{event.timestamp}`, a field every event has (the destination test panel's sample shows it as an ISO string such as 2026-11-14T20:18:58.505Z, which the bridge's check should accept). Then test with a production-shaped invocation that has NO `exception_timestamp` property, as the real event would, and confirm one issue opens. Also remember to close the test issue afterwards.
 **Made by:** Claude Sonnet 5.5, 2026-11-15; operator to approve the destination change.
 ---
+---
+**2026-11-15 | OPERATIONS | coha-s6 destination first_seen changed to the event timestamp (applied live, tested)**
+**Decision:** With the operator's approval in chat, the live PostHog destination 01a1d3ce-ad2c-0000-64b2-d32e9b55609b body now sets `first_seen` from `{event.timestamp}` instead of `{event.properties.exception_timestamp}` (the property does not exist on processed events; see the HIGH finding earlier today). The edit took effect immediately (version 6, no staged draft). All other inputs were sent with it; the secret header was preserved (the test below authenticated using the live secret).
+**Test:** a production-shaped test invocation with NO `exception_timestamp` property (issue id ...c0a56009, event timestamp 2026-11-15T02:55:00Z) opened exactly one issue, #1096, in 1.3 s (bridge log: created issue #1096). The coha-s7 workflow then opened record pull request #1097 for it (run 43669884591), so the chain test event to bridge to GitHub issue to incident record pull request has now run end to end with real services. It still used a mock `$error_tracking_issue_created` event; the first real production error remains coha-s6 AC9.
+**Cleanup owed:** close issue #1096, and close pull request #1097 without merging (it holds a record for a fake test id) and delete its branch incident/posthog-00000000-0000-4000-8000-0000c0a56009.
+**Made by:** Hamish King (approved), executed by Claude Sonnet 5.5, 2026-11-15.
+---
 ## Architecture Decision Records
 
 <!-- None yet for this feature. -->
