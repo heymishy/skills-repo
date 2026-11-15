@@ -23,6 +23,7 @@ const RE_IDENT = /^[A-Za-z_$][\w$.<>]{0,80}$/;
 const ALLOWED_CODES = new Set(Array.from(ALLOW_LISTED_MESSAGES).concat(['request_error', 'unhandled_exception']));
 const ALLOWED_TYPES = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError', 'EvalError', 'URIError', 'AggregateError']);
 const MAX_ROUTE_SEGMENTS = 8;
+const ANONYMOUS_FUNCTION = '<anonymous>';  // ecf-s1: fixed value sent when a frame has no function name that is safe to send
 const REDACTED_FILENAME = '[redacted]';  // sff-s1: PostHog requires a string filename on every frame; this fixed value is the only thing sent when the real path must not be
 
 // From the LAST 'src/' or 'node_modules/' at a segment boundary, else the basename; the caller keeps
@@ -52,7 +53,7 @@ function routeLabel(url) {
 
 function scrubFrame(f) {
   const g = {};
-  if (!f || typeof f !== 'object') { g.filename = REDACTED_FILENAME; return g; }
+  if (!f || typeof f !== 'object') { g.filename = REDACTED_FILENAME; g.function = ANONYMOUS_FUNCTION; return g; }
   ['filename', 'abs_path'].forEach(k => {
     const v = typeof f[k] === 'string' ? repoRelative(f[k]) : null;
     if (v && RE_REPO_PATH.test(v)) g[k] = v;
@@ -60,7 +61,9 @@ function scrubFrame(f) {
   if (typeof g.filename !== 'string') g.filename = REDACTED_FILENAME;  // keep the key, never the value
   // coha-s5 review round 3: accepted risk, frame function names are code-defined. An identifier-shaped
   // name cannot be PROVEN free of tenant text, but it is the code's own symbol, so it is kept.
-  if (typeof f.function === 'string' && RE_IDENT.test(f.function)) g.function = f.function;
+  // ecf-s1: PostHog rejects a frame with no function ("missing field function") and then never groups the error into an issue,
+  // so the key is always present: the identifier-shaped name, or a fixed placeholder (never derived from the input).
+  g.function = (typeof f.function === 'string' && RE_IDENT.test(f.function)) ? f.function : ANONYMOUS_FUNCTION;
   if (KNOWN_PLATFORMS.has(f.platform)) g.platform = f.platform;  // module is never copied
   ['lineno', 'colno'].forEach(k => { if (typeof f[k] === 'number' && isFinite(f[k])) g[k] = f[k]; });
   if (typeof f.in_app === 'boolean') g.in_app = f.in_app;
