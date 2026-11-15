@@ -50087,7 +50087,7 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 7,
-          "updatedAt": "2026-11-15T08:33:33.235Z",
+          "updatedAt": "2026-11-15T08:42:28.046Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50098,7 +50098,7 @@
             "artefact": "artefacts/2026-11-15-product-page-performance/test-plans/ppp-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         },
         {
           "id": "ppp-s2",
