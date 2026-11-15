@@ -50145,6 +50145,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-15-invalid-id-not-found",
+      "name": "Answer 404, not 500, when a malformed id is in the URL",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-15T09:33:31.577Z",
+      "stories": [
+        {
+          "id": "uid-s1",
+          "slug": "uid-s1",
+          "name": "Answer 404 Not Found, not 500, when a malformed id is in the URL",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-15T09:33:32.212Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-15-invalid-id-not-found/test-plans/uid-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
