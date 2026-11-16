@@ -97,7 +97,8 @@ function makeLog(failedFiles) {
 })();
 
 // ---------------------------------------------------------------------------
-// IT3 — a baseline file that now passes is reported but does not fail the gate
+// IT3 — a baseline file that now passes is a stale entry and fails the gate
+// (bfl-s1, 2026-11-16: was "reported but does not fail the gate"; that let 67 passing files stay excused)
 // ---------------------------------------------------------------------------
 (function it3() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-regress-'));
@@ -106,10 +107,10 @@ function makeLog(failedFiles) {
   fs.writeFileSync(logPath, makeLog(['tests/check-a.js']));
   fs.writeFileSync(baselinePath, JSON.stringify({ recordedAt: '2026-07-12', files: ['tests/check-a.js', 'tests/check-b.js'] }));
   const result = spawnSync(process.execPath, [SCRIPT_PATH, logPath, baselinePath], { encoding: 'utf8' });
-  if (result.status === 0 && result.stdout.includes('tests/check-b.js')) {
-    pass('IT3', 'exits 0 and reports a now-passing baseline file without failing the gate');
+  if (result.status === 1 && (result.stdout + result.stderr).includes('stale baseline entry: tests/check-b.js')) {
+    pass('IT3', 'exits 1 and names a now-passing baseline file as a stale entry');
   } else {
-    fail('IT3', 'expected exit 0 reporting check-b.js, got exit=' + result.status + ' stdout=' + result.stdout);
+    fail('IT3', 'expected exit 1 naming check-b.js as stale, got exit=' + result.status + ' out=' + result.stdout + result.stderr);
   }
 })();
 
