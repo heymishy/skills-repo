@@ -51,18 +51,23 @@ if (content.length === 0) {
   pass('T2', 'pages.yml has no tab-indentation issues');
 }
 
-// ── T3 — trigger includes dashboards/** push ─────────────────────────────────
-if (content.indexOf('dashboards/**') !== -1) {
-  pass('T3', 'workflow trigger includes dashboards/** path');
+// ciw-s2 (2026-11-16, operator decision): Pages publishing is retired. T3 and T4 used to assert the push trigger paths
+// (dashboards/** and .github/pipeline-state.json); they now assert the retired state, on non-comment lines only (the
+// DEPRECATED header mentions those paths, so a plain text search would pass for the wrong reason).
+var codeLines = content.split(/\r?\n/).filter(function (l) { return !/^\s*#/.test(l); }).join('\n');
+
+// ── T3 — no push trigger any more; manual trigger kept ───────────────────────
+if (!/^\s{2}push:/m.test(codeLines) && /^\s{2}workflow_dispatch:/m.test(codeLines)) {
+  pass('T3', 'workflow has no push trigger and keeps workflow_dispatch (retired, ciw-s2)');
 } else {
-  fail('T3', 'on.push.paths does not include dashboards/**');
+  fail('T3', 'pages.yml must have no push trigger and keep workflow_dispatch (retired, ciw-s2)');
 }
 
-// ── T4 — trigger includes pipeline-state.json push ───────────────────────────
-if (content.indexOf('.github/pipeline-state.json') !== -1) {
-  pass('T4', 'workflow trigger includes .github/pipeline-state.json path');
+// ── T4 — marked DEPRECATED in its header ─────────────────────────────────────
+if (/^#.*DEPRECATED/m.test(content)) {
+  pass('T4', 'workflow header is marked DEPRECATED');
 } else {
-  fail('T4', 'on.push.paths does not include .github/pipeline-state.json');
+  fail('T4', 'pages.yml header must be marked DEPRECATED (ciw-s2)');
 }
 
 // ── T5 — correct permissions block present ───────────────────────────────────

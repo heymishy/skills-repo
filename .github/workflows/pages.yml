@@ -1,11 +1,15 @@
+# DEPRECATED (2026-11-16, operator decision, story ciw-s2): GitHub Pages publishing of the dashboards is retired.
+# Why: every push to master (109 in the audit window) failed with "Resource not accessible by integration" because GitHub
+# Pages is not enabled for this repository, and the operator decided the dashboards should not be published. Note what
+# enabling Pages would do: this workflow copies .github/pipeline-state.json (every feature, story, blocker and decision)
+# into the published site, which is public on most plans even for a private repository.
+# Kept (not deleted) with a manual trigger only; a manual run still fails while Pages is not enabled, which is intended.
+# To bring it back: enable Pages (Settings, Pages, Source: GitHub Actions), decide whether publishing the pipeline state is
+# acceptable, restore the `push` trigger (branches: [master]; paths: dashboards/**, .github/pipeline-state.json) and update
+# tests/check-ciw-s2-deprecated-workflows.js and tests/check-dviz2-pages-workflow.js.
 name: Deploy dashboards to GitHub Pages
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - 'dashboards/**'
-      - '.github/pipeline-state.json'
   workflow_dispatch:
 
 permissions:

@@ -1,5 +1,10 @@
 # Dashboards
 
+> **DEPRECATED (2026-11-16, operator decision).** GitHub Pages publishing of these dashboards is retired: the
+> `.github/workflows/pages.yml` workflow is manual-only and Pages is not enabled, so nothing is published. The dashboards
+> remain runnable locally with any static server (see "Bitbucket / enterprise / local" below). The "GitHub Pages" section
+> further down is kept for history only. Removing this folder entirely is a separate decision.
+
 Self-contained static HTML artifacts for the portfolio and feature pipelines.
 No build step. No external network calls beyond the React + Babel CDN
 `<script src="…">` pins already in the HTML.
