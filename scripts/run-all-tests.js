@@ -139,6 +139,52 @@ function getAllTestFiles(repoRoot) {
   return grandfather.concat(testsDiscovered, ghScriptsDiscovered);
 }
 
+const FIRST_FAILURE_MAX_CHARS = 300;
+const FIRST_FAILURE_PATTERN = /FAIL|✗|✘|AssertionError|Error:/;
+
+/**
+ * trr-s1: the first line of a test file's output that reports a failure, truncated, or '' when there is none.
+ * Accepts a string or Buffer; never throws. Only that one line is kept (no neighbouring output).
+ *
+ * @param {string|Buffer} text
+ * @returns {string}
+ */
+function extractFirstFailure(text) {
+  try {
+    const s = Buffer.isBuffer(text) ? text.toString('utf8') : (typeof text === 'string' ? text : '');
+    const line = s.split(/\r?\n/).find(function(l) { return FIRST_FAILURE_PATTERN.test(l); });
+    return line ? line.slice(0, FIRST_FAILURE_MAX_CHARS) : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+/**
+ * trr-s1: write the per-file results as JSON for CI to upload. Never throws and never affects the suite's outcome:
+ * on any failure it logs one warning and returns false.
+ *
+ * @param {string} file
+ * @param {Array<{file:string,status:string,exitCode:(number|null),durationMs:number,firstFailure:string}>} results
+ * @param {number} elapsedMs
+ * @returns {boolean}
+ */
+function writeTestResults(file, results, elapsedMs) {
+  try {
+    const files = Array.isArray(results) ? results : [];
+    const summary = {
+      total: files.length,
+      passed: files.filter(function(r) { return r.status === 'pass'; }).length,
+      failed: files.filter(function(r) { return r.status !== 'pass'; }).length,
+      timedOut: files.filter(function(r) { return r.status === 'timeout'; }).length
+    };
+    fs.writeFileSync(file, JSON.stringify({ generatedAt: new Date().toISOString(), elapsedMs: elapsedMs || 0, summary: summary, files: files }, null, 1));
+    return true;
+  } catch (err) {
+    console.warn('[run-all-tests] test-results not written: ' + (err && err.message ? err.message : 'unknown error'));
+    return false;
+  }
+}
+
 /**
  * Runs each file in `files` as its own child process, bounded by
  * `options.concurrency` concurrent children at a time (default: number of
@@ -155,7 +201,8 @@ function getAllTestFiles(repoRoot) {
  * @param {string[]} files — paths to run (each resolved via `options.cwd`
  *   if relative, matching `child_process.spawn`'s own resolution rules)
  * @param {{ concurrency?: number, timeoutMs?: number, cwd?: string }} [options]
- * @returns {Promise<{ failedFiles: string[], elapsedMs: number }>}
+ * @returns {Promise<{ failedFiles: string[], elapsedMs: number, results: Array<object> }>}
+ *   trr-s1: results holds one { file, status, exitCode, durationMs, firstFailure } per file.
  */
 function runFilesConcurrently(files, options) {
   options = options || {};
@@ -166,12 +213,13 @@ function runFilesConcurrently(files, options) {
   return new Promise(function(resolve) {
     const start = Date.now();
     const failedFiles = [];
+    const results = [];
     let nextIndex = 0;
     let active = 0;
     let completed = 0;
 
     if (files.length === 0) {
-      resolve({ failedFiles: [], elapsedMs: Date.now() - start });
+      resolve({ failedFiles: [], elapsedMs: Date.now() - start, results: [] });
       return;
     }
 
@@ -186,6 +234,7 @@ function runFilesConcurrently(files, options) {
       const stdoutChunks = [];
       const stderrChunks = [];
       const child = spawn(process.execPath, [file], { cwd: cwd });
+      const fileStart = Date.now();
       let timedOut = false;
       const timer = setTimeout(function() {
         timedOut = true;
@@ -201,10 +250,17 @@ function runFilesConcurrently(files, options) {
         if (stderrChunks.length > 0) process.stderr.write(Buffer.concat(stderrChunks));
         const failed = timedOut || code !== 0;
         if (failed) failedFiles.push(file);
+        results.push({
+          file: file,
+          status: timedOut ? 'timeout' : (failed ? 'fail' : 'pass'),
+          exitCode: timedOut ? null : code,
+          durationMs: Date.now() - fileStart,
+          firstFailure: failed ? extractFirstFailure(Buffer.concat(stdoutChunks.concat(stderrChunks))) : ''
+        });
         active--;
         completed++;
         if (completed === files.length) {
-          resolve({ failedFiles: failedFiles, elapsedMs: Date.now() - start });
+          resolve({ failedFiles: failedFiles, elapsedMs: Date.now() - start, results: results });
         } else {
           launchNext();
         }
@@ -251,6 +307,10 @@ async function runAll(repoRoot) {
   const failedFiles = exclusiveResult.failedFiles.concat(poolResult.failedFiles);
   const elapsedMs = Date.now() - start;
 
+  // trr-s1: per-file results for CI to upload (additive; a write failure only logs a warning)
+  writeTestResults(process.env.TEST_RESULTS_PATH || path.join(repoRoot, 'test-results.json'),
+    exclusiveResult.results.concat(poolResult.results), elapsedMs);
+
   console.log('\n[run-all-tests] ' + allFiles.length + ' file(s) run, ' +
     failedFiles.length + ' failed, ' + elapsedMs + 'ms');
   if (failedFiles.length > 0) {
@@ -268,6 +328,8 @@ module.exports = {
   getAllTestFiles: getAllTestFiles,
   runFilesConcurrently: runFilesConcurrently,
   getPoolConcurrency: getPoolConcurrency,
+  extractFirstFailure: extractFirstFailure,
+  writeTestResults: writeTestResults,
   runAll: runAll
 };
 
