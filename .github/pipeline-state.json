@@ -50417,21 +50417,22 @@
           "id": "tvl-s1",
           "slug": "tvl-s1",
           "name": "Reject malformed, empty and oversized skill turns before they reach the model",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 8,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T04:45:18.294Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-16T04:54:47.183Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-16-turn-body-validation/test-plans/tvl-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
