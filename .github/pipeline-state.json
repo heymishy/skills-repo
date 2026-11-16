@@ -50855,7 +50855,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T19:24:02.859Z",
+          "updatedAt": "2026-11-16T20:43:55.501Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50866,7 +50866,7 @@
             "artefact": "artefacts/2026-11-17-bookkeeping-push-noise/test-plans/bkn-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     },
