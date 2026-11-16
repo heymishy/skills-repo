@@ -30,7 +30,7 @@ const { handleGetAsBuiltDataModel }                                  = require('
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostMaterialityAction, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCommitResult, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostMaterialityAction, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
 const { setLogger, setFetchOrgs, getFetchOrgs, setFetchOrgMembers, getOrgMembers } = require('./routes/auth'); // tir-s8: getOrgMembers/setFetchOrgMembers
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
@@ -455,6 +455,10 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setCommitSession(async function(skillName, sessionId, token, login) {
     const name = login || 'web-ui';
     return htmlCommitSession(skillName, sessionId, token, { name, email: name + '@users.noreply.github.com' });
+  });
+  // scr-s1 (D37 wiring task): getCommitResult was never wired, so every redirect after a commit landed on a 500.
+  skillsAdapter.setGetCommitResult(async function(skillName, sessionId, _token) {
+    return htmlGetCommitResult(skillName, sessionId);
   });
 
   // wucp.3 — wire real fs adapter for tool execution loop (read_file / list_dir)

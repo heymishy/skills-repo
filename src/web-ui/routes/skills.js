@@ -1685,6 +1685,10 @@ async function handlePostCommitHtml(req, res) {
     timestamp:    new Date().toISOString()
   });
 
+  // scr-s1: the result page reads this; without it a drafted but uncommitted session would show "Committed.".
+  var _committedSession = _sessionStore.get(sessionId);
+  if (_committedSession) _committedSession.committedAt = new Date().toISOString();
+
   res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/result' });
   res.end();
 }
@@ -6169,6 +6173,26 @@ function htmlGetPreview(skillName, sessionId) {
 }
 
 /**
+ * scr-s1: the data for the "Committed." result page, derived from the session the commit used.
+ * featureSlug is the path segment after artefacts/, artefactType the rest of the path without .md
+ * (the shape /artefact/:slug/:type links use). Unknown, uncommitted or pathless sessions are a 404.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @returns {Promise<{artefactPath:string, featureSlug:string, artefactType:string}>}
+ */
+async function htmlGetCommitResult(skillName, sessionId) {
+  var session = await _getSessionOrRestore(sessionId);
+  var p = session && session.committedAt && typeof session.artefactPath === 'string' ? session.artefactPath : '';
+  var m = /^artefacts\/([^\/]+)\/(.+)\.md$/.exec(p);
+  if (!m) {
+    var err = new Error('Commit result not found');
+    err.status = 404;
+    throw err;
+  }
+  return { artefactPath: p, featureSlug: m[1], artefactType: m[2] };
+}
+
+/**
  * Commit the artefact for an HTML-flow session to GitHub.
  * @param {string} skillName
  * @param {string} sessionId
@@ -6339,7 +6363,7 @@ module.exports = {
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
   setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
   // HTML-flow session helpers
-  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession,
+  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCommitResult,
   // mfc.1 — chat architecture handlers
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
