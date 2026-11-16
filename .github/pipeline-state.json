@@ -50603,7 +50603,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T08:01:55.021Z",
+          "updatedAt": "2026-11-16T08:11:04.264Z",
           "blocker": "Draft: depends on bfl-s1; awaiting option (a) or (b) for the gpa guard",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50614,7 +50614,7 @@
             "passing": 9,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s2-test-plan.md"
           },
-          "prStatus": "draft"
+          "prStatus": "merged"
         },
         {
           "id": "inc-s2",
