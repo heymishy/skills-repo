@@ -23,6 +23,13 @@ name: Trace Commit
 on:
   push:
     branches: [master]
+    # bkn-s1: bookkeeping pushes (artefacts, workspace, pipeline state) have no gate run of their own, so tracing
+    # them only re-commits the latest PR's trace. Same exclusion list as staging-deploy.yml.
+    paths-ignore:
+      - 'workspace/**'
+      - 'artefacts/**'
+      - '!artefacts/*/playback/**'
+      - '.github/pipeline-state.json'
 
 jobs:
   trace-commit:
