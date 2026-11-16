@@ -50704,6 +50704,72 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-16-issue-closure-by-fix-pr",
+      "name": "A short-track fix for a GitHub issue closes that issue as a matter of course",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T09:24:13.647Z",
+      "stories": [
+        {
+          "id": "icf-s1",
+          "slug": "icf-s1",
+          "name": "A short-track fix for a GitHub issue closes that issue as a matter of course",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T09:24:14.475Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-issue-closure-by-fix-pr/test-plans/icf-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
+    },
+    {
+      "slug": "2026-11-16-test-hygiene-isolation",
+      "name": "Make the full test suite leave the repository clean, and stop the cat-s1 timing flake",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T09:24:13.647Z",
+      "stories": [
+        {
+          "id": "tht-s1",
+          "slug": "tht-s1",
+          "name": "Make the full test suite leave the repository clean, and stop the cat-s1 timing flake",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T09:24:15.329Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-test-hygiene-isolation/test-plans/tht-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
