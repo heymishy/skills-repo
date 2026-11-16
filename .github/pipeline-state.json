@@ -50478,11 +50478,11 @@
           "id": "ciw-s2",
           "slug": "ciw-s2",
           "name": "Deprecate the Fleet Aggregation and GitHub Pages workflows so they stop running",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T06:07:35.645Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T06:15:47.059Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50490,9 +50490,10 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/ciw-s2-test-plan.md"
-          }
+          },
+          "prStatus": "draft"
         },
         {
           "id": "inc-s1",
