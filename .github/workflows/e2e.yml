@@ -239,7 +239,9 @@ jobs:
           STUB_SECRET="$(openssl rand -hex 24)"
           echo "::add-mask::${STUB_SECRET}"
           echo "E2E_STAGING_AUTH_STUB_SECRET=${STUB_SECRET}" >> "$GITHUB_ENV"
-          echo "E2E_STAGING_BASE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          # "localhost", not 127.0.0.1: the app's session cookie is always Secure, and Playwright's request client
+          # only sends a Secure cookie back over plain http to a localhost name.
+          echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
           export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
           nohup node src/web-ui/server.js > server.log 2>&1 &
           for i in $(seq 1 60); do
@@ -443,7 +445,9 @@ jobs:
           STUB_SECRET="$(openssl rand -hex 24)"
           echo "::add-mask::${STUB_SECRET}"
           echo "E2E_STAGING_AUTH_STUB_SECRET=${STUB_SECRET}" >> "$GITHUB_ENV"
-          echo "E2E_STAGING_BASE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          # "localhost", not 127.0.0.1: the app's session cookie is always Secure, and Playwright's request client
+          # only sends a Secure cookie back over plain http to a localhost name.
+          echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
           export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
           nohup node src/web-ui/server.js > server.log 2>&1 &
           for i in $(seq 1 60); do

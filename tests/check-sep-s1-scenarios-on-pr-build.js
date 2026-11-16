@@ -44,7 +44,7 @@ test('T1 both jobs keep their names and boot the PR\'s own server with the herme
     assert.ok(/node src\/web-ui\/server\.js/.test(j), name + ': does not start the PR\'s server');
     assert.ok(/MOCK_LLM_GATEWAY:\s*'?true'?|MOCK_LLM_GATEWAY=true/.test(j), name + ': mock gateway is not switched on');
     assert.ok(/openssl rand|randomBytes/.test(j), name + ': no per-run generated stub secret');
-    assert.ok(/E2E_STAGING_BASE_URL[:=]\s*'?http:\/\/127\.0\.0\.1/.test(j), name + ': base url is not a local address');
+    assert.ok(/E2E_STAGING_BASE_URL[:=]\s*'?http:\/\/localhost/.test(j), name + ': base url is not http://localhost (the Secure session cookie is only sent back to a localhost name)');
   });
 });
 
