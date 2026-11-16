@@ -37,3 +37,12 @@
 **Decision:** inc-s2 is rescoped to deletion: the incident-record workflow is removed entirely, together with the tests that only guard it; the local script and the retired-trigger header were discarded unmerged; the bridge, the recogniser script and library (used by the eit-s1 title check) and everything else stay. An error issue is resolved as a short-track story (test plan, definition of ready, fix, draft PR) whose PR says `Fixes #<issue>`; the issue already holds the code, route label, time, environment and PostHog link, so no separate record is created.
 **Rationale:** every added mechanism (manual start, local script) was more surface to maintain for a record nobody had used; the repo's short-track path already gives traceability from issue to fix.
 **Lesson for the agent:** when the operator says a mechanism is not wanted, remove it; do not keep a quieter version of it.
+
+**2026-11-16 | CORRECTION | bfl-s2 | The tfhc-s1 "fix" is a documented carve-out, not passing=5**
+**Context:** the first bfl-s2 draft planned `advance ... testPlan.passing=5` for `tfhc-s1`, assuming a stale count.
+**Finding:** `tfhc-s1`'s DoD and decisions record 4 of 5 honestly: `tests/e2e/ep3-s1-regression.spec.js` fails for a documented, pre-existing product bug (regress-back lands on a `discovery` session) and was RISK-ACCEPTed on 2026-10-30, which also named C3's missing carve-out as the gap. That spec is not run in CI.
+**Decision:** C3 gets an explicit carve-out (`testPlan.knownFailing` plus a required `knownFailingReason`); `passing` is never inflated; the regress-back bug is a separate follow-up story (`rgs-s1`).
+**Rationale:** the check should fail for a false count and pass for an honest, written, accepted failure.
+
+**2026-11-16 | ARCH | bfl-s2 | The path guard becomes a testable helper with both rule sets**
+**Decision:** `isInsideRepo(sourcePath, repoRoot, pathApi)` normalises backslashes, rejects a leading drive letter and resolves against the repository root; tested with `path.posix` and `path.win32`. This fixes the Linux CI failure (two Windows-style vectors were ordinary filenames there) without a platform-conditional test, and hardens the guard on every platform. Docker is not running locally, so the PR's own Linux CI run is the end-to-end evidence.

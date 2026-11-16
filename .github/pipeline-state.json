@@ -44278,12 +44278,14 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-10-30T09:16:48.907Z",
+              "updatedAt": "2026-11-16T07:50:34.552Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
                 "passing": 4,
-                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s1-e2e-seed-journey-fixture-test-plan.md"
+                "artefact": "artefacts/2026-10-30-test-fixture-hardening-continuation/test-plans/tfhc-s1-e2e-seed-journey-fixture-test-plan.md",
+                "knownFailing": 1,
+                "knownFailingReason": "One test (ep3-s1-regression.spec.js) fails for a documented pre-existing product bug; accepted in artefacts/2026-10-30-test-fixture-hardening-continuation/decisions.md (RISK-ACCEPT, 2026-10-30, tfhc-s1 post-merge bookkeeping)"
               },
               "acTotal": 4,
               "acVerified": 4,
@@ -50597,15 +50599,21 @@
           "id": "bfl-s2",
           "slug": "bfl-s2",
           "name": "Fix the three test files that really fail in CI, then empty the baseline",
-          "stage": "definition",
+          "stage": "subagent-execution",
           "health": "green",
-          "acTotal": 4,
+          "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T05:48:49.619Z",
+          "updatedAt": "2026-11-16T07:50:16.081Z",
           "blocker": "Draft: depends on bfl-s1; awaiting option (a) or (b) for the gpa guard",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "not-started"
+          "dorStatus": "signed-off",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s2-test-plan.md"
+          }
         },
         {
           "id": "inc-s2",
