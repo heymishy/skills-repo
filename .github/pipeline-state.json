@@ -50421,7 +50421,7 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 7,
-          "updatedAt": "2026-11-16T04:54:47.183Z",
+          "updatedAt": "2026-11-16T05:23:49.380Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50432,7 +50432,7 @@
             "artefact": "artefacts/2026-11-16-turn-body-validation/test-plans/tvl-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     },
