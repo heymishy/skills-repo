@@ -68,7 +68,12 @@ test('T2 no model call, no adapter call, no error report and no error text (AC2)
     assert.strictEqual(adapterCalls, 0, 'the legacy submitAnswer adapter was called');
     assert.strictEqual(calls.length, 0, 'an error report was sent');
     assert.ok(r.body.indexOf('Adapter not wired') === -1 && !/\n\s+at \S+/.test(r.body), 'error text in the page');
-  } finally { restore(); }
+  } finally {
+    restore();
+    // put the throwing default back so a stub here cannot leak into the other tests
+    const unwired = async () => { throw new Error('Adapter not wired: submitAnswer. Call setSubmitAnswer() with a real implementation before use.'); };
+    skillsAdapter.setSubmitAnswer(unwired); skills.setSubmitAnswer(unwired);
+  }
 });
 
 test('T3 the skill and session ids in the URL are HTML-escaped (AC3)', async () => {
