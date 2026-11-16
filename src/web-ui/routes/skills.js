@@ -6430,7 +6430,36 @@ async function buildSystemPromptWithProductContext(opts) {
   return parts.join('\n\n');
 }
 
+/**
+ * sub-s1: POST /api/skills/:name/sessions/:id/answer is retired. It was the legacy question-flow form post; its adapter
+ * (submitAnswer) was never wired, so every request answered 500 and opened a production issue (#1121). Wiring it would have
+ * created a paid-model path without the credits, owner, lock and body checks the /turn endpoints have, and its only caller
+ * is the chat page's no-JavaScript fallback form, which never worked. So the route table answers this 410 page instead of
+ * calling handlePostAnswerHtml (which, with its adapter and tests, is left as it was). No session lookup, no model call,
+ * no credit change. Never throws.
+ */
+async function handleAnswerRetiredHtml(req, res) {
+  try {
+    var dec = function(v) { try { return decodeURIComponent(String(v == null ? '' : v)); } catch (_) { return String(v == null ? '' : v); } };
+    var name = dec(req && req.params && req.params.name);
+    var id = dec(req && req.params && req.params.id);
+    var chatUrl = '/skills/' + encodeURIComponent(name) + '/sessions/' + encodeURIComponent(id) + '/chat';
+    var html = renderShell({
+      title: 'Form retired',
+      bodyContent: '<h2>This form has been retired</h2>' +
+        '<p>Answers are now sent from the chat page, which needs JavaScript to work. Nothing was submitted.</p>' +
+        '<p><a href="' + escHtml(chatUrl) + '">Back to the chat page</a> (' + escHtml(name) + ' session ' + escHtml(id) + ')</p>',
+      user: { login: (req && req.session && req.session.login) || '' }
+    });
+    res.writeHead(410, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  } catch (_) {
+    try { res.writeHead(410, { 'Content-Type': 'text/plain' }); res.end('This form has been retired.'); } catch (__) { /* socket already closed */ }
+  }
+}
+
 module.exports = {
+  handleAnswerRetiredHtml,
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
   // wuce.23 HTML handlers

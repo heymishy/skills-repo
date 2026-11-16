@@ -30,7 +30,7 @@ const { handleGetAsBuiltDataModel }                                  = require('
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCommitResult, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostMaterialityAction, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleAnswerRetiredHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCommitResult, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostMaterialityAction, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
 const { setLogger, setFetchOrgs, getFetchOrgs, setFetchOrgMembers, getOrgMembers } = require('./routes/auth'); // tir-s8: getOrgMembers/setFetchOrgMembers
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
@@ -3869,13 +3869,9 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/answer$/) && req.method === 'POST') {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
-    authGuard(req, res, async () => {
-      // vrne-s2 — viewer-role write-block gate (AC2)
-      let _rnvOk = false;
-      await requireNonViewer(req, res, () => { _rnvOk = true; });
-      if (!_rnvOk) return;
-      await handlePostAnswerHtml(req, res);
-    });
+    // sub-s1: retired. handlePostAnswerHtml called an adapter (submitAnswer) that was never wired, so this route always
+    // answered 500; wiring it would bypass the credits, owner, lock and body checks /turn has. A signed-in caller gets a 410 page.
+    authGuard(req, res, async () => { await handleAnswerRetiredHtml(req, res); });
 
   } else if (pathname === '/api/skills' && req.method === 'GET') {
     await handleGetSkills(req, res);
