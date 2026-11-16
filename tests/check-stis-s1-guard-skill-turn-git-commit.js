@@ -16,6 +16,10 @@ const os     = require('os');
 const { execSync, spawnSync } = require('child_process');
 const cp     = require('child_process');
 
+// tht-s1: the stubbed-adapter case drives a completed artefact turn, which auto-saves a file; point that write at a
+// temporary directory, not this checkout. (U2 and IT1 use their own throwaway repo and child processes.)
+process.env.SKILLS_ARTEFACT_SAVE_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'tht-s1-stis-'));
+
 let passed = 0;
 let failed = 0;
 const failures = [];
@@ -135,6 +139,10 @@ queue.push(function() {
 
     const prevRepoPath = process.env.CLAUDE_REPO_PATH;
     process.env.CLAUDE_REPO_PATH = tmpRoot; // NEVER point this at the real repo checkout
+    // tht-s1: this case tests the production default, so the test-only save-root override (set at the top of this file)
+    // is cleared for its duration; with it unset the save root is CLAUDE_REPO_PATH, i.e. this throwaway repo.
+    const prevSaveRoot = process.env.SKILLS_ARTEFACT_SAVE_ROOT;
+    delete process.env.SKILLS_ARTEFACT_SAVE_ROOT;
 
     try {
       const routes = freshRequireRoutes(); // fresh module — adapter is back at its real default
@@ -154,6 +162,7 @@ queue.push(function() {
       assert.ok(afterLog.split('\n').length > beforeLog.split('\n').length, 'commit count must increase in the temp repo');
     } finally {
       if (prevRepoPath === undefined) { delete process.env.CLAUDE_REPO_PATH; } else { process.env.CLAUDE_REPO_PATH = prevRepoPath; }
+      if (prevSaveRoot !== undefined) { process.env.SKILLS_ARTEFACT_SAVE_ROOT = prevSaveRoot; }
       fs.rmSync(tmpRoot, { recursive: true, force: true });
     }
   });

@@ -3,6 +3,9 @@
 
 'use strict';
 
+// tht-s1: the handler auto-saves a completed artefact; point that write at a temporary directory, not this checkout.
+process.env.SKILLS_ARTEFACT_SAVE_ROOT = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'tht-s1-iwu5-'));
+
 const {
   handlePostTurnStreamHtml,
   handleGetChatHtml,

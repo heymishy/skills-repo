@@ -273,6 +273,14 @@ function _getRepoPath() {
   return process.env.CLAUDE_REPO_PATH || process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
 }
 
+// tht-s1: the root the artefact auto-save writes under (the artefact file, the metrics write and the commit's working
+// directory all derive from it). SKILLS_ARTEFACT_SAVE_ROOT exists only so tests can point those writes at a temporary
+// directory; it is deliberately separate from CLAUDE_REPO_PATH, which also decides where skills content is read from.
+// Unset, it is exactly _getRepoPath().
+function _artefactSaveRoot() {
+  return process.env.SKILLS_ARTEFACT_SAVE_ROOT || _getRepoPath();
+}
+
 /**
  * Return questions for a named skill by reading its SKILL.md.
  * Returns [] when the skill or file cannot be found.
@@ -5625,7 +5633,7 @@ async function handlePostTurnStreamHtml(req, res) {
     session.done = true;
 
     // Auto-save artefact to disk
-    var _autoRepoRoot = _getRepoPath();
+    var _autoRepoRoot = _artefactSaveRoot();
     var _resolvedRepoRoot = path.resolve(_autoRepoRoot);
     var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
 
@@ -6491,7 +6499,7 @@ module.exports = {
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
   setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
   // HTML-flow session helpers
-  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlGetCommitPreviewChecked, htmlCommitSession, htmlGetCommitResult,
+  _artefactSaveRoot, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlGetCommitPreviewChecked, htmlCommitSession, htmlGetCommitResult,
   // mfc.1 — chat architecture handlers
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,

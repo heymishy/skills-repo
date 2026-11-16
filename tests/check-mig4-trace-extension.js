@@ -28,8 +28,8 @@ function test(name, fn) {
 var ROOT = path.resolve(__dirname, '..');
 var JOURNEY_PATH = path.resolve(ROOT, 'src', 'web-ui', 'routes', 'journey.js');
 var JOURNEY_STORE_PATH = path.resolve(ROOT, 'src', 'web-ui', 'modules', 'journey-store.js');
-var TMP_ROOT = path.join(ROOT, 'workspace', 'test-tmp-mig4');
-fs.mkdirSync(TMP_ROOT, { recursive: true });
+// tht-s1: a temporary directory outside the checkout (it used to be workspace/test-tmp-mig4 inside it).
+var TMP_ROOT = fs.mkdtempSync(path.join(require('os').tmpdir(), 'tht-s1-mig4-'));
 
 function freshRequireJourney() {
   try { delete require.cache[require.resolve(JOURNEY_PATH)]; } catch (_) {}
