@@ -35,7 +35,7 @@ AC6 is added at test-plan time (the story had five ACs): the first real CI run i
 - **T3 (AC2).** A fixture that fails with `AssertionError: expected 1 to equal 2` yields `exitCode` 1 and that line in `firstFailure`; a fixture that exceeds the timeout yields `status: 'timeout'`.
 - **T4 (AC3).** `.github/workflows/pr-checks.yml` contains an `actions/upload-artifact` step with `if: always()`, a name containing the run id, the path `test-results.json` and `retention-days: 90`, placed after the "Unit test chain" step. `.gitignore` lists `test-results.json`.
 - **T5 (AC4).** With `TEST_RESULTS_PATH` pointing at a path that cannot be written, `runAll` still reports the right failed count and exit code and logs one warning line.
-- **T6 (AC5).** `node tests/check-tfhc-s9-run-all-tests-parallelization.js` exits 0 (run as a child process).
+- **T6 (AC5).** The runner's existing contract is unchanged: every export that existed is still exported, the grandfather list still has 16 entries, `failedFiles` and `elapsedMs` keep their meaning, and an empty file list returns empty arrays. The existing `check-tfhc-s9-run-all-tests-parallelization` and `check-pcr-s1-test-runner` files are not nested inside this test (running one test file from another proved intermittently flaky); the full suite runs them as before and AC5 is verified there.
 
 ## Test Gaps and Risks
 | Gap | Reason | Mitigation |

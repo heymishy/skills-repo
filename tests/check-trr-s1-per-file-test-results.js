@@ -23,9 +23,16 @@ const NOISY = fixture('check-noisy.js', "for (let i = 0; i < 50; i++) console.lo
 const FAIL = fixture('check-fail.js', "console.log('  ok   T1 fine'); console.log('  FAIL T2 compares -- AssertionError: expected 1 to equal 2'); console.log('  trailing detail line'); process.exit(1);");
 const HANG = fixture('check-hang.js', "setInterval(function () {}, 1000);");
 const FILES = [PASS, NOISY, FAIL, HANG];
+// The runner flushes each child's output to this process's stdout and stderr; keep fixture output out of the test log.
+async function run(files, opts) {
+  const so = process.stdout.write; const se = process.stderr.write;
+  process.stdout.write = () => true; process.stderr.write = () => true;
+  try { return await runner.runFilesConcurrently(files, opts); } finally { process.stdout.write = so; process.stderr.write = se; }
+}
+
 
 test('T1 the results file lists every file with status and duration, and the counts equal the runner\'s own (AC1)', async () => {
-  const r = await runner.runFilesConcurrently(FILES, { concurrency: 2, timeoutMs: 1500, cwd: dir });
+  const r = await run(FILES, { concurrency: 2, timeoutMs: 1500, cwd: dir });
   assert.ok(Array.isArray(r.results), 'runFilesConcurrently returned no results array');
   assert.strictEqual(r.results.length, FILES.length);
   const out = path.join(dir, 'out-t1.json');
@@ -52,7 +59,7 @@ test('T2 the first-failing-line extractor is bounded, ordered and never throws (
 });
 
 test('T3 a failing file carries its exit code and first failing line; a hung file is a timeout (AC2)', async () => {
-  const r = await runner.runFilesConcurrently([FAIL, HANG, PASS], { concurrency: 3, timeoutMs: 800, cwd: dir });
+  const r = await run([FAIL, HANG, PASS], { concurrency: 3, timeoutMs: 800, cwd: dir });
   const by = {}; r.results.forEach((x) => { by[path.basename(x.file)] = x; });
   assert.strictEqual(by['check-fail.js'].status, 'fail');
   assert.strictEqual(by['check-fail.js'].exitCode, 1);
@@ -85,12 +92,18 @@ test('T5 an unwritable results path never changes the outcome and logs one warni
   assert.strictEqual(ret, false);
   assert.strictEqual(warns.length, 1, 'expected one warning, got ' + warns.length);
   assert.ok(warns[0].indexOf('test-results') !== -1);
-  assert.doesNotThrow(() => runner.writeTestResults(undefined, undefined, undefined));
+  const orig2 = console.warn; console.warn = () => {};
+  try { assert.doesNotThrow(() => runner.writeTestResults(undefined, undefined, undefined)); } finally { console.warn = orig2; }
 });
 
-test('T6 the existing parallelisation test still passes (AC5)', () => {
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tests', 'check-tfhc-s9-run-all-tests-parallelization.js')], { cwd: ROOT, encoding: 'utf8' });
-  assert.strictEqual(r.status, 0, 'tfhc-s9 failed: ' + (r.stdout || '').split('\n').filter((l) => /FAIL/.test(l)).slice(0, 3).join(' | '));
+test('T6 the runner\'s existing contract is unchanged (AC5); tfhc-s9 and pcr-s1 run in the full suite as before', async () => {
+  ['discoverTestFiles', 'GRANDFATHER_LIST', 'SEQUENTIAL_EXCLUSIVE_LIST', 'getAllTestFiles', 'runFilesConcurrently', 'getPoolConcurrency', 'runAll'].forEach((k) => assert.ok(k in runner, 'export missing: ' + k));
+  assert.strictEqual(runner.GRANDFATHER_LIST.length, 16, 'the grandfather list changed');
+  const r = await run([PASS, FAIL], { concurrency: 2, timeoutMs: 1500, cwd: dir });
+  assert.strictEqual(typeof r.elapsedMs, 'number');
+  assert.deepStrictEqual(r.failedFiles.map((f) => path.basename(f)), ['check-fail.js'], 'failedFiles semantics changed');
+  const empty = await run([], { cwd: dir });
+  assert.deepStrictEqual([empty.failedFiles.length, empty.results.length], [0, 0]);
 });
 
 (async () => {
