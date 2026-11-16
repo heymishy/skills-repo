@@ -50329,7 +50329,7 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 7,
-          "updatedAt": "2026-11-15T23:23:22.262Z",
+          "updatedAt": "2026-11-16T01:31:39.710Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50340,7 +50340,7 @@
             "artefact": "artefacts/2026-11-16-artefact-not-found/test-plans/anf-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
