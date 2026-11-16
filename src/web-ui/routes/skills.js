@@ -321,6 +321,64 @@ function _readBody(req) {
   });
 }
 
+// tvl-s1: limits for the two skill turn endpoints. The body cap bounds what is buffered; the answer cap is a safety
+// bound (about 25000 tokens), not a product rule.
+var TURN_MAX_BODY_BYTES   = 262144;
+var TURN_MAX_ANSWER_CHARS = 100000;
+
+/**
+ * tvl-s1: read a turn request's JSON body with a size limit. Unlike _readBody it keeps "malformed" and "too large"
+ * apart from "empty" so the caller can refuse them. Honours a pre-parsed req.body like _readBody does.
+ * Resolves { body } on success, { invalid: true } for unparseable or unreadable input, { tooLarge: true } past the limit
+ * (reading stops there: nothing more is buffered).
+ */
+function _readTurnBody(req) {
+  if (req.body !== undefined) { return Promise.resolve({ body: req.body }); }
+  return new Promise(function(resolve) {
+    var chunks = [];
+    var size = 0;
+    var settled = false;
+    function finish(result) { if (!settled) { settled = true; resolve(result); } }
+    req.on('data', function(chunk) {
+      if (settled) { return; }
+      size += chunk.length;
+      if (size > TURN_MAX_BODY_BYTES) {
+        finish({ tooLarge: true });
+        if (typeof req.pause === 'function') { req.pause(); }
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', function() {
+      try { finish({ body: JSON.parse(Buffer.concat(chunks).toString('utf8')) }); } catch (_) { finish({ invalid: true }); }
+    });
+    req.on('error', function() { finish({ invalid: true }); });
+  });
+}
+
+/**
+ * tvl-s1: decide whether a turn request may reach the model. Returns null when it may, otherwise { status, error }.
+ * Never throws. The skill in the URL must be the session's own skill; the body must be a JSON object whose answer is a
+ * non-empty string (or the page's start signal __init__) of at most TURN_MAX_ANSWER_CHARS characters.
+ */
+function _validateTurnRequest(skillName, session, read) {
+  try {
+    if (session && typeof session.skillName === 'string' && session.skillName && session.skillName !== skillName) {
+      return { status: 404, error: 'Session not found' };
+    }
+    if (!read || read.invalid) { return { status: 400, error: 'INVALID_BODY' }; }
+    if (read.tooLarge) { return { status: 413, error: 'ANSWER_TOO_LARGE' }; }
+    var body = read.body;
+    if (body === null || typeof body !== 'object' || Array.isArray(body)) { return { status: 400, error: 'INVALID_BODY' }; }
+    if (typeof body.answer !== 'string') { return { status: 400, error: 'INVALID_ANSWER' }; }
+    if (body.answer.length > TURN_MAX_ANSWER_CHARS) { return { status: 413, error: 'ANSWER_TOO_LARGE' }; }
+    if (body.answer !== '__init__' && body.answer.trim() === '') { return { status: 400, error: 'INVALID_ANSWER' }; }
+    return null;
+  } catch (_) {
+    return { status: 400, error: 'INVALID_BODY' };
+  }
+}
+
 /**
  * Send a JSON response.
  * @param {object} res
@@ -4877,6 +4935,21 @@ async function handlePostTurnHtml(req, res) {
   var sessionId = (req.params && req.params.id) || '';
   var session = await _getSessionOrRestore(sessionId);
 
+  // tvl-s1: refuse a malformed, empty or oversized body, or the wrong skill in the URL, before the journey lock is taken,
+  // credits are touched or the model is called. An unknown session keeps its existing 404.
+  if (!session) {
+    _json(res, 404, { error: 'Session not found' });
+    return;
+  }
+  var _turnRead = await _readTurnBody(req);
+  var _turnBad = _validateTurnRequest(skillName, session, _turnRead);
+  if (_turnBad) {
+    _logger.warn('turn rejected: ' + _turnBad.error);
+    _json(res, _turnBad.status, { error: _turnBad.error });
+    return;
+  }
+  req.body = _turnRead.body;  // the later _readBody(req) returns this instead of reading the consumed stream
+
   // wsm.2: journey ownership + concurrent turn protection
   var _linkedJourney = null;
   if (session && session.journeyId) {
@@ -4974,15 +5047,22 @@ async function handlePostTurnStreamHtml(req, res) {
   var correlationId = crypto.randomUUID();
   var turnId = crypto.randomUUID();
   var _turnLog = _pinoLogger.child({ correlationId: correlationId, sessionId: sessionId, turnId: turnId });
-  var body = await _readBody(req);
-  var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
-
   var session = await _getSessionOrRestore(sessionId);
   if (!session) {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Session not found');
     return;
   }
+  // tvl-s1: same refusals as the non-streaming endpoint, answered as JSON before any SSE headers are sent.
+  var _streamRead = await _readTurnBody(req);
+  var _streamBad = _validateTurnRequest((req.params && req.params.name) || '', session, _streamRead);
+  if (_streamBad) {
+    _logger.warn('turn-stream rejected: ' + _streamBad.error);
+    _json(res, _streamBad.status, { error: _streamBad.error });
+    return;
+  }
+  var body = _streamRead.body;
+  var rawAnswer = body.answer;
 
   res.writeHead(200, {
     'Content-Type':      'text/event-stream',
@@ -6369,6 +6449,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, _listHtmlSessions, _getHtmlSessionsBulk, setSkillTurnExecutorAdapter,
+  // tvl-s1 — test seams for the turn body validation
+  _readTurnBody, _validateTurnRequest,
   // ep2-s2 — test inspection seam for the skill-existence check used by the
   // signal-seeded POST path's AC4 validation.
   _isAllowedSkillName,

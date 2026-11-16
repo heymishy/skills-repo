@@ -213,7 +213,7 @@ async function main() {
     var turnReq = makeReq({
       session: { accessToken: 'tok', login: 'user-A', tenantId: 'acme' },
       params: { name: 'discovery', id: sid },
-      body: {}
+      body: { answer: 'owner turn' }  // tvl-s1: a turn now needs a non-empty answer
     });
     turnReq.on = function(event, cb) { if (event === 'end') cb(); };
     var turnRes = makeRes();
@@ -316,7 +316,7 @@ async function main() {
     var req = makeReq({
       session: { accessToken: 'tok', login: 'user-A' },
       params: { name: 'discovery', id: sid },
-      body: {}
+      body: { answer: 'second turn' }  // tvl-s1: a turn now needs a non-empty answer
     });
     req.on = function(event, cb) { if (event === 'end') cb(); };
     var res = makeRes();
