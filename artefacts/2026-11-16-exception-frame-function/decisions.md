@@ -8,3 +8,8 @@
 **Decision:** `scrubFrame` keeps an identifier-shaped name and otherwise sends the fixed string `<anonymous>`, the same pattern as the `[redacted]` filename placeholder.
 **Rationale:** the privacy rule is unchanged (nothing new from the input reaches PostHog); the failure was a missing key, not a wrong value; one change covers every anonymous callback and every unusual name.
 **Accepted cost:** if PostHog reports another required field, a further story is needed; the `$cymbal_errors` text names it, and the live check proves the end state. Lesson for learnings: after changing what the scrubber sends, check `$cymbal_errors` on the resulting events, not only that events arrive (extends D62).
+
+**2026-11-16 | DECISION | Live check for this story uses a natural 5xx, not a deliberate one**
+**Context:** the planned trigger, `/skills/discovery/sessions/<zero-uuid>/result`, always returned 500 until scr-s1 (PR #1119, merged) wired the commit result adapter, so that request no longer produces an error.
+**Decision (operator agreed, recommended by the agent):** do not add a route that fails on purpose. The live observation of the fix (a PostHog `$exception` with `stacktrace.type` `resolved`, an issue id, a GitHub issue titled `<code>: <Type> at <route>`) is taken from the next real 5xx the error chain reports. The fix itself is already covered by tests against a real PostHog frame sample.
+**Rationale:** shipping a crash route for a test costs more risk than the confirmation is worth.

@@ -12,3 +12,8 @@
 **2026-11-16 | FINDING | ecg-s1's codes `http_5xx` and `unhandled_rejection` were being rewritten to `unhandled_exception`**
 **Evidence:** `ALLOWED_CODES` in `error-capture.js` holds the allow-listed messages plus `request_error` and `unhandled_exception` only; `scrubEvent` rewrites any other code. ecg-s1 added the two codes without extending the list, so its safety-net reports lost their identity (seen in PostHog: code `unhandled_exception` for the commit result page and the artefact route).
 **Decision:** add both to the allow-list in this story. Cost: one new issue per affected route the next time it recurs.
+
+**2026-11-16 | DECISION | Live check for this story uses a natural 5xx, not a deliberate one**
+**Context:** the planned trigger, `/skills/discovery/sessions/<zero-uuid>/result`, always returned 500 until scr-s1 (PR #1119, merged) wired the commit result adapter, so that request no longer produces an error.
+**Decision (operator agreed, recommended by the agent):** do not add a route that fails on purpose. The live observation of the fix (a PostHog `$exception` with `stacktrace.type` `resolved`, an issue id, a GitHub issue titled `<code>: <Type> at <route>`) is taken from the next real 5xx the error chain reports. The fix itself is already covered by tests against a real PostHog frame sample.
+**Rationale:** shipping a crash route for a test costs more risk than the confirmation is worth.
