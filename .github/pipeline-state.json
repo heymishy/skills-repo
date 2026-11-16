@@ -50868,6 +50868,17 @@
           "dorStatus": "signed-off"
         }
       ]
+    },
+    {
+      "slug": "2026-11-17-testing-cicd-audit",
+      "name": "Testing and CI/CD audit (reference only)",
+      "track": "library",
+      "stage": "definition-of-done",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T19:13:59.387Z",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
