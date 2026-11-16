@@ -8,15 +8,73 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const yaml = require('js-yaml');
 
 const root = path.resolve(__dirname, '..');
 const dir = path.join(root, '.github', 'workflows');
 
+// The project declares no YAML parser, so this reads only the top-level `on:` block of a workflow: nested maps,
+// `- item` lists (also `- key: value` items), inline `[a, b]` lists, quoted scalars and `#` comments. That is all
+// the trigger blocks use.
+function stripComment(s) {
+  let q = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) { if (c === q) q = null; }
+    else if (c === '"' || c === "'") q = c;
+    else if (c === '#' && (i === 0 || /\s/.test(s[i - 1]))) return s.slice(0, i);
+  }
+  return s;
+}
+function scalar(v) {
+  v = v.trim();
+  if (/^\[.*\]$/.test(v)) return v.slice(1, -1).split(',').map(scalar).filter(function (x) { return x !== ''; });
+  if ((v[0] === "'" && v[v.length - 1] === "'") || (v[0] === '"' && v[v.length - 1] === '"')) return v.slice(1, -1);
+  return v;
+}
+function parseNode(lines, state, indent) {
+  const first = lines[state.i];
+  if (first.text.indexOf('- ') === 0 || first.text === '-') {
+    const list = [];
+    while (state.i < lines.length && lines[state.i].indent === indent && (lines[state.i].text.indexOf('- ') === 0 || lines[state.i].text === '-')) {
+      const item = lines[state.i].text.slice(1).trim();
+      if (/^[A-Za-z0-9_.'"-]+:(\s|$)/.test(item)) { lines[state.i] = { indent: indent + 2, text: item }; list.push(parseNode(lines, state, indent + 2)); }
+      else { list.push(scalar(item)); state.i++; }
+    }
+    return list;
+  }
+  const map = {};
+  while (state.i < lines.length && lines[state.i].indent === indent && lines[state.i].text.indexOf('- ') !== 0) {
+    const m = /^("[^"]*"|'[^']*'|[^:]+):(?:\s+(.*))?$/.exec(lines[state.i].text);
+    if (!m) throw new Error('cannot parse line: ' + lines[state.i].text);
+    const key = m[1].replace(/^["']|["']$/g, '');
+    const rest = (m[2] || '').trim();
+    state.i++;
+    if (rest !== '') { map[key] = scalar(rest); continue; }
+    const nxt = lines[state.i];
+    if (nxt && (nxt.indent > indent || (nxt.indent === indent && nxt.text.indexOf('- ') === 0))) map[key] = parseNode(lines, state, nxt.indent);
+    else map[key] = null;
+  }
+  return map;
+}
 function load(name) {
-  const d = yaml.load(fs.readFileSync(path.join(dir, name), 'utf8'));
-  const on = d.on !== undefined ? d.on : d[true]; // YAML 1.1 reads a bare `on` key as boolean true
-  return { doc: d, on: typeof on === 'string' ? { [on]: null } : (Array.isArray(on) ? on.reduce(function (o, k) { o[k] = null; return o; }, {}) : (on || {})) };
+  const raw = fs.readFileSync(path.join(dir, name), 'utf8').split(/\r?\n/);
+  const at = raw.findIndex(function (l) { return /^("on"|'on'|on):/.test(l); });
+  if (at === -1) throw new Error(name + ': no top-level on: block');
+  const head = stripComment(raw[at]).replace(/^("on"|'on'|on):/, '').trim();
+  if (head !== '') {
+    const v = scalar(head);
+    const names = Array.isArray(v) ? v : [v];
+    return { on: names.reduce(function (o, k) { o[k] = null; return o; }, {}) };
+  }
+  const body = [];
+  for (let i = at + 1; i < raw.length; i++) {
+    const t = stripComment(raw[i]);
+    if (t.trim() === '') continue;
+    if (/^\S/.test(t)) break; // next top-level key
+    body.push({ indent: t.length - t.replace(/^ +/, '').length, text: t.trim() });
+  }
+  if (body.length === 0) throw new Error(name + ': empty on: block');
+  return { on: parseNode(body, { i: 0 }, body[0].indent) };
 }
 
 // The bookkeeping paths: the same meaning as staging-deploy.yml's paths-ignore.
