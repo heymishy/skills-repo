@@ -247,7 +247,6 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:3000/health || { echo "server did not come up"; tail -n 100 server.log; exit 1; }
-          node scripts/seed-staging.js
         env:
           PORT: '3000'
           MOCK_LLM_GATEWAY: 'true'
@@ -452,7 +451,6 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:3000/health || { echo "server did not come up"; tail -n 100 server.log; exit 1; }
-          node scripts/seed-staging.js
         env:
           PORT: '3000'
           MOCK_LLM_GATEWAY: 'true'
