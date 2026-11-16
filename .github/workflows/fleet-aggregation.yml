@@ -1,6 +1,11 @@
+# DEPRECATED (2026-11-16, operator decision, story ciw-s2): this workflow no longer runs on push or on a schedule.
+# Why: every hourly run (82 in the audit window) failed at checkout because the FLEET_PUSH_TOKEN secret is missing or empty,
+# and the fleet feature is not in use. Kept (not deleted) with a manual trigger only, so the scripts and fleet/squads/ data
+# stay usable. To bring it back: set the FLEET_PUSH_TOKEN repository secret, restore the `push` (paths: fleet/squads/**) and
+# `schedule` (cron '0 * * * *') triggers below, and update tests/check-ciw-s2-deprecated-workflows.js.
 name: Fleet Aggregation
 
-# Triggered on push to fleet squad files, on a schedule, or manually.
+# Originally triggered on push to fleet squad files, on a schedule, or manually; now manual only (see above).
 # Reads all fleet/squads/*.json, filters to registry_mode: publishing,
 # fetches each pipelineStateUrl, and writes fleet-state.json.
 #
@@ -11,11 +16,6 @@ name: Fleet Aggregation
 # Security: MC-SEC-02 — no credentials or tokens written to fleet files.
 
 on:
-  push:
-    paths:
-      - 'fleet/squads/**'
-  schedule:
-    - cron: '0 * * * *'   # hourly aggregation
   workflow_dispatch:
 
 jobs:
