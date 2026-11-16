@@ -6253,6 +6253,25 @@ function htmlGetPreview(skillName, sessionId) {
 }
 
 /**
+ * cpv-s1: the preview data for the commit page and the commit itself, refusing when there is nothing to commit.
+ * Unlike htmlGetPreview (kept as is, existing tests pin its empty-string answer), an unknown session, one with no drafted
+ * artefact, or one belonging to a different skill than the URL is a 404, so no commit form is shown and no GitHub request
+ * is made with an empty path. Restore-aware, like the other session routes.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @returns {Promise<{artefactContent:string, artefactPath:string}>}
+ */
+async function htmlGetCommitPreviewChecked(skillName, sessionId) {
+  var session = typeof sessionId === 'string' && sessionId ? await _getSessionOrRestore(sessionId) : null;
+  if (!session || !session.artefactPath || !session.artefactContent || (session.skillName && session.skillName !== skillName)) {
+    var err = new Error('Nothing to commit for this session');
+    err.status = 404;
+    throw err;
+  }
+  return { artefactContent: session.artefactContent, artefactPath: session.artefactPath };
+}
+
+/**
  * scr-s1: the data for the "Committed." result page, derived from the session the commit used.
  * featureSlug is the path segment after artefacts/, artefactType the rest of the path without .md
  * (the shape /artefact/:slug/:type links use). Unknown, uncommitted or pathless sessions are a 404.
@@ -6281,7 +6300,7 @@ async function htmlGetCommitResult(skillName, sessionId) {
  * @returns {Promise<{artefactPath:string}>}
  */
 async function htmlCommitSession(skillName, sessionId, token, identity) {
-  var preview = htmlGetPreview(skillName, sessionId);
+  var preview = await htmlGetCommitPreviewChecked(skillName, sessionId); // cpv-s1: 404 before any GitHub request
   var commitMsg = 'feat: add ' + skillName + ' session artefact';
   await commitArtefact(preview.artefactPath, preview.artefactContent, commitMsg, token, identity);
   return { artefactPath: preview.artefactPath };
@@ -6472,7 +6491,7 @@ module.exports = {
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
   setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
   // HTML-flow session helpers
-  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCommitResult,
+  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlGetCommitPreviewChecked, htmlCommitSession, htmlGetCommitResult,
   // mfc.1 — chat architecture handlers
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
