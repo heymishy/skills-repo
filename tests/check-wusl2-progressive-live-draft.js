@@ -12,6 +12,9 @@
 const assert = require('assert');
 const path   = require('path');
 
+// tht-s1: the handler auto-saves a completed artefact; point that write at a temporary directory, not this checkout.
+process.env.SKILLS_ARTEFACT_SAVE_ROOT = require('fs').mkdtempSync(path.join(require('os').tmpdir(), 'tht-s1-wusl2-'));
+
 let passed = 0;
 let failed = 0;
 const failures = [];

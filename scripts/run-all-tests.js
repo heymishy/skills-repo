@@ -85,11 +85,16 @@ const GRANDFATHER_LIST = [
 // versus about 16s alone, the same slowdown as beside tests/check-coha-s5-error-capture.js
 // (which failed that neighbour's 2-second assertion in 5 of 6 runs); it did not cross the
 // threshold in 6 runs, but the pressure is the same, so it runs in this phase too.
+//
+// Fourth kind of member (2026-11-16, tht-s1): the timing-sensitive file itself. tests/check-cat-s1-core-trace-builder.js
+// asserts a 50 ms directory walk; under local load (the pool, or a busy machine) it measured 50.3, 50.4 and 67.1 ms
+// even as best of 7 warm runs. Run here it has the machine to itself. The budget and the best-of-7 method are unchanged.
 const SEQUENTIAL_EXCLUSIVE_LIST = [
   'tests/check-lcdf-s1-build-time-learnings-count.js',
   'tests/check-lccf-s1-fail-open-learnings-count.js',
   'tests/check-coha-s5-error-capture.js',
-  'tests/check-coha-s7-error-issue-incident.js'
+  'tests/check-coha-s7-error-issue-incident.js',
+  'tests/check-cat-s1-core-trace-builder.js'
 ];
 
 /**
