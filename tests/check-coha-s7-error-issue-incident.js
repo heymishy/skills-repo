@@ -15,7 +15,6 @@ const lib = require('../scripts/lib/error-issue-incident');
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'error-issue-incident.js');
 const LIB_FILE = path.join(ROOT, 'scripts', 'lib', 'error-issue-incident.js');
-const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'error-issue-incident-record.yml');
 const AUTHOR = 'Example-Bot'; // made up; never the real account
 const CFG = { bridgeAuthor: AUTHOR };
 const CANARY = 'canary-' + crypto.randomBytes(8).toString('hex');
@@ -728,184 +727,12 @@ test('I4 two branches from one base conflict; a rebuild from the current master 
   [a, b].forEach((m) => assert.strictEqual(final.filter((r) => r.tags.indexOf('posthog:' + m.id) !== -1).length, 1));
 });
 
-// ---- workflow file wiring tests (text based, in the style of tests/check-cif-s1-deploy-concurrency-guard.js) ----
-const wf = (fs.existsSync(WORKFLOW) ? fs.readFileSync(WORKFLOW, 'utf8') : '').replace(/\r\n/g, '\n');
-const indentOf = (l) => l.length - l.trimStart().length;
-function splitJobs(content) {
-  const lines = content.split(/\r?\n/);
-  const jobsIdx = lines.findIndex((l) => /^jobs:\s*$/.test(l));
-  if (jobsIdx === -1) return [];
-  const jobs = []; let current = null;
-  for (let i = jobsIdx + 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (/^\S/.test(line)) break;
-    const h = /^  ([A-Za-z0-9_.-]+):\s*$/.exec(line);
-    if (h) { if (current) jobs.push(current); current = { id: h[1], lines: [line] }; } else if (current) current.lines.push(line);
-  }
-  if (current) jobs.push(current);
-  return jobs;
-}
-const jobs = splitJobs(wf);
-const jobText = (id) => { const j = jobs.find((x) => x.id === id); return j ? j.lines.join('\n') : ''; };
-const topText = wf.split(/^jobs:/m)[0];
-
-// cwt-s1: a Windows checkout (core.autocrlf=true) gives the workflow CRLF endings; the pins below match with ^, $ and \n.
-test('cwt_UT1 the workflow text the structural tests read contains no carriage return', () => {
-  assert.strictEqual(wf.indexOf('\r'), -1, 'the workflow text must be read with line endings normalised to LF');
-});
-test('cwt_UT2 normalising line endings keeps the W3 concurrency pin strong', () => {
-  const w3 = (text) => /^concurrency:\s*\n  group:\s*(.+)\n  cancel-in-progress:\s*false\s*$/m.test(text.split(/^jobs:/m)[0]);
-  const lf = wf.replace(/\r\n/g, '\n');
-  assert.ok(w3(lf), 'the real workflow must satisfy the pin');
-  assert.ok(w3(lf.replace(/\n/g, '\r\n').replace(/\r\n/g, '\n')), 'a CRLF copy, once normalised, must satisfy the pin');
-  assert.ok(!w3(lf.replace('cancel-in-progress: false', 'cancel-in-progress: true')), 'a workflow that cancels in progress must still fail the pin');
-});
-function jobPermissions(text) {
-  const lines = text.split('\n'); const i = lines.findIndex((l) => /^    permissions:\s*$/.test(l));
-  const out = {}; if (i === -1) return null;
-  for (let k = i + 1; k < lines.length && indentOf(lines[k]) >= 6; k++) { const m = /^\s+([a-z-]+):\s*(\S+)/.exec(lines[k]); if (m) out[m[1]] = m[2]; }
-  return out;
-}
-// The non-blank lines of a top-level block (from its header line to the next top-level key).
-function topBlock(content, key) {
-  const lines = content.split(/\r?\n/); const i = lines.findIndex((l) => l === key + ':' || l.startsWith(key + ': ') || new RegExp('^' + key + ':\\s*$').test(l));
-  if (i === -1) return null;
-  const out = [];
-  for (let k = i + 1; k < lines.length && !/^\S/.test(lines[k]); k++) if (lines[k].trim() !== '') out.push(lines[k]);
-  return out;
-}
-// The steps of one job, each as { name, text }; a step starts at a line indented six spaces and beginning with '- '.
-function stepsOf(id) {
-  const lines = jobText(id).split('\n'); const steps = []; let cur = null;
-  lines.forEach((l) => {
-    if (/^      - /.test(l)) { if (cur) steps.push(cur); cur = { lines: [l] }; } else if (cur) { if (/^ {0,5}\S/.test(l)) { steps.push(cur); cur = null; } else cur.lines.push(l); }
-  });
-  if (cur) steps.push(cur);
-  return steps.map((s) => { const text = s.lines.join('\n'); const m = /^\s+(-\s+)?name:\s*(.+)$/m.exec(text); return { name: m ? m[2].trim() : '', text: text }; });
-}
-function runBlocks(content) {
-  const lines = content.split(/\r?\n/); const blocks = [];
-  lines.forEach((line, i) => {
-    const m = /^(\s*)(-\s+)?run:\s*(.*)$/.exec(line); if (!m) return;
-    const col = m[1].length + (m[2] ? m[2].length : 0); const parts = [];
-    if (m[3] && m[3] !== '|' && m[3] !== '>') parts.push(m[3]);
-    for (let k = i + 1; k < lines.length && (lines[k].trim() === '' || indentOf(lines[k]) > col); k++) parts.push(lines[k]);
-    blocks.push(parts.join('\n'));
-  });
-  return blocks;
-}
-
-test('W1 the trigger is issue opened (types declared) plus a hand start with three inputs', () => {
-  assert.ok(/^  issues:\s*\n    types:\s*\[opened\]/m.test(topText), 'types declared explicitly as [opened]');
-  assert.ok(!/labeled|edited|reopened|transferred/.test(topText.split(/^permissions:/m)[0]), 'no other issue activity');
-  assert.ok(/^  workflow_dispatch:/m.test(topText));
-  ['issue_number', 'dry_run', 'rebuild'].forEach((i) => assert.ok(new RegExp('^      ' + i + ':', 'm').test(topText), 'input ' + i));
-  const onKeys = (topBlock(wf, 'on') || []).map((l) => /^  ([A-Za-z_]+):/.exec(l)).filter(Boolean).map((m) => m[1]).sort();
-  assert.deepStrictEqual(onKeys, ['issues', 'workflow_dispatch'], 'the only triggers are issues and workflow_dispatch');
-});
-
-test('W2 least-privilege job permissions', () => {
-  assert.ok(/^permissions:\s*\n  contents: read\s*(\n|$)/m.test(topText));
-  assert.deepStrictEqual(topBlock(wf, 'permissions'), ['  contents: read'], 'the top-level permissions block is exactly contents: read');
-  assert.deepStrictEqual(jobs.map((j) => j.id).sort(), ['recognise', 'record'], 'exactly two jobs');
-  assert.deepStrictEqual(jobPermissions(jobText('recognise')), { contents: 'read', issues: 'read', 'pull-requests': 'read' });
-  assert.deepStrictEqual(jobPermissions(jobText('record')), { contents: 'write', 'pull-requests': 'write' });
-  assert.ok(/needs:\s*recognise/.test(jobText('record')));
-  assert.ok(!/write-all|id-token|packages:|actions:/.test(wf));
-});
-
-test('W3 the concurrency group is per issue number and never cancels', () => {
-  const m = /^concurrency:\s*\n  group:\s*(.+)\n  cancel-in-progress:\s*false\s*$/m.exec(topText);
-  assert.ok(m, 'a top-level concurrency block with cancel-in-progress: false');
-  assert.ok(m[1].indexOf('github.event.issue.number') !== -1 && m[1].indexOf('inputs.issue_number') !== -1, 'covers both the event number and the dispatch input');
-  assert.ok(/incident-record-/.test(m[1]));
-});
-
-test('W4 untrusted text never reaches a shell or an expression in a run block', () => {
-  const allowed = new Set(['github.repository', 'github.run_id', 'runner.temp']);
-  runBlocks(wf).forEach((b) => { (b.match(/\$\{\{\s*[^}]*?\s*\}\}/g) || []).forEach((e) => assert.ok(allowed.has(e.replace(/^\$\{\{\s*|\s*\}\}$/g, '')), 'unexpected expression in a run block: ' + e)); });
-  assert.ok(!/github\.event\.(issue\.(title|body|user|labels)|comment|pull_request\.title|head_commit)|github\.head_ref/.test(wf));
-  assert.ok(/GITHUB_EVENT_PATH/.test(wf), 'the event is read from the event file');
-  assert.ok(runBlocks(wf).some((b) => b.indexOf('"$ISSUE_NUMBER" =~ ^[1-9][0-9]*$') !== -1), 'the hand-start issue number must be a positive number with no leading zero');
-  assert.ok(wf.indexOf('^[0-9]+$') === -1, 'the looser number pattern (allows leading zeros) is not used');
-});
-
-test('W5 the workflow never pushes to master, merges, approves or marks ready', () => {
-  const code = wf.split('\n').filter((l) => !/^\s*#/.test(l));
-  code.filter((l) => /\bgit push\b/.test(l)).forEach((l) => {
-    assert.ok(/git push --force-with-lease origin "HEAD:refs\/heads\/\$BRANCH"/.test(l), 'only its own validated branch: ' + l.trim());
-    assert.ok(!/\b(master|main)\b/.test(l));
-  });
-  assert.ok(code.some((l) => /\bgit push\b/.test(l)));
-  ['gh pr merge', 'gh pr ready', 'gh pr review', '--admin', '--approve'].forEach((c) => assert.ok(!code.some((l) => l.indexOf(c) !== -1), 'forbidden: ' + c));
-  code.filter((l) => /gh pr create/.test(l)).forEach((l) => assert.ok(/--base master/.test(l)));
-  assert.ok(!/continue-on-error/.test(wf), 'no step or job may ignore its own failure');
-  assert.ok(!jobText('record').split('\n').some((l) => /^ {6,}(-\s+)?if:/.test(l)), 'no step-level if: inside the record job');
-  const ghApi = code.filter((l) => /\bgh api\b/.test(l));
-  assert.ok(ghApi.length >= 1);
-  ghApi.forEach((l) => {
-    assert.ok(jobText('recognise').indexOf(l) !== -1 && jobText('record').indexOf(l) === -1, 'gh api only in the recognise job: ' + l.trim());
-    assert.ok(!/\s(-X|--method|-f|-F|--field|--raw-field|--input)(\s|=|$)/.test(l), 'gh api is a plain read: ' + l.trim());
-  });
-  const withToken = jobs.map((j) => stepsOf(j.id)).reduce((a, b) => a.concat(b), []).filter((s) => /GH_TOKEN/.test(s.text)).map((s) => s.name).sort();
-  assert.deepStrictEqual(withToken, ['Fetch the issue (hand start only)', 'Gather facts (existing branches and open pull requests)', 'Open the pull request if none is open'].sort(), 'GH_TOKEN only in the three steps that call gh');
-});
-
-test('W6 the record job runs only for open or rebuild; nothing else pushes or opens a pull request', () => {
-  const rec = jobText('record');
-  const ifLine = rec.split('\n').find((l) => /^    if:/.test(l)) || '';
-  assert.ok(ifLine.indexOf('needs.recognise.outputs.action') !== -1 && ifLine.indexOf("'open'") !== -1 && ifLine.indexOf("'rebuild'") !== -1);
-  assert.ok(!/git push|gh pr create/.test(jobText('recognise')));
-});
-
-test('W7 checkout of master only, no stored credentials in the recognise job, no pull_request_target', () => {
-  assert.ok(/persist-credentials:\s*false/.test(jobText('recognise')));
-  assert.ok(!/pull_request_target|workflow_run/.test(wf));
-  assert.ok(!/^\s+repository:/m.test(wf), 'no checkout names another repository');
-  const recCheckout = stepsOf('record').find((s) => /uses:\s*actions\/checkout@v4/.test(s.text));
-  assert.ok(recCheckout && !/persist-credentials/.test(recCheckout.text), 'the record checkout keeps the default credentials it needs to push');
-  const checkouts = (wf.match(/uses:\s*actions\/checkout@v4/g) || []).length;
-  assert.ok(checkouts >= 2);
-  assert.strictEqual((wf.match(/ref:\s*master/g) || []).length, checkouts, 'every checkout names ref: master');
-});
-
-test('W8 no third-party actions', () => {
-  const uses = wf.split('\n').filter((l) => /^\s*(-\s+)?uses:/.test(l));
-  assert.ok(uses.length >= 2);
-  uses.forEach((l) => assert.ok(/uses:\s*actions\/checkout@v4\s*$/.test(l), 'only actions/checkout@v4: ' + l.trim()));
-});
-
-test('W9 the record branch is reset from the current master and never takes the incident file from the issue', () => {
-  const rec = jobText('record');
-  assert.ok(rec.indexOf('git checkout -B "$BRANCH" origin/master') !== -1);
-  assert.ok(rec.indexOf('--force-with-lease') !== -1);
-  assert.ok(!/gh api/.test(rec));
-});
-
-test('W10 the bridge author is a workflow variable, never a literal', () => {
-  assert.ok(wf.indexOf('vars.ERROR_BRIDGE_AUTHOR') !== -1);
-  assert.ok(!/heymishy/i.test(wf) && wf.indexOf(AUTHOR) === -1);
-});
-
-test('W11 both jobs are bounded and the plan step prints the result line', () => {
-  ['recognise', 'record'].forEach((id) => { const m = /timeout-minutes:\s*(\d+)/.exec(jobText(id)); assert.ok(m && Number(m[1]) <= 15, id + ' has a time limit'); });
-  assert.ok(/error-issue-incident\.js/.test(jobText('recognise')));
-  assert.ok(/error-issue-incident\.js build/.test(jobText('record')));
-  assert.ok(/^defaults:\s*\n  run:\s*\n    shell: bash\s*$/m.test(topText), 'top-level defaults.run.shell is bash (bash -eo pipefail)');
-  assert.strictEqual((wf.match(/^\s+shell:/gm) || []).length, 1, 'no step overrides the shell');
-});
-
-test('W13 the record job does not count pull requests from forks as already open', () => {
-  const lines = jobText('record').split('\n').filter((l) => /gh pr list/.test(l) && /--head/.test(l));
-  assert.strictEqual(lines.length, 1, 'one existing pull request check in the record job');
-  assert.ok(/--json number,isCrossRepository(\s|$)/.test(lines[0]), 'requests isCrossRepository');
-  assert.ok(lines[0].indexOf("--jq '[.[] | select(.isCrossRepository | not)] | length'") !== -1, 'filters cross-repository pull requests out of the count');
-});
-
-test('W12 no credential in any new file', () => {
+// inc-s2 (2026-11-16, operator decision): the incident-record workflow and the tests that only guarded it (cwt_UT1, cwt_UT2,
+// W1 to W13) are removed. The credential scan below is the one part of that block that also covered the script, the library
+// and this file, so it stays.
+test('S1 no credential in the script, library or this test', () => {
   const pat = new RegExp(['ghp' + '_', 'github' + '_pat_', 'gho' + '_', 'AKIA[0-9A-Z]{8}', '-----BEGIN [A-Z ]*PRIVATE KEY'].join('|'));
-  [WORKFLOW, SCRIPT, LIB_FILE, __filename].forEach((f) => { if (fs.existsSync(f)) assert.ok(!pat.test(fs.readFileSync(f, 'utf8')), 'credential-like text in ' + f); });
-  assert.ok(wf.indexOf('secrets.GITHUB_TOKEN') !== -1 && !/secrets\.(?!GITHUB_TOKEN)/.test(wf));
+  [SCRIPT, LIB_FILE, __filename].forEach((f) => { if (fs.existsSync(f)) assert.ok(!pat.test(fs.readFileSync(f, 'utf8')), 'credential-like text in ' + f); });
 });
 
 // RUNNER
