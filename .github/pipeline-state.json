@@ -50803,6 +50803,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-17-scenario-e2e-on-pr-build",
+      "name": "Scenario A and B end-to-end tests on the pull request build",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T17:56:35.336Z",
+      "stories": [
+        {
+          "id": "sep-s1",
+          "slug": "sep-s1",
+          "name": "Scenario A and B end-to-end tests run against the pull request's own build before merge, and against the deployed staging before production",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T17:56:36.154Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-scenario-e2e-on-pr-build/test-plans/sep-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
