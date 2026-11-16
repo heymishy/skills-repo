@@ -50482,7 +50482,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T06:22:49.315Z",
+          "updatedAt": "2026-11-16T06:47:55.299Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50647,7 +50647,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T06:33:31.997Z",
+          "updatedAt": "2026-11-16T06:47:55.113Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50658,7 +50658,7 @@
             "artefact": "artefacts/2026-11-16-answer-route-retired/test-plans/sub-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
