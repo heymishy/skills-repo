@@ -68,6 +68,16 @@ State what was found:
 > Running definition-of-done check. Ready?
 > Reply: yes - or specify a different story/PR
 
+**Source issue (icf-s1).** If the story has a source issue (its `Source issue: #N` line, `sourceIssue` in `pipeline-state.json`), run:
+
+```bash
+node scripts/check-source-issue-closure.js
+```
+
+- Issue closed: record "closed by PR #[n]" in the DoD's **Source Issue Closure** section.
+- Issue still open although the PR is merged: this is a **deviation**, not a stop. Record it in the **Source Issue Closure** section and offer the operator the closing action: "Issue #N is still open after PR #[n] merged. Close it with a comment naming the PR and the evidence? (yes / no)". Only on a clear yes, run `gh issue close N --reason completed --comment "[PR and evidence]"`. Never close an issue without that yes.
+- The script skips cleanly when `gh` is unavailable: record "not checked" and continue.
+
 ---
 
 ## Step 2 - AC coverage check

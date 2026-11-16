@@ -134,6 +134,9 @@ gh pr create \
 
 ## Notes
 [Any ambiguities encountered during implementation - if none, write "None"]
+
+## Source issue
+[Only when the story has a source issue (pipeline-state `sourceIssue`): write "Fixes #N". Otherwise omit this section.]
 EOF
 )"
 ```
@@ -155,6 +158,9 @@ $body = @'
 
 ## Notes
 [Any ambiguities encountered during implementation - if none, write "None"]
+
+## Source issue
+[Only when the story has a source issue (pipeline-state `sourceIssue`): write "Fixes #N". Otherwise omit this section.]
 '@
 $tmp = New-TemporaryFile
 Set-Content $tmp $body -Encoding UTF8
@@ -170,6 +176,14 @@ Remove-Item $tmp
 The body content (story path, ACs, test plan path, DoR path, notes) is the same regardless of platform.
 
 > Adjust paths if `artefact_root` in `context.yml` is not `.github`.
+
+**Source issue (icf-s1).** If the story fixes a GitHub issue (its `Source issue: #N` line, recorded as `sourceIssue` in `pipeline-state.json`), the PR body MUST contain the closing keyword `Fixes #N`. A sentence that only mentions the issue does not close it (PR #1127 mentioned issue #1121 and left it open). After opening the PR, verify it:
+
+```bash
+node scripts/check-source-issue-closure.js --pr <PR number> --issue <N>
+```
+
+If it reports that the PR does not list the issue as a closing reference, correct the PR body (`gh pr edit <PR number> --body-file <file>`) and run the check again before reporting the PR URL. The check only reads from GitHub and skips cleanly when `gh` is unavailable. Never close the issue yourself: it closes when the operator merges the PR, and `/definition-of-done` confirms it.
 
 **Leave the PR/MR in draft / review-pending state. Do not mark ready for review.** That is a human action.
 

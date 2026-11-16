@@ -3,7 +3,8 @@
 **What will be built:**
 - `scripts/check-source-issue-closure.js` (new): exports `closingKeywordPresent(body, n)`, `findOpenSourceIssues(state, lookup)` and the thin read-only `gh` wrappers; command line: no arguments scans `.github/pipeline-state.json`, `--pr <number> --issue <N>` checks the PR's closing references; `GH_BIN` selects the binary; `gh` unavailable gives exit 0 and a "skipped" message.
 - `skills/branch-complete/SKILL.md`: the draft-PR step (bash and PowerShell bodies) gains a source-issue instruction with `Fixes #N` and the closing-reference check before the PR URL is reported.
-- `skills/definition-of-done/SKILL.md`: Step 1 runs the scan for the story; the output template gets a `Source issue closure` row (closed, or a deviation with the offer to close).
+- `skills/definition-of-done/SKILL.md`: Step 1 runs the scan for the story and records closed, or a deviation with the offer to close.
+- `templates/definition-of-done.md`: a `Source Issue Closure` section (added at build: the DoD output template is this file, a touchpoint the first draft of this contract missed).
 - `.github/pipeline-state.schema.json`: `sourceIssue` (integer) in both story definitions.
 - `tests/check-icf-s1-fix-pr-closes-issue.js` (new, T1 to T6).
 
