@@ -145,20 +145,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    # sep-s1: a throwaway Postgres for the PR's own build; destroyed with the runner.
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: e2e
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     # sep-s1: no shared staging app and no deploy queue any more, so no deploy-group concurrency here.
 
     steps:
@@ -243,14 +229,27 @@ jobs:
           # only sends a Secure cookie back over plain http to a localhost name.
           echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
           export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
-          # Booted against an EMPTY database the app's startup migrations race each other and run out of order
-          # (some tables fail to create; see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md). Long-lived
-          # staging never shows it. A second boot finds the tables the first created and converges.
-          node src/web-ui/server.js > server.log 2>&1 &
-          FIRST_BOOT_PID=$!
-          sleep 25
-          kill "${FIRST_BOOT_PID}" 2>/dev/null || true
-          wait "${FIRST_BOOT_PID}" 2>/dev/null || true
+          # A throwaway Postgres WITH ssl on (a self-signed cert made here): the app always connects to Postgres
+          # over SSL, as production's does, so a database without SSL fails its durable-session writes.
+          docker run -d --name e2e-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=e2e postgres:16 bash -c '
+            openssl req -new -x509 -days 1 -nodes -subj "/CN=localhost" -out /var/lib/postgresql/server.crt -keyout /var/lib/postgresql/server.key &&
+            chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key && chmod 600 /var/lib/postgresql/server.key &&
+            exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
+          for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
+          docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
+          # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
+          # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
+          : > server.log
+          for attempt in 1 2 3 4 5 6; do
+            node src/web-ui/server.js > "boot-${attempt}.log" 2>&1 &
+            BOOT_PID=$!
+            sleep 15
+            kill "${BOOT_PID}" 2>/dev/null || true
+            wait "${BOOT_PID}" 2>/dev/null || true
+            cat "boot-${attempt}.log" >> server.log
+            grep -Eq "migration.*failed" "boot-${attempt}.log" || { echo "migrations settled on boot ${attempt}"; break; }
+          done
           nohup node src/web-ui/server.js >> server.log 2>&1 &
           for i in $(seq 1 60); do
             curl -fsS http://127.0.0.1:3000/health > /dev/null 2>&1 && break
@@ -260,7 +259,7 @@ jobs:
         env:
           PORT: '3000'
           MOCK_LLM_GATEWAY: 'true'
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e # ssl is on in the container above
           GITHUB_CLIENT_ID: ci-throwaway-client-id
           GITHUB_CLIENT_SECRET: ci-throwaway-client-secret
           SESSION_SECRET: ci-throwaway-session-secret-0123456789abcdef
@@ -352,20 +351,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    # sep-s1: a throwaway Postgres for the PR's own build; destroyed with the runner.
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: e2e
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     # sep-s1: no shared staging app and no deploy queue any more, so no deploy-group concurrency here.
     # cif-s2: without this needs: edge, Scenario A and Scenario B both fire
     # from the same pull_request event and simultaneously request the same
@@ -457,14 +442,27 @@ jobs:
           # only sends a Secure cookie back over plain http to a localhost name.
           echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
           export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
-          # Booted against an EMPTY database the app's startup migrations race each other and run out of order
-          # (some tables fail to create; see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md). Long-lived
-          # staging never shows it. A second boot finds the tables the first created and converges.
-          node src/web-ui/server.js > server.log 2>&1 &
-          FIRST_BOOT_PID=$!
-          sleep 25
-          kill "${FIRST_BOOT_PID}" 2>/dev/null || true
-          wait "${FIRST_BOOT_PID}" 2>/dev/null || true
+          # A throwaway Postgres WITH ssl on (a self-signed cert made here): the app always connects to Postgres
+          # over SSL, as production's does, so a database without SSL fails its durable-session writes.
+          docker run -d --name e2e-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=e2e postgres:16 bash -c '
+            openssl req -new -x509 -days 1 -nodes -subj "/CN=localhost" -out /var/lib/postgresql/server.crt -keyout /var/lib/postgresql/server.key &&
+            chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key && chmod 600 /var/lib/postgresql/server.key &&
+            exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
+          for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
+          docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
+          # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
+          # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
+          : > server.log
+          for attempt in 1 2 3 4 5 6; do
+            node src/web-ui/server.js > "boot-${attempt}.log" 2>&1 &
+            BOOT_PID=$!
+            sleep 15
+            kill "${BOOT_PID}" 2>/dev/null || true
+            wait "${BOOT_PID}" 2>/dev/null || true
+            cat "boot-${attempt}.log" >> server.log
+            grep -Eq "migration.*failed" "boot-${attempt}.log" || { echo "migrations settled on boot ${attempt}"; break; }
+          done
           nohup node src/web-ui/server.js >> server.log 2>&1 &
           for i in $(seq 1 60); do
             curl -fsS http://127.0.0.1:3000/health > /dev/null 2>&1 && break
@@ -474,7 +472,7 @@ jobs:
         env:
           PORT: '3000'
           MOCK_LLM_GATEWAY: 'true'
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e # ssl is on in the container above
           GITHUB_CLIENT_ID: ci-throwaway-client-id
           GITHUB_CLIENT_SECRET: ci-throwaway-client-secret
           SESSION_SECRET: ci-throwaway-session-secret-0123456789abcdef

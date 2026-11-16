@@ -40,7 +40,7 @@ const B = 'Scenario B E2E (staging)';
 test('T1 both jobs keep their names and boot the PR\'s own server with the hermetic setup (AC1)', function () {
   [A, B].forEach(function (name) {
     const j = jobByName(name);
-    assert.ok(/^    services:/m.test(j) && /image: postgres/.test(j), name + ': no postgres service container');
+    assert.ok(/docker run[^\n]*postgres:\d+/.test(j) && /ssl=on/.test(j), name + ': no throwaway Postgres container with ssl on (the app always connects over SSL, as production does)');
     assert.ok(/node src\/web-ui\/server\.js/.test(j), name + ': does not start the PR\'s server');
     assert.ok(/MOCK_LLM_GATEWAY:\s*'?true'?|MOCK_LLM_GATEWAY=true/.test(j), name + ': mock gateway is not switched on');
     assert.ok(/openssl rand|randomBytes/.test(j), name + ': no per-run generated stub secret');
