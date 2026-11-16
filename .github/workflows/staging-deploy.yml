@@ -16,7 +16,8 @@
 #                       deploy-staging (which includes the seed step).
 #                       Reports a real pass/fail (no continue-on-error)
 #                       before promote-to-prod can be offered.
-#   promote-to-prod   - gated behind (a) needs: smoke-test succeeding, and
+#   promote-to-prod   - gated behind (a) needs: smoke-test AND post-deploy-e2e-confirm
+#                       (sep-s1: the real-staging Scenario A/B run) succeeding, and
 #                       (b) a GitHub Actions `environment: production`
 #                       protection rule requiring Hamish's explicit
 #                       reviewer approval (configured in repo Settings ->
@@ -258,10 +259,11 @@ jobs:
   # spec files (behind the exact same audit.staging_e2e_scenario_a/b flags
   # as e2e.yml) immediately after every real deploy, so that confirmation
   # happens automatically the same day instead of depending on a human
-  # remembering to do a manual local re-run. Deliberately NOT a dependency
-  # of promote-to-prod (see decisions.md, 2026-07-29) -- smoke-test alone
-  # continues to gate promotion; this job is same-day visibility, not a
-  # release gate.
+  # remembering to do a manual local re-run. sep-s1 (2026-11-17, operator
+  # decision) reversed the earlier "visibility only" rule of 2026-07-29: this
+  # job now IS a dependency of promote-to-prod, so Scenarios A and B must pass
+  # against the exact build deployed to staging before production is offered,
+  # on top of passing against the PR's own build before merge (e2e.yml).
   post-deploy-e2e-confirm:
     name: Post-deploy real-staging E2E confirmation
     # sedf-s1: was `needs: deploy-staging` only, which let this job start
@@ -403,7 +405,9 @@ jobs:
 
   promote-to-prod:
     name: Promote to production (manual approval required)
-    needs: smoke-test
+    needs:
+      - smoke-test
+      - post-deploy-e2e-confirm
     runs-on: ubuntu-latest
     environment: production
     steps:

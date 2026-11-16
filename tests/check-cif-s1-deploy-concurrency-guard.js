@@ -117,11 +117,13 @@ const deployGroupName = deployStagingJob ? concurrencyGroup(deployStagingJob) : 
     fail('U1', 'no "scenario-a-staging-e2e" job found in .github/workflows/e2e.yml');
     return;
   }
+  // sep-s1 (2026-11-17): the scenario jobs now run against the PR's own build in the runner, not shared
+  // staging, so they no longer share the deploy group; the guard now asserts they are NOT in it.
   const group = concurrencyGroup(scenarioAJob);
-  if (group === deployGroupName) {
-    pass('U1', `scenario-a-staging-e2e concurrency group ("${group}") matches deploy-staging's ("${deployGroupName}")`);
+  if (group === null) {
+    pass('U1', `scenario-a-staging-e2e no longer joins deploy-staging's concurrency group ("${deployGroupName}"): it tests its own build (sep-s1)`);
   } else {
-    fail('U1', `scenario-a-staging-e2e concurrency group is "${group}", expected "${deployGroupName}"`);
+    fail('U1', `scenario-a-staging-e2e concurrency group is "${group}", expected none (sep-s1: it must not touch shared staging)`);
   }
 })();
 
@@ -139,10 +141,10 @@ const deployGroupName = deployStagingJob ? concurrencyGroup(deployStagingJob) : 
     return;
   }
   const group = concurrencyGroup(scenarioBJob);
-  if (group === deployGroupName) {
-    pass('U1', `scenario-b-staging-e2e concurrency group ("${group}") matches deploy-staging's ("${deployGroupName}")`);
+  if (group === null) {
+    pass('U1', `scenario-b-staging-e2e no longer joins deploy-staging's concurrency group ("${deployGroupName}"): it tests its own build (sep-s1)`);
   } else {
-    fail('U1', `scenario-b-staging-e2e concurrency group is "${group}", expected "${deployGroupName}"`);
+    fail('U1', `scenario-b-staging-e2e concurrency group is "${group}", expected none (sep-s1: it must not touch shared staging)`);
   }
 })();
 

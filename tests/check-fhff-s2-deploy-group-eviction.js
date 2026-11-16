@@ -70,8 +70,9 @@ function assertCheck(label, condition, message) {
   const e2eValues = collectConcurrencyValues(e2eText);
   const stagingDeployValues = collectConcurrencyValues(stagingDeployText);
 
-  assertCheck(T + '-e2e-has-deploy-group-jobs', e2eValues.length >= 2,
-    `Expected e2e.yml to have at least 2 concurrency: lines for deploy-group jobs (Scenario A + Scenario B), found ${e2eValues.length}`);
+  // sep-s1 (2026-11-17): the scenario jobs run against their own build, so e2e.yml has no deploy-group jobs any more.
+  assertCheck(T + '-e2e-has-no-deploy-group-jobs', e2eValues.length === 0,
+    `Expected e2e.yml to have no concurrency: lines now that Scenario A and B test their own build (sep-s1), found ${e2eValues.length}`);
   assertCheck(T + '-staging-deploy-has-deploy-group-job', stagingDeployValues.length >= 1,
     `Expected staging-deploy.yml to have at least 1 concurrency: line, found ${stagingDeployValues.length}`);
 
