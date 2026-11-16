@@ -98,11 +98,13 @@ const promoteJob = jobById(stagingJobs, 'promote-to-prod');
     fail('U1', 'no "scenario-b-staging-e2e" job found in .github/workflows/e2e.yml');
     return;
   }
+  // sep-s1 (2026-11-17): each scenario job boots its own throwaway environment, so there is no shared app to
+  // serialise on; Scenario B no longer waits for Scenario A and the two run in parallel.
   const needs = needsValue(scenarioBJob);
-  if (needs === 'scenario-a-staging-e2e') {
-    pass('U1', 'scenario-b-staging-e2e declares needs: scenario-a-staging-e2e');
+  if (needs === null) {
+    pass('U1', 'scenario-b-staging-e2e has no needs: (sep-s1: independent of Scenario A, own environment)');
   } else {
-    fail('U1', `scenario-b-staging-e2e needs: is "${needs}", expected "scenario-a-staging-e2e"`);
+    fail('U1', `scenario-b-staging-e2e needs: is "${needs}", expected none (sep-s1)`);
   }
 })();
 
@@ -118,8 +120,9 @@ const promoteJob = jobById(stagingJobs, 'promote-to-prod');
   const groupA = concurrencyGroup(scenarioAJob);
   const groupB = concurrencyGroup(scenarioBJob);
 
-  if (deployGroup && groupA === deployGroup && groupB === deployGroup) {
-    pass('U2', `both scenario jobs still declare concurrency: ${deployGroup}, matching deploy-staging`);
+  // sep-s1 (2026-11-17): reversed - the scenario jobs no longer share the deploy group (own environment).
+  if (deployGroup && groupA === null && groupB === null) {
+    pass('U2', `neither scenario job declares concurrency: ${deployGroup} any more; deploy-staging keeps it (sep-s1)`);
   } else {
     fail('U2', `deployGroup=${deployGroup} groupA=${groupA} groupB=${groupB}`);
   }
@@ -144,7 +147,9 @@ const promoteJob = jobById(stagingJobs, 'promote-to-prod');
       details.push(`${label}: job not found`);
       return;
     }
-    const needs = needsValue(job);
+    let needs = needsValue(job);
+    // sep-s1 (2026-11-17): promote-to-prod now needs smoke-test AND post-deploy-e2e-confirm (block list)
+    if (label.indexOf('promote-to-prod') === 0 && /needs:\s*\n\s*- smoke-test\s*\n\s*- post-deploy-e2e-confirm/.test(jobText(job))) needs = expectedNeeds;
     if (needs !== expectedNeeds) {
       allUnchanged = false;
       details.push(`${label}: needs: is "${needs}", expected "${expectedNeeds}"`);

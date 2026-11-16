@@ -145,14 +145,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    # cif-s1: shares staging-deploy.yml's deploy-staging concurrency group so
-    # a master-push redeploy and this job never run at the same time against
-    # real wuce-staging -- a job entering an occupied group queues rather than
-    # cancelling (bare-string form, no cancel-in-progress override), so neither
-    # a deploy nor a real E2E run is ever interrupted mid-flight. Confirmed
-    # false-negative collision pattern 5x this session (PRs #626-#630); see
-    # artefacts/2026-07-29-ci-deploy-collision-fix/stories/cif-s1-add-deploy-concurrency-guard.md
-    concurrency: deploy-group
+    # sep-s1: no shared staging app and no deploy queue any more, so no deploy-group concurrency here.
 
     steps:
       - name: Checkout
@@ -223,15 +216,57 @@ jobs:
       # cannot simply trust whatever state it inherits. Never fails the job
       # itself (see the script's own header comment) -- the real test step
       # below is what should fail/pass on its own merits.
-      - name: Ensure mock gateway is ON before running against real wuce-staging
+      # sep-s1: the specs target "a real deployed environment" through E2E_STAGING_BASE_URL. Here that is the
+      # pull request's own server, started in this runner in the same wiring as staging (NODE_ENV unset),
+      # with the mock model and a throwaway database. Nothing shared is touched and no secret is read.
+      - name: Start the pull request's own server (mock model, throwaway Postgres, per-run stub secret)
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
-        run: node scripts/ensure-mock-gateway-on-ci.js
+        run: |
+          STUB_SECRET="$(openssl rand -hex 24)"
+          echo "::add-mask::${STUB_SECRET}"
+          echo "E2E_STAGING_AUTH_STUB_SECRET=${STUB_SECRET}" >> "$GITHUB_ENV"
+          # "localhost", not 127.0.0.1: the app's session cookie is always Secure, and Playwright's request client
+          # only sends a Secure cookie back over plain http to a localhost name.
+          echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
+          export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
+          # A throwaway Postgres WITH ssl on (a self-signed cert made here): the app always connects to Postgres
+          # over SSL, as production's does, so a database without SSL fails its durable-session writes.
+          docker run -d --name e2e-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=e2e postgres:16 bash -c '
+            openssl req -new -x509 -days 1 -nodes -subj "/CN=localhost" -out /var/lib/postgresql/server.crt -keyout /var/lib/postgresql/server.key &&
+            chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key && chmod 600 /var/lib/postgresql/server.key &&
+            exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
+          for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
+          docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # session_turns (the durable chat store) is created only by this manual script, never by the app at startup.
+          node scripts/migrate-schema-pg.js
+          # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
+          # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
+          # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
+          : > server.log
+          for attempt in 1 2 3 4 5 6; do
+            node src/web-ui/server.js > "boot-${attempt}.log" 2>&1 &
+            BOOT_PID=$!
+            sleep 15
+            kill "${BOOT_PID}" 2>/dev/null || true
+            wait "${BOOT_PID}" 2>/dev/null || true
+            cat "boot-${attempt}.log" >> server.log
+            grep -Eq "migration.*failed" "boot-${attempt}.log" || { echo "migrations settled on boot ${attempt}"; break; }
+          done
+          nohup node src/web-ui/server.js >> server.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/health > /dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/health || { echo "server did not come up"; tail -n 100 server.log; exit 1; }
         env:
-          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
-          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
-          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+          PORT: '3000'
+          MOCK_LLM_GATEWAY: 'true'
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e # ssl is on in the container above
+          GITHUB_CLIENT_ID: ci-throwaway-client-id
+          GITHUB_CLIENT_SECRET: ci-throwaway-client-secret
+          SESSION_SECRET: ci-throwaway-session-secret-0123456789abcdef
 
-      - name: Run Scenario A E2E (A1-A4 spec files; A1/A3/A4 CI-blocking, A2 manual-only) against real wuce-staging
+      - name: Run Scenario A E2E (A1-A4 spec files; A1/A3/A4 CI-blocking, A2 manual-only) against the pull request's own build
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         id: scenario-a-run
         # a2ccf-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
@@ -284,9 +319,6 @@ jobs:
           # Test-only staging credentials — CI secrets only, never workflow
           # YAML literals (NFR-Security). Falls back to the fixture's own
           # public staging URL default when the secret is unset.
-          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
-          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
-          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
 
       - name: Upload Playwright traces and screenshots on failure
         # a2ccf-s1: this job (unlike the `e2e` job above) has no continue-on-error
@@ -305,6 +337,7 @@ jobs:
           path: |
             test-results/
             playwright-report/
+            server.log
           retention-days: 7
           if-no-files-found: ignore
 
@@ -312,62 +345,6 @@ jobs:
         if: steps.scenario-a-config.outputs.scenario_a_enabled != 'true'
         run: 'echo "Scenario A staging E2E skipped — set audit.staging_e2e_scenario_a: true in .github/context.yml to enable"'
 
-      # alrf-s11: purge every e2e-test- tagged tenant this run created,
-      # regardless of pass/fail (always()) -- the operator noticed hundreds
-      # of persistent e2e-test-/UAT tenants accumulated on staging, since no
-      # step had ever cleaned these up after a run. Runs against the same
-      # staging Postgres the seed/deploy steps already use.
-      - name: Purge e2e-test- tenants created by this run
-        # Fix-forward (2026-07-26, PR #622): the first version of this step
-        # had no step-level timeout, so a hung DB connection (see the
-        # script's own withTimeout comment) consumed this whole job's
-        # 15-minute external timeout and turned an actually-passing test run
-        # red. Deliberately no error-tolerance flag on this step -- check-a5
-        # and check-b2's own ci-gate-config tests assert its absence anywhere
-        # in this job's block as a structural proxy for "this job genuinely
-        # blocks merge on failure", and this step doesn't need it: the
-        # script itself is written to never exit non-zero (always sets
-        # process.exitCode = 0, even on its own internal failure/timeout) --
-        # timeout-minutes here is a pure, unlikely-to-fire backstop, not the
-        # primary safety mechanism.
-        if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
-        timeout-minutes: 2
-        run: node scripts/purge-e2e-tenants.js
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-
-  # ── Scenario B CI-blocking gate (story b2-ci-gate-scenario-b-coverage-mapping) ──
-  # Runs B1's spec file (tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js)
-  # against real wuce-staging, following A5's exact gate mechanism (distinct
-  # opt-in flag, no continue-on-error, required-status-check registration).
-  #
-  # STATUS (2026-07-25, updated from the 2026-07-23 writeup below): the
-  # admin-credits-top-up sub-blocker described below is now fixed (catc-s1,
-  # PR #568, merged 2026-07-24) -- getValidTenantIds() is no longer a plain
-  # allowlist SELECT against `credits` alone, it's the union of
-  # users.email/team_memberships.tenant_id/credits.tenant_id, so a brand-new
-  # E2E tenant is no longer rejected before the atomic upsert (cuf-s1) is
-  # reached. Confirmed against a real run, not just the fix landing: run
-  # 30128835551 (2026-07-24T21:47:29Z, PR #592) shows this spec's own log as
-  # "Running 4 tests using 1 worker" / "4 passed (41.8s)" -- AC1-AC3 and
-  # NFR-Security all genuinely passing against real staging now, not skipping.
-  # This job needed no wiring changes to pick that up, exactly as anticipated
-  # below. coverage/spec-to-journey-step-mapping.md and decisions.md still
-  # carry the original 2026-07-23 "1 passed, 3 skipped" writeup as history;
-  # this comment is the current, accurate status.
-  #
-  # Original 2026-07-23 writeup (see coverage/spec-to-journey-step-mapping.md
-  # and decisions.md for the full history): a ground-truth run of this spec
-  # against real staging returned 1 passed (NFR-Security), 3 skipped (AC1, AC2,
-  # AC3). The skip was genuine, not a flake -- the real Stripe-webhook credits
-  # path was fixed (cuf-s1: adjustBalance/adjustBalanceWithAudit now use
-  # INSERT ... ON CONFLICT atomic upserts), but the admin-UI top-up path this
-  # spec relies on (POST /api/admin/credits/adjust) still gated on
-  # getValidTenantIds() -- a plain allowlist SELECT that rejected a brand-new
-  # E2E tenant before the upsert was ever reached. AC1-AC3 therefore
-  # contributed ZERO automated CI-blocking signal at the time, analogous to
-  # A2's situation for Scenario A (see that job's own comment above) though
-  # for a different, not-permanently-unfixable reason.
   scenario-b-staging-e2e:
     name: Scenario B E2E (staging)
     # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
@@ -376,9 +353,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    # cif-s1: same concurrency guard as scenario-a-staging-e2e above -- see
-    # that job's comment for the full rationale.
-    concurrency: deploy-group
+    # sep-s1: no shared staging app and no deploy queue any more, so no deploy-group concurrency here.
     # cif-s2: without this needs: edge, Scenario A and Scenario B both fire
     # from the same pull_request event and simultaneously request the same
     # deploy-group -- GitHub Actions allows only one running plus one queued
@@ -391,7 +366,6 @@ jobs:
     # Sequencing here means at most one of the two scenarios is ever an
     # active requester, freeing the group's single queued slot for genuine
     # cross-PR/deploy contention. See decisions.md, 2026-07-29.
-    needs: scenario-a-staging-e2e
 
     steps:
       - name: Checkout
@@ -457,15 +431,57 @@ jobs:
 
       # mgar-s1: same defensive force-on step as scenario-a-staging-e2e above
       # -- see that job's comment for the full rationale. Never fails the job.
-      - name: Ensure mock gateway is ON before running against real wuce-staging
+      # sep-s1: the specs target "a real deployed environment" through E2E_STAGING_BASE_URL. Here that is the
+      # pull request's own server, started in this runner in the same wiring as staging (NODE_ENV unset),
+      # with the mock model and a throwaway database. Nothing shared is touched and no secret is read.
+      - name: Start the pull request's own server (mock model, throwaway Postgres, per-run stub secret)
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
-        run: node scripts/ensure-mock-gateway-on-ci.js
+        run: |
+          STUB_SECRET="$(openssl rand -hex 24)"
+          echo "::add-mask::${STUB_SECRET}"
+          echo "E2E_STAGING_AUTH_STUB_SECRET=${STUB_SECRET}" >> "$GITHUB_ENV"
+          # "localhost", not 127.0.0.1: the app's session cookie is always Secure, and Playwright's request client
+          # only sends a Secure cookie back over plain http to a localhost name.
+          echo "E2E_STAGING_BASE_URL=http://localhost:3000" >> "$GITHUB_ENV"
+          export E2E_STAGING_AUTH_STUB_SECRET="${STUB_SECRET}"
+          # A throwaway Postgres WITH ssl on (a self-signed cert made here): the app always connects to Postgres
+          # over SSL, as production's does, so a database without SSL fails its durable-session writes.
+          docker run -d --name e2e-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=e2e postgres:16 bash -c '
+            openssl req -new -x509 -days 1 -nodes -subj "/CN=localhost" -out /var/lib/postgresql/server.crt -keyout /var/lib/postgresql/server.key &&
+            chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key && chmod 600 /var/lib/postgresql/server.key &&
+            exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
+          for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
+          docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # session_turns (the durable chat store) is created only by this manual script, never by the app at startup.
+          node scripts/migrate-schema-pg.js
+          # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
+          # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
+          # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
+          : > server.log
+          for attempt in 1 2 3 4 5 6; do
+            node src/web-ui/server.js > "boot-${attempt}.log" 2>&1 &
+            BOOT_PID=$!
+            sleep 15
+            kill "${BOOT_PID}" 2>/dev/null || true
+            wait "${BOOT_PID}" 2>/dev/null || true
+            cat "boot-${attempt}.log" >> server.log
+            grep -Eq "migration.*failed" "boot-${attempt}.log" || { echo "migrations settled on boot ${attempt}"; break; }
+          done
+          nohup node src/web-ui/server.js >> server.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/health > /dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/health || { echo "server did not come up"; tail -n 100 server.log; exit 1; }
         env:
-          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
-          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
-          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+          PORT: '3000'
+          MOCK_LLM_GATEWAY: 'true'
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/e2e # ssl is on in the container above
+          GITHUB_CLIENT_ID: ci-throwaway-client-id
+          GITHUB_CLIENT_SECRET: ci-throwaway-client-secret
+          SESSION_SECRET: ci-throwaway-session-secret-0123456789abcdef
 
-      - name: Run Scenario B E2E (B1's spec file; AC1-AC3 + NFR-Security all CI-blocking since catc-s1 fixed the admin-credits-top-up sub-blocker) against real wuce-staging
+      - name: Run Scenario B E2E (B1's spec file; AC1-AC3 + NFR-Security all CI-blocking since catc-s1 fixed the admin-credits-top-up sub-blocker) against the pull request's own build
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
         id: scenario-b-run
         # --workers=1: consistent with a5's own --workers=1 rationale for its
@@ -481,9 +497,6 @@ jobs:
           # Test-only staging credentials -- CI secrets only, never workflow
           # YAML literals (NFR-Security). Falls back to the fixture's own
           # public staging URL default when the secret is unset.
-          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
-          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
-          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
 
       - name: Upload Playwright traces and screenshots on failure
         # always(): see a5's own identical comment above -- without it, this
@@ -496,19 +509,10 @@ jobs:
           path: |
             test-results/
             playwright-report/
+            server.log
           retention-days: 7
           if-no-files-found: ignore
 
       - name: Scenario B E2E skipped (opt-in flag not set)
         if: steps.scenario-b-config.outputs.scenario_b_enabled != 'true'
         run: 'echo "Scenario B staging E2E skipped — set audit.staging_e2e_scenario_b: true in .github/context.yml to enable"'
-
-      # alrf-s11: same cleanup as Scenario A's job -- see that job's Fix-forward
-      # comment (2026-07-26, PR #622) for why there's a timeout-minutes but
-      # deliberately no continue-on-error here.
-      - name: Purge e2e-test- tenants created by this run
-        if: always() && steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
-        timeout-minutes: 2
-        run: node scripts/purge-e2e-tenants.js
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}

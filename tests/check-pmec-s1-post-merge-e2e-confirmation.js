@@ -144,7 +144,8 @@ const scenarioBJob = jobById(e2eJobs, 'scenario-b-staging-e2e');
 })();
 
 // ---------------------------------------------------------------------------
-// U3 (AC3) - promote-to-prod's needs: is unchanged (still only smoke-test)
+// U3 (AC3, reversed by sep-s1 on 2026-11-17 by operator decision) - promote-to-prod needs
+// BOTH smoke-test and post-deploy-e2e-confirm (it used to be "still only smoke-test")
 // ---------------------------------------------------------------------------
 (function u3() {
   if (!promoteJob) {
@@ -152,18 +153,19 @@ const scenarioBJob = jobById(e2eJobs, 'scenario-b-staging-e2e');
     return;
   }
   const text = jobText(promoteJob);
-  const needsMatch = /needs:\s*(\S+)\s*($|\n)/.exec(text);
-  const needsValue = needsMatch ? needsMatch[1] : null;
+  const needsMatch = /needs:\s*((?:- [\w-]+\s*)+|[\w-]+)/.exec(text);
+  const needsValue = needsMatch ? needsMatch[1].replace(/\s+/g, ' ').trim() : '';
 
-  if (needsValue === 'smoke-test') {
-    pass('U3', 'promote-to-prod needs: is unchanged (still only smoke-test)');
+  if (/smoke-test/.test(needsValue) && /post-deploy-e2e-confirm/.test(needsValue)) {
+    pass('U3', 'promote-to-prod needs both smoke-test and post-deploy-e2e-confirm (sep-s1)');
   } else {
-    fail('U3', `promote-to-prod needs: is "${needsValue}", expected exactly "smoke-test"`);
+    fail('U3', `promote-to-prod needs: is "${needsValue}", expected both smoke-test and post-deploy-e2e-confirm`);
   }
 })();
 
 // ---------------------------------------------------------------------------
-// U4 (AC4) - new job cannot block promote-to-prod: no job's needs: names it
+// U4 (AC4, reversed by sep-s1 on 2026-11-17 by operator decision) - the only job that depends on
+// post-deploy-e2e-confirm is promote-to-prod (it used to be "no job depends on it")
 // ---------------------------------------------------------------------------
 (function u4() {
   if (!newJob) {
@@ -175,10 +177,10 @@ const scenarioBJob = jobById(e2eJobs, 'scenario-b-staging-e2e');
     return needsMatch && needsMatch[0].includes('post-deploy-e2e-confirm');
   });
 
-  if (dependents.length === 0) {
-    pass('U4', 'no job in staging-deploy.yml depends on post-deploy-e2e-confirm — structurally non-blocking');
+  if (dependents.length === 1 && dependents[0].id === 'promote-to-prod') {
+    pass('U4', 'promote-to-prod is the one job that depends on post-deploy-e2e-confirm — it gates promotion (sep-s1)');
   } else {
-    fail('U4', `job(s) unexpectedly depend on post-deploy-e2e-confirm: ${dependents.map((j) => j.id).join(', ')}`);
+    fail('U4', `expected only promote-to-prod to depend on post-deploy-e2e-confirm, found: ${dependents.map((j) => j.id).join(', ') || 'none'}`);
   }
 })();
 
