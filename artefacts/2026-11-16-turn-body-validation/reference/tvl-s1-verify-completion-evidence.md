@@ -21,3 +21,19 @@ Date: 2026-11-16. Branch: `feature/tvl-s1-turn-validation` (red tests 7b2d5adc1,
 
 - AC8: after merge and a staging deploy, from a signed-in staging page replay the garbage set from the 2026-11-16 session: malformed JSON, `{}`, empty answer, a number, 200 KB and 2 MB answers, a wrong skill name; expect 400, 400, 400, 400, 413, 413 and 404, and a normal answer still 200. Staging uses the mock model, so this costs nothing.
 - Note for the operator: an empty answer is now refused (the page sends `__init__` to start). If anything legitimate sends an empty answer it will now see 400 INVALID_ANSWER; none was found in a search of the front-end code.
+
+## AC8 observed live on staging (2026-11-16, build 4dfe7d6, agent-run, mock model, signed-in staging tab)
+
+A fresh `discovery` session on `wuce-staging` (the earlier one was lost when staging redeployed; skill sessions are held in memory). Requests POSTed from the signed-in page; status and fixed error body only:
+
+| Request | Result |
+|---|---|
+| `/turn` malformed JSON `{"answer": ` | 400 `INVALID_BODY` |
+| `/turn` array body, and a `text/plain` body | 400 `INVALID_BODY` (both) |
+| `/turn` `{}`, `{"answer":""}`, whitespace, `42`, `null` | 400 `INVALID_ANSWER` (all five) |
+| `/turn` 200,000-character answer, and a 2 MB answer | 413 `ANSWER_TOO_LARGE` (both) |
+| `/turn` wrong skill in the URL (`not-a-skill`), and an unknown session | 404 `Session not found` (both) |
+| `/turn-stream` malformed JSON, `{}`, and a 2 MB answer | 400 `INVALID_BODY`, 400 `INVALID_ANSWER`, 413 `ANSWER_TOO_LARGE`, all as JSON with no SSE headers |
+| `/turn` a normal answer | 200 (1,345-byte mock reply, as before the change) |
+
+Before the change every one of the garbage requests above except the unknown session answered 200 and ran a model turn. All 8 acceptance criteria are now verified (AC8 on staging, the same code that production gets on promotion). Production observation is not needed for AC8; no production request was made.

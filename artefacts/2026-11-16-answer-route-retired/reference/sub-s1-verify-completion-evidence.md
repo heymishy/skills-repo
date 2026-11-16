@@ -22,3 +22,9 @@ Date: 2026-11-16. Branch: `feature/sub-s1-retire-answer` (red tests 760272c7a, t
 - AC6 live: after merge and deploy, one POST from a signed-in production tab; expect 410 and no new GitHub issue within a few minutes. Then the operator can close issue #1121 and incident PR #1122.
 - Follow-ups (not in this story): remove the dead question-flow code and its tests; the chat page's fallback form action still points at the retired route.
 - `pws-s1` (wiring smoke test): remove this route from its known-defects list when this merges.
+
+## AC6 observed on staging (2026-11-16, build 4dfe7d6, agent-run, signed-in staging tab)
+
+`POST /api/skills/discovery/sessions/00000000-0000-0000-0000-000000000000/answer` with a form body on `wuce-staging` answered **410** with the retired-form page (27 KB shell page, no error text). The same request before the change answered 500 "Adapter not wired: submitAnswer" (20 of 20 on staging, and the production request that opened issue #1121).
+
+Not yet observed on production: production still runs `eed6b0f` (#1119) until the operator promotes the staging build. After promotion, one signed-in POST from a production tab should answer 410 and open no new issue; then the operator can close issue #1121. Staging does not feed the issue bridge, so only a production request can show "no new issue".
