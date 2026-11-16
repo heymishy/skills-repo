@@ -50836,6 +50836,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-17-bookkeeping-push-noise",
+      "name": "Stop bookkeeping pushes starting workflows",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T19:08:12.834Z",
+      "stories": [
+        {
+          "id": "bkn-s1",
+          "slug": "bkn-s1",
+          "name": "Bookkeeping pushes to master stop starting workflows that add nothing",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T19:08:14.608Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-bookkeeping-push-noise/test-plans/bkn-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
