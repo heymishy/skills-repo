@@ -144,6 +144,7 @@
                     "knownFailingReason": { "type": "string", "description": "The accepted-risk reference for knownFailing, e.g. the RISK-ACCEPT entry in the feature's decisions.md (bfl-s2)" }
                   }
                 },
+                "sourceIssue":         { "type": "integer", "minimum": 1, "description": "GitHub issue number this story fixes (icf-s1). The draft PR carries 'Fixes #N' and /definition-of-done checks the issue is closed." },
                 "dorStatus":           { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
                 "dorArtefact":         { "type": "string", "description": "Relative path to the DoR artefact" },
                 "dorContractArtefact": { "type": "string", "description": "Relative path to the DoR contract artefact" },
@@ -187,6 +188,7 @@
                           "knownFailingReason": { "type": "string", "description": "The accepted-risk reference for knownFailing, e.g. the RISK-ACCEPT entry in the feature's decisions.md (bfl-s2)" }
                         }
                       },
+                      "sourceIssue": { "type": "integer", "minimum": 1, "description": "GitHub issue number this story fixes (icf-s1). The draft PR carries 'Fixes #N' and /definition-of-done checks the issue is closed." },
                       "dorStatus":   { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
                       "dorApprover": { "type": "string", "description": "GitHub username (or equivalent role identifier) of the person who approved the DoR. NEVER stores full name or email address (MC-PII constraint). Written by approval channel adapter (p2.8)." },
                       "dorChannel":  { "type": "string", "description": "Approval interface used to record the sign-off (e.g. 'github-issue'). Permanent record — not overwritten by subsequent sign-off attempts (p2.8 auditability)." },

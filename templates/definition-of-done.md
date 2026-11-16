@@ -35,6 +35,20 @@ Deviations are not necessarily failures — they must be recorded and will be su
 
 ---
 
+## Source Issue Closure
+
+<!--
+  Only when the story fixes a GitHub issue (pipeline-state `sourceIssue`); otherwise write "No source issue".
+  Run `node scripts/check-source-issue-closure.js` (read-only; skips cleanly without gh).
+  Closed: "Issue #N closed by PR #[n]".
+  Still open after the PR merged: a DEVIATION - record it here and offer the operator the closing action
+  (a comment naming the PR and the evidence). Never close an issue without the operator's yes.
+-->
+
+[No source issue | Issue #N closed by PR #[n] | DEVIATION: issue #N still open after PR #[n] merged - operator offered the closing action: [yes, closed / no, left open]]
+
+---
+
 ## Scope Deviations
 
 <!--
