@@ -14,10 +14,11 @@
  *
  * Reads a captured `npm test` output log, extracts the "Failed files (N):"
  * list scripts/run-all-tests.js prints, and diffs it against a checked-in
- * baseline (tests/known-baseline-failures.json). Exits 0 unless a file
- * fails that is NOT in the baseline (a genuine new regression) — a
- * baseline file that now PASSES is fine (not an error) and is reported so
- * the baseline can be tightened later.
+ * baseline (tests/known-baseline-failures.json). Exits 0 only when the
+ * failing set equals the baseline. Exits 1 for a file that fails but is NOT
+ * in the baseline (a genuine new regression), and (bfl-s1, 2026-11-16) for a
+ * baseline entry that no longer fails ("stale baseline entry"): it must be
+ * removed in the PR that fixed it, so the list can shrink but never rot.
  *
  * Usage: node scripts/ci-test-regression-check.js <path-to-test-output-log>
  */
@@ -63,14 +64,19 @@ function run(logPath, baselinePath) {
   console.log('[ci-test-regression-check] ' + currentFailures.length + ' file(s) currently failing, ' +
     baselineSet.size + ' in known baseline (recorded ' + (baseline.recordedAt || 'unknown date') + ')');
 
+  // bfl-s1: a baseline entry that no longer fails is a stale entry and fails the gate. Left as an info line, the list went
+  // from 70 files to 67 passing ones being excused, so a regression in any of them would have been reported as "known".
   if (nowPassing.length > 0) {
-    console.log('[ci-test-regression-check] ' + nowPassing.length + ' baseline file(s) now pass (consider removing from the baseline list):');
-    nowPassing.forEach((f) => console.log('  + ' + f));
+    console.error('[ci-test-regression-check] ' + nowPassing.length + ' stale baseline entr' + (nowPassing.length === 1 ? 'y' : 'ies') + ' (the file no longer fails; remove it from tests/known-baseline-failures.json in the PR that fixed it):');
+    nowPassing.forEach((f) => console.error('  stale baseline entry: ' + f));
   }
 
   if (newFailures.length > 0) {
     console.error('[ci-test-regression-check] ' + newFailures.length + ' NEW regression(s) not in the known baseline:');
     newFailures.forEach((f) => console.error('  ! ' + f));
+  }
+
+  if (newFailures.length > 0 || nowPassing.length > 0) {
     process.exit(1);
   }
 
