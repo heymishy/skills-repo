@@ -237,6 +237,8 @@ jobs:
             exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
           for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
           docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # session_turns (the durable chat store) is created only by this manual script, never by the app at startup.
+          node scripts/migrate-schema-pg.js
           # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
           # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
           # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
@@ -450,6 +452,8 @@ jobs:
             exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key'
           for i in $(seq 1 40); do docker exec e2e-pg pg_isready -U postgres -d e2e > /dev/null 2>&1 && break; sleep 2; done
           docker exec e2e-pg pg_isready -U postgres -d e2e || { echo "postgres did not come up"; docker logs e2e-pg | tail -n 40; exit 1; }
+          # session_turns (the durable chat store) is created only by this manual script, never by the app at startup.
+          node scripts/migrate-schema-pg.js
           # Booted against an EMPTY database the app's startup migrations race each other and run out of order,
           # one dependency level per boot (see artefacts/2026-11-17-scenario-e2e-on-pr-build/decisions.md).
           # Long-lived staging never shows it. Boot until a boot reports no failed migration (at most 6).
