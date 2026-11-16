@@ -50444,7 +50444,7 @@
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-16T05:14:52.975Z",
+      "updatedAt": "2026-11-16T05:48:49.619Z",
       "stories": [
         {
           "id": "pws-s1",
@@ -50548,15 +50548,21 @@
           "id": "bfl-s1",
           "slug": "bfl-s1",
           "name": "Shrink the CI known-failures baseline from 70 files to the 3 that actually fail, and fix those 3",
-          "stage": "definition",
+          "stage": "subagent-execution",
           "health": "green",
-          "acTotal": 3,
+          "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T05:36:43.755Z",
-          "blocker": "Draft: may split per file",
+          "updatedAt": "2026-11-16T05:48:50.638Z",
+          "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "not-started"
+          "dorStatus": "signed-off",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s1-test-plan.md"
+          }
         },
         {
           "id": "trr-s1",
@@ -50566,7 +50572,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T05:36:43.586Z",
+          "updatedAt": "2026-11-16T05:48:50.803Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50577,7 +50583,21 @@
             "passing": 6,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/trr-s1-test-plan.md"
           },
-          "prStatus": "draft"
+          "prStatus": "merged"
+        },
+        {
+          "id": "bfl-s2",
+          "slug": "bfl-s2",
+          "name": "Fix the three test files that really fail in CI, then empty the baseline",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T05:48:49.619Z",
+          "blocker": "Draft: depends on bfl-s1; awaiting option (a) or (b) for the gpa guard",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "not-started"
         }
       ]
     }
