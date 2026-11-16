@@ -26,3 +26,10 @@ Almost certainly not. The server-side chain (coha-s5 to coha-s7, ecg-s1, ecf-s1,
 ## Recommendation
 
 Option C is the better design (one scrubber, whole app, no new data sent to a third party), with a rate limit and a per-fingerprint cap so a noisy browser cannot flood the issue pipeline. It is not urgent: no browser error has been observed as a problem yet. Before choosing, ask the operator to approve one read-only look at the PostHog project's exception-autocapture setting, to learn whether browser errors are already being collected unscrubbed (which would make privacy, not coverage, the first thing to fix).
+
+## Addendum: PostHog read-only check (operator-approved, 2026-11-16)
+
+- Project setting `autocapture_exceptions_opt_in` is `null` (off), so posthog-js does not collect browser exceptions. Finding 3 is resolved: browser exceptions are not being collected, scrubbed or not.
+- `$exception` events in the last 30 days by library: `posthog-node` 392 and `posthog-node-manual` 4; none from `posthog-js`. This agrees with the setting.
+- Conclusion: there is no browser-side privacy leak through exceptions, and no browser coverage either. Option A (do nothing) remains safe; option C is the design to use if coverage is wanted.
+- Adjacent observation, not part of this audit: `session_recording_opt_in` is `true` with no masking configuration, so session replay may be recording the 4 pages that load the browser library. Replay captures what is on screen, which on the journey, products and skills pages can include tenant artefact text. Default posthog-js masking covers form inputs, not page text. Worth a separate privacy look (what pages, what masking, retention is 30 days) before any browser telemetry is widened.
