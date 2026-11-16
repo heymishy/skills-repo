@@ -49,6 +49,19 @@ function setJourneyStore(store) { _journeyStore = store; }
 /** Replace the audit logger (for testing and production startup). */
 function setLogger(logger) { _logger = logger; }
 
+// anf-s1: allow-list for the two URL parts that become a GitHub Contents API path. A value that cannot name an artefact
+// (a control character, a '%' left by a broken escape, '..' or empty path segments, over-long) is answered 404 here, before
+// any fetch; previously the raw value went into the GitHub URL and the failure showed as a 503.
+const RE_SLUG = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const RE_TYPE = /^[A-Za-z0-9][A-Za-z0-9._\/-]{0,191}$/;
+function isPlausibleArtefactRef(slug, artefactType) {
+  try {
+    if (typeof slug !== 'string' || typeof artefactType !== 'string') return false;
+    if (!RE_SLUG.test(slug) || !RE_TYPE.test(artefactType)) return false;
+    return artefactType.split('/').every(function (seg) { return seg !== '' && seg.charAt(0) !== '.'; });
+  } catch (_) { return false; }
+}
+
 // dsa-s1 Task 4: shared two-column body-content builder (doc + Sign-off/Comments
 // sidebar), used by both render paths in handleArtefactRoute below -- the
 // primary GitHub-sourced success path and the Postgres-fallback success path.
@@ -135,6 +148,18 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/' });
     res.end();
+    return;
+  }
+
+  // anf-s1: a reference that cannot name an artefact is the same 404 as an unknown artefact, with no GitHub request.
+  if (!isPlausibleArtefactRef(slug, artefactType)) {
+    const page = renderShell({
+      title:       'Artefact Not Found',
+      bodyContent: '<p>artefact not found</p>',
+      user:        { login: (req.session && req.session.login) || '' }
+    });
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(page);
     return;
   }
 
@@ -263,4 +288,4 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
   }
 }
 
-module.exports = { handleArtefactRoute, setLogger, setFetcher, setJourneyStore, _buildArtefactBodyContent };
+module.exports = { handleArtefactRoute, isPlausibleArtefactRef, setLogger, setFetcher, setJourneyStore, _buildArtefactBodyContent };

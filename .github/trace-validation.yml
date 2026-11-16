@@ -103,6 +103,10 @@ reference_dirs:
   # is scoped to one cluster pending a /discovery run. Remove this entry once
   # that /discovery is actually started.
   - 2026-11-11-web-ui-platform-fit
+  # 2026-11-16: fragment dirs with no discovery chain of their own: the production error sweep's findings (reference/ only)
+  # and the issue-to-fix automation spike notes (spikes/ only). The stories they led to are registered with track: short.
+  - 2026-11-15-production-error-sweep
+  - 2026-11-15-issue-to-fix-automation
 tracks_without_discovery:
   - short
   - defect
