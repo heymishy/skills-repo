@@ -50562,15 +50562,21 @@
           "id": "trr-s1",
           "slug": "trr-s1",
           "name": "Record per-test-file results in CI so the next audit can use test history",
-          "stage": "definition",
+          "stage": "subagent-execution",
           "health": "green",
-          "acTotal": 5,
+          "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T05:14:52.975Z",
-          "blocker": "Draft",
+          "updatedAt": "2026-11-16T05:24:52.985Z",
+          "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "not-started"
+          "dorStatus": "signed-off",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/trr-s1-test-plan.md"
+          }
         }
       ]
     }
