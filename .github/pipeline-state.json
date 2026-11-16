@@ -50752,22 +50752,22 @@
           "id": "tht-s1",
           "slug": "tht-s1",
           "name": "Make the full test suite leave the repository clean, and stop the cat-s1 timing flake",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T09:24:15.329Z",
+          "acVerified": 4,
+          "updatedAt": "2026-11-16T09:42:47.128Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-11-16-test-hygiene-isolation/test-plans/tht-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "draft"
         }
       ]
     }
