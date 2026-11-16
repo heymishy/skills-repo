@@ -50599,11 +50599,11 @@
           "id": "bfl-s2",
           "slug": "bfl-s2",
           "name": "Fix the three test files that really fail in CI, then empty the baseline",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T07:50:16.081Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T08:01:55.021Z",
           "blocker": "Draft: depends on bfl-s1; awaiting option (a) or (b) for the gpa guard",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50611,9 +50611,10 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s2-test-plan.md"
-          }
+          },
+          "prStatus": "draft"
         },
         {
           "id": "inc-s2",
