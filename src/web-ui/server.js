@@ -3463,7 +3463,7 @@ async function router(req, res) {
   } else if (pathname === '/auth/e2e-stub/github' && req.method === 'POST') {
     // a1-staging-safe-auth-stub: staging-only, gated by E2E_STAGING_AUTH_STUB_SECRET
     // (never set on production). See routes/auth-stub.js for the full gate.
-    await handleAuthStubGithub(req, res);
+    res.writeHead(500, { 'Content-Type': 'text/plain' }); res.end('sep-s1 TEMPORARY negative control: deliberately broken'); // TEMPORARY, reverted in the next commit
 
   } else if (pathname === '/auth/e2e-stub/audit' && req.method === 'GET') {
     // a1-staging-safe-auth-stub: NFR-Audit read endpoint, same gate as above.
