@@ -1,0 +1,210 @@
+<title>Testing and CI/CD Audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for the argument, with the evidence table and the finding rows allowed to run slightly wider.
+   Tokens: ink and paper with a steel-blue accent; severity colours are separate from the accent. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #14181f;
+  --muted: #5b6573;
+  --rule: #d9dee6;
+  --accent: #1f4e8c;
+  --accent-soft: #e4ecf7;
+  --high: #a4261d;
+  --high-soft: #fbe7e4;
+  --med: #8a5a00;
+  --med-soft: #fbf0d9;
+  --good: #1e6b3c;
+  --good-soft: #e1f2e8;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1319; --surface: #171c24; --fg: #e6e9ee; --muted: #9aa5b4; --rule: #2a323d;
+    --accent: #8db4ea; --accent-soft: #1a2638;
+    --high: #f19a92; --high-soft: #3a1c1a; --med: #e8c26b; --med-soft: #33280f; --good: #86d1a3; --good-soft: #14291d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1319; --surface: #171c24; --fg: #e6e9ee; --muted: #9aa5b4; --rule: #2a323d;
+  --accent: #8db4ea; --accent-soft: #1a2638;
+  --high: #f19a92; --high-soft: #3a1c1a; --med: #e8c26b; --med-soft: #33280f; --good: #86d1a3; --good-soft: #14291d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 10px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); line-height: 1.15; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0 0 14px; font-size: 22px; line-height: 1.25; font-weight: 600; text-wrap: balance; }
+h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0 0 12px; max-width: 68ch; }
+section { display: flex; flex-direction: column; }
+.lede { font-size: 18px; line-height: 1.55; max-width: 62ch; }
+.meta { color: var(--muted); font-size: 14px; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.fact { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.fact b { display: block; font-family: var(--font-mono); font-size: 26px; font-weight: 500; line-height: 1.2; }
+.fact span { color: var(--muted); font-size: 14px; }
+.fact.bad b { color: var(--high); }
+.fact.good b { color: var(--good); }
+
+.findings { display: flex; flex-direction: column; gap: 10px; }
+.finding { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 2.2rem 1fr; gap: 4px 12px; min-width: 0; }
+.finding .n { font-family: var(--font-mono); color: var(--muted); font-size: 14px; padding-top: 2px; }
+.finding .body { min-width: 0; }
+.finding .head { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: baseline; margin-bottom: 4px; }
+.finding .head strong { font-weight: 600; }
+.finding p { margin: 0 0 8px; max-width: none; }
+.finding p:last-child { margin-bottom: 0; }
+.pill { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.high { color: var(--high); background: var(--high-soft); }
+.pill.med { color: var(--med); background: var(--med-soft); }
+.pill.low { color: var(--muted); }
+
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: grid; grid-template-columns: minmax(0, 15rem) 1fr 7.5rem; gap: 10px; align-items: center; font-size: 14px; }
+.bar .label { overflow-wrap: anywhere; }
+.bar .track { background: var(--accent-soft); height: 14px; border-radius: 3px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--high); }
+.bar .num { font-family: var(--font-mono); text-align: right; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) { .bar { grid-template-columns: 1fr 5.5rem; } .bar .track { grid-column: 1 / -1; order: 3; } }
+
+.scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+ol.recs { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: rec; }
+ol.recs li { counter-increment: rec; display: grid; grid-template-columns: 2.2rem 1fr; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 16px; min-width: 0; }
+ol.recs li::before { content: counter(rec); font-family: var(--font-mono); font-weight: 500; color: var(--accent); font-size: 20px; line-height: 1.3; }
+ol.recs li div { min-width: 0; }
+ol.recs b { font-weight: 600; }
+ol.recs .tag { display: inline-block; margin-left: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+ul.plain { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 6px; }
+ul.plain li { max-width: 68ch; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Audit &middot; 2026-11-17 &middot; skills-repo</div>
+    <h1>Is our testing and CI/CD approach optimal?</h1>
+    <p class="lede">A strong delivery loop with weaker gates than it looks. Merging is fast and well observed, but several checks that look like gates are not, a lot of CI runs are noise, and the deploy path has nothing watching production after promotion. Most of the fixes are cheap. The biggest gap is that most of the browser test suite never runs.</p>
+    <div class="meta">Read-only audit of the repo, the Actions run history, merged PRs, the master ruleset and the production-error issues. It builds on the 2026-11-15 regression audit, whose findings were mostly fixed this week.</div>
+  </header>
+
+  <section aria-labelledby="working">
+    <h2 id="working">What is working</h2>
+    <div class="facts">
+      <div class="fact good"><b>118</b><span>PRs merged in 30 days, 0 reverts</span></div>
+      <div class="fact good"><b>30 min</b><span>median from PR open to merge (p90 8 h)</span></div>
+      <div class="fact good"><b>~3 min</b><span>for the 876-file unit chain in CI</span></div>
+      <div class="fact good"><b>0.4 h</b><span>median time to close a production-error issue (8 of 9 closed)</span></div>
+    </div>
+    <p style="margin-top:14px">This week added two real signals: the wiring smoke test (<code>pws-s1</code>) and Scenario A and B running on the pull request's own build (<code>sep-s1</code>), proven by a deliberate break that turned a job red. The staging deploy is correctly skipped for bookkeeping-only pushes.</p>
+  </section>
+
+  <section aria-labelledby="findings">
+    <h2 id="findings">What is not</h2>
+    <h3>A. Gates weaker than they look</h3>
+    <div class="findings">
+      <div class="finding"><span class="n">1</span><div class="body"><div class="head"><strong>Most of the browser suite never runs on a PR</strong><span class="pill high">high</span></div>
+        <p>The check "Playwright E2E smoke tests" reads <code>audit.e2e_tests</code> from <code>context.yml</code>. The key is absent, so the job logs "E2E skipped (opt-in flag not set)" and reports green in about 15 seconds. 88 of 94 Playwright spec files, the local-mocked UI, layout and journey specs, are not exercised. Their current health is unknown.</p></div></div>
+      <div class="finding"><span class="n">2</span><div class="body"><div class="head"><strong>"Lint, typecheck, test, build" overstates what it checks</strong><span class="pill med">medium</span></div>
+        <p><code>lint</code> is <code>node --check</code> (syntax only), <code>typecheck</code> only <code>require</code>s each file, <code>build</code> checks that <code>server.js</code> exports <code>createApp</code>. No ESLint, no TypeScript, no coverage.</p></div></div>
+      <div class="finding"><span class="n">3</span><div class="body"><div class="head"><strong>The unit chain is not a required check</strong><span class="pill high">high</span></div>
+        <p>The ruleset requires the assurance gate, Scenario A, Scenario B and a pull request. The job that runs all 876 test files can be red and the PR still merges. Branches need not be up to date, there is no merge queue, and direct pushes to master are allowed by bypass.</p></div></div>
+      <div class="finding"><span class="n">4</span><div class="body"><div class="head"><strong>Nothing verifies production after promotion</strong><span class="pill med">medium</span></div>
+        <p>No Fly health checks, no post-promotion check, no automated rollback. Production builds its own image from the commit rather than promoting the one staging ran. The error chain reports failures within minutes, which softens this.</p></div></div>
+      <div class="finding"><span class="n">5</span><div class="body"><div class="head"><strong>131 old production approvals are still waiting</strong><span class="pill med">medium, to verify</span></div>
+        <p>Each promote job builds its own run's commit, so approving an old one should deploy an old commit over newer production code. Reasoned from the workflow, not tested. Superseded runs should cancel themselves.</p></div></div>
+    </div>
+
+    <h3 style="margin-top:22px">B. Noise and waste</h3>
+    <div class="findings">
+      <div class="finding"><span class="n">6</span><div class="body"><div class="head"><strong>Every bookkeeping push to master starts workflows that add nothing</strong><span class="pill high">high volume</span></div>
+        <p>About 74% of master commits (442 of the newest 600) touch only <code>artefacts/</code>, <code>workspace/</code> or <code>pipeline-state.json</code>. Each push starts dreaming, Trace Commit and Vulnerability Check, and until recently the Pages and Fleet workflows. About 440 runs in 40 hours, and a red mark on most master commits.</p>
+        <div class="bars" role="img" aria-label="Failed runs in 40 hours: Dreaming 149 of 149, Pages 76 of 76, Fleet 28 of 28">
+          <div class="bar"><span class="label">Improvement Agent dreaming</span><span class="track"><span class="fill" style="display:block;width:100%"></span></span><span class="num">149 / 149 failed</span></div>
+          <div class="bar"><span class="label">Deploy dashboards to Pages</span><span class="track"><span class="fill" style="display:block;width:100%"></span></span><span class="num">76 / 76 failed</span></div>
+          <div class="bar"><span class="label">Fleet Aggregation</span><span class="track"><span class="fill" style="display:block;width:100%"></span></span><span class="num">28 / 28 failed</span></div>
+        </div></div></div>
+      <div class="finding"><span class="n">7</span><div class="body"><div class="head"><strong>Retry until green on the old real-staging design</strong><span class="pill med">baseline</span></div>
+        <p>In <code>E2E Tests (Playwright)</code>, 61 of 213 runs (29%) were re-run and 50 of those ended green. Re-measure now that the scenarios test the PR's build; it should fall sharply.</p></div></div>
+      <div class="finding"><span class="n">8</span><div class="body"><div class="head"><strong>Staging Deploy fails 21% of the time</strong><span class="pill med">medium</span></div>
+        <p>10 of 47 completed runs failed, and 8 of the 10 were the <code>@mocked</code> smoke test.</p></div></div>
+      <div class="finding"><span class="n">9</span><div class="body"><div class="head"><strong>28% of test files read repository text, not behaviour</strong><span class="pill med">medium</span></div>
+        <p>246 of 876 files read artefacts, workflows, skills or templates. They guard governance rules, but they also act as change-detectors: five guards had to be reversed for one workflow change this week.</p></div></div>
+    </div>
+
+    <h3 style="margin-top:22px">C. Process overhead and missing coverage</h3>
+    <div class="findings">
+      <div class="finding"><span class="n">10</span><div class="body"><div class="head"><strong>Bookkeeping dominates the history</strong><span class="pill low">low</span></div>
+        <p>It buys an audit trail but each commit has a CI cost (finding 6) and none is reviewed. Path filters fix the cost without changing the practice.</p></div></div>
+      <div class="finding"><span class="n">11</span><div class="body"><div class="head"><strong>Security tooling is minimal</strong><span class="pill med">medium</span></div>
+        <p><code>npm audit</code> only: no Dependabot, no code scanning, no secret-scanning workflow. Repository settings not visible in the files may add some; check Settings, Code security.</p></div></div>
+      <div class="finding"><span class="n">12</span><div class="body"><div class="head"><strong>A fresh environment did not boot cleanly</strong><span class="pill med">medium</span></div>
+        <p>Against an empty database the startup migrations race and run out of order (three boots to settle), and the durable chat table needs a manual script. A new environment or disaster recovery would hit this.</p></div></div>
+      <div class="finding"><span class="n">13</span><div class="body"><div class="head"><strong>The real model and production configuration are never tested</strong><span class="pill low">low</span></div>
+        <p>Everything uses the mock gateway. Production secrets, the real model and the real database are only exercised by users and the error chain.</p></div></div>
+      <div class="finding"><span class="n">14</span><div class="body"><div class="head"><strong>34 skipped specs and no coverage measure</strong><span class="pill low">low</span></div>
+        <p>The Stripe hosted checkout is among the skipped. Without coverage there is no way to see which code is untested.</p></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="evidence">
+    <h2 id="evidence">Evidence at a glance</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>PR gate (since 2026-10-17)</th><th class="num">Runs</th><th class="num">Failed</th><th class="num">Median</th></tr></thead>
+      <tbody>
+        <tr><td>E2E Tests (Playwright), includes Scenario A and B</td><td class="num">213</td><td class="num">17 (8%)</td><td class="num">331 s</td></tr>
+        <tr><td>PR Checks (unit chain)</td><td class="num">212</td><td class="num">14 (7%)</td><td class="num">192 s</td></tr>
+        <tr><td>Assurance Gate</td><td class="num">213</td><td class="num">5 (2%)</td><td class="num">116 s</td></tr>
+        <tr><td>Cross-Tenant Isolation Repeat Gate</td><td class="num">213</td><td class="num">9 (4%)</td><td class="num">60 s</td></tr>
+        <tr><td>Watermark Gate</td><td class="num">212</td><td class="num">6 (3%)</td><td class="num">16 s</td></tr>
+        <tr><td>Staging Deploy</td><td class="num">47</td><td class="num">10 (21%)</td><td class="num">705 s</td></tr>
+      </tbody>
+    </table></div>
+    <p class="meta" style="margin-top:10px">Test suite: 876 files, 758 under one second, the ten slowest are 38% of total time (the slowest local files wait on a broken bash on Windows). Of the 876 files, 324 test web-UI behaviour, 246 read repository text, 28 other modules and 278 are unclassified. Playwright: 94 spec files, 6 real-staging, 34 skip or fixme calls.</p>
+  </section>
+
+  <section aria-labelledby="recs">
+    <h2 id="recs">Recommendations, in order</h2>
+    <ol class="recs">
+      <li><div><b>Find out what the browser suite is worth.</b> Run the 88 local-mocked specs once in CI on a trial branch, record pass, fail and time, then require a fast stable core and quarantine the rest.<span class="tag">story, starting</span></div></li>
+      <li><div><b>Require the unit chain and name it honestly.</b> Ruleset change by the operator; then rename the job or add real lint.<span class="tag">operator</span></div></li>
+      <li><div><b>Stop the bookkeeping noise.</b> Path-filter Trace Commit and Vulnerability Check off bookkeeping paths, run the vulnerability check on dependency changes and on a schedule, and finish the dreaming fix.<span class="tag">story, starting</span></div></li>
+      <li><div><b>Harden the deploy path.</b> Fly health checks, a read-only post-promotion check of <code>/health</code> and <code>/version</code>, auto-cancel superseded promotions, later promote the staging image.</div></li>
+      <li><div><b>Fix fresh-environment boot</b> (migration order and the manual chat-table script) and test that a fresh database settles in one boot.</div></li>
+      <li><div><b>Add a security baseline:</b> Dependabot, CodeQL and secret scanning.<span class="tag">operator and workflow</span></div></li>
+      <li><div><b>Reduce change-detector tests</b> by moving workflow-text assertions into one contract file per workflow.</div></li>
+      <li><div><b>Add non-blocking coverage reporting</b> before deciding on any threshold.</div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="limits">
+    <h2 id="limits">Method and limits</h2>
+    <ul class="plain">
+      <li>GitHub returns at most 1,000 runs, so the all-workflow view covers only 2026-11-15 to 11-16. The PR-gate view covers 2026-10-17 onward (1,241 runs). Durations of re-run jobs include waiting, so medians are used.</li>
+      <li>Test timings come from one full local Windows run; CI's unit chain takes about 3 minutes.</li>
+      <li>Test classification is by static pattern matching, so counts are approximate.</li>
+      <li>The 88 local-mocked specs were not run for this audit.</li>
+      <li>Finding 5 is reasoned from the workflow and not tested.</li>
+      <li>No cost in minutes or money was computed, and the Actions plan was not checked.</li>
+    </ul>
+  </section>
+</div>
