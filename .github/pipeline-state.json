@@ -50623,21 +50623,22 @@
           "id": "sub-s1",
           "slug": "sub-s1",
           "name": "Retire the dead /answer form route so it answers 410 Gone instead of a server error",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T06:24:56.088Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T06:33:31.997Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-11-16-answer-route-retired/test-plans/sub-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
