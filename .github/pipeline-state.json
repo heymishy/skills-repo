@@ -50770,6 +50770,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-17-production-wiring-smoke-test",
+      "name": "Production-wiring smoke test",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T17:25:23.498Z",
+      "stories": [
+        {
+          "id": "pws-s1",
+          "slug": "pws-s1",
+          "name": "A production-wiring smoke test in the unit chain that fails when an adapter is unwired or a route answers a hostile request with a 5xx",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T17:25:43.254Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-production-wiring-smoke-test/test-plans/pws-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
