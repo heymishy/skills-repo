@@ -50851,21 +50851,22 @@
           "id": "bkn-s1",
           "slug": "bkn-s1",
           "name": "Bookkeeping pushes to master stop starting workflows that add nothing",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T19:08:14.608Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T19:24:02.859Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-17-bookkeeping-push-noise/test-plans/bkn-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     },
