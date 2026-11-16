@@ -50444,7 +50444,7 @@
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-16T05:48:49.619Z",
+      "updatedAt": "2026-11-16T06:37:11.319Z",
       "stories": [
         {
           "id": "pws-s1",
@@ -50504,7 +50504,7 @@
           "acTotal": 5,
           "acVerified": 0,
           "updatedAt": "2026-11-16T05:14:52.975Z",
-          "blocker": "Draft: needs the ruleset required-check list",
+          "blocker": "Superseded by inc-s2 (2026-11-16): the incident PRs are no longer opened, so lighter gates for them are not needed",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "not-started"
@@ -50606,6 +50606,26 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "not-started"
+        },
+        {
+          "id": "inc-s2",
+          "slug": "inc-s2",
+          "name": "Stop opening an incident PR per production error issue; record the incident in the fix PR instead",
+          "stage": "subagent-execution",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T06:37:12.349Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/inc-s2-test-plan.md"
+          }
         }
       ]
     },
