@@ -25,3 +25,10 @@ The contract said `persistSession` would hand the adapter the full session and t
 
 - AC9: generate a 32-byte base64 key yourself (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`) and set it as the Fly secret `SESSION_ENCRYPTION_KEY` on staging, then production; never paste it into chat. Setting a secret restarts the app, so this signs people out once. Sign in, trigger a later deploy, reload: expect to still be signed in. If signed out, check the logs for the one-line warning that the key was not read.
 - At DoD: add the changed token-at-rest rule as a repo-level ADR note in `.github/architecture-guardrails.md`.
+
+## Staging observation (2026-11-16, operator-set key, agent-observed, read-only)
+
+- Operator set `SESSION_ENCRYPTION_KEY` on `wuce-staging` (44-character base64, generated locally, never shown), signed in at `/dashboard`, then ran `fly apps restart wuce-staging`.
+- After the restart, a GET of `/dashboard` from the same browser tab answered 200 with the signed-in page and no redirect to sign-in; `/version` reported commit `95da0f4` (PR #1120). Before the key was set, a restart signed everyone out.
+- The one-line "SESSION_ENCRYPTION_KEY is missing" warning was not present in `fly logs --no-tail` (operator check).
+- Verdict: AC9 (sessions survive a restart or deploy) observed on staging. Production observation still outstanding (needs the key set on `skills-framework`, a sign-in and a restart or deploy).
