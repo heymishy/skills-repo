@@ -42,3 +42,12 @@ Lint; the unit chain with impacted-file selection once item 8 exists (until then
 ## Sequencing and risk
 
 Do items 1, 2 and 7 first (low risk, immediate noise reduction). Build item 4 before touching item 3, so no per-PR coverage is removed before its replacement exists. Items 5, 6 and 8 follow. Moving checks off the PR gate widens the window before some regressions are noticed; items 3 and 4 together are designed so the only thing leaving the gate is a check that was not testing the PR anyway.
+
+## Correction (2026-11-16, after reading a real CI log and the first `test-results.json`)
+
+The finding "5 permanent baseline failures" was wrong in two ways.
+
+- **What CI really tolerates is much larger.** `tests/known-baseline-failures.json` lists 70 files (recorded 2026-07-16). In CI run 43806886880 only 3 of them fail (`scripts/check-pipeline-state-integrity.js`, `tests/check-gpa-sc06-source-path-guard.js`, `tests/run-gpa-tests.js`) and 67 now pass. A regression in any of those 67 would be reported as "no new regressions - all failing files are already-documented pre-existing baseline gaps". This is a bigger risk than the five I described. Story `bfl-s1` was rewritten around it (shrink the baseline to the real failures first).
+- **The five I saw were local, not CI.** On this Windows machine `check-p4-enf-second-line`, `check-rtvap-s1-archived-test-plan-coverage` and sometimes `check-p3.5-validate-trace` fail with `exit: null` because `bash` and `sh` do not work here; they pass in CI. Only `check-pipeline-state-integrity` and `check-pcr-s1-test-runner` are common to both lists.
+
+First data from the new per-file results (a full local run, 867 files): median file 232 ms, 31 files over 5 s; slowest `check-p3.5-validate-trace` 98.7 s, `check-p4-enf-second-line` 60.1 s, `check-rb-s1-cli-init` 34.0 s, `check-pcr-s1-test-runner` 32.1 s, `check-rb-s5-optional-outer-loop-install` 27.7 s. Local timings are inflated by the broken shell; CI numbers will be the real basis.

@@ -50547,12 +50547,12 @@
         {
           "id": "bfl-s1",
           "slug": "bfl-s1",
-          "name": "Fix or retire the five permanently failing test files so a clean suite run is possible",
+          "name": "Shrink the CI known-failures baseline from 70 files to the 3 that actually fail, and fix those 3",
           "stage": "definition",
           "health": "green",
           "acTotal": 3,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T05:14:52.975Z",
+          "updatedAt": "2026-11-16T05:36:43.755Z",
           "blocker": "Draft: may split per file",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50562,11 +50562,11 @@
           "id": "trr-s1",
           "slug": "trr-s1",
           "name": "Record per-test-file results in CI so the next audit can use test history",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T05:25:28.790Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T05:36:43.586Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50574,9 +50574,10 @@
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/trr-s1-test-plan.md"
-          }
+          },
+          "prStatus": "draft"
         }
       ]
     }
