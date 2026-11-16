@@ -50615,7 +50615,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T06:58:18.661Z",
+          "updatedAt": "2026-11-16T07:11:37.064Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50626,7 +50626,7 @@
             "passing": 5,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/inc-s2-test-plan.md"
           },
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     },
