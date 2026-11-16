@@ -50477,16 +50477,22 @@
         {
           "id": "ciw-s2",
           "slug": "ciw-s2",
-          "name": "Disable the Fleet Aggregation workflow and resolve the failing Pages deploy",
-          "stage": "definition",
+          "name": "Deprecate the Fleet Aggregation and GitHub Pages workflows so they stop running",
+          "stage": "subagent-execution",
           "health": "green",
-          "acTotal": 4,
+          "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T05:14:52.975Z",
-          "blocker": "Draft: awaiting Pages decision",
+          "updatedAt": "2026-11-16T06:07:35.645Z",
+          "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorStatus": "not-started"
+          "dorStatus": "signed-off",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/ciw-s2-test-plan.md"
+          }
         },
         {
           "id": "inc-s1",
@@ -50552,7 +50558,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T05:57:40.293Z",
+          "updatedAt": "2026-11-16T06:07:34.642Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50563,7 +50569,7 @@
             "passing": 5,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s1-test-plan.md"
           },
-          "prStatus": "draft"
+          "prStatus": "merged"
         },
         {
           "id": "trr-s1",

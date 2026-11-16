@@ -21,3 +21,8 @@
 2. `ciw-s1` (fix dreaming), once its two open questions are answered.
 3. `pws-s1`, then `inc-s1`, then `sep-s1`.
 4. `bfl-s1` and `pbj-s1` in parallel with the above when convenient.
+
+**2026-11-16 | DECISION | Operator: disable the Pages deploy; Pages publishing and the dashboards are "fully deprecated"**
+**Context:** the Pages deploy has failed on every push because Pages was never enabled; enabling it would have published `pipeline-state.json` publicly. The operator, after reading what it publishes, said to disable it and that "all that is and should be fully deprecated".
+**Decision:** `ciw-s2` deprecates both the Pages and the Fleet Aggregation workflows non-destructively (manual trigger only, DEPRECATED headers, a banner in `dashboards/README.md`). Nothing is deleted yet, because 8 test files and the viz governance checks reference `dashboards/`.
+**Open:** whether to remove the `dashboards/` folder and its tests entirely is a separate story that needs the operator's explicit go-ahead.
