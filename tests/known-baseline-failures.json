@@ -1,9 +1,5 @@
 {
   "recordedAt": "2026-11-16",
-  "note": "Test files that fail in CI on master today, derived from the per-file CI artefact test-results-43811318391 (867 files, 864 passed, 3 failed). Shrunk from 70 entries by bfl-s1 (artefacts/2026-11-16-ci-regression-review/stories/bfl-s1-clear-baseline-test-failures.md): the other 67 passed and were being excused. scripts/ci-test-regression-check.js now fails on a stale entry (a baseline file that no longer fails), so remove an entry in the same PR that fixes it. bfl-s2 fixes these three and empties the list. The earlier 70-file list and its categorisation are in artefacts/2026-07-16-baseline-test-triage/triage-report.md.",
-  "files": [
-    "scripts/check-pipeline-state-integrity.js",
-    "tests/check-gpa-sc06-source-path-guard.js",
-    "tests/run-gpa-tests.js"
-  ]
+  "note": "Empty: no test file is tolerated as failing in CI. Shrunk from 70 entries to 3 by bfl-s1 (artefacts/2026-11-16-ci-regression-review/stories/bfl-s1-clear-baseline-test-failures.md; the other 67 passed and were being excused) and to none by bfl-s2 (artefacts/2026-11-16-ci-regression-review/stories/bfl-s2-fix-the-three-real-ci-failures.md: a documented testPlan.knownFailing carve-out in the pipeline-state integrity check, and a platform-independent source-path guard). scripts/ci-test-regression-check.js fails on a stale entry (a baseline file that no longer fails), so remove an entry in the same PR that fixes it. The earlier 70-file list and its categorisation are in artefacts/2026-07-16-baseline-test-triage/triage-report.md.",
+  "files": []
 }

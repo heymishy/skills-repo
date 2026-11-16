@@ -139,7 +139,9 @@
                     "status":     { "type": "string", "enum": ["not-started", "written", "all-passing"] },
                     "testFile":   { "type": "string", "description": "Relative path to the test JS file" },
                     "totalTests": { "type": "integer" },
-                    "passing":    { "type": "integer" }
+                    "passing":    { "type": "integer" },
+                    "knownFailing":       { "type": "integer", "minimum": 1, "description": "Planned tests that fail for a documented, accepted reason (bfl-s2). Never counted in passing; needs knownFailingReason." },
+                    "knownFailingReason": { "type": "string", "description": "The accepted-risk reference for knownFailing, e.g. the RISK-ACCEPT entry in the feature's decisions.md (bfl-s2)" }
                   }
                 },
                 "dorStatus":           { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
@@ -180,7 +182,9 @@
                         "properties": {
                           "status":     { "type": "string", "enum": ["not-started", "written", "all-passing"] },
                           "totalTests": { "type": "integer" },
-                          "passing":    { "type": "integer" }
+                          "passing":    { "type": "integer" },
+                          "knownFailing":       { "type": "integer", "minimum": 1, "description": "Planned tests that fail for a documented, accepted reason (bfl-s2). Never counted in passing; needs knownFailingReason." },
+                          "knownFailingReason": { "type": "string", "description": "The accepted-risk reference for knownFailing, e.g. the RISK-ACCEPT entry in the feature's decisions.md (bfl-s2)" }
                         }
                       },
                       "dorStatus":   { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },

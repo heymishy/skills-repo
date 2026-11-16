@@ -258,9 +258,11 @@ console.log('\n[tst-s1-baseline-triage] U5 — check-md-3-adr.js AC3 classificat
 // difference) -- those 3 are now correctly absent (see U7-equivalent check
 // below). The other 2 remain unconfirmed and stay in the baseline.
 
-console.log('\n[tst-s1-baseline-triage] U6 — 2 still-unconfirmed locally-passing-but-CI-failing files remain in baseline');
+// bfl-s2 (2026-11-16) then fixed those 2 (the gpa source-path guard now behaves the same on Linux and Windows), so
+// they are no longer in the baseline; this check now asserts that.
+console.log('\n[tst-s1-baseline-triage] U6 — the 2 formerly unconfirmed locally-passing-but-CI-failing files were fixed by bfl-s2 and are out of the baseline');
 STILL_UNCONFIRMED_LOCAL_VS_CI.forEach(function (f) {
-  assert('U6: ' + f + ' is present in known-baseline-failures.json (CI-verified still failing)', baselineFiles.includes(f));
+  assert('U6: ' + f + ' is not in known-baseline-failures.json (fixed by bfl-s2)', !baselineFiles.includes(f));
 });
 {
   const decisionsText = fs.readFileSync(path.join(__dirname, '..', 'artefacts', '2026-07-16-baseline-test-triage', 'decisions.md'), 'utf8');

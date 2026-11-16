@@ -28,11 +28,15 @@ function logWith(failed) {
   fs.writeFileSync(p, body.join('\n') + '\n');
   return p;
 }
-function check(failed) { return spawnSync(process.execPath, [CHECKER, logWith(failed)], { cwd: ROOT, encoding: 'utf8' }); }
+// bfl-s2 emptied the real baseline, so the checker behaviours below are exercised against a temporary baseline that
+// lists the three files this story originally tolerated (the checker takes the baseline path as its second argument).
+const TEMP_BASELINE = path.join(dir, 'baseline.json');
+fs.writeFileSync(TEMP_BASELINE, JSON.stringify({ recordedAt: '2026-11-16', files: CI_FAILING }));
+function check(failed) { return spawnSync(process.execPath, [CHECKER, logWith(failed), TEMP_BASELINE], { cwd: ROOT, encoding: 'utf8' }); }
 
-test('T1 the baseline lists exactly the files that fail in CI, and its note names bfl-s1 and bfl-s2 (AC1)', () => {
+test('T1 the real baseline is empty (bfl-s2 fixed the last three) and its note names bfl-s1 and bfl-s2 (AC1)', () => {
   const b = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
-  assert.deepStrictEqual(b.files.slice().sort(), CI_FAILING.slice().sort(), 'baseline has ' + b.files.length + ' entries');
+  assert.deepStrictEqual(b.files, [], 'baseline has ' + b.files.length + ' entries');
   assert.ok(/^\d{4}-\d{2}-\d{2}/.test(b.recordedAt) && b.recordedAt >= '2026-11-16', 'recordedAt ' + b.recordedAt);
   assert.ok(typeof b.note === 'string' && b.note.indexOf('bfl-s1') !== -1 && b.note.indexOf('bfl-s2') !== -1, 'note does not name bfl-s1 and bfl-s2');
 });

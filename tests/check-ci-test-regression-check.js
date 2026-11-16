@@ -124,7 +124,8 @@ function makeLog(failedFiles) {
     return;
   }
   const data = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
-  if (Array.isArray(data.files) && data.files.length > 0 && typeof data.recordedAt === 'string') {
+  // bfl-s2: an empty list is the goal state (no tolerated failures), so it is well-formed.
+  if (Array.isArray(data.files) && typeof data.recordedAt === 'string') {
     pass('U3', 'known-baseline-failures.json is well-formed with ' + data.files.length + ' entries');
   } else {
     fail('U3', 'malformed baseline file');

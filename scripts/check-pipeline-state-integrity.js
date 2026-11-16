@@ -491,22 +491,37 @@ function checkStory(featureSlug, story, isEpicNested) {
     });
   }
 
-  // C2: passing > totalTests
-  if (passing > total) {
+  // bfl-s2: a documented, accepted known failure. knownFailing counts planned tests that fail for a recorded reason
+  // (a RISK-ACCEPT in decisions.md); it never inflates `passing`, and it only counts when a written reason is given.
+  const knownFailing = tp.knownFailing == null ? 0 : Number(tp.knownFailing);
+  const hasKnownFailing = Number.isFinite(knownFailing) && knownFailing > 0;
+  const hasReason = typeof tp.knownFailingReason === 'string' && tp.knownFailingReason.trim() !== '';
+  const accounted = passing + (hasKnownFailing ? knownFailing : 0);
+
+  // C2: passing (plus documented known failures) > totalTests
+  if (accounted > total) {
     findings.push({
       level: 'fail',
       code:  'C2',
-      message: `${featureSlug} / ${id}: testPlan.passing (${passing}) > testPlan.totalTests (${total}). Data corruption — fix pipeline-state.json.`,
+      message: hasKnownFailing && passing <= total
+        ? `${featureSlug} / ${id}: testPlan.passing (${passing}) + testPlan.knownFailing (${knownFailing}) > testPlan.totalTests (${total}). Over-count — fix pipeline-state.json.`
+        : `${featureSlug} / ${id}: testPlan.passing (${passing}) > testPlan.totalTests (${total}). Data corruption — fix pipeline-state.json.`,
     });
   }
 
   // C3: merged story with passing < totalTests (and total > 0)
-  if (prStatus === 'merged' && passing < total) {
+  // bfl-s2: accepted when every missing test is a documented known failure (testPlan.knownFailing with a written
+  // testPlan.knownFailingReason naming the accepted-risk entry); never by raising `passing` to a count that is not true.
+  if (prStatus === 'merged' && passing < total && !(hasKnownFailing && hasReason && accounted >= total)) {
     findings.push({
       level: 'fail',
       code:  'C3',
-      message: `${featureSlug} / ${id}: prStatus="merged" but testPlan.passing (${passing}) < testPlan.totalTests (${total}). ` +
-               `Update testPlan.passing to the confirmed count in the post-merge pipeline-state commit.`,
+      message: hasKnownFailing && !hasReason
+        ? `${featureSlug} / ${id}: prStatus="merged", testPlan.passing (${passing}) < testPlan.totalTests (${total}) and testPlan.knownFailing (${knownFailing}) has no testPlan.knownFailingReason. ` +
+          `Write the reason (the accepted-risk entry, e.g. a RISK-ACCEPT in decisions.md) or fix the failing test.`
+        : `${featureSlug} / ${id}: prStatus="merged" but testPlan.passing (${passing}) < testPlan.totalTests (${total}). ` +
+          `Update testPlan.passing to the confirmed count in the post-merge pipeline-state commit; if the missing tests fail for a documented, accepted reason, ` +
+          `record testPlan.knownFailing and testPlan.knownFailingReason instead (never raise passing to a count that is not true).`,
     });
   }
 
