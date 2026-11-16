@@ -1,6 +1,6 @@
 ## Story: Record per-test-file results in CI so the next audit can use test history
 
-**Status:** DRAFT for operator review.
+**Status:** Ready for build (DoR signed off 2026-11-16); AC6 (live artefact check) added at test-plan time.
 **Epic reference:** None - short-track
 **Discovery reference:** None. Evidence: `ci-regression-scenarios-audit.md` limits: no per-test history exists, so which test files have never failed, which flake, which are slowest and which duplicate each other (about 30 files re-implement the same turn request mocks) cannot be answered.
 **Benefit-metric reference:** None - short-track
@@ -22,6 +22,7 @@ So that **the next review is based on weeks of data, not on a few days of run su
 - **No secrets or test output bodies** are stored beyond the first failing assertion line, truncated to 300 characters.
 - **Aggregation (follow-up, not in this story):** a small script that downloads recent artefacts and prints never-failed, flaky (pass after fail on the same commit), slowest and duplicate-looking files.
 - Changes under `scripts/` merge through a pull request.
+- **Architecture guardrails (`.github/architecture-guardrails.md`):** ADR-011 (artefact-first) satisfied by this chain; the platform change policy (scripts and workflows merge via pull request, the operator merges) applies; no other Active ADR engaged. Zero new npm dependencies.
 
 ## Acceptance Criteria
 
