@@ -50376,6 +50376,32 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-16-browser-error-observation",
+      "name": "Observe JavaScript errors in the browser, safely and in observation-only mode",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-16T03:09:12.799Z",
+      "stories": [
+        {
+          "id": "bes-s1",
+          "slug": "bes-s1",
+          "name": "Observe JavaScript errors in the browser, safely and in observation-only mode",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 10,
+          "acVerified": 0,
+          "updatedAt": "2026-11-16T03:09:12.799Z",
+          "blocker": "Draft: awaiting operator answers to 3 open questions in the story before test plan and DoR",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "not-started"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
