@@ -50548,11 +50548,11 @@
           "id": "bfl-s1",
           "slug": "bfl-s1",
           "name": "Shrink the CI known-failures baseline from 70 files to the 3 that actually fail, and fix those 3",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T05:48:50.638Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T05:57:40.293Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50560,9 +50560,10 @@
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/bfl-s1-test-plan.md"
-          }
+          },
+          "prStatus": "draft"
         },
         {
           "id": "trr-s1",
