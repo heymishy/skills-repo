@@ -50482,7 +50482,7 @@
           "health": "green",
           "acTotal": 6,
           "acVerified": 5,
-          "updatedAt": "2026-11-16T06:15:47.059Z",
+          "updatedAt": "2026-11-16T06:22:49.315Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50493,7 +50493,7 @@
             "passing": 4,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/ciw-s2-test-plan.md"
           },
-          "prStatus": "draft"
+          "prStatus": "merged"
         },
         {
           "id": "inc-s1",
