@@ -50611,11 +50611,11 @@
           "id": "inc-s2",
           "slug": "inc-s2",
           "name": "Stop opening an incident PR per production error issue; record the incident in the fix PR instead",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T06:44:05.923Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-16T06:52:37.477Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50623,9 +50623,10 @@
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/inc-s2-test-plan.md"
-          }
+          },
+          "prStatus": "draft"
         }
       ]
     },
