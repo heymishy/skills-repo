@@ -1,65 +1,65 @@
-## Story: Stop opening an incident PR per production error issue; record the incident in the fix PR instead
+## Story: Stop the incident-record pull request: the GitHub issue is the record, and the fix is a short-track story and PR
 
-**Status:** Ready for build (DoR signed off 2026-11-16). Supersedes `inc-s1` (lighter CI gates for incident PRs), which is no longer needed. Operator decision 2026-11-16: "Yes for inc-s2 work and close 5 open incident PRs"; the five open incident PRs (#1102, #1111, #1112, #1113, #1122) were closed the same day.
+**Status:** Ready for build (DoR re-signed 2026-11-16). **Rescoped the same day** after the operator's correction: no incident PR, no manual workflow either, no local recording script. Supersedes `inc-s1` (lighter CI gates for incident PRs). The five open incident PRs (#1102, #1111, #1112, #1113, #1122) were closed on 2026-11-16 with an explanatory comment.
 **Epic reference:** None - short-track
-**Discovery reference:** None. Evidence: `artefacts/2026-11-15-production-error-sweep/reference/ci-regression-scenarios-audit.md` and the operator's question "Do we need incident PRs as well as GitHub issues? I don't seem to ever see them". Facts: each bridge-opened issue also opened a bot PR that adds one record to `workspace/incidents.json`; 10 such PRs were ever opened (3 merged, 2 closed, 5 left open and unreviewed); they were 23% of PR gating runs (42 of 180) with a 38% failure rate; the incident log on master has 2 records, neither from the error chain; the record "exists only on this pull request until it is merged", so unmerged PRs mean the record never exists.
+**Discovery reference:** None. Evidence: `artefacts/2026-11-15-production-error-sweep/reference/ci-regression-scenarios-audit.md` and the operator's words: "I still want errors to generate a real GitHub issue, I just don't want a PR also generated with redundant or unhelpful info which I'm not actioning. It should all be in the issue and then resolved as a short track and a PR". Facts: each bridge-opened issue also opened a bot PR adding one record to `workspace/incidents.json`; 10 were ever opened (3 merged, 2 closed, 5 left open and unreviewed); they were 23% of PR gating runs (42 of 180) with a 38% failure rate; the PR body carried nothing the issue lacks (code, route label, time, PostHog link).
 **Benefit-metric reference:** None - short-track
 **Domain:** [ci, incident-handling]
 
 ## User Story
 
 As **the operator**,
-I want **the GitHub issue to be the thing I triage, and the structured incident record to be created when someone acts on the issue**,
-So that **no bot PRs pile up unseen, CI is not spent on markdown records nobody merges, and every record that exists belongs to an incident someone worked on**.
+I want **a production error to produce one GitHub issue holding everything needed, and nothing else**,
+So that **I triage one thing, and when I act on it I resolve it as a short-track story and a normal fix PR that refers to the issue**.
 
 ## Benefit Linkage
 
-**Metric moved:** None formal. Removes about 23% of PR gating runs and a stream of unreviewed red PRs; makes the incident log reflect real work. The record still reaches `workspace/incidents.json`, through the fix PR the repo already reviews (consistent with CLAUDE.md: bookkeeping is bundled with the implementation it records).
-**How:** (1) `.github/workflows/error-issue-incident-record.yml` stops reacting to `issues: opened` and keeps only its manual `workflow_dispatch` start (issue number, dry run, rebuild) for the rare case a PR is wanted. (2) A small script, `scripts/record-incident-from-issue.js`, runs the same recogniser and the same real recorder locally for one issue number and writes the record into the working copy's `workspace/incidents.json`, so the author commits it in the fix PR.
+**Metric moved:** None formal. Removes about 23% of PR gating runs, a stream of unreviewed red bot PRs, and a workflow and tests that kept a mechanism nobody used.
+**How:** delete the workflow `.github/workflows/error-issue-incident-record.yml` (the only thing that opened the PRs), delete the tests that exist only to guard that workflow, and leave everything else exactly as it is: the error bridge still opens the issue, and the recogniser script and library (still used by the issue-title length check in `eit-s1`) stay.
+
+## How an error issue is resolved (process, recorded in decisions.md)
+
+1. The bridge opens the issue with the code, route label, first-seen time, environment and PostHog link. That is the record.
+2. When the operator or an agent acts on it, the work is a short-track story (test plan, definition of ready, fix, draft PR). The story names the issue number; the fix PR says `Fixes #<issue>` so merging closes it. No separate incident record is created.
 
 ## Architecture Constraints
 
-- **Reuse, do not duplicate:** the wrapper calls the existing CLI `scripts/error-issue-incident.js` (`plan` then `build`) as child processes, so every existing validation applies unchanged: bridge-author check, label check, PostHog id marker, code length and control-character checks, idempotency by `posthog:<id>` tag, the real `incident-recorder`.
-- **Same trust rules:** untrusted issue text reaches only the existing recogniser; the bridge author comes from `--author` or the `ERROR_BRIDGE_AUTHOR` environment variable and is never defaulted to the issue's own author; with no author configured the script refuses with a clear message. The issue is fetched with a plain read (`gh api repos/{owner}/{repo}/issues/<n>`) or taken from `--event <file>` (used by tests and offline runs).
-- **Local only:** the script writes only the incident file it was given (default `workspace/incidents.json`); it creates no branch, runs no `git` command, opens no PR and calls no write API.
-- **Workflow change is trigger-only:** the `issues` trigger and nothing else is removed; jobs, permissions, the concurrency group, the safety pins and the `workflow_dispatch` inputs stay, so `tests/check-coha-s7-error-issue-incident.js` keeps all its tests except W1 (the trigger list), which is edited to assert the retired state.
-- **`inc-s1` is superseded** (its blocker note says so); no other story depends on it.
-- **Architecture guardrails (`.github/architecture-guardrails.md`):** ADR-011 (artefact-first) satisfied by this chain; ADR-009 deviation recorded for this workflow in coha-s7's decisions remains accepted and is narrowed, not widened; platform change policy applies (workflow and `scripts/` changes merge via pull request, the operator merges). Zero new npm dependencies.
+- **The bridge is untouched.** `src/web-ui/routes/error-bridge.js`, its tests (`check-coha-s6-error-bridge`, 83 passed and 7 skipped without a database), the PostHog destination and the issue format do not change.
+- **Delete only what the removed workflow owned.** The workflow file; and in `tests/check-coha-s7-error-issue-incident.js` the section that reads the workflow (`cwt_UT1`, `cwt_UT2`, `W1` to `W13`, with `W12`'s credential scan kept for the script, library and test file) plus its now-unused helpers and the `WORKFLOW` constant. Every other test in that file (recogniser, planner, CLI, product-page rendering, conflict behaviour) is unchanged.
+- **Left in place on purpose:** `scripts/error-issue-incident.js`, `scripts/lib/error-issue-incident.js` and the remaining coha-s7 tests. `tests/check-eit-s1-issue-title.js` uses the library's `codeProblem` for the 120-character title limit, and `scripts/run-all-tests.js` lists the coha-s7 test. Removing them is a separate cleanup that needs the operator's go-ahead.
+- **`workspace/incidents.json` and the incident-handling skills** (deferrals, handoff, confirm-fix) are untouched; they work from their own sources.
+- **Required checks:** removing a workflow whose triggers were `issues` and `workflow_dispatch` cannot leave a required status check unreported (it never ran on pull requests).
+- **Architecture guardrails (`.github/architecture-guardrails.md`):** ADR-011 (artefact-first) satisfied by this chain; the ADR-009 deviation accepted for this workflow in coha-s7 becomes moot (recorded); platform change policy applies (workflow and test changes merge via pull request, the operator merges). Zero new npm dependencies.
 
 ## Acceptance Criteria
 
-**AC1:** Given `.github/workflows/error-issue-incident-record.yml`, When parsed, Then its `on:` block contains only `workflow_dispatch` (with the existing three inputs), and no `issues` trigger.
+**AC1:** Given the repository, When `.github/workflows/` is read, Then `error-issue-incident-record.yml` does not exist and no workflow has an `issues` trigger.
 
-**AC2:** Given the same file, When read, Then its header comment says the automatic trigger was retired on 2026-11-16 (story inc-s2, operator decision), why, how to start it by hand, and how to record an incident locally instead.
+**AC2:** Given `tests/check-coha-s7-error-issue-incident.js`, When run, Then it no longer reads or names the workflow, its recogniser, planner, CLI and product-page tests pass unchanged, and its credential scan still covers the script, library and test file.
 
-**AC3:** Given a recognised bridge issue (fixture) and an empty incident file, When `node scripts/record-incident-from-issue.js --event <file> --author <bridge login> --incidents <file>` runs, Then the incident file gains exactly one record tagged `production-error` and `posthog:<id>`, the process exits 0, and it prints which file to include in the fix PR.
+**AC3:** Given the error bridge, When its tests run, Then they pass unchanged (a production error still opens a GitHub issue), and the bridge code is not modified by this story.
 
-**AC4:** Given the same issue run a second time, When it runs, Then nothing is added, it says the incident is already recorded, and it exits 0.
+**AC4:** Given the repository outside `artefacts/`, `workspace/` and `.worktrees/`, When searched for `error-issue-incident-record`, Then no file refers to the removed workflow.
 
-**AC5:** Given an issue that is not recognised (wrong author, no `production-error` label, no PostHog id marker, a bad code), or no author configured, When it runs, Then the incident file is unchanged, the reason is printed, and it exits 1.
+**AC5:** Given the recogniser library and `tests/check-eit-s1-issue-title.js`, When run, Then both still work (the library stays; the title-length check still passes).
 
-**AC6:** Given the script's source and a run in a temporary directory, When inspected and executed, Then it contains no `git` or `gh pr` command, calls `gh` only for the read `api repos/{owner}/{repo}/issues/<n>`, and changes no file other than the incident file.
-
-**AC7:** Given the existing `tests/check-coha-s7-error-issue-incident.js`, When run, Then all its tests pass, with only W1 changed and listed.
-
-**AC8 (live, the next natural production error):** Given the next production error that opens a `production-error` issue, When the bridge creates it, Then no incident PR appears. Evidence class `production-observed`; operator-observed, no deliberate error is created for it.
+**AC6 (live, the next natural production error):** Given the next production error that opens a `production-error` issue, When the bridge creates it, Then no incident PR appears. Evidence class `production-observed`; operator-observed, no deliberate error is created for it.
 
 ## Out of Scope
 
-- Changing the bridge (issue creation), the incident recorder, or the record contents.
-- Deleting the workflow, its script or tests; retiring the manual start.
-- Creating records for past issues (the five closed PRs' issues #1101, #1108 to #1110 and #1121 can be recorded with the new script if wanted).
-- `inc-s1` (superseded).
+- Any change to the bridge, the issue content or the PostHog destination.
+- Deleting the recogniser script, library or the remaining coha-s7 tests (follow-up needing approval).
+- Back-filling records for past issues.
+- Changing CLAUDE.md or any skill to describe the short-track flow (it already is the repo's process).
 
 ## NFRs
 
-- **Security:** the same trust rules as the workflow (fixed author, label, marker, id and code validation; untrusted text never reaches a shell); no secret is read or written.
-- **Reliability:** the script never leaves a half-written incident file (the existing recorder and a fail-before-write check).
-- **Performance:** one API read and two local steps.
+- **Safety:** the only deletions are one workflow file and the tests that guard it; both are in git history.
+- **Reliability:** no other workflow or required check is affected.
 
 ## Complexity Rating
 
-**Rating:** 2 - a trigger removal plus a small wrapper over an existing, heavily tested CLI. **Scope stability:** Stable.
+**Rating:** 1 - one file removed and the tests that guard it edited out. **Scope stability:** Stable.
 
 ## Definition of Ready Pre-check
 

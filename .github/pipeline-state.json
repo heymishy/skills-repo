@@ -50613,16 +50613,16 @@
           "name": "Stop opening an incident PR per production error issue; record the incident in the fix PR instead",
           "stage": "subagent-execution",
           "health": "green",
-          "acTotal": 8,
+          "acTotal": 6,
           "acVerified": 0,
-          "updatedAt": "2026-11-16T06:37:12.349Z",
+          "updatedAt": "2026-11-16T06:44:05.923Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "testPlan": {
             "status": "written",
-            "totalTests": 6,
+            "totalTests": 5,
             "passing": 0,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/inc-s2-test-plan.md"
           }
