@@ -53,12 +53,16 @@ test('T3 — guard (startsWith) precedes readFileSync in sourceIntegrity source'
   assert.ok(fnStart !== -1, 'sourceIntegrity function not found in source');
   // Find the closing brace of the function (next top-level closing brace after fnStart)
   const fnBody = src.slice(fnStart, fnStart + 600); // enough chars to cover the function
-  const startsWithIdx = fnBody.indexOf('startsWith(');
+  // bfl-s2: the containment test (startsWith) now lives in the isInsideRepo helper that sourceIntegrity calls first.
+  const guardIdx = fnBody.indexOf('isInsideRepo(');
   const readFileSyncIdx = fnBody.indexOf('readFileSync(');
-  assert.ok(startsWithIdx !== -1, 'startsWith not found in sourceIntegrity');
+  assert.ok(guardIdx !== -1, 'isInsideRepo guard call not found in sourceIntegrity');
   assert.ok(readFileSyncIdx !== -1, 'readFileSync not found in sourceIntegrity');
-  assert.ok(startsWithIdx < readFileSyncIdx, 
-    `Guard (startsWith at ${startsWithIdx}) must appear before readFileSync (at ${readFileSyncIdx})`);
+  assert.ok(guardIdx < readFileSyncIdx,
+    `Guard (isInsideRepo at ${guardIdx}) must appear before readFileSync (at ${readFileSyncIdx})`);
+  const helperStart = src.indexOf('function isInsideRepo(');
+  assert.ok(helperStart !== -1, 'isInsideRepo helper not found in source');
+  assert.ok(src.slice(helperStart, helperStart + 500).indexOf('startsWith(') !== -1, 'the helper must keep the startsWith containment test');
 });
 
 // T4 — Valid path inside repo returns '—' (null hash short-circuit)

@@ -337,6 +337,26 @@ function buildAuditComment(data) {
  *                    or   ' · ⚠️ ACs not found in issue or artefact'
  */
 /**
+ * bfl-s2: whether a manifest-supplied path stays inside the repository, with the same answer on every platform.
+ * A backslash is a path separator on Windows but an ordinary filename character on Linux, so the path is normalised
+ * to forward slashes first (otherwise a Windows-style traversal is a harmless-looking filename in Linux CI); a path that
+ * is absolute on this platform is checked as it stands; a drive-letter path that is NOT absolute on this platform
+ * (C:\... on Linux) can never be repository-relative; a relative path is resolved against repoRoot, not the current
+ * directory; and the resolved path must still start with repoRoot plus the separator. pathApi is injectable so
+ * path.posix and path.win32 can both be tested on any machine.
+ * @param {string} sourcePath
+ * @param {string} repoRoot
+ * @param {{resolve: Function, sep: string, isAbsolute: Function}} pathApi
+ * @returns {boolean}
+ */
+function isInsideRepo(sourcePath, repoRoot, pathApi) {
+  if (pathApi.isAbsolute(sourcePath)) return pathApi.resolve(sourcePath).startsWith(repoRoot + pathApi.sep);
+  const normalised = sourcePath.replace(/\\/g, '/');
+  if (/^[A-Za-z]:/.test(normalised)) return false;
+  return pathApi.resolve(repoRoot, normalised).startsWith(repoRoot + pathApi.sep);
+}
+
+/**
  * Compare the SHA-256 hash of a source file against a manifest hash.
  * Extracted verbatim from the inline github-script step in assurance-gate.yml (SC-07).
  *
@@ -346,10 +366,10 @@ function buildAuditComment(data) {
  */
 function sourceIntegrity(sourcePath, manifestHash) {
   const repoRoot = path.resolve(__dirname, '..');
-  const resolvedPath = path.resolve(sourcePath);
-  if (!resolvedPath.startsWith(repoRoot + path.sep)) {
+  if (!isInsideRepo(sourcePath, repoRoot, path)) {
     return { traversal: true, sanitisedPath: '[REDACTED]' };
   }
+  const resolvedPath = path.resolve(repoRoot, sourcePath.replace(/\\/g, '/'));
   if (!manifestHash) return '\u2014';
   try {
     const content  = fs.readFileSync(resolvedPath);
@@ -377,4 +397,4 @@ function computeIssueAcCheck(issueBody, acs) {
   return parts.length > 0 ? parts.join('') : ' \u00b7 \u26a0\ufe0f ACs not found in issue or artefact';
 }
 
-module.exports = { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment, sourceIntegrity };
+module.exports = { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment, sourceIntegrity, isInsideRepo };
