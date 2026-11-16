@@ -50785,21 +50785,22 @@
           "id": "pws-s1",
           "slug": "pws-s1",
           "name": "A production-wiring smoke test in the unit chain that fails when an adapter is unwired or a route answers a hostile request with a 5xx",
-          "stage": "subagent-execution",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-16T17:25:43.254Z",
+          "acVerified": 6,
+          "updatedAt": "2026-11-16T17:36:52.421Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-11-17-production-wiring-smoke-test/test-plans/pws-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
         }
       ]
     }
