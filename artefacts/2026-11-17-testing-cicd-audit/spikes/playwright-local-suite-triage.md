@@ -42,3 +42,11 @@ Group counts add to 90: 17 + 5 + 12 + 14 + 9 + 8 + 8 + 7 + 10 = 90.
 
 - The suite needs `NODE_ENV=test` locally, as CI sets it; without it every `withAuth` test fails at once with "auth bypass only available in NODE_ENV=test".
 - Browser tests are unreliable on this Windows machine (a Chromium page crashed during the pod spec), so cause-finding for browser-heavy specs should use CI runs.
+
+## The three suspected product defects, checked (2026-11-17)
+
+None is a product defect.
+
+- **Feature creation answers 409 (`frsr-s1`).** The 409 is the deliberate "Connect a repo to get started" gate (das-s2, `routes/products.js` around line 3995): a product with no connected repository cannot start a feature. The specs create products with no repository. The other group 4 specs (`pnfc-s1`, `ep3-s1`, `reference-upload`, `dsda-s1`) also create a product and start a feature without connecting a repository, so they probably hit the same gate; that is not yet confirmed. Fix: a test fixture that gives the product a repository.
+- **First sign-in lands on `/dashboard` (`bri-s3.6` AC1).** The first-login flag lives in a `github_first_login` table. When no database URL is set (the local and CI test mode) the real flag adapter is not wired and the fake database has no such table, so every sign-in counts as a returning user. Production has a database and the real adapter. Fix: support the flag in the fake database.
+- **Diagram keyboard "focus trap" (`csd-s2` AC4).** Reproduced locally. The walk reaches the chat input in 23 Tab presses, so there is no trap. The test's heuristic compares tag, id and class, and four consecutive navigation links (`A.sw-nav-item`, no id, same class) count as "the same element four times". A false positive from the heuristic; fix the test to compare element identity.
