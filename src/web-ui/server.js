@@ -136,6 +136,25 @@ const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.c
 // psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
 let _pshPool = null;
 
+// lpw-s3: the journey-persistence stand-in the test seed routes install (setPgAdapterForTesting takes precedence over
+// the fake-database sync wired at startup). It used to be a no-op saveJourney in the ppc-s5 and actr-s2 seeds, so once
+// either ran, every journey created afterwards never reached the fake journeys table and never appeared on a board
+// (the board specs failed whenever actr-s2 ran before them). This keeps the sync: it writes the same row the startup
+// adapter writes, and does nothing only when the real database (not the fake) is in use.
+function _fakeDbSaveJourney(journey) {
+  if (_pshPool && typeof _pshPool._upsertJourney === 'function') {
+    return _pshPool._upsertJourney({
+      journey_id: journey.journeyId,
+      tenant_id: journey.tenantId || null,
+      product_id: journey.productId || null,
+      feature_slug: journey.featureSlug,
+      stage: journey.activeSkill || null,
+      active_session_id: journey.activeSessionId || null
+    });
+  }
+  return undefined;
+}
+
 // ppc-s5 (Task 8, E2E lazy-load/no-layout-shift spec): per-journeyId DoD
 // "AC Coverage" content for /test/seed-ppc-s5-journey below. A Map (not a
 // single last-value variable) so two journeys seeded independently in the
@@ -2942,7 +2961,7 @@ async function router(req, res) {
     // cross-spec contamination source -- whoever touches that precedence
     // should grep for setPgAdapterForTesting across tests/e2e/ first.
     _journeyStoreForPpcS5.setPgAdapterForTesting({
-      saveJourney: async function() {},
+      saveJourney: _fakeDbSaveJourney,
       getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
     });
 
@@ -3088,7 +3107,7 @@ async function router(req, res) {
     // (including this route's own journeys, which deliberately want []
     // here so _getDodAcList falls through to the storySlugs-loop branch).
     _journeyStoreForActrS2.setPgAdapterForTesting({
-      saveJourney: async function() {},
+      saveJourney: _fakeDbSaveJourney,
       getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
     });
 

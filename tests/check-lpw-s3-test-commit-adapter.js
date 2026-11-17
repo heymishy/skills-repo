@@ -83,6 +83,20 @@ test('T4c without the token the request is refused 403 and the card stays put (t
   });
 });
 
+test('T4e another spec\'s seed route must not stop later journeys reaching the board (the actr-s2 and ppc-s5 seeds used to replace the journey sync with a no-op)', async function () {
+  await withServer(3993, { E2E_STUB_ARTEFACT_COMMIT: 'true' }, async function (ctx) {
+    await ctx.get('/test/session');
+    const a = await ctx.post('/test/seed-actr-s2-journey', { data: {}, headers: { 'Content-Type': 'application/json' } });
+    assert.ok(a.ok(), 'actr-s2 seed must succeed to set the scene, got ' + a.status());
+    const p = await ctx.post('/test/seed-ppc-s5-journey', { data: {}, headers: { 'Content-Type': 'application/json' } });
+    // ppc-s5's seed may need a video fixture; its adapter is installed before that, so either outcome sets the scene
+    assert.ok(p.status() < 500 || p.status() === 500, 'ppc-s5 seed attempted');
+    const s = await seedReadyCard(ctx);
+    const where = await columnOf(ctx, s);
+    assert.deepStrictEqual(where.columns, ['discovery'], 'the seeded card must show on its product board after those seeds ran');
+  });
+});
+
 test('T4d without the opt-in env var the default stays the throwing stub: the advance is a 502, not a pretend commit', async function () {
   await withServer(3994, {}, async function (ctx) {
     const s = await seedReadyCard(ctx);
