@@ -51024,31 +51024,32 @@
       "slug": "2026-11-18-writer-complete-feature-entries",
       "name": "The web app records new features in pipeline-state.json with every required field (issue 1146)",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-17T18:39:40.458Z",
+      "updatedAt": "2026-11-17T19:04:39.227Z",
       "stories": [
         {
           "id": "wfe-s1",
           "slug": "wfe-s1",
           "name": "A feature the web app records in pipeline-state.json is complete enough to pass the repository checks",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-17T18:39:40.458Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-17T19:04:39.036Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0,
+            "passing": 7,
             "artefact": "artefacts/2026-11-18-writer-complete-feature-entries/test-plans/wfe-s1-test-plan.md"
           },
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
         }
       ]
     }
