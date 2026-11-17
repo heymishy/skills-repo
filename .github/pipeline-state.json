@@ -50880,6 +50880,38 @@
       "guardrails": [],
       "updatedAt": "2026-11-16T19:13:59.387Z",
       "stories": []
+    },
+    {
+      "slug": "2026-11-17-local-playwright-suite-trust",
+      "name": "The local Playwright suite becomes a trustworthy, measured, non-blocking signal",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-17T02:05:20.193Z",
+      "stories": [
+        {
+          "id": "lpw-s1",
+          "slug": "lpw-s1",
+          "name": "The local Playwright suite becomes a trustworthy, measured, non-blocking signal",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T02:05:20.930Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
