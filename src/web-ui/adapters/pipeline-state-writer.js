@@ -108,7 +108,16 @@ module.exports = function pipelineStateWriterFactory(repoRoot) {
     });
 
     if (!feature) {
-      feature = { slug: featureSlug, id: featureSlug };
+      // wfe-s1 (issue #1146): same complete defaults as pipeline-state-github-writer.js, so a new feature always
+      // carries the schema's required fields (the update's own stage and health overwrite the defaults below).
+      feature = {
+        slug: featureSlug,
+        id: featureSlug,
+        name: (typeof stateUpdate.name === 'string' && stateUpdate.name) ? stateUpdate.name : featureSlug,
+        track: 'standard',
+        stage: 'discovery',
+        health: 'green'
+      };
       state.features.push(feature);
     }
 
