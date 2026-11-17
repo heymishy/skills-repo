@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Story: the required checks take their rules from master, and changes to gate files are visible. Pull request #1144 merged 2026-11-17 17:21 UTC (`7c52ebe96`). It closes no issue; it came from the gate integrity audit (`artefacts/2026-11-17-testing-cicd-audit/spikes/gate-integrity-audit.md`).
 
-## Result: COMPLETE, with one limit that cannot be closed by this pull request (AC5, the live report)
+## Result: COMPLETE (AC5, the live report, was observed on the next pull request, #1145)
 
 AC1 to AC4 (Acceptance Criteria 1 to 4) were verified by 22 new automated tests and by CI before merge. AC5 asked for the `Gate files changed` report on the story's own pull request; a `pull_request_target` workflow is read from the base branch, so it could not run on the pull request that introduces it. That is stated, not worked around.
 
@@ -14,11 +14,11 @@ AC1 to AC4 (Acceptance Criteria 1 to 4) were verified by 22 new automated tests 
 | AC2 (gate-file report, never fails) | ✅ | `check-gic-s1-gate-files` (5 tests): matcher, summary, a hostile path rendered as plain text, the committed list, and every pattern matches a real file. `check-gic-s1-workflows` T4b and T4c: trigger is `pull_request_target` only, no head reference, no install step, permissions only `contents: read` and `pull-requests: write`, no `exit 1` | automated | none |
 | AC3 (baseline intersection) | ✅ | `check-gic-s1-baseline-intersection` (5 tests): an added entry is ignored, named in the output and the failing test counts as a new regression; a removed entry is honoured; unchanged cases and the command line; no base baseline means the old behaviour. `T4d`: the unit step fetches master's baseline and passes it as the third argument. Existing `check-ci-test-regression-check`, `check-bfl-s1` and `check-bfl-s2` pass untouched | automated | none |
 | AC4 (protected list contents) | ✅ | `.github/gate-files.json`, `mode: observe`, 13 patterns; the test checks each pattern against a real file so the list cannot rot | automated | none |
-| AC5 (live report on its own pull request) | ⚠ not observable | Required checks `Run assurance gate`, `Scenario A E2E (staging)`, `Scenario B E2E (staging)` and the Core job all passed on the pull request. The `Gate files changed` workflow could not report on it | live (CI) | the ordering caveat the story anticipated: its first real report is the next pull request that touches a gate file |
+| AC5 (live report on its own pull request) | ✅ observed on pull request #1145 (not its own, as anticipated) | Required checks `Run assurance gate`, `Scenario A E2E (staging)`, `Scenario B E2E (staging)` and the Core job all passed on the pull request. The `Gate files changed` workflow could not report on it | live (CI) | the ordering caveat the story anticipated: its first real report is the next pull request that touches a gate file |
 
 ## Observations and follow-ups
 
-- **First real report to check.** On the next pull request that touches a path in `.github/gate-files.json`, confirm the `Gate files changed` job summary and the single in-place comment appear, and that the job succeeds. That closes AC5; record it where this pull request is next reviewed.
+- **AC5 observed (2026-11-18).** On pull request #1145 (lpw-s4) the `Gate files changed` workflow ran from master, posted one comment listing `tests/e2e/capability-matrix.json`, said "Mode: observe", and the job passed. The ordering caveat applied to its own pull request only.
 - **Not done, not mine to decide (recorded in `decisions.md`):** enforce mode; a separate GitHub identity for agent pull requests (the agent and the operator share one identity, so any approval step the agent could click is not a control); `CODEOWNERS` with a required review; the assurance gate checking what `governance-gates.yml` says, not only that it exists.
 - **The baseline change costs nothing today** because `tests/known-baseline-failures.json` is empty; it matters the first time someone tries to add to it.
 - **Still open from the audit:** the remaining findings (capability matrix and trace policy editable by the change they judge) are covered by visibility only, not prevented.
