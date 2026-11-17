@@ -21,3 +21,5 @@ playwright.local.config.js
 tests/e2e/local/
 
 test-results.json
+# lpw-s3: artefacts written by the board specs (seed-board-journey) when a stage is confirmed on the test server
+artefacts/e2e-board-seed/

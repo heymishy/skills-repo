@@ -208,6 +208,12 @@ function createFakeTestDb() {
     // saveJourney-shaped adapter server.js wires journey-store.js to, in
     // NODE_ENV=test only) -- so a real gate-confirm advance is reflected here
     // too, not just at journey-creation time.
+    // lpw-s3: ownerRepoForFeature (adapters/export-data-source.js) resolves a feature's product and tenant by slug
+    // when gate-confirm commits a completed stage's artefact.
+    if (s.indexOf('SELECT PRODUCT_ID, TENANT_ID FROM JOURNEYS WHERE FEATURE_SLUG') === 0) {
+      var oFeatureSlug = p[0];
+      return Promise.resolve({ rows: journeys.filter(function(r) { return r.feature_slug === oFeatureSlug; }).map(function(r) { return { product_id: r.product_id, tenant_id: r.tenant_id }; }) });
+    }
     if (s.indexOf('SELECT TENANT_ID FROM JOURNEYS WHERE JOURNEY_ID') === 0) {
       var lookupJourneyId = p[0];
       var jOwnerMatch = journeys.filter(function(r) { return r.journey_id === lookupJourneyId; }).map(function(r) { return { tenant_id: r.tenant_id }; });

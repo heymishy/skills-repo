@@ -106,7 +106,7 @@ const { setGenerateProductDraft }                                    = require('
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
-const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
+const { setArtefactCommitAdapter, realCommitArtefact, testCommitArtefact } = require('./adapters/artefact-commit-writer'); // das-s1 (testCommitArtefact: lpw-s3)
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
@@ -381,6 +381,12 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setArtefactCommitAdapter(realCommitArtefact);
   console.log('[artefact-commit-writer] commitArtefact wired');
+} else if (process.env.E2E_STUB_ARTEFACT_COMMIT === 'true') {
+  // lpw-s3 (D37 rule 3, wiring as its own task): the browser specs need a stage to be completable on the test
+  // server (the board's Advance runs gate-confirm, which commits the artefact). Opt-in only, test mode only:
+  // without E2E_STUB_ARTEFACT_COMMIT the throwing default stays active, exactly as before.
+  setArtefactCommitAdapter(testCommitArtefact);
+  console.log('[artefact-commit-writer] test-mode commit stub wired (E2E_STUB_ARTEFACT_COMMIT=true)');
 }
 
 // ppc-s9 Tasks 1 & 3 (D37 rule 3 -- wiring is its own task, distinct from the
@@ -2211,6 +2217,12 @@ if (process.env.NODE_ENV === 'test') {
     setModulesAdapter(_fakeTestDb);
     console.log('[bmau-s1] fake in-memory modules adapter wired (NODE_ENV=test, no DATABASE_URL)');
 
+    // lpw-s3: export-data-source's ownerRepoForFeature (the repository a completed stage's artefact is committed to)
+    // was only wired in the DATABASE_URL block above (mtrr-s1), so in the test server it threw "pool not wired" and
+    // every stage completion of a product-linked feature answered 502. Same fake db instance as products/journeys.
+    require('./adapters/export-data-source').setDbPool(_fakeTestDb);
+    console.log('[lpw-s3] fake in-memory pool wired for ownerRepoForFeature (NODE_ENV=test, no DATABASE_URL)');
+
     // rbg-s1: the arl-s1/tir-s1/tir-s7/tir-s9/sec-perf-s2 role adapters
     // (setGetRoleForTenant, setGetCurrentRole) were previously only ever
     // wired inside the `if (process.env.DATABASE_URL)` block above -- the
@@ -2654,7 +2666,9 @@ async function router(req, res) {
       systemPrompt: 'test',
       turns: [],
       artefactContent: '# seeded artefact for ' + featureSlug,
-      artefactPath: null,
+      // lpw-s3: a real relative path (under a git-ignored folder), so confirming this stage can write the artefact
+      // and run the commit step the way a real stage does; null made gate-confirm read the repository root as a file.
+      artefactPath: 'artefacts/e2e-board-seed/' + featureSlug + '/' + stage + '.md',
       done: done,
       journeyId: journeyId
     });
