@@ -50911,6 +50911,27 @@
           },
           "dorStatus": "signed-off",
           "prStatus": "merged"
+        },
+        {
+          "id": "lpw-s2",
+          "slug": "lpw-s2",
+          "name": "A small required core of browser tests, chosen by capability and measured coverage",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T04:55:36.723Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
         }
       ]
     }
