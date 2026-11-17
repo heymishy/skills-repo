@@ -30,8 +30,8 @@ function jobBlock(text, jobName) {
   return lines.slice(start, end).join('\n');
 }
 
-test('T5a e2e.yml has a Core browser tests job that blocks: no continue-on-error, 15 minute limit, runs the core list', function () {
-  const job = jobBlock(read('.github/workflows/e2e.yml'), 'Core browser tests');
+test('T5a core-browser-tests.yml has a Core browser tests job that blocks: no continue-on-error, 15 minute limit, runs the core list', function () {
+  const job = jobBlock(read('.github/workflows/core-browser-tests.yml'), 'Core browser tests');
   assert.ok(job, 'no job named "Core browser tests"');
   assert.ok(!/continue-on-error/.test(job), 'the core job must not have continue-on-error');
   assert.ok(/timeout-minutes:\s*15\b/.test(job), 'timeout-minutes must be 15');
@@ -41,7 +41,7 @@ test('T5a e2e.yml has a Core browser tests job that blocks: no continue-on-error
 });
 
 test('T5b the core job never points at shared staging', function () {
-  const job = jobBlock(read('.github/workflows/e2e.yml'), 'Core browser tests');
+  const job = jobBlock(read('.github/workflows/core-browser-tests.yml'), 'Core browser tests');
   assert.ok(job && !/E2E_STAGING_BASE_URL/.test(job) && !/wuce-staging\.fly\.dev/.test(job));
 });
 

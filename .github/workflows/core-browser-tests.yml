@@ -1,0 +1,106 @@
+name: Core browser tests
+
+# lpw-s2: the required-core candidate. Runs only the spec files that tests/e2e/capability-matrix.json puts in lane
+# "core" (chosen by scripts/select-core-specs.js from the per-spec coverage measurement), against the PR's own mocked
+# test server. Unlike the all-specs job in e2e.yml, nothing here is allowed to fail: a red mark is a real break.
+# It is a separate workflow so the e2e.yml job list (guarded by tests/check-b2-ci-gate-config.js) stays as it is.
+# It is not a required check until the operator adds it to the ruleset after it has been green on real pull requests.
+# Enabled by audit.core_browser_tests: true in .github/context.yml.
+# ADR-009: permissions limited to contents: read.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  core-browser-tests:
+    name: Core browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: Check opt-in flag (audit.core_browser_tests in context.yml)
+        id: core-config
+        run: |
+          # ADR-004: context.yml is the single config source of truth.
+          CORE_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              CORE_ENABLED=$(yq e '.audit.core_browser_tests // false' .github/context.yml)
+            else
+              if grep -q 'core_browser_tests: true' .github/context.yml; then
+                CORE_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "core_enabled=${CORE_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "Core browser tests gate flag: ${CORE_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.core-config.outputs.core_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.core-config.outputs.core_enabled == 'true'
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        if: steps.core-config.outputs.core_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Cache apt packages for Playwright browser deps
+        if: steps.core-config.outputs.core_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives/*.deb
+          key: ${{ runner.os }}-apt-playwright-deps-v1
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.core-config.outputs.core_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the core specs
+        if: steps.core-config.outputs.core_enabled == 'true'
+        id: core-run
+        run: |
+          CORE_SPECS=$(node scripts/list-core-specs.js)
+          echo "Core specs:"; echo "${CORE_SPECS}"
+          npx playwright test ${CORE_SPECS} --workers=1 --reporter=list,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-core-report.json
+          CI: 'true'
+          NODE_ENV: test
+          # Test-only credentials, not real OAuth credentials
+          GITHUB_CLIENT_ID: e2e-test-client-id
+          GITHUB_CLIENT_SECRET: e2e-test-client-secret
+          SESSION_SECRET: e2e-test-session-secret-minimum32chars
+
+      - name: Upload the core report and failure traces
+        if: always() && steps.core-config.outputs.core_enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-browser-report
+          path: |
+            pw-core-report.json
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Core browser tests skipped (opt-in flag not set)
+        if: steps.core-config.outputs.core_enabled != 'true'
+        run: 'echo "Core browser tests skipped - set audit.core_browser_tests: true in .github/context.yml to enable"'

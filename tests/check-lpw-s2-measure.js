@@ -71,6 +71,11 @@ test('T1e buildReport returns JSON and a Markdown table with passed, failed, ski
   assert.ok(r.markdown.indexOf('3 of 10 statements') !== -1, r.markdown);
 });
 
+test('T1f untouchedFiles lists files on disk with no covered statement', function () {
+  const files = ['src/web-ui/a.js', 'src/web-ui/b.js', 'src/web-ui/c.js'];
+  assert.deepStrictEqual(m.untouchedFiles(files, new Set(['src/web-ui/a.js:3:0'])), ['src/web-ui/b.js', 'src/web-ui/c.js']);
+});
+
 let passed = 0; let failed = 0;
 tests.forEach(function (t) {
   try { t.fn(); console.log('[lpw-s2] PASS: ' + t.name); passed++; }

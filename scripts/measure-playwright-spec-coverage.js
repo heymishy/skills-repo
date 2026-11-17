@@ -80,13 +80,24 @@ function greedyOrder(setsBySpec) {
   return out;
 }
 
-/** Files in the scope where no statement is covered by any spec. */
-function untouchedFiles(allSet, unionSet) {
+/** Files of the scope (all .js files on disk, repo-relative) where no statement is covered by any spec. */
+function untouchedFiles(fileList, unionSet) {
   const touched = new Set();
   unionSet.forEach(function (k) { touched.add(k.replace(/:\d+:\d+$/, '')); });
-  const files = new Set();
-  allSet.forEach(function (k) { files.add(k.replace(/:\d+:\d+$/, '')); });
-  return Array.from(files).filter(function (f) { return !touched.has(f); }).sort();
+  return fileList.filter(function (f) { return !touched.has(f); }).sort();
+}
+
+/** Every .js file under src/web-ui, as src/web-ui/... keys. */
+function scopeFiles(root) {
+  const out = [];
+  (function walk(dir) {
+    fs.readdirSync(dir, { withFileTypes: true }).forEach(function (d) {
+      const full = path.join(dir, d.name);
+      if (d.isDirectory()) walk(full);
+      else if (/\.js$/.test(d.name)) out.push(path.relative(root, full).split(path.sep).join('/'));
+    });
+  })(path.join(root, 'src', 'web-ui'));
+  return out;
 }
 
 /**
@@ -119,8 +130,8 @@ function buildReport(results, info) {
   rows.forEach(function (r) {
     lines.push('| ' + r.spec + ' | ' + r.passed + ' | ' + r.failed + ' | ' + r.skipped + ' | ' + r.covered + ' | ' + r.unique + ' | ' + r.order + ' | ' + r.added + ' |');
   });
-  if (info.allStatements) {
-    const untouched = untouchedFiles(info.allStatements, union);
+  if (info.allFiles) {
+    const untouched = untouchedFiles(info.allFiles, union);
     lines.push('');
     lines.push('## Files no spec touches (' + untouched.length + ')');
     lines.push('');
@@ -176,7 +187,7 @@ function main() {
     console.log('[' + (i + 1) + '/' + files.length + '] ' + f + ': ' + r.passed + ' passed, ' + r.failed + ' failed, ' + results[results.length - 1].statements.size + ' statements, ' + Math.round((Date.now() - t0) / 1000) + 's');
   });
   const seconds = Math.round((Date.now() - started) / 1000);
-  const report = buildReport(results, { totalStatements: all.size, seconds: seconds, allStatements: all });
+  const report = buildReport(results, { totalStatements: all.size, seconds: seconds, allFiles: scopeFiles(root) });
   // measurement.json: statements as indices into keys, so the file stays small.
   const keys = Array.from(all).sort(); const index = new Map(keys.map(function (k, i) { return [k, i]; }));
   const specs = {};
@@ -190,4 +201,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { relativeKey, allStatements, coveredStatements, uniqueStatements, greedyOrder, untouchedFiles, buildReport };
+module.exports = { relativeKey, allStatements, coveredStatements, uniqueStatements, greedyOrder, untouchedFiles, scopeFiles, buildReport };
