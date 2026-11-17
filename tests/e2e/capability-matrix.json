@@ -306,7 +306,7 @@
       "file": "tests/e2e/ep3-s1-regression.spec.js",
       "capability": "session-flow",
       "lane": "quarantined",
-      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
+      "reason": "Known product bug, issue #1042: regress-back lands on the wrong stage's session (the spec fails waiting for a definition-stage session URL). Not a model-session timeout; fix is a separate story.",
       "owner": "operator (heymishy)",
       "entered": "2026-11-17",
       "reviewBy": "2026-12-15"
@@ -496,11 +496,8 @@
     {
       "file": "tests/e2e/psh-s6-product-kanban.spec.js",
       "capability": "kanban-board",
-      "lane": "quarantined",
-      "reason": "Invalid as written: uses the unauthenticated test() and a product that does not exist (/products/test-product-id/kanban), so it is redirected and finds 0 columns. Verified: with a signed-in session and a real product the board renders 8 [data-stage] columns. Quick fix.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes alone and in the whole suite (lpw-s3, after the board Advance fix, issue #1140); adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
     },
     {
       "file": "tests/e2e/psh-s7-org-kanban.spec.js",
@@ -528,38 +525,26 @@
     {
       "file": "tests/e2e/s1.1-board-advance-action.spec.js",
       "capability": "kanban-interaction",
-      "lane": "quarantined",
-      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs).",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core",
+      "reason": "Core for kanban-interaction (lpw-s3): the Advance button and drag-to-advance move a ready card to the next column, which the board silently failed to do before issue #1140."
     },
     {
       "file": "tests/e2e/s1.2-not-ready-explanation.spec.js",
       "capability": "kanban-interaction",
-      "lane": "quarantined",
-      "reason": "Passes alone (verified locally); fails in the whole-suite job because the seeded card is not visible there (state shared with other specs). Order-dependence to isolate.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes alone and in the whole suite (lpw-s3, after the board Advance fix, issue #1140); adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
     },
     {
       "file": "tests/e2e/s3.1-drag-to-advance.spec.js",
       "capability": "kanban-interaction",
-      "lane": "quarantined",
-      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs).",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core",
+      "reason": "Core for kanban-interaction (lpw-s3): the Advance button and drag-to-advance move a ready card to the next column, which the board silently failed to do before issue #1140."
     },
     {
       "file": "tests/e2e/s3.2-within-column-reorder.spec.js",
       "capability": "kanban-interaction",
-      "lane": "quarantined",
-      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs). (AC1 and AC2, the reorder tests, pass alone.)",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes alone and in the whole suite (lpw-s3, after the board Advance fix, issue #1140); adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
     },
     {
       "file": "tests/e2e/session-persistence.spec.js",
