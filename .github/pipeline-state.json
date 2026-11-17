@@ -51073,6 +51073,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-chat-continue-bound",
+      "name": "The chat page bounds its hidden continue turns (issue 1148)",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-17T20:24:58.970Z",
+      "stories": [
+        {
+          "id": "ccb-s1",
+          "slug": "ccb-s1",
+          "name": "The chat page stops sending hidden continue turns after a few, and shows the operator what it has",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T20:24:58.970Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-chat-continue-bound/test-plans/ccb-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
