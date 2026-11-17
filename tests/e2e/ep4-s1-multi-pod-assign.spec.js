@@ -148,9 +148,11 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
   // lpw-s4: other pod specs in the same run leave their own pods in the org, so the modal lists at least these two
   // (it used to list exactly two when this spec ran against an empty org), and each of the two must be present.
   const checkboxes = modal.locator('.ep4s1-pod-checkbox');
-  expect(await checkboxes.count()).toBeGreaterThanOrEqual(2);
+  // The label assertions retry until the modal has loaded its pod list; count() alone is a one-shot read and ran
+  // before the list rendered in CI (0 found), so it comes after them.
   await expect(modal.locator('label', { hasText: podAName })).toHaveCount(1);
   await expect(modal.locator('label', { hasText: podBName })).toHaveCount(1);
+  expect(await checkboxes.count()).toBeGreaterThanOrEqual(2);
 
   const podACheckbox = modal.locator('label', { hasText: podAName }).locator('.ep4s1-pod-checkbox');
   const podBCheckbox = modal.locator('label', { hasText: podBName }).locator('.ep4s1-pod-checkbox');
