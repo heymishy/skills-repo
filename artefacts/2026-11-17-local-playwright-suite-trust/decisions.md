@@ -44,9 +44,17 @@ No dependency is added to `package.json`; if the server cannot flush V8 coverage
 **2026-11-17 | FINDING (lpw-s2) | The first measurement was invalid, and the first core included four specs it should not have**
 Both are recorded in `evidence/per-spec-coverage.md` and `evidence/core-runs.md`. The first measurement lost every spec after `design-definition-canvas-render` (a hung server on port 3999); the first core run failed on four specs the matrix builder failed to exclude (a CRLF pattern defect). Neither reached master.
 
-**2026-11-17 | FINDING (lpw-s2) | The kanban and pod failures are stale specs, not one fixable environment cause**
-**Evidence:** the kanban specs (`bmau-s1`, `psh-s6`, `s1.1`, `s1.2`, `s3.1`, `s3.2`) look for cards by `data-journey-id`, which the board no longer renders (`kanban-view.js` builds feature-rollup cards). The pod specs (`ep1-s1`, `ep1-s2`, `ep1-s3-feature-pod-inheritance`, `ep4-s1`) search the hardcoded roster ("Hamish"), but the roster now comes from `GET /api/team/members` (rtri-s2). Model-session specs (`ep3-s1`, `rdac-s1`, `design-definition-canvas-render`, `ep2-s1-presence-sidebar`) wait on a real model turn.
-**Decision:** quarantine with reason, owner and a review date of 2026-12-15; none fixed in this story. They need rewriting against current product behaviour, which is a story of their own per group.
+**2026-11-17 | CORRECTION (lpw-s2) | The kanban failures are NOT "the board no longer renders data-journey-id"; checked by running the specs and the server locally and by looking at staging**
+The first version of this entry said the board's cards no longer carry `data-journey-id` and that the specs predate a board rewrite. That was wrong: `kanban-view.js` still renders `data-journey-id` on cards (line 432), the staging org board shows 8 `[data-stage]` columns, 40 visible cards and 118 `data-journey-id` elements, and over HTTP the local test server returns the seeded card in its column. The wrong claim came from a search I cut short with `head`. What the checks actually show:
+- **Alone, the board specs mostly pass.** `s1.2` passes; `s3.1` AC2 and AC3 pass; `s3.2` AC1 and AC2 (the reorder tests) pass. In the whole-suite job the same specs fail earlier (the seeded card is not visible), so they depend on state left by other specs.
+- **One deterministic failure shared by three tests:** the ones that click Advance (`s1.1` AC1, `s3.1` AC1, `s3.2` AC3). `POST /api/board/journey/:id/advance` answers `{advanced: true}` but the card stays in its stage column. Reproduced locally over HTTP. Either the test harness does not sync the stage after a gate confirm (the fake database's journey row) or the product does not move the card until the next session starts. Not yet decided; this is the first thing `lpw-s3` checks.
+- `psh-s6` is invalid as written: it uses the unauthenticated `test()` and a product that does not exist (`/products/test-product-id/kanban`), so it is redirected and finds 0 columns. A quick fix.
+- `bmau-s1` times out alone; cause not found.
+
+**2026-11-17 | FINDING (lpw-s2) | The pod failures are one test-environment cause (verified)**
+`GET /api/team/members` returns `{"members": []}` in test mode, so the pod roster is empty. The pod specs click add buttons and search the roster for "Hamish" (the old hardcoded roster, replaced in rtri-s2), so they time out; reproduced locally with `ep1-s1` and `ep1-s2` failing alone. Fix: seed a team member in the test server and update the selectors (`lpw-s4`).
+
+**2026-11-17 | FINDING (lpw-s2) | Model-session specs** (`ep3-s1`, `rdac-s1`, `design-definition-canvas-render`, `ep2-s1-presence-sidebar`) wait on a real model turn (90 to 150 second timeouts); the CI job has no model gateway wired for them. Not yet verified locally.
 **Gaps this leaves (no passing core spec):** pods, reference-and-stories, kanban-interaction, feature-creation.
 
 **2026-11-17 | FINDING (lpw-s2) | None of the three "retire candidates" should be retired: each feature is live and its spec needs a rewrite (checked in code and on staging)**
