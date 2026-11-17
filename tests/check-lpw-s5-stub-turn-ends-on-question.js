@@ -1,5 +1,5 @@
 'use strict';
-// lpw-s5 T1 to T5 (AC1, AC2, AC4, AC5) -- the test-mode stub that answers streamed chat turns ends on a question, so the
+// lpw-s5 T1 to T4 (AC1, AC2, AC4) -- the test-mode stub that answers streamed chat turns ends on a question, so the
 // chat page does not auto-send hidden "continue" turns forever (which left the send button disabled and made four
 // model-session specs time out). Behavioural: the real test server, a real streamed turn, a real browser page.
 // Plain Node script. Run: node tests/check-lpw-s5-stub-turn-ends-on-question.js
@@ -7,7 +7,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 const root = path.resolve(__dirname, '..');
 const { request, chromium } = require(path.join(root, 'node_modules', '@playwright', 'test'));
 const { getCsrfToken } = require(path.join(root, 'tests', 'e2e', 'fixtures', 'csrf'));
@@ -110,13 +110,8 @@ test('T4a the four specs are out of quarantine with no reason, and the fast ones
   assert.strictEqual(by('design-definition-canvas-render').lane, 'core');
 });
 
-test('T5 the only product file changed is the test-mode stub in src/web-ui/server.js', function () {
-  const base = spawnSync('git', ['merge-base', 'HEAD', 'origin/master'], { cwd: root, encoding: 'utf8' });
-  if (base.status !== 0) { console.log('[lpw-s5] (no origin/master here; T5 skipped)'); return; }
-  const diff = spawnSync('git', ['diff', '--name-only', base.stdout.trim()], { cwd: root, encoding: 'utf8' }).stdout.split('\n').filter(Boolean);
-  const src = diff.filter(function (f) { return /^src\//.test(f); });
-  assert.deepStrictEqual(src, ['src/web-ui/server.js'], 'src files changed: ' + src.join(', '));
-});
+// (The acceptance check "no product code changed" compared this branch against master; it held for the pull request that
+// added it and would fail any later pull request touching those folders, so it was verified at review and removed.)
 
 (async function () {
   let passed = 0; let failed = 0;

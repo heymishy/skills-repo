@@ -1,12 +1,12 @@
 'use strict';
-// lpw-s4 T1 to T5 (AC1, AC2, AC4, AC5) -- the test server can seed team members for the pod specs. Behavioural: members
+// lpw-s4 T1 to T4 (AC1, AC2, AC4) -- the test server can seed team members for the pod specs. Behavioural: members
 // are seeded through the route and read back through the real GET /api/team/members, the same read the pod manager makes.
 // Plain Node script. Run: node tests/check-lpw-s4-seed-team-member.js
 
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 const root = path.resolve(__dirname, '..');
 const { request } = require(path.join(root, 'node_modules', '@playwright', 'test'));
 
@@ -93,13 +93,8 @@ test('T4a the four pod specs are out of quarantine, carry no reason, and at leas
   assert.ok(found.some(function (e) { return e.lane === 'core'; }), 'at least one pods spec must be in the core lane');
 });
 
-test('T5 no product code under public/, modules/ or routes/ is changed', function () {
-  const base = spawnSync('git', ['merge-base', 'HEAD', 'origin/master'], { cwd: root, encoding: 'utf8' });
-  if (base.status !== 0) { console.log('[lpw-s4] (no origin/master here; T5 skipped)'); return; }
-  const diff = spawnSync('git', ['diff', '--name-only', base.stdout.trim()], { cwd: root, encoding: 'utf8' }).stdout.split('\n');
-  const touched = diff.filter(function (f) { return /^src\/web-ui\/(public|modules|routes)\//.test(f); });
-  assert.deepStrictEqual(touched, [], 'must not change: ' + touched.join(', '));
-});
+// (The acceptance check "no product code changed" compared this branch against master; it held for the pull request that
+// added it and would fail any later pull request touching those folders, so it was verified at review and removed.)
 
 (async function () {
   let passed = 0; let failed = 0;
