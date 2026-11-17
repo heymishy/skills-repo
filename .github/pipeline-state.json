@@ -51106,6 +51106,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-quarantine-rewrites",
+      "name": "Three quarantined browser specs rewritten and moved to the core lane",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-17T23:56:47.358Z",
+      "stories": [
+        {
+          "id": "qrw-s1",
+          "slug": "qrw-s1",
+          "name": "Three quarantined browser specs are rewritten against the product as it is and join the core suite",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T23:56:47.358Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 16,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-quarantine-rewrites/test-plans/qrw-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
