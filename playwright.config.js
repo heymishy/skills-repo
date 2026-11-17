@@ -70,6 +70,9 @@ module.exports = {
       // E2E spec, not just this story's own. Without it /skills always renders
       // its "No skills available" empty state under the E2E webServer.
       WIRE_SKILL_ADAPTERS: 'true',
+      // lpw-s3: let a stage complete on the test server (the board's Advance commits the stage's artefact through the
+      // artefact-commit adapter, which is otherwise the throwing default in test mode). Opt-in; see server.js.
+      E2E_STUB_ARTEFACT_COMMIT: 'true',
       // lpw-s1: when CI asks for server coverage, the server writes V8 coverage to this directory on exit.
       ...(process.env.LPW_SERVER_COVERAGE_DIR ? { NODE_V8_COVERAGE: process.env.LPW_SERVER_COVERAGE_DIR } : {}),
     },

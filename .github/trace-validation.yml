@@ -98,6 +98,11 @@ reference_dirs:
   # stated purpose, not a workaround. Remove this entry if the initiative
   # is ever actually taken to /discovery.
   - 2026-11-11-framework-scaling-and-architecture-evolution
+  # lpw-s3: the board specs and tests/check-lpw-s3-test-commit-adapter.js complete a seeded stage on the test server,
+  # and gate-confirm writes that stage's artefact here (a git-ignored folder, never committed). When a test in the
+  # same run later validates the repository's traces, this folder exists with no discovery chain; it is output, not a
+  # feature.
+  - e2e-board-seed
   # 2026-11-12: same category as the entry above -- /ideate-only output
   # (Lens D/A, research/ideation.md only), no discovery.md yet. Proceed signal
   # is scoped to one cluster pending a /discovery run. Remove this entry once

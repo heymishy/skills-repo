@@ -159,10 +159,25 @@ async function realCommitArtefact(artefactPath, content, token, owner, repo, enc
   return putRes.json();
 }
 
+/**
+ * lpw-s3: test-only stand-in for realCommitArtefact, so a browser spec can complete a stage on the test server (the
+ * board's Advance runs gate-confirm, which commits the stage's artefact to the product's connected repository).
+ * Returns the shape of the GitHub Contents API's PUT response (content.sha and commit.sha), which is what the real
+ * function resolves to. It throws outside NODE_ENV=test, and server.js wires it only when NODE_ENV=test AND
+ * E2E_STUB_ARTEFACT_COMMIT=true, so the throwing default stays active for everything else.
+ */
+async function testCommitArtefact(artefactPath, content, token, owner, repo) { // eslint-disable-line no-unused-vars
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('testCommitArtefact is for NODE_ENV=test only; wire realCommitArtefact in production.');
+  }
+  return { content: { path: artefactPath, sha: 'test-content-sha' }, commit: { sha: 'test-commit-sha' } };
+}
+
 module.exports = {
   setArtefactCommitAdapter,
   getArtefactCommitAdapter,
   commitArtefact,
   realCommitArtefact,
+  testCommitArtefact,
   ArtefactCommitConflictError
 };

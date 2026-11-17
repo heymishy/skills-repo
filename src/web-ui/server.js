@@ -106,7 +106,7 @@ const { setGenerateProductDraft }                                    = require('
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
-const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
+const { setArtefactCommitAdapter, realCommitArtefact, testCommitArtefact } = require('./adapters/artefact-commit-writer'); // das-s1 (testCommitArtefact: lpw-s3)
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
@@ -135,6 +135,25 @@ const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.c
 
 // psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
 let _pshPool = null;
+
+// lpw-s3: the journey-persistence stand-in the test seed routes install (setPgAdapterForTesting takes precedence over
+// the fake-database sync wired at startup). It used to be a no-op saveJourney in the ppc-s5 and actr-s2 seeds, so once
+// either ran, every journey created afterwards never reached the fake journeys table and never appeared on a board
+// (the board specs failed whenever actr-s2 ran before them). This keeps the sync: it writes the same row the startup
+// adapter writes, and does nothing only when the real database (not the fake) is in use.
+function _fakeDbSaveJourney(journey) {
+  if (_pshPool && typeof _pshPool._upsertJourney === 'function') {
+    return _pshPool._upsertJourney({
+      journey_id: journey.journeyId,
+      tenant_id: journey.tenantId || null,
+      product_id: journey.productId || null,
+      feature_slug: journey.featureSlug,
+      stage: journey.activeSkill || null,
+      active_session_id: journey.activeSessionId || null
+    });
+  }
+  return undefined;
+}
 
 // ppc-s5 (Task 8, E2E lazy-load/no-layout-shift spec): per-journeyId DoD
 // "AC Coverage" content for /test/seed-ppc-s5-journey below. A Map (not a
@@ -381,6 +400,12 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setArtefactCommitAdapter(realCommitArtefact);
   console.log('[artefact-commit-writer] commitArtefact wired');
+} else if (process.env.E2E_STUB_ARTEFACT_COMMIT === 'true') {
+  // lpw-s3 (D37 rule 3, wiring as its own task): the browser specs need a stage to be completable on the test
+  // server (the board's Advance runs gate-confirm, which commits the artefact). Opt-in only, test mode only:
+  // without E2E_STUB_ARTEFACT_COMMIT the throwing default stays active, exactly as before.
+  setArtefactCommitAdapter(testCommitArtefact);
+  console.log('[artefact-commit-writer] test-mode commit stub wired (E2E_STUB_ARTEFACT_COMMIT=true)');
 }
 
 // ppc-s9 Tasks 1 & 3 (D37 rule 3 -- wiring is its own task, distinct from the
@@ -2211,6 +2236,12 @@ if (process.env.NODE_ENV === 'test') {
     setModulesAdapter(_fakeTestDb);
     console.log('[bmau-s1] fake in-memory modules adapter wired (NODE_ENV=test, no DATABASE_URL)');
 
+    // lpw-s3: export-data-source's ownerRepoForFeature (the repository a completed stage's artefact is committed to)
+    // was only wired in the DATABASE_URL block above (mtrr-s1), so in the test server it threw "pool not wired" and
+    // every stage completion of a product-linked feature answered 502. Same fake db instance as products/journeys.
+    require('./adapters/export-data-source').setDbPool(_fakeTestDb);
+    console.log('[lpw-s3] fake in-memory pool wired for ownerRepoForFeature (NODE_ENV=test, no DATABASE_URL)');
+
     // rbg-s1: the arl-s1/tir-s1/tir-s7/tir-s9/sec-perf-s2 role adapters
     // (setGetRoleForTenant, setGetCurrentRole) were previously only ever
     // wired inside the `if (process.env.DATABASE_URL)` block above -- the
@@ -2654,7 +2685,9 @@ async function router(req, res) {
       systemPrompt: 'test',
       turns: [],
       artefactContent: '# seeded artefact for ' + featureSlug,
-      artefactPath: null,
+      // lpw-s3: a real relative path (under a git-ignored folder), so confirming this stage can write the artefact
+      // and run the commit step the way a real stage does; null made gate-confirm read the repository root as a file.
+      artefactPath: 'artefacts/e2e-board-seed/' + featureSlug + '/' + stage + '.md',
       done: done,
       journeyId: journeyId
     });
@@ -2928,7 +2961,7 @@ async function router(req, res) {
     // cross-spec contamination source -- whoever touches that precedence
     // should grep for setPgAdapterForTesting across tests/e2e/ first.
     _journeyStoreForPpcS5.setPgAdapterForTesting({
-      saveJourney: async function() {},
+      saveJourney: _fakeDbSaveJourney,
       getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
     });
 
@@ -3074,7 +3107,7 @@ async function router(req, res) {
     // (including this route's own journeys, which deliberately want []
     // here so _getDodAcList falls through to the storySlugs-loop branch).
     _journeyStoreForActrS2.setPgAdapterForTesting({
-      saveJourney: async function() {},
+      saveJourney: _fakeDbSaveJourney,
       getArtefactsForJourney: async function(jid) { return _ppcS5DodContentByJourney.get(jid) || []; }
     });
 

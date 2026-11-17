@@ -118,6 +118,17 @@ function lane(laneConfig, cards, wipLimit) {
  * @param {Array}  data.ideas     — (optional) ideas backlog
  * @param {object} [data.wipLimits] — { delivery: 3 } etc. optional (old only)
  */
+/**
+ * lpw-s3: a JavaScript string literal that is safe inside an inline <script> element (no closing-tag, comment or
+ * line-separator breakout). An absent value becomes the empty string, never "undefined".
+ */
+function _jsStringLiteral(value) {
+  var s = (value === undefined || value === null) ? '' : String(value);
+  return JSON.stringify(s)
+    .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+}
+
 function renderKanban(data) {
   // kbc-s1 (AC1, AC6): dispatch on shape -- new generic {columns} signature
   // renders via the simplified board renderer; legacy {features} signature
@@ -531,6 +542,10 @@ function _renderKanbanColumns(data) {
       columnHtml,
     '</div>',
     '<script>',
+      // lpw-s3 (issue #1140): the advance endpoint delegates to gate-confirm, whose CSRF guard rejects a POST without
+      // the session's token (rcfc-s1). The page's token is handed to the script here and sent by _kbTriggerAdvance,
+      // the one place that calls the endpoint (button and drag both use it).
+      'var KB_CSRF = ' + _jsStringLiteral(data && data.csrfToken) + ';',
       // s1.1 (AC1) -- click the board's own "Advance" action instead of
       // leaving the board to confirm the gate from the chat-session UI.
       // On success: reload so the card re-renders in its new stage's column
@@ -560,7 +575,7 @@ function _renderKanbanColumns(data) {
       // call the exact same endpoint S1.1 built -- no separate drag-specific
       // backend mechanism, per this story's own Architecture Constraints.
       'function _kbTriggerAdvance(journeyId) {',
-      '  return fetch("/api/board/journey/" + encodeURIComponent(journeyId) + "/advance", { method: "POST" })',
+      '  return fetch("/api/board/journey/" + encodeURIComponent(journeyId) + "/advance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ _csrf: KB_CSRF }) })',
       '    .then(function(r) {',
       '      return r.json().catch(function() { return {}; }).then(function(body) { return { ok: r.ok, body: body }; });',
       '    });',

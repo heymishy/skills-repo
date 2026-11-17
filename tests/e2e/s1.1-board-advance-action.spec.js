@@ -16,6 +16,7 @@ const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token.
 const { getCsrfToken } = require('./fixtures/csrf');
+const { connectRepoToProduct } = require('./fixtures/product-repo');
 
 async function createProduct(request, name) {
   const draftRes = await request.post('/products/new', {
@@ -32,7 +33,11 @@ async function createProduct(request, name) {
   expect(confirmRes.status(), 'POST /products/confirm should redirect to the product view').toBe(302);
   const location = confirmRes.headers()['location'];
   expect(location).toMatch(/^\/products\//);
-  return location.split('/products/')[1];
+  const productId = location.split('/products/')[1];
+  // lpw-s3: completing a stage on the board commits its artefact to the product's connected repository, so the
+  // fixture product needs one (the test server stubs the commit itself).
+  await connectRepoToProduct(request, productId);
+  return productId;
 }
 
 async function seedBoardJourney(request, opts) {

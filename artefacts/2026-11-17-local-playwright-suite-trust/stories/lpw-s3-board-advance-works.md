@@ -23,7 +23,7 @@ So that **the board is trustworthy: today both actions do nothing and the server
 - **Honest status mapping.** `handlePostBoardAdvance` treats only a 2xx or 3xx gate-confirm response as success. 401 and 403 are returned as they are (with an error body the board can show); any other unexpected status is returned as 502 `advance-failed`. The existing 400, 404, 422 and 5xx handling and bodies are unchanged.
 - **Failures are observable.** A failed advance calls the existing PostHog capture (event `board_advance_failed` with the status and a journey id prefix, never the token or full session). No new dependency.
 - **Test server only for the commit stub.** In `NODE_ENV=test` the artefact commit that gate-confirm needs is satisfied by a test-mode adapter; production wiring and the real commit path are untouched. D37: a stub must throw if used outside test mode, the wiring is a separate task in `server.js`, and a test asserts the behaviour (the card ends in the next column), not that a function was assigned.
-- **Design system.** The error message reuses the board's existing message element and wording style; no new component, so no token change.
+- **Design system.** The failure message reuses the board's existing `alert` and wording style; no new component, so no token change.
 - **Architecture guardrails:** ADR-011 (artefact-first) satisfied by this chain; platform change policy followed (pull request).
 
 ## Dependencies
@@ -37,7 +37,7 @@ So that **the board is trustworthy: today both actions do nothing and the server
 
 **AC2:** Given `POST /api/board/journey/:id/advance`, When the delegated gate-confirm response is 401 or 403, Then the endpoint answers the same status with an error body (not `advanced: true`); any other status outside 2xx and 3xx that is not already handled answers 502 `advance-failed`; a success still answers 200 `{advanced: true, stage: <the new stage>}`; tests cover 403, 302-to-sign-in, 303 and an unexpected status.
 
-**AC3:** Given a failed advance, When the board receives the error, Then it shows the message in its existing error element and the card stays in place; and a `board_advance_failed` capture is recorded server-side with the status (a test with a fake PostHog asserts the event and that no token or full session id is in it).
+**AC3:** Given a failed advance, When the board receives the error, Then it shows the real reason through the board's existing failure message (an `alert`, as the board already does for a validation failure) and the card stays in place; and a `board_advance_failed` capture is recorded server-side with the status (a test with a fake PostHog asserts the event and that no token or full session id is in it).
 
 **AC4:** Given the test server, When a seeded, ready card is advanced with a valid token, Then the artefact commit step succeeds through a test-mode adapter and the journey's stage moves to the next stage (`discovery` to `benefit-metric`); the adapter throws if called outside `NODE_ENV=test`; a test asserts the card is in the next column afterwards.
 
