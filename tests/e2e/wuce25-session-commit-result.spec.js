@@ -59,7 +59,7 @@ withAuth('AC1: commit-preview HTML page includes renderShell nav', async ({ page
   await page.goto(`/skills/${SKILL_NAME}/sessions/${FAKE_SESSION}/commit-preview`);
   const html = await page.content();
   expect(html).toContain('<html');
-  const nav = page.locator('nav');
+  const nav = page.locator('nav').first();
   await expect(nav).toBeVisible();
 });
 
@@ -67,7 +67,7 @@ withAuth('AC3: result HTML page includes renderShell nav', async ({ page }) => {
   await page.goto(`/skills/${SKILL_NAME}/sessions/${FAKE_SESSION}/result`);
   const html = await page.content();
   expect(html).toContain('<html');
-  const nav = page.locator('nav');
+  const nav = page.locator('nav').first();
   await expect(nav).toBeVisible();
 });
 

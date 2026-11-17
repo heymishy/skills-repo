@@ -4,7 +4,7 @@
 **Epic reference:** None - short-track
 **Test plan author:** Claude Sonnet 5.5
 **Date:** 2026-11-17
-**Test runner (read from package.json):** `npm test` runs `node scripts/run-all-tests.js`, which globs `tests/check-*.js`; plain Node scripts. The browser specs run separately with `npm run test:e2e` (Playwright). New files: `tests/check-lpw-s1-fake-db-journeys.js`, `tests/check-lpw-s1-first-login-fake-db.js`, `tests/check-lpw-s1-playwright-job.js`, `tests/check-lpw-s1-summarise-report.js`.
+**Test runner (read from package.json):** `npm test` runs `node scripts/run-all-tests.js`, which globs `tests/check-*.js`; plain Node scripts. The browser specs run separately with `npm run test:e2e` (Playwright). New files: `tests/check-lpw-s1-fake-db-journeys.js`, `tests/check-lpw-s1-playwright-job.js`, `tests/check-lpw-s1-spec-text.js`, `tests/check-lpw-s1-summarise-report.js` (T2 was dropped: the first-login adapter was already wired in test mode).
 
 ---
 
@@ -13,8 +13,8 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Fake database answers the journey and stage queries | 1 (T1) | - | 8 existing specs | - | - | 🟡 |
-| AC2 | First sign-in goes to `/welcome`, second to `/dashboard` | 1 (T2) | boot probe | `bri-s3.6` AC1 | - | - | 🟢 |
-| AC3 | Stub secret reaches server and tests | 1 (T3) | - | `b1`, `dsh-s4` | - | - | 🟢 |
+| AC2 | `bri-s3.6` AC1 result and cause recorded (no code change) | - | - | `bri-s3.6` in CI order | - | Measured only | 🟡 |
+| AC3 | The six staging-targeted specs are excluded from the local suite | 1 (T3) | - | CI run (291 tests) | - | - | 🟢 |
 | AC4 | Stale spec text fixed | 1 (T4) | - | 9 existing tests | - | - | 🟢 |
 | AC5 | Repository fixture lets a product start a feature | - | - | `frsr-s1` plus 4 measured specs | - | - | 🟡 |
 | AC6 | Job enabled, non-blocking, report and summary | 1 (T3, T5) | - | CI run | - | - | 🟢 |
@@ -31,8 +31,8 @@
 ## Tests
 
 - **T1 (AC1).** `createFakeTestDb()` answers the query shapes in `routes/journeys.js` for `customer_journeys` and `customer_journey_stages`: insert a journey returns an id; insert stages with positions; select the max position; select a journey by id and tenant; update a stage's name, position and coordinates; select stages ordered by position; the join selects (`cjs JOIN cj`); the list with stage counts; persona update. A second tenant cannot read the first tenant's journey. Fails today ("unhandled query", empty rows).
-- **T2 (AC2).** The fake database supports `github_first_login`: a new identity has no row so the adapter reports first login; after the flag is cleared the adapter reports not first. A boot probe (child process, `NODE_ENV=test`, no database URL) shows the server's flags adapter is wired to it (two different identities, two different outcomes). Fails today (no adapter wired in test mode, everyone returning).
-- **T3 (AC3, AC6, AC7, workflow text).** The `e2e` job in `e2e.yml`: keeps its name `Playwright E2E smoke tests`; has `continue-on-error`; `timeout-minutes` is 30; generates a per-run stub secret with `::add-mask::` and exports `E2E_STAGING_AUTH_STUB_SECRET` to the server and test step; uploads `pw-report.json`; runs the coverage step with a pinned `c8` version and `NODE_V8_COVERAGE`; and `context.yml` has `e2e_tests: true`. The job is not in the ruleset's required list in the repo (it is not named in any workflow `needs` chain used for promotion).
+- **T2 (dropped).** Planned as a first-login test against the fake database. Reading the code showed the test server already wires a first-login adapter (`server.js`, bri-s3.6), and `bri-s3.6` AC1 fails only after other specs have run on the same server (see the story's AC2). No test added; the result is recorded in `decisions.md`.
+- **T3 (AC3, AC6, AC7, workflow text and config).** The `e2e` job in `e2e.yml`: keeps its name `Playwright E2E smoke tests`; has `continue-on-error`; `timeout-minutes` is 30; sets `E2E_LOCAL_SUITE: 'true'` and never `E2E_STAGING_BASE_URL`; `playwright.config.js` ignores exactly the specs that import the staging URL when that variable is set (compared against the files themselves), and the Scenario jobs do not set it; the run uses the JSON reporter and uploads `pw-report.json` with `always()`; the report summary and coverage summary steps are present; coverage runs a pinned `c8` through `npx` and `c8` is not in `package.json`; and `context.yml` has `e2e_tests: true`.
 - **T4 (AC4).** No file in `tests/e2e/` contains the literal `localhost:3000` as an expected URL; the four named specs (`artefact-read`, `feature-navigation`, `wuce20`, `wuce23`) build the expected URL from the configured base URL; the three specs with the `nav` locator use a locator that resolves to one element; the focus-walk check in `csd-s2` records element identity.
 - **T5 (AC6).** `scripts/summarise-playwright-report.js` turns a small Playwright JSON fixture into a Markdown table (spec, passed, failed, skipped, seconds), sorted failures first, and tolerates an empty report.
 - **E2E (the suite itself, run in the CI job).** The 8 specs for AC1, `bri-s3.6` AC1, `b1` and `dsh-s4`, the 9 tests for AC4 and `frsr-s1` pass. Recorded per test in the evidence.

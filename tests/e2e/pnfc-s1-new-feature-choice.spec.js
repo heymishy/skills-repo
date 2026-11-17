@@ -15,6 +15,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { connectRepoToProduct } = require('./fixtures/product-repo');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 /**
@@ -40,7 +41,10 @@ async function createProduct(page, name) {
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
   const location = confirmRes.headers()['location'];
   expect(location, 'product confirm should redirect under /products/').toMatch(/^\/products\//);
-  return location.split('/products/')[1];
+  const productId = location.split('/products/')[1];
+  // lpw-s1: das-s2 blocks a product's first feature until a repo is connected.
+  await connectRepoToProduct(page.request, productId);
+  return productId;
 }
 
 function uniqueLabel(tag) {

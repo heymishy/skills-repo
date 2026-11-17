@@ -17,7 +17,7 @@ const TEST_SLUG = '2026-05-02-web-ui-copilot-execution-layer';
 
 test('unauthenticated GET /features/:slug redirects to sign-in', async ({ page }) => {
   await page.goto(`/features/${TEST_SLUG}`);
-  expect(page.url()).toMatch(/localhost:3000\/?$/);
+  expect(page.url()).toMatch(/^https?:\/\/localhost:\d+\/?$/);
 });
 
 // ── Authenticated ────────────────────────────────────────────────────────────

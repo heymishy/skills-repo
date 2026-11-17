@@ -50,7 +50,7 @@ withAuth('AC1: /skills/:name/sessions/:id/next response is an HTML document', as
 withAuth('AC7: progress indicator present in HTML — step counter element exists when session valid', async ({ page }) => {
   // With a fake session we get an error page — verify we still get HTML shell, not a crash
   await page.goto(`/skills/${SKILL_NAME}/sessions/${FAKE_SESSION}/next`);
-  const nav = page.locator('nav');
+  const nav = page.locator('nav').first();
   // renderShell is used even for error pages — nav should be present
   await expect(nav).toBeVisible();
 });

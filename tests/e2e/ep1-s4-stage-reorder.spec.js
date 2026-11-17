@@ -37,10 +37,10 @@ function extractCsrfToken(html) {
 }
 
 async function seedJourneyWithStages(request, stageNames) {
-  const homeHtml = await (await request.get('/')).text();
+  const homeHtml = await (await request.get('/customer-journeys')).text();
   const homeCsrf = extractCsrfToken(homeHtml);
   const journeyRes = await request.post('/journeys', {
-    data: { name: uniqueName('journey'), _csrf: homeCsrf },
+    data: { name: uniqueName('journey'), _csrf: homeCsrf, seedDefaultStages: false },
     headers: { 'Content-Type': 'application/json' },
     maxRedirects: 0
   });

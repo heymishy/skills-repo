@@ -1,10 +1,9 @@
 # Contract Proposal - The local Playwright suite becomes a trustworthy, measured, non-blocking signal
 
 **What will be built:**
-- `src/web-ui/adapters/fake-test-db.js`: handlers for the `customer_journeys` and `customer_journey_stages` query shapes in `routes/journeys.js`, and for `github_first_login`.
-- `src/web-ui/server.js`: in the existing `!process.env.DATABASE_URL` test branch, wire the first-login flags adapter to the fake database (its own task).
-- `playwright.config.js`: pass the stub secret through to the webServer environment.
-- `.github/workflows/e2e.yml` (the `e2e` job only): per-run stub secret, 30-minute limit, JSON report upload, report summary step, coverage collection with a pinned `c8`.
+- `src/web-ui/adapters/fake-test-db.js`: handlers for the `customer_journeys` and `customer_journey_stages` query shapes in `routes/journeys.js`, the first journey of a product, and a `connect()` stand-in for the reorder transaction.
+- `playwright.config.js`: `testIgnore` for the six staging-targeted specs when `E2E_LOCAL_SUITE` is set, and the coverage settings (`NODE_V8_COVERAGE`, graceful shutdown) when the coverage directory is set.
+- `.github/workflows/e2e.yml` (the `e2e` job only): `E2E_LOCAL_SUITE`, a 30-minute limit, JSON report upload, report summary step, coverage collection with a pinned `c8`.
 - `.github/context.yml`: `audit.e2e_tests: true`.
 - `scripts/summarise-playwright-report.js` (new) and the four new tests named in the test plan.
 - Spec fixes: port and `nav` text in `artefact-read`, `feature-navigation`, `wuce20`, `wuce23`, `wuce24`, `wuce25`; the focus-walk identity check in `csd-s2`; a shared fixture that connects a repository to a product (in `tests/e2e/fixtures/`) used by `frsr-s1` and tried on `pnfc-s1`, `ep3-s1`, `reference-upload`, `dsda-s1`.
@@ -25,7 +24,7 @@
 | AC7 | T3, CI job summary | unit + CI |
 | AC8 | two CI runs on one commit, recorded | live |
 
-**Assumptions:** the fake database matches queries by SQL text (as the other handlers in the file do); the workflow's `e2e` job already runs `npm run test:e2e` with `NODE_ENV=test`; `E2E_STAGING_AUTH_STUB_SECRET` is the variable the fixture and the server's bypass already read; `c8` can read the V8 coverage directory the server writes on exit (the server is stopped by Playwright with a signal, so the exit path may need a flush; checked first).
+**Assumptions:** the fake database matches queries by SQL text (as the other handlers in the file do); the workflow's `e2e` job already runs `npm run test:e2e` with `NODE_ENV=test`; the six staging-targeted specs are exactly those that import `STAGING_BASE_URL` from `fixtures/staging-auth.js`; `c8` can read the V8 coverage directory the server writes on exit (Playwright stops the server with SIGTERM, which `server.js` handles; not provable on this Windows machine, so CI is the record).
 
 `schemaDepends: []`. **Estimated touch points:** Files: about 20 (fake database, server wiring, config, one workflow, `context.yml`, one script, four tests, about 10 specs and one fixture). Services: GitHub Actions. APIs: none.
 

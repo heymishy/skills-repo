@@ -42,12 +42,12 @@ function extractCsrfToken(html) {
 withAuth('stage panel opens with focus inside it, traps Tab/Shift+Tab, and Escape closes it returning focus to the trigger (AC1, AC4, AC5)', async ({ page }) => {
   // ── Fixture setup: a journey with one stage, via real HTTP ──
   const journeyName = uniqueName('journey');
-  const homeHtml = await (await page.request.get('/')).text();
+  const homeHtml = await (await page.request.get('/customer-journeys')).text();
   const homeCsrf = extractCsrfToken(homeHtml);
   expect(homeCsrf, 'the authenticated home page must embed a usable CSRF token (hidden input or JS variable)').toBeTruthy();
 
   const journeyRes = await page.request.post('/journeys', {
-    data: { name: journeyName, _csrf: homeCsrf },
+    data: { name: journeyName, _csrf: homeCsrf, seedDefaultStages: false },
     headers: { 'Content-Type': 'application/json' },
     maxRedirects: 0
   });

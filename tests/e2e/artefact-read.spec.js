@@ -29,7 +29,7 @@ test('unauthenticated /artefact/:slug/:type redirects to sign-in', async ({ page
   // Playwright follows the 302 redirect; the final page is the sign-in root.
   await page.goto(ARTEFACT_URL);
   // URL should be root (sign-in) — not the artefact URL
-  expect(page.url()).toMatch(/localhost:3000\/?$/);
+  expect(page.url()).toMatch(/^https?:\/\/localhost:\d+\/?$/);
 });
 
 // ── Authenticated access: fixture-backed artefact ────────────────────────

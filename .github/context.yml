@@ -73,6 +73,7 @@ audit:
   ci_attachment: true           # opt-in: collect and upload governed artefact bundles on each PR
   ci_platform: github-actions   # adapter to use for upload + comment
   artifact_retention_days: 7    # days to retain CI artefact bundles
+  e2e_tests: true               # lpw-s1: the local (mocked) Playwright suite runs on every PR as the non-blocking `e2e` job; not a required check
   staging_e2e_scenario_a: true  # opt-in, BLOCKING: story a5-ci-gate-scenario-a-blocking's Scenario A (A1-A4) real-staging E2E job (.github/workflows/e2e.yml `scenario-a-staging-e2e` job) -- a distinct flag from the pre-existing non-blocking `e2e_tests` semantics, not a reuse of that key
   staging_e2e_scenario_b: true  # opt-in, BLOCKING: story b2-ci-gate-scenario-b-coverage-mapping's Scenario B (B1) real-staging E2E job (.github/workflows/e2e.yml `scenario-b-staging-e2e` job) -- a distinct flag from both `e2e_tests` and `staging_e2e_scenario_a`, not a reuse of either key
 
