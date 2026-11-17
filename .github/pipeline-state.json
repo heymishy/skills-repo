@@ -50988,6 +50988,12 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "new-feature-c2a2815d",
+      "id": "new-feature-c2a2815d",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/new-feature-c2a2815d/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
