@@ -1,25 +1,44 @@
 # Local Playwright suite triage, 2026-11-17
 
-Follows `playwright-local-suite-trial.md` (308 tests, 186 passed, 90 failed, 32 skipped, one CI run). This reads the first error of each failing test and reproduces two of the causes locally. It does not fix anything.
+Follows `playwright-local-suite-trial.md` (308 tests, 186 passed, 90 failed, 32 skipped, one CI run). Every one of the 90 failures is placed in a group below by reading its first error, the failing line and the locator or URL involved. Two causes were reproduced locally; the rest are classified from the CI report and not yet re-run, so a group is a strong hint, not a proven cause.
 
-## How the 90 failures split by first error
+## Summary
 
-36 assertion failures, 30 timeouts, 24 other.
+| Group | Tests | What it is | Likely action |
+|---|---|---|---|
+| 1. Test database double lacks the journey tables | 17 | `fake-test-db.js` has no `customer_journeys` or `customer_journey_stages`, so `POST /journeys` fails and setup crashes (`reading 'split'`) | add the tables to the double (reproduced locally) |
+| 2. Signup rate limit | 5 | the local-suite job sends no stub secret, so the limiter's bypass header is never sent (`HTTP 429`) | set a stub secret in the job |
+| 3. Kanban board shows no cards | 12 | `[data-journey-id]`, `.kb-card`, `.bmau-item-checkbox` and the 8 columns are not found; one board cause is likely | investigate in CI |
+| 4. Feature creation and the new-feature flow | 14 | feature creation answers 409 (`frsr-s1`), or the page never navigates (`pnfc-s1`, `ep3-s1`); `reference-upload` (7) and `dsda-s1` land on the skill chat instead of a reference modal or story list, so the flow they test has changed | decide per spec: real defect, or superseded flow to retire |
+| 5. Pod manager times out | 9 | `ep1-s1`, `ep1-s2`, `ep1-s3-feature-pod`, `ep4-s1` time out at 30 to 60 s; fake database does have pod tables | not reproduced locally (Chromium crashed); needs CI |
+| 6. Needs a real model session | 8 | `design-definition-canvas-render` (4), `ep2-s1-presence-sidebar`, `ep2-s2-stage-visibility` (2), `rdac-s1-resume` time out after 90 to 150 s on "a real /design session turn" and similar | give the job the mock model gateway, or move to a real-model lane |
+| 7. Stale expectation in the spec | 8 | hard-coded `localhost:3000` where the server runs on 3999 (`artefact-read`, `feature-navigation`, `wuce20`, `wuce23`: 4); `locator('nav')` now matches two elements (`wuce23`, `wuce24`, `wuce25` x2: 4) | one-line spec fixes |
+| 8. Right-panel layout spec | 7 | `iwu2-right-panel-layout`: `#assumption-cards` and `#draft-content` are not in the page at all, so the element was removed or renamed | check whether the feature still exists; retire or rewrite |
+| 9. Singles to look at one by one | 10 | see below | per test |
+| 10. Same cause as group 1 | included in 17 | `ep1-s3-stage-panel-focus-management` (`handlePostJourneys redirects 302`) | with group 1 |
 
-## Causes found so far
+Group counts add to 90: 17 + 5 + 12 + 14 + 9 + 8 + 8 + 7 + 10 = 90.
 
-| Cause | Specs | Tests | Evidence | Kind |
-|---|---|---|---|---|
-| The test database double has no `customer_journeys` or `customer_journey_stages` tables, so `POST /journeys` fails and the spec's seed step crashes on a missing `Location` header (`Cannot read properties of undefined (reading 'split')`) | `ep1-s4-stage-reorder`, `ic-s2-canvas-drag-position`, `ic-s4-keyboard-node-movement`, `jae-s5-delivery-swimlane-grid`, `jcx-s3-emotion-curve`, `jcx-s6-swimlane-grid`, `jcx-s7-panel-entry-and-save-feedback` | 11 | Reproduced locally. `src/web-ui/adapters/fake-test-db.js` has 0 mentions of either table; the handler (`routes/journeys.js`) reads `r.rows[0].id` from an empty result; the server logs `[fake-test-db] unhandled query (returning empty rows)` | test double drift (fixable in one place) |
-| Signup rate limit: the local-suite job sends no stub secret, so the limiter's bypass header is never sent and a spec that signs up repeatedly gets `HTTP 429 Too many attempts` | `b1-formed-idea-outer-loop-story-map`, `dsh-s4-resume-conversation-survives-restart` (more may be hidden behind timeouts) | 5 | `fixtures/staging-auth.js` sends the bypass header only when a stub secret is set; the Scenario jobs set one (sep-s1), the local-suite job does not | test environment (fixable in the workflow) |
-| Pod specs time out waiting for the pod manager | `ep1-s1-pod-creation`, `ep1-s2-product-default-pod`, `ep1-s3-feature-pod-inheritance`, `ep4-s1-multi-pod-assign` | 9 | CI: every test times out at 30 to 60 seconds. Locally the browser crashed on Windows, so this is not yet reproduced; the fake database does have pod tables, so the cause is something else | unknown |
-| Everything else (about 55 tests: kanban drag and advance, new-feature choice, reference upload, canvas render, right-panel layout, restyle assertions, text matches) | about 30 specs | about 55 | not yet examined | unknown |
+## Group 9: single failures
+
+| Test | First error | Note |
+|---|---|---|
+| `dsa-s2-dashboard-restyle` AC7 (2 tests) | in-progress count 3 vs 2, and 1 vs 0 | state left over from other specs sharing one server |
+| `fpux.1-visual-consistency-theme` (2) | token `rgb(20,23,26)`, spec expects `rgb(24,24,27)` | design tokens changed; spec stale |
+| `fpd-s4-caption-sync` | `.playback-ac__video` not found | missing playback fixture |
+| `csd-s2` AC4 keyboard navigation | "expected no focus trap", re-focus count 4 | could be a real accessibility defect |
+| `bri-s3.6` AC1 | first-time GitHub sign-in lands on `/dashboard`, spec expects `/welcome` | product behaviour change, or leftover state; related to the earlier first-login navigation report |
+| `ep1-s4-stage-selector` Scenario 2 | back links exist for 2 stages where the spec expects 0 | product change or real |
+| `spdr-s2-metric1-timing`, `wuce18-keyboard-nav` | 30 s timeouts | slow, unclear |
+
+## What this means
+
+- About 30 tests (groups 1, 2 and 7) look like cheap test-environment fixes, not product problems.
+- About 20 more (groups 3 and 6) probably have one environment cause each.
+- About 14 (group 8 and the 7 `reference-upload` tests) probably belong to features that have changed or gone, and should be retired or rewritten rather than fixed.
+- Three places might be genuine product defects and are worth checking on staging: feature creation answering 409, the first sign-in landing on the dashboard, and the diagram keyboard focus trap.
 
 ## Local running notes
 
 - The suite needs `NODE_ENV=test` locally, as CI sets it; without it every `withAuth` test fails at once with "auth bypass only available in NODE_ENV=test".
 - Browser tests are unreliable on this Windows machine (a Chromium page crashed during the pod spec), so cause-finding for browser-heavy specs should use CI runs.
-
-## What this means for the plan
-
-Two of the causes are test-environment gaps, not product bugs, and fixing them should turn about 16 tests across 9 specs from red to a real signal. The rest need a second triage pass in CI with the first two fixed, because several timeouts may be knock-on effects.
