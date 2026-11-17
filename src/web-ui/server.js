@@ -2855,6 +2855,37 @@ async function router(req, res) {
     return;
   }
 
+  // lpw-s4: E2E fixture-seeding shortcut for the pod specs. The pod manager's roster is the real team roster
+  // (GET /api/team/members, rtri-s1), which is empty in test mode, and adding a real teammate looks the identity up
+  // on GitHub. This writes a person, identity and membership straight into the fake test database for the caller's
+  // own tenant, once per identity. Same inline NODE_ENV=test guard as the sibling seed routes; _pshPool is the fake
+  // database in test mode, so a missing _seedTeamMember (a real pool) answers 404 and writes nothing.
+  // Body: { identity, role }. identity is a plain login-style string; role one of the real team roles.
+  if (pathname === '/test/seed-team-member' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+    const _seedIdentity = body.identity;
+    const _seedRole = body.role || 'engineer';
+    const _validRoles = require('./modules/team-management').VALID_ROLES;
+    if (typeof _seedIdentity !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,38}$/.test(_seedIdentity) || _validRoles.indexOf(_seedRole) === -1) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'identity must be a plain login (letters, digits, . _ -) and role one of ' + _validRoles.join(', ') }));
+      return;
+    }
+    if (!_pshPool || typeof _pshPool._seedTeamMember !== 'function') {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'not available' }));
+      return;
+    }
+    const _seedTenant = (req.session && req.session.tenantId) || 'e2e-tester';
+    const _seeded = _pshPool._seedTeamMember(_seedTenant, _seedIdentity, _seedRole);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(_seeded));
+    return;
+  }
+
   // bmau-s1: E2E fixture-seeding shortcut -- creating a product's first
   // real feature (POST /products/:id/features) requires a connected GitHub
   // repo (das-s2's gate), and connecting one for real

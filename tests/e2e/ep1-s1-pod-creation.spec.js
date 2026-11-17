@@ -30,8 +30,13 @@
 // was not treated as a blocking finding.
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedTeam, addPodMember } = require('./fixtures/pods');
+
+// lpw-s4: the Available roster is the real team roster, empty in test mode; every test seeds the people it needs.
+const TEAM = ['Hamish', 'Susan', 'Darren'];
 
 withAuth('ep1-s1 AC1: create a pod with multiple members', async ({ page }) => {
+  await seedTeam(page, TEAM);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', 'Core Platform E2E Test');
@@ -44,35 +49,37 @@ withAuth('ep1-s1 AC1: create a pod with multiple members', async ({ page }) => {
   // membership -- left as-is rather than changed, to avoid altering this
   // task's already-reviewed AC1 assertions; the correct selector pattern is
   // demonstrated in the grouping test below for any future edit here.
-  await page.click('.add-btn >> nth=0'); // adds Hamish
-  await page.click('.add-btn >> nth=0'); // no-op: Hamish is already selected
+  await addPodMember(page, 'Hamish');
+  await addPodMember(page, 'Susan');
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toContainText('Pod created: Core Platform E2E Test');
   await expect(page.locator('#pod-list')).toContainText('Core Platform E2E Test');
 });
 
 withAuth('ep1-s1 AC2: duplicate pod name is rejected', async ({ page }) => {
+  await seedTeam(page, TEAM);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', 'Core Platform Duplicate E2E');
-  await page.click('.add-btn >> nth=0');
+  await addPodMember(page, 'Hamish');
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toBeVisible();
 
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', 'Core Platform Duplicate E2E');
-  await page.click('.add-btn >> nth=0');
+  await addPodMember(page, 'Hamish');
   await page.click('#save-pod-btn');
   await expect(page.locator('#error-banner')).toContainText("A pod named 'Core Platform Duplicate E2E' already exists");
   await expect(page.locator('#create-pod-modal')).toHaveClass(/open/);
 });
 
 withAuth('ep1-s1: gated primary action stays disabled with only the creator selected (design.md UX affordance, not AC3 -- see file header)', async ({ page }) => {
+  await seedTeam(page, TEAM);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', 'Gate Test Pod');
   await expect(page.locator('#save-pod-btn')).toBeDisabled();
-  await page.click('.add-btn >> nth=0');
+  await addPodMember(page, 'Hamish');
   await expect(page.locator('#save-pod-btn')).toBeEnabled();
 });
 
@@ -82,6 +89,7 @@ withAuth('ep1-s1: gated primary action stays disabled with only the creator sele
 // had any test coverage before this -- added here rather than left unverified.
 
 withAuth('ep1-s1: search-by-name filters the Available roster', async ({ page }) => {
+  await seedTeam(page, TEAM);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await expect(page.locator('#available-roster')).toContainText('Hamish');
@@ -93,30 +101,20 @@ withAuth('ep1-s1: search-by-name filters the Available roster', async ({ page })
   await expect(page.locator('#available-roster')).not.toContainText('Hamish');
   await expect(page.locator('#available-roster')).not.toContainText('Darren');
 
-  // Search combines with the active role tab, not just the last-applied filter.
-  await page.fill('#roster-search', '');
-  await page.click('.role-tab >> text=engineer');
-  await expect(page.locator('#available-roster')).toContainText('Susan');
-  await expect(page.locator('#available-roster')).toContainText('Darren');
-  await expect(page.locator('#available-roster')).not.toContainText('Hamish'); // conductor, filtered out by role tab
+  // (The role tabs no longer filter the roster: rtri-s2 hides them, since real members carry no pod role until added.)
 });
 
 withAuth('ep1-s1: "Your team" panel groups selected members by role', async ({ page }) => {
+  await seedTeam(page, TEAM);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   // Creator ("You") is pre-included as conductor -- a role-group heading for
   // "conductor" should be present immediately, before anyone else is added.
   await expect(page.locator('#your-team .team-group-label').first()).toContainText('conductor');
 
-  // NOTE: the Available roster never removes an already-added member (renderRoster()
-  // filters only by role/search, not by selection state -- addMember()'s own duplicate
-  // check silently no-ops a re-click instead). So `.add-btn >> nth=0` always targets
-  // Hamish's row, not "the next remaining person" -- a stale assumption in this file's
-  // AC1 test comment ("add Susan; list re-renders; first remaining row"), discovered
-  // while writing this test. Harmless there since AC1 doesn't assert exact membership,
-  // but real here: target rows by their row text explicitly rather than by position.
-  await page.locator('.roster-row', { hasText: 'Hamish' }).getByRole('button', { name: 'Add' }).click();
-  await page.locator('.roster-row', { hasText: 'Susan' }).getByRole('button', { name: 'Add' }).click();
+  // Both are added with the pod role engineer through the real Add, Pod role and Confirm flow.
+  await addPodMember(page, 'Hamish', 'engineer');
+  await addPodMember(page, 'Susan', 'engineer');
 
   const groupLabels = page.locator('#your-team .team-group-label');
   await expect(groupLabels).toHaveCount(2); // exactly "conductor" and "engineer" groups, no empty groups rendered

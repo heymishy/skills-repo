@@ -9,6 +9,7 @@
 // its real wiring) that caused a severe bug in ep1-s1.
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedTeam, addPodMember } = require('./fixtures/pods');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueName(label) {
@@ -40,10 +41,11 @@ withAuth('ep1-s3: a feature created under a product with a default pod inherits 
   expect(repoSeedRes.status()).toBe(200);
 
   // Create pod via the real UI (fast, already-tested flow — matches ep1-s1/ep1-s2's own pattern).
+  await seedTeam(page, ['Hamish']);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', podName);
-  await page.locator('.roster-row', { hasText: 'Hamish' }).getByRole('button', { name: 'Add' }).click();
+  await addPodMember(page, 'Hamish');
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toBeVisible();
 
