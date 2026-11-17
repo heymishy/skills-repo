@@ -23,7 +23,7 @@ jobs:
     # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
     # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 15
     permissions:
       contents: read
 
@@ -97,23 +97,14 @@ jobs:
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
         continue-on-error: true
         id: e2e-run
-        run: npm run test:e2e -- --reporter=list,json
+        run: npm run test:e2e
         env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-report.json
           CI: 'true'
           NODE_ENV: test
           # Test-only credentials — not real OAuth credentials
           GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID || 'e2e-test-client-id' }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET || 'e2e-test-client-secret' }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'e2e-test-session-secret-minimum32chars' }}
-
-      - name: Upload the JSON report (spike)
-        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pw-report-json
-          path: pw-report.json
-          if-no-files-found: warn
 
       - name: Upload Playwright traces and screenshots on failure
         if: steps.e2e-config.outputs.e2e_enabled == 'true' && steps.e2e-run.outcome == 'failure'
