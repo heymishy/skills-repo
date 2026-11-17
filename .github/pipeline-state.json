@@ -50937,22 +50937,22 @@
           "id": "lpw-s3",
           "slug": "lpw-s3",
           "name": "The board Advance button and drag-to-advance work, and a failed advance is never reported as success",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 8,
-          "acVerified": 0,
-          "updatedAt": "2026-11-17T07:13:58.529Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-17T09:04:23.772Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
-            "totalTests": 0,
-            "passing": 0,
+            "totalTests": 29,
+            "passing": 29,
             "artefact": "artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s3-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
