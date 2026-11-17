@@ -48,21 +48,59 @@ function loadBaseline(baselinePath) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
-function run(logPath, baselinePath) {
+/**
+ * gic-s1 (AC3): the decision, as a pure function. The pull request's own baseline file is editable by the very change it
+ * judges, so when master's baseline is supplied (baseBaseline) only entries present in BOTH are honoured: removing an entry
+ * (a fix) still works, but adding one to excuse a new failure does not (it is reported as ignored). With no base baseline the
+ * behaviour is the original one.
+ */
+function computeVerdict(input) {
+  const currentFailures = input.currentFailures || [];
+  const prFiles = (input.baseline && input.baseline.files) || [];
+  let effective = prFiles; let ignoredAdditions = [];
+  if (input.baseBaseline) {
+    const baseSet = new Set(input.baseBaseline.files || []);
+    effective = prFiles.filter((f) => baseSet.has(f));
+    ignoredAdditions = prFiles.filter((f) => !baseSet.has(f));
+  }
+  const effectiveSet = new Set(effective);
+  return {
+    effective: effective,
+    ignoredAdditions: ignoredAdditions,
+    newFailures: currentFailures.filter((f) => !effectiveSet.has(f)),
+    stale: effective.filter((f) => !currentFailures.includes(f))
+  };
+}
+
+function run(logPath, baselinePath, baseBaselinePath) {
   if (!logPath || !fs.existsSync(logPath)) {
-    console.error('[ci-test-regression-check] usage: node scripts/ci-test-regression-check.js <test-output-log> [baseline-path]');
+    console.error('[ci-test-regression-check] usage: node scripts/ci-test-regression-check.js <test-output-log> [baseline-path] [base-branch-baseline-path]');
     process.exit(1);
   }
   const logText = fs.readFileSync(logPath, 'utf8');
   const currentFailures = extractFailedFiles(logText);
   const baseline = loadBaseline(baselinePath);
-  const baselineSet = new Set(baseline.files || []);
-
-  const newFailures = currentFailures.filter((f) => !baselineSet.has(f));
-  const nowPassing = (baseline.files || []).filter((f) => !currentFailures.includes(f));
+  let baseBaseline = null;
+  if (baseBaselinePath) {
+    // Fail closed: a base baseline that was asked for but cannot be read must not silently turn the protection off.
+    if (!fs.existsSync(baseBaselinePath)) {
+      console.error('[ci-test-regression-check] the base-branch baseline was requested but not found: ' + baseBaselinePath);
+      process.exit(1);
+    }
+    baseBaseline = JSON.parse(fs.readFileSync(baseBaselinePath, 'utf8'));
+  }
+  const verdict = computeVerdict({ currentFailures: currentFailures, baseline: baseline, baseBaseline: baseBaseline });
+  const nowPassing = verdict.stale;
+  const newFailures = verdict.newFailures;
 
   console.log('[ci-test-regression-check] ' + currentFailures.length + ' file(s) currently failing, ' +
-    baselineSet.size + ' in known baseline (recorded ' + (baseline.recordedAt || 'unknown date') + ')');
+    verdict.effective.length + ' in known baseline (recorded ' + (baseline.recordedAt || 'unknown date') + ')');
+
+  if (verdict.ignoredAdditions.length > 0) {
+    console.error('[ci-test-regression-check] ' + verdict.ignoredAdditions.length + ' entr' + (verdict.ignoredAdditions.length === 1 ? 'y was' : 'ies were') +
+      ' added to the baseline by this pull request and ' + (verdict.ignoredAdditions.length === 1 ? 'is' : 'are') + ' not honoured (the baseline is read from the base branch; fix the test or add the entry in its own earlier merge):');
+    verdict.ignoredAdditions.forEach((f) => console.error('  added to the baseline, ignored: ' + f));
+  }
 
   // bfl-s1: a baseline entry that no longer fails is a stale entry and fails the gate. Left as an info line, the list went
   // from 70 files to 67 passing ones being excused, so a regression in any of them would have been reported as "known".
@@ -84,5 +122,5 @@ function run(logPath, baselinePath) {
   process.exit(0);
 }
 
-if (require.main === module) run(process.argv[2], process.argv[3]);
-module.exports = { extractFailedFiles, loadBaseline, run };
+if (require.main === module) run(process.argv[2], process.argv[3], process.argv[4]);
+module.exports = { extractFailedFiles, loadBaseline, computeVerdict, run };

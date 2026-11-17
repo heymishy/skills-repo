@@ -1,0 +1,68 @@
+name: Gate files changed
+
+# gic-s1: tells the reviewer when a pull request changes a file that decides whether a check runs or passes (workflows,
+# gate scripts, opt-in flags, baselines, the guard tests, the capability matrix). See
+# artefacts/2026-11-17-testing-cicd-audit/spikes/gate-integrity-audit.md.
+#
+# OBSERVE MODE: this workflow reports and never fails. Enforcing it (a required check the operator passes by deliberate
+# bypass) is a separate, later decision.
+#
+# SECURITY (pull_request_target): this workflow's definition, the list it reads (.github/gate-files.json) and the script
+# it runs (scripts/gate-files-changed.js) always come from the BASE branch, so a pull request cannot edit them. It must
+# therefore NEVER check out, install or run the pull request's code: the changed paths come from the GitHub API as text
+# and are rendered as plain text. Do not add a checkout of the head, an install step, or any script from the pull request.
+# Because it is read from the base branch, it cannot report on the very pull request that introduces it.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches: [master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    name: Report changes to gate files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # No ref: on pull_request_target this checks out the BASE branch.
+      - name: Checkout the base branch
+        uses: actions/checkout@v4
+
+      - name: List the changed paths (API only, no pull request code)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate --jq '.[].filename' > changed-paths.txt
+          wc -l changed-paths.txt
+
+      - name: Match them against the protected list (read from the base branch)
+        run: node scripts/gate-files-changed.js --list .github/gate-files.json --files changed-paths.txt > gate-files-summary.md
+
+      - name: Job summary
+        run: |
+          if [ -s gate-files-summary.md ]; then cat gate-files-summary.md >> "$GITHUB_STEP_SUMMARY"; else echo "No gate-defining files are changed by this pull request." >> "$GITHUB_STEP_SUMMARY"; fi
+
+      # One comment, updated in place on later pushes. A failure to comment never fails the job.
+      - name: Pull request comment
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          MARKER='<!-- gate-files-changed -->'
+          if [ -s gate-files-summary.md ]; then
+            { echo "$MARKER"; cat gate-files-summary.md; } > comment-body.md
+          else
+            { echo "$MARKER"; echo "No gate-defining files are changed by this pull request (any more)."; } > comment-body.md
+          fi
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate --jq ".[] | select(.body | contains(\"${MARKER}\")) | .id" | head -n 1)
+          if [ -n "$EXISTING" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING}" -F body=@comment-body.md > /dev/null
+          elif [ -s gate-files-summary.md ]; then
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -F body=@comment-body.md > /dev/null
+          fi

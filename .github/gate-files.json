@@ -1,0 +1,19 @@
+{
+  "description": "gic-s1: files that decide whether a check runs or passes. A pull request that changes one is reported by .github/workflows/gate-files-changed.yml. This file is read from the base branch, so a pull request cannot edit its own list.",
+  "mode": "observe",
+  "patterns": [
+    ".github/workflows/**",
+    ".github/scripts/**",
+    ".github/context.yml",
+    ".github/governance-gates.yml",
+    ".github/trace-validation.yml",
+    ".github/gate-files.json",
+    "tests/known-baseline-failures.json",
+    "tests/e2e/capability-matrix.json",
+    "scripts/ci-test-regression-check.js",
+    "scripts/read-base-flag.js",
+    "scripts/gate-files-changed.js",
+    "tests/check-a5-ci-gate-config.js",
+    "tests/check-b2-ci-gate-config.js"
+  ]
+}

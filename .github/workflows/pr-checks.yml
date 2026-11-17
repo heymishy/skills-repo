@@ -44,9 +44,20 @@ jobs:
         run: npm run typecheck
 
       - name: Unit test chain
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
           npm test > test-output.log 2>&1 || true
-          node scripts/ci-test-regression-check.js test-output.log
+          # gic-s1: the known-failures baseline is a rule that judges this pull request, so it is also read from the base
+          # branch. Entries this pull request adds to its own copy are not honoured (removals are). Fails closed if the base
+          # branch cannot be fetched.
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          base_baseline=""
+          if git cat-file -e "origin/${BASE_REF}:tests/known-baseline-failures.json" 2>/dev/null; then
+            git show "origin/${BASE_REF}:tests/known-baseline-failures.json" > "${RUNNER_TEMP}/base-known-baseline-failures.json"
+            base_baseline="${RUNNER_TEMP}/base-known-baseline-failures.json"
+          fi
+          node scripts/ci-test-regression-check.js test-output.log tests/known-baseline-failures.json $base_baseline
 
       # trr-s1: keep each test file's pass/fail, duration and first failing line for later audits (flakes, slowest, never-failing).
       - name: Upload per-file test results
