@@ -107,7 +107,17 @@ async function applyStateUpdate(state, featureSlug, storyId, stateUpdate, confli
     return f.slug === featureSlug || f.id === featureSlug;
   });
   if (!feature) {
-    feature = { slug: featureSlug, id: featureSlug };
+    // wfe-s1 (issue #1146): a new feature must carry every field the schema requires (name, track, stage, health),
+    // or the integrity check, trace validation and check-bfl-s2 fail on every pull request. These are defaults only:
+    // the update's own stage and health overwrite them in the loop below, and an existing feature never gets here.
+    feature = {
+      slug: featureSlug,
+      id: featureSlug,
+      name: (typeof stateUpdate.name === 'string' && stateUpdate.name) ? stateUpdate.name : featureSlug,
+      track: 'standard',
+      stage: 'discovery',
+      health: 'green'
+    };
     state.features.push(feature);
   }
   FEATURE_LEVEL_KEYS.forEach(function(key) {
