@@ -40,6 +40,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedTeam, addPodMember } = require('./fixtures/pods');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueName(label) {
@@ -74,11 +75,14 @@ withAuth('ep2-s1: Team presence sidebar renders real collaborators/roles (AC1), 
   const repoSeedRes = await page.request.post('/test/seed-product-repo', { data: { productId: productId } });
   expect(repoSeedRes.status()).toBe(200);
 
+  // lpw-s5: the roster is the real team roster (empty in test mode), so seed the two people and add them with the pod
+  // roles this spec asserts on (Hamish conductor, Susan engineer); a member's id is its identity string.
+  await seedTeam(page, ['Hamish', 'Susan']);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', podName);
-  await page.locator('.roster-row', { hasText: 'Hamish' }).getByRole('button', { name: 'Add' }).click();
-  await page.locator('.roster-row', { hasText: 'Susan' }).getByRole('button', { name: 'Add' }).click();
+  await addPodMember(page, 'Hamish', 'conductor');
+  await addPodMember(page, 'Susan', 'engineer');
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toBeVisible();
 
@@ -151,8 +155,8 @@ withAuth('ep2-s1: Team presence sidebar renders real collaborators/roles (AC1), 
   // ORG_ROSTER (pod-manager.html): Hamish's demo roleId is 'conductor'
   // (same tag as the creator's), Susan's is 'engineer' -- confirmed by
   // reading the actual roster data rather than assuming from name.
-  await expect(presenceItems.filter({ hasText: 'hamish-uuid' })).toContainText('conductor');
-  await expect(presenceItems.filter({ hasText: 'susan-uuid' })).toContainText('engineer');
+  await expect(presenceItems.filter({ hasText: 'Hamish' })).toContainText('conductor');
+  await expect(presenceItems.filter({ hasText: 'Susan' })).toContainText('engineer');
 
   // NFR-A11y-1 (keyboard nav, cheap check): each presence-item is
   // individually focusable (tabIndex=0, presence-sidebar.js render()) and
@@ -170,11 +174,11 @@ withAuth('ep2-s1: Team presence sidebar renders real collaborators/roles (AC1), 
   // --- AC2: seed Hamish online, then stale, and confirm the SSE-driven ---
   // --- (no page reload) sidebar reflects both states ---
 
-  const hamishItem = presenceItems.filter({ hasText: 'hamish-uuid' });
+  const hamishItem = presenceItems.filter({ hasText: 'Hamish' });
 
   // Online: seeded 1s ago, well under STALE_MS (30000ms).
   const onlineSeedRes = await page.request.post('/test/seed-presence', {
-    data: { journeyId: journeyId, login: 'hamish-uuid', ageMs: 1000 }
+    data: { journeyId: journeyId, login: 'Hamish', ageMs: 1000 }
   });
   expect(onlineSeedRes.status()).toBe(200);
   // presence-stream broadcasts every 5s -- allow one broadcast cycle plus margin.
@@ -184,7 +188,7 @@ withAuth('ep2-s1: Team presence sidebar renders real collaborators/roles (AC1), 
   // Now push the same collaborator's last activity past STALE_MS.
   const staleAgeMs = 35000; // > STALE_MS (30000)
   const staleSeedRes = await page.request.post('/test/seed-presence', {
-    data: { journeyId: journeyId, login: 'hamish-uuid', ageMs: staleAgeMs }
+    data: { journeyId: journeyId, login: 'Hamish', ageMs: staleAgeMs }
   });
   expect(staleSeedRes.status()).toBe(200);
   const staleSeededAt = Date.now();

@@ -2068,6 +2068,11 @@ if (process.env.NODE_ENV === 'test') {
     '---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\\n    ROUTE[routes/stub-feature.js]\\n    STORE[adapters/stub-feature-store.js]\\n    ROUTE --> STORE"}}---',
     '',
     '---ARTEFACT-COMPLETE---',
+    '',
+    // lpw-s5: end on a question. The chat page auto-continues any turn that is not done and has no "?" in its text,
+    // with no bound, so a stub that ended without one made every fresh chat page re-send hidden "continue" turns
+    // forever and left the send button disabled (the model-session specs timed out on that, not on a missing model).
+    'Does this structure look right to you?',
   ].join('\n');
 
   setSkillTurnExecutorStreamAdapter(function stubSkillTurnStream(_sys, _hist, _user, _token, onChunk) {

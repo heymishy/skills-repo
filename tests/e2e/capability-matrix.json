@@ -140,11 +140,7 @@
     {
       "file": "tests/e2e/design-definition-canvas-render.spec.js",
       "capability": "definition-canvas",
-      "lane": "quarantined",
-      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/dic-canvas.spec.js",
@@ -254,11 +250,8 @@
     {
       "file": "tests/e2e/ep2-s1-presence-sidebar.spec.js",
       "capability": "presence-and-signals",
-      "lane": "quarantined",
-      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes alone and in core order (about 32 seconds, mostly a deliberate wait for a client-side minute tick); kept out of the core to hold its runtime down, and its capability (presence-and-signals) is already represented by ep2-s1-signals-panel."
     },
     {
       "file": "tests/e2e/ep2-s1-signals-panel.spec.js",
@@ -269,11 +262,7 @@
     {
       "file": "tests/e2e/ep2-s2-stage-visibility.spec.js",
       "capability": "stage-model",
-      "lane": "quarantined",
-      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane. (Passes alone in the measurement; times out in the suite.)",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/ep2-s3-approval.spec.js",
@@ -491,11 +480,7 @@
     {
       "file": "tests/e2e/rdac-s1-resume-shows-diagrams-artefact-conversation.spec.js",
       "capability": "session-flow",
-      "lane": "quarantined",
-      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/reference-upload.spec.js",
