@@ -51013,7 +51013,10 @@
       "slug": "new-feature-c2a2815d",
       "id": "new-feature-c2a2815d",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/new-feature-c2a2815d/discovery.md"
+      "artefact": "artefacts/new-feature-c2a2815d/discovery.md",
+      "track": "standard",
+      "name": "new-feature-c2a2815d (started in the web app; its discovery artefact is not in this repository)",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
