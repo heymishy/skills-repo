@@ -16,6 +16,7 @@ const { spawnSync } = require('child_process');
 
 const SCOPE = 'src/web-ui/';
 const C8 = 'c8@10.1.3';
+const SPEC_LIMIT_MS = 4 * 60 * 1000;
 
 function relativeKey(file) {
   const norm = String(file).split('\\').join('/');
@@ -143,7 +144,11 @@ function runOne(root, outDir, n, specFile) {
     NODE_ENV: 'test', E2E_LOCAL_SUITE: 'true', LPW_SERVER_COVERAGE_DIR: covDir,
     PLAYWRIGHT_JSON_OUTPUT_NAME: jsonFile
   });
-  spawnSync('npx', ['playwright', 'test', specFile, '--workers=1', '--reporter=json'], { cwd: root, env: env, stdio: 'ignore', shell: true, timeout: 6 * 60 * 1000 });
+  // Playwright's own global timeout ends a slow spec cleanly (it stops its server and still writes the report); the
+  // spawn timeout is only a backstop. A killed run can leave its server on the port and make every later spec fail to
+  // start, so the port is freed after each spec (best effort; fuser exists on the Linux runner).
+  spawnSync('npx', ['playwright', 'test', specFile, '--workers=1', '--reporter=json', '--global-timeout=' + SPEC_LIMIT_MS], { cwd: root, env: env, stdio: 'ignore', shell: true, timeout: SPEC_LIMIT_MS + 90 * 1000 });
+  spawnSync('fuser', ['-k', '3999/tcp'], { stdio: 'ignore' });
   let passed = 0; let failed = 0; let skipped = 0;
   try {
     const st = JSON.parse(fs.readFileSync(jsonFile, 'utf8')).stats || {};
