@@ -50895,11 +50895,11 @@
           "id": "lpw-s1",
           "slug": "lpw-s1",
           "name": "The local Playwright suite becomes a trustworthy, measured, non-blocking signal",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 8,
           "acVerified": 8,
-          "updatedAt": "2026-11-17T03:06:27.864Z",
+          "updatedAt": "2026-11-17T04:50:39.429Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
@@ -50910,7 +50910,7 @@
             "artefact": "artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "draft"
+          "prStatus": "merged"
         }
       ]
     }
