@@ -69,6 +69,10 @@ function createFakeTestDb() {
   var featureCollaboratorRemovals = []; // { feature_id, user_id, removed_by } -- ep4-s1
   var artefactComments = []; // { comment_id, resource_type, resource_id, user_id, body, created_at } -- dsa-s1
   var featureEdits = []; // { id, feature_id, artefact_name, user_id, timestamp, operation, edit_hash, merged_with, line_attributions, tenant_id } -- ep2-s4
+  var customerJourneys = [];      // { id, tenant_id, name, description, product_id, persona_*, created_at } -- lpw-s1
+  var customerJourneyStages = []; // { id, journey_id, tenant_id, name, position, ...canvas fields } -- lpw-s1
+  var idSeq = 1;
+  function _newId(prefix) { return prefix + (idSeq++) + '-' + Math.random().toString(16).slice(2, 10); }
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -805,6 +809,103 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: stMatch ? [{ turns: stMatch.turns }] : [] });
     }
 
+    // ── customer_journeys / customer_journey_stages (lpw-s1) ─────────────
+    // The query shapes routes/journeys.js issues for the journey canvas, stage
+    // editing, reordering and the journey list. Narrow, explicit branches in the
+    // same style as the rest of this file. Tenant scoping mirrors the real SQL:
+    // a journey or stage owned by another tenant never matches. SELECTs return the
+    // whole stored row; pg would return only the named columns, and every caller
+    // reads columns by name, so the extra keys are harmless.
+    if (s.indexOf('INSERT INTO CUSTOMER_JOURNEYS ') === 0) {
+      var cjNew = { id: _newId('fake-cj-'), tenant_id: p[0], name: p[1], description: p[2], product_id: p[3],
+        persona_name: null, persona_role: null, persona_goal: null, created_at: new Date().toISOString() };
+      customerJourneys.push(cjNew);
+      return Promise.resolve({ rows: [{ id: cjNew.id }], rowCount: 1 });
+    }
+    if (s.indexOf('INSERT INTO CUSTOMER_JOURNEY_STAGES ') === 0) {
+      var cjsNew = { id: _newId('fake-cjs-'), journey_id: p[0], tenant_id: p[1], name: p[2], position: p[3],
+        description: null, customer_actions: null, touchpoints: null, channel: null, emotion: null, pain_points: null,
+        opportunities: null, moment_of_truth: null, position_x: null, position_y: null };
+      customerJourneyStages.push(cjsNew);
+      return Promise.resolve({ rows: [{ id: cjsNew.id }], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT COALESCE(MAX(POSITION), -1) AS MAX_POSITION FROM CUSTOMER_JOURNEY_STAGES') === 0) {
+      var maxPos = customerJourneyStages
+        .filter(function(r) { return r.journey_id === p[0]; })
+        .reduce(function(m, r) { return Math.max(m, Number(r.position)); }, -1);
+      return Promise.resolve({ rows: [{ max_position: maxPos }] });
+    }
+    if (s.indexOf('SELECT JOURNEY_ID, COUNT(*) AS STAGE_COUNT FROM CUSTOMER_JOURNEY_STAGES') === 0) {
+      var wanted = p[0] || [];
+      var countRows = wanted.map(function(jid) {
+        return { journey_id: jid, stage_count: customerJourneyStages.filter(function(r) { return r.journey_id === jid; }).length };
+      }).filter(function(r) { return r.stage_count > 0; });
+      return Promise.resolve({ rows: countRows });
+    }
+    if (s.indexOf('FROM CUSTOMER_JOURNEY_STAGES CJS JOIN CUSTOMER_JOURNEYS CJ') !== -1 && s.indexOf('SELECT ') === 0) {
+      // params: [stageId, journeyId, tenantId]
+      var ownedStage = customerJourneyStages.filter(function(r) {
+        if (r.id !== p[0] || r.journey_id !== p[1]) return false;
+        return customerJourneys.some(function(j) { return j.id === r.journey_id && j.tenant_id === p[2]; });
+      });
+      return Promise.resolve({ rows: ownedStage.map(function(r) { return Object.assign({}, r); }) });
+    }
+    if (s.indexOf('FROM CUSTOMER_JOURNEY_STAGES WHERE JOURNEY_ID = $1 ORDER BY POSITION') !== -1 && s.indexOf('SELECT ') === 0) {
+      var ordered = customerJourneyStages
+        .filter(function(r) { return r.journey_id === p[0]; })
+        .sort(function(a, b) { return Number(a.position) - Number(b.position); })
+        .map(function(r) { return Object.assign({}, r); });
+      return Promise.resolve({ rows: ordered });
+    }
+    if (s.indexOf('SELECT ID FROM CUSTOMER_JOURNEY_STAGES WHERE JOURNEY_ID = $1') === 0) {
+      return Promise.resolve({ rows: customerJourneyStages.filter(function(r) { return r.journey_id === p[0]; }).map(function(r) { return { id: r.id }; }) });
+    }
+    if (s.indexOf('FROM CUSTOMER_JOURNEY_STAGES WHERE ID = $1 AND JOURNEY_ID = $2') !== -1 && s.indexOf('SELECT ') === 0) {
+      return Promise.resolve({ rows: customerJourneyStages.filter(function(r) { return r.id === p[0] && r.journey_id === p[1]; }).map(function(r) { return Object.assign({}, r); }) });
+    }
+    if (s.indexOf('UPDATE CUSTOMER_JOURNEY_STAGES SET POSITION_X = $1, POSITION_Y = $2') === 0) {
+      customerJourneyStages.forEach(function(r) { if (r.id === p[2]) { r.position_x = p[0]; r.position_y = p[1]; } });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    var stageSet = /^UPDATE CUSTOMER_JOURNEY_STAGES SET (\w+) = \$1, UPDATED_AT = NOW\(\) WHERE ID = \$2 AND JOURNEY_ID = \$3 AND TENANT_ID = \$4/.exec(s);
+    if (stageSet) {
+      var field = stageSet[1].toLowerCase();
+      var touched = 0;
+      customerJourneyStages.forEach(function(r) {
+        if (r.id === p[1] && r.journey_id === p[2] && r.tenant_id === p[3]) { r[field] = p[0]; touched++; }
+      });
+      return Promise.resolve({ rows: [], rowCount: touched });
+    }
+    if (s.indexOf('UPDATE CUSTOMER_JOURNEYS SET PERSONA_NAME = $1, PERSONA_ROLE = $2, PERSONA_GOAL = $3 WHERE ID = $4') === 0) {
+      customerJourneys.forEach(function(j) { if (j.id === p[3]) { j.persona_name = p[0]; j.persona_role = p[1]; j.persona_goal = p[2]; } });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT ID FROM CUSTOMER_JOURNEYS WHERE PRODUCT_ID = $1 ORDER BY CREATED_AT ASC LIMIT 1') === 0) {
+      var firstForProduct = customerJourneys
+        .filter(function(j) { return j.product_id === p[0]; })
+        .sort(function(a, b) { return a.created_at.localeCompare(b.created_at); })
+        .slice(0, 1)
+        .map(function(j) { return { id: j.id }; });
+      return Promise.resolve({ rows: firstForProduct });
+    }
+    if (s.indexOf('FROM CUSTOMER_JOURNEYS CJ LEFT JOIN PRODUCTS P') !== -1 && s.indexOf('SELECT ') === 0) {
+      var listed = customerJourneys
+        .filter(function(j) { return j.tenant_id === p[0]; })
+        .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
+        .map(function(j) {
+          var prod = products.find(function(pr) { return pr.product_id === j.product_id; });
+          return { id: j.id, name: j.name, description: j.description, product_id: j.product_id, product_name: prod ? prod.name : null };
+        });
+      return Promise.resolve({ rows: listed });
+    }
+    if (s.indexOf('FROM CUSTOMER_JOURNEYS WHERE ID = $1 AND TENANT_ID = $2') !== -1 && s.indexOf('SELECT ') === 0) {
+      return Promise.resolve({ rows: customerJourneys.filter(function(j) { return j.id === p[0] && j.tenant_id === p[1]; }).map(function(j) { return Object.assign({}, j); }) });
+    }
+    if (s === 'BEGIN' || s === 'COMMIT' || s === 'ROLLBACK') {
+      // The in-memory arrays apply each statement immediately: no transaction isolation or rollback is emulated.
+      return Promise.resolve({ rows: [] });
+    }
+
     // Unknown statement — resolve empty rather than throw, so an unanticipated
     // startup-time query never crashes the test server. Logged for visibility.
     console.warn('[fake-test-db] unhandled query (returning empty rows): ' + s.slice(0, 120));
@@ -825,10 +926,22 @@ function createFakeTestDb() {
     return Promise.resolve();
   }
 
+  /**
+   * lpw-s1 -- pg.Pool#connect() stand-in. journeys.js reorders stages inside
+   * pool.connect() -> BEGIN -> UPDATEs -> COMMIT; the client shares this fake's
+   * state and applies each statement immediately.
+   */
+  function connect() {
+    return Promise.resolve({ query: query, release: function() {} });
+  }
+
   return {
     query: query,
+    connect: connect,
     _upsertJourney: _upsertJourney,
     _reset: function() {
+      customerJourneys = [];
+      customerJourneyStages = [];
       users = []; nextUserId = 1;
       products = []; nextProductSeq = 1;
       people = []; nextPersonId = 1;

@@ -14,6 +14,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { connectRepoToProduct } = require('./fixtures/product-repo');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueLabel(tag) {
@@ -42,6 +43,8 @@ async function createProduct(page, name) {
 }
 
 async function createFeature(page, productId) {
+  // lpw-s1: das-s2 blocks a product's first feature until a repo is connected (409).
+  await connectRepoToProduct(page.request, productId);
   // handlePostProductFeature auto-generates the featureSlug (new-feature-<id>);
   // it does not read a featureName field.
   // rcfc-s1: /products/:id/features now requires a valid session-scoped CSRF

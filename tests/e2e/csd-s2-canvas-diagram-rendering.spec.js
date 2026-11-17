@@ -264,7 +264,11 @@ withAuth('AC4: keyboard-only navigation still reaches every interactive element 
   for (let i = 0; i < MAX_TABS; i++) {
     const info = await page.evaluate(() => {
       const el = document.activeElement;
-      return el ? { tag: el.tagName, id: el.id || null, cls: el.className || null } : null;
+      if (!el) return null;
+      // lpw-s1: identity, not tag/id/class -- distinct elements often share all three (e.g. a row of nav links).
+      window.__focusSeq = window.__focusSeq || 0;
+      if (!el.__focusUid) el.__focusUid = ++window.__focusSeq;
+      return { tag: el.tagName, id: el.id || null, cls: el.className || null, uid: el.__focusUid };
     });
     focusedTagsSeen.push(info);
 
@@ -284,7 +288,7 @@ withAuth('AC4: keyboard-only navigation still reaches every interactive element 
   for (let i = 1; i < focusedTagsSeen.length; i++) {
     const prev = focusedTagsSeen[i - 1];
     const cur  = focusedTagsSeen[i];
-    const same = prev && cur && prev.tag === cur.tag && prev.id === cur.id && prev.cls === cur.cls;
+    const same = prev && cur && prev.uid === cur.uid;
     currentRun = same ? currentRun + 1 : 1;
     maxConsecutiveRepeat = Math.max(maxConsecutiveRepeat, currentRun);
   }

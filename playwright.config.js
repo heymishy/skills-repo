@@ -12,8 +12,17 @@ if (!process.env.E2E_BASE_URL) {
 }
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
+// lpw-s1: the six specs that target "a real deployed environment" (they default to the shared wuce-staging through
+// fixtures/staging-auth.js) are the Scenario A and B specs. The local-suite CI job sets E2E_LOCAL_SUITE so a pull
+// request run never reaches shared staging; the Scenario jobs name these files explicitly and do not set it.
+const SCENARIO_SPECS = [
+  'a1-staging-auth-stub', 'a2-stripe-test-mode-plan-selection', 'a3-product-feature-ideate-canvas',
+  'a4-ideate-session-resume', 'dsh-s4-resume-conversation-survives-restart', 'b1-formed-idea-outer-loop-story-map',
+].map(function (n) { return '**/' + n + '.spec.js'; });
+
 module.exports = {
   testDir: 'tests/e2e',
+  testIgnore: process.env.E2E_LOCAL_SUITE === 'true' ? SCENARIO_SPECS : [],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3999',
     headless: true,
@@ -61,6 +70,11 @@ module.exports = {
       // E2E spec, not just this story's own. Without it /skills always renders
       // its "No skills available" empty state under the E2E webServer.
       WIRE_SKILL_ADAPTERS: 'true',
+      // lpw-s1: when CI asks for server coverage, the server writes V8 coverage to this directory on exit.
+      ...(process.env.LPW_SERVER_COVERAGE_DIR ? { NODE_V8_COVERAGE: process.env.LPW_SERVER_COVERAGE_DIR } : {}),
     },
+    // lpw-s1: the server writes its coverage only on a clean exit; stop it with SIGTERM (server.js handles it) rather
+    // than killing it. Only when coverage is requested, so ordinary runs stop the server exactly as before.
+    ...(process.env.LPW_SERVER_COVERAGE_DIR ? { gracefulShutdown: { signal: 'SIGTERM', timeout: 10000 } } : {}),
   },
 };

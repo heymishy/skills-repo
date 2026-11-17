@@ -20,7 +20,7 @@ const { withAuth }     = require('./fixtures/auth');
 test('unauthenticated GET /skills redirects to sign-in', async ({ page }) => {
   await page.goto('/skills');
   // authGuard → 302 → root sign-in
-  expect(page.url()).toMatch(/localhost:3000\/?$/);
+  expect(page.url()).toMatch(/^https?:\/\/localhost:\d+\/?$/);
 });
 
 // ── Authenticated ─────────────────────────────────────────────────────────────
@@ -52,6 +52,6 @@ withAuth('AC5: Content-Type is text/html — not JSON', async ({ page }) => {
 
 withAuth('AC6: /skills HTML page includes nav shell (renderShell)', async ({ page }) => {
   await page.goto('/skills');
-  const nav = page.locator('nav');
+  const nav = page.locator('nav').first();
   await expect(nav).toBeVisible();
 });

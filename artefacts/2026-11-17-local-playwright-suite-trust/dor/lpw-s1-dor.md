@@ -29,7 +29,7 @@ Short-track (`/test-plan -> /definition-of-ready -> coding agent`); H7 and H-GOV
 | H9 | Architecture Constraints populated | ✅ | ADR-011 named; platform change policy followed |
 | H-E2E | CSS-layout AC without E2E tooling | ✅ (N/A) | No new layout AC; Playwright tooling exists |
 | H-NFR, H-NFR2, H-NFR3 | NFRs | ✅ | |
-| H-ADAPTER | Injectable adapter (D37) | ✅ | The first-login adapter is wired to the fake database in test mode as its own task; verified by behaviour (two identities, two outcomes), not by assignment |
+| H-ADAPTER | Injectable adapter (D37) | ✅ (N/A) | No injectable adapter is introduced; the first-login adapter already exists in test mode (`server.js`) |
 | H-GOV, H-INF, H-MIG | N/A or vacuous | ✅ | |
 | H-DESIGN | Design-token gate | ✅ (N/A) | No UI change |
 

@@ -23,7 +23,8 @@ jobs:
     # Pinned (was ubuntu-latest): see capture-log.md 2026-11-05 — ubuntu-latest
     # rolled forward to ubuntu26.04-x64, unsupported by Playwright 1.59.1.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # lpw-s1: the whole local suite (308 tests) took 15.7 minutes in a one-off trial, so the old 15-minute limit cannot hold it.
+    timeout-minutes: 30
     permissions:
       contents: read
 
@@ -93,18 +94,65 @@ jobs:
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
         run: npx playwright install --with-deps chromium
 
+      # lpw-s1: where the server writes V8 coverage (see playwright.config.js).
+      - name: Server coverage directory
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        run: |
+          mkdir -p "${RUNNER_TEMP}/server-v8-coverage"
+          echo "LPW_SERVER_COVERAGE_DIR=${RUNNER_TEMP}/server-v8-coverage" >> "$GITHUB_ENV"
+
       - name: Run E2E tests
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
         continue-on-error: true
         id: e2e-run
-        run: npm run test:e2e
+        run: npm run test:e2e -- --reporter=list,json
         env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-report.json
+          # lpw-s1: this job is the LOCAL suite against its own mocked test server. The six specs that target "a real
+          # deployed environment" (a1 to a4, dsh-s4, b1) default to the shared wuce-staging, which a pull request run
+          # must never touch; they run in the Scenario A and B jobs against the PR's own server instead.
+          E2E_LOCAL_SUITE: 'true'
           CI: 'true'
           NODE_ENV: test
           # Test-only credentials — not real OAuth credentials
           GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID || 'e2e-test-client-id' }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET || 'e2e-test-client-secret' }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'e2e-test-session-secret-minimum32chars' }}
+
+      # lpw-s1: the per-test record of the run and a per-spec table on the job page. Informational: none of these
+      # steps can fail the job.
+      - name: Upload the Playwright JSON report
+        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pw-report-json
+          path: pw-report.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Per-spec table in the job summary
+        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
+        # The script prints a note and exits 0 when the report is missing, so this step cannot fail the job.
+        run: node scripts/summarise-playwright-report.js report pw-report.json >> "$GITHUB_STEP_SUMMARY"
+
+      # lpw-s1: which server code the browser suite exercises. c8 is run through npx at a pinned version and is not
+      # a project dependency. The server is stopped with SIGTERM (playwright.config.js) so it writes its coverage.
+      - name: Server code coverage report (informational)
+        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
+        # Informational: a c8 failure is tolerated (|| true) rather than marked continue-on-error, so the job keeps exactly
+        # one continue-on-error (the test run itself), which tests/check-a5-ci-gate-config.js and the b2 check require.
+        run: |
+          npx --yes c8@10.1.3 report --temp-directory "${LPW_SERVER_COVERAGE_DIR}" --reporter=json-summary --reporter=lcov --reports-dir=coverage-e2e --include="src/web-ui/**" || true
+          node scripts/summarise-playwright-report.js coverage coverage-e2e/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the server coverage report
+        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-server-coverage
+          path: coverage-e2e/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload Playwright traces and screenshots on failure
         if: steps.e2e-config.outputs.e2e_enabled == 'true' && steps.e2e-run.outcome == 'failure'

@@ -28,7 +28,7 @@ const { withAuth }     = require('./fixtures/auth');
 
 test('unauthenticated GET /features/:slug redirects to sign-in', async ({ page }) => {
   await page.goto('/features/some-feature-slug');
-  expect(page.url()).toMatch(/localhost:3000\/?$/);
+  expect(page.url()).toMatch(/^https?:\/\/localhost:\d+\/?$/);
 });
 
 // ── Authenticated ──────────────────────────────────────────────────────────────
