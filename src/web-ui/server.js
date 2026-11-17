@@ -2693,6 +2693,17 @@ async function router(req, res) {
     });
     _journeyStoreForSeed.setActiveSession(journeyId, sessionId, stage);
 
+    // lpw-s3 (issue #1141): completed: true records the stage as completed by this session and saves its artefact, as
+    // the real auto-save does when a session finishes. That record is what lets the board show the card as ready (and
+    // Advance work) after the in-memory session is gone, i.e. after a restart or deploy.
+    if (body.completed === true) {
+      const _seedArtefactPath = 'artefacts/e2e-board-seed/' + featureSlug + '/' + stage + '.md';
+      const _seedAbs = _path.join(require('./adapters/repo-root').getRepoRoot(req), _seedArtefactPath);
+      require('fs').mkdirSync(_path.dirname(_seedAbs), { recursive: true });
+      require('fs').writeFileSync(_seedAbs, '# seeded artefact for ' + featureSlug, 'utf8');
+      _journeyStoreForSeed.completeStage(journeyId, stage, _seedArtefactPath, null, sessionId);
+    }
+
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, productId: productId, tenantId: tenantId, stage: stage }));
     return;

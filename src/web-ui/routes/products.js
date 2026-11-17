@@ -55,6 +55,40 @@ function _getHtmlSessionsBulk(sessionIds) {
 }
 function setGetHtmlSessionsBulk(fn) { _getHtmlSessionsBulkFn = fn; }
 
+// lpw-s3 (issue #1141): the board read a card's readiness from the in-memory session store only, so after any restart or
+// deploy every card showed "not ready" until its chat was opened. A stage that has completed is recorded in the journey
+// itself (journey-store completeStage, written when the session finishes and its artefact is saved), and that record
+// carries the id of the session that completed it. This returns the record for the journey's ACTIVE session, or null.
+// It is only a fallback for a session that is no longer in memory: a live session always wins, so a stage being revised
+// (a new session that is not done) is not shown as ready.
+function _completedStageEntryFor(journeyId, activeSessionId) {
+  if (!journeyId || !activeSessionId) return null;
+  var j = require('../modules/journey-store').getJourney(journeyId);
+  if (!j || !Array.isArray(j.completedStages)) return null;
+  for (var i = j.completedStages.length - 1; i >= 0; i--) {
+    if (j.completedStages[i] && j.completedStages[i].sessionId === activeSessionId) return j.completedStages[i];
+  }
+  return null;
+}
+
+// lpw-s3 (issue #1141): rebuild, in memory, the done session that gate-confirm needs to advance a stage that completed
+// before a restart. The artefact is read the way the journey pages read it (disk first, then the saved Postgres copy,
+// since the disk does not survive a deploy). _stageDone is true because that stage's artefact was already saved and
+// committed when it completed, so gate-confirm does not commit it again.
+async function _restoreCompletedSession(req, journey, journeyId, activeSessionId, entry) {
+  var content = '';
+  try {
+    content = await require('./journey').resolveArtefactFromDiskOrPg(_repoRootAdapter.getRepoRoot(req), entry.artefactPath, journeyId, entry.skillName) || '';
+  } catch (_e) { content = ''; }
+  var restored = {
+    skillName: entry.skillName, sessionPath: null, systemPrompt: 'restored for the board', turns: [],
+    artefactContent: content, artefactPath: entry.artefactPath || null,
+    done: true, _stageDone: true, journeyId: journeyId, featureSlug: journey.featureSlug
+  };
+  require('./skills')._setHtmlSession(activeSessionId, restored);
+  return restored;
+}
+
 // s2.2 -- injectable bulk artefact-count reader, mirroring s1.1's
 // _getHtmlSessionsBulk seam immediately above. Defaults to a lazy require of
 // journey-store-pg.js's real getArtefactCountsForJourneys -- ONE batched
@@ -3590,7 +3624,9 @@ function _aggregateJourneysByStage(productJourneyGroups) {
   var sessionsById = _getHtmlSessionsBulk(sessionIdsToCheck);
   allCards.forEach(function(c) {
     var session = c.activeSessionId ? sessionsById[c.activeSessionId] : null;
-    c.ready = !!(session && session.done === true);
+    // lpw-s3 (#1141): a session still in memory decides; only when it is gone (a restart or deploy) fall back to the
+    // journey's own record that this session completed the stage.
+    c.ready = session ? session.done === true : !!_completedStageEntryFor(c.id, c.activeSessionId);
   });
 
   return STAGE_COLUMNS.map(function(stage) {
@@ -3862,6 +3898,12 @@ async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
   var activeSessionId = journey.activeSessionId || null;
   var sessionsById = _getHtmlSessionsBulk(activeSessionId ? [activeSessionId] : []);
   var activeSession = activeSessionId ? sessionsById[activeSessionId] : null;
+  if (!activeSession) {
+    // lpw-s3 (#1141): no session in memory (a restart or deploy). If the journey records that this very session completed
+    // the stage, rebuild the done session so the real gate-confirm below can run.
+    var _completedEntry = _completedStageEntryFor(journeyId, activeSessionId);
+    if (_completedEntry) activeSession = await _restoreCompletedSession(req, journey, journeyId, activeSessionId, _completedEntry);
+  }
   if (!activeSession || activeSession.done !== true) {
     respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
     return;
