@@ -13,6 +13,13 @@ var _repoPicker = require('../modules/repo-picker'); // mtrr-s2 -- repo-connecti
 var _productRollup = require('../modules/product-rollup'); // pr-s3
 var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
+// lpw-s3 (issue #1140): the board script sends the session's CSRF token with every advance request, because the
+// advance endpoint delegates to gate-confirm's csrfGuard. Creates the token if the session has none yet.
+async function _boardCsrfToken(req) {
+  if (!req || !req.session) return '';
+  try { return await _csrf.generateCsrfToken(req); } catch (_) { return (req.session && req.session.csrfToken) || ''; }
+}
+
 var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer for product/org/tenant boards
 var _roadmapScan = require('../modules/roadmap-scan'); // a5 -- read-only artefacts/ scan for discovery-only/ideate-only work
 var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the existing local-disk repo-root pattern (already used by handlePostProductFeature)
@@ -2953,7 +2960,7 @@ async function handleGetDashboard(req, res, _next, pool) {
     // see workspace/capture-log.md, 2026-08-25.
     var boardNavSummary = await getProductsNavSummary(_pool, tenantId);
     var tenantColumns = await buildTenantKanbanColumns(_pool, tenantId);
-    var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
+    var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns, csrfToken: await _boardCsrfToken(req) });
     if (boardNavSummary.products.length === 0 && boardNavSummary.noProductJourneyCount === 0) {
       tenantHtml = '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
           '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
@@ -3702,7 +3709,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     featureCount: rows.length
   });
 
-  var html = _kanbanView.renderKanban({ columns: columns });
+  var html = _kanbanView.renderKanban({ columns: columns, csrfToken: await _boardCsrfToken(req) });
   // kbsf-s1: wrap via renderShell so the shared design-token :root block
   // (defined in html-shell.js, not kanban-view.js) is present -- see tenant
   // scope's identical comment above for the full root-cause explanation.
@@ -3774,6 +3781,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   // correctly; this only adds the UI trigger that was missing.
   var html = _kanbanView.renderKanban({
     columns: columns,
+    csrfToken: await _boardCsrfToken(req),
     products: prodRows.map(function(p) { return { id: p.product_id, name: p.name }; }),
     selectedProductId: productFilter || null
   });
@@ -3863,6 +3871,7 @@ async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
   // raw-HTTP-style (writeHead/end, including 303 redirects on success) --
   // capture its output rather than reimplementing any part of its logic.
   var _journeyRoutes = require('./journey');
+  var _stageBefore = journey.activeSkill; // lpw-s3: a string copy, to prove the stage really changed
   var captured = { statusCode: null, headers: {}, body: '' };
   var mockRes = {
     writeHead: function(code, headers) { captured.statusCode = code; Object.assign(captured.headers, headers || {}); },
@@ -3871,31 +3880,69 @@ async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
   };
   await _journeyRoutes.handlePostGateConfirm(req, mockRes);
 
-  if (captured.statusCode === 422) {
+  // lpw-s3 (issue #1140): every outcome of the delegated gate-confirm is reported as what it was. Before this, only
+  // 422, 400, 404 and 5xx were mapped and anything else (a 403 from the CSRF guard, a redirect to sign-in) fell
+  // through to "advanced: true" with the stage unchanged. A failure is also captured to PostHog (status and a short
+  // journey id only: never a token, a session id or the full journey id).
+  var _ph = posthog || _posthog;
+  function failAfterConfirm(status, body) {
+    try {
+      _ph.capture((req.session && req.session.login) || tenantId || 'board', 'board_advance_failed', {
+        status: status,
+        error: (body && body.error) || null,
+        journeyIdPrefix: String(journeyId || '').slice(0, 8)
+      });
+    } catch (_e) { /* analytics must never change the response */ }
+    respond(status, body);
+  }
+
+  var gcStatus = captured.statusCode || 0;
+  var gcLocation = String((captured.headers && (captured.headers.Location || captured.headers.location)) || '');
+
+  if (gcStatus === 422) {
     // AC5: surface the real validation-failure reason, not a generic message.
     var errBody;
     try { errBody = JSON.parse(captured.body); } catch (_e) { errBody = { error: 'validation-failed' }; }
-    respond(422, errBody);
+    failAfterConfirm(422, errBody);
     return;
   }
-  if (captured.statusCode === 400) {
-    respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
+  if (gcStatus === 400) {
+    failAfterConfirm(400, { error: 'not-ready', reason: 'Session not complete yet.' });
     return;
   }
-  if (captured.statusCode === 404) {
-    respond(404, { error: 'not found' });
+  if (gcStatus === 404) {
+    failAfterConfirm(404, { error: 'not found' });
     return;
   }
-  if (captured.statusCode && captured.statusCode >= 500) {
-    respond(captured.statusCode, { error: 'advance-failed', detail: captured.body || null });
+  if (gcStatus === 401 || (gcStatus === 302 && gcLocation.indexOf('/auth/') !== -1)) {
+    failAfterConfirm(401, { error: 'unauthenticated', reason: 'Your session has expired. Sign in again, then retry.' });
+    return;
+  }
+  if (gcStatus === 403) {
+    failAfterConfirm(403, { error: 'forbidden', reason: 'The request was rejected (the security token was missing or has expired). Reload the board and try again.' });
+    return;
+  }
+  if (gcStatus >= 500) {
+    failAfterConfirm(gcStatus, { error: 'advance-failed', detail: captured.body || null });
+    return;
+  }
+  if (gcStatus < 200 || gcStatus >= 400) {
+    failAfterConfirm(502, { error: 'advance-failed', reason: 'The stage could not be advanced (unexpected response ' + (gcStatus || 'none') + ').', detail: String(captured.body || '').slice(0, 300) || null });
     return;
   }
 
-  // Success (gate-confirm redirected, typically 303, to the next
-  // session/stories/complete route). Re-read the journey's now-updated
-  // stage so the board can reflect the move without a full page reload.
+  // Success (gate-confirm redirected, typically 303, to the next session, the stories page or the complete page).
+  // Re-read the journey's now-updated stage so the board can reflect the move without a full page reload, and refuse
+  // to report an advance that did not move the stage (finishing the last stage, a redirect to /complete, is the
+  // one legitimate case where activeSkill does not change).
   var updatedJourney = _journeyStoreMod.getJourney(journeyId);
-  respond(200, { advanced: true, stage: (updatedJourney && updatedJourney.activeSkill) || null });
+  var stageAfter = (updatedJourney && updatedJourney.activeSkill) || null;
+  var finishedJourney = gcLocation.split('?')[0].slice(-9) === '/complete';
+  if (!finishedJourney && stageAfter === _stageBefore) {
+    failAfterConfirm(502, { error: 'advance-failed', reason: 'The stage did not change. Open the feature and confirm it from there.' });
+    return;
+  }
+  respond(200, { advanced: true, stage: stageAfter });
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
