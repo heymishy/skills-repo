@@ -4,6 +4,7 @@
 - `src/web-ui/views/kanban-view.js` and the three board handlers in `src/web-ui/routes/products.js`: the page's CSRF token reaches the board script and is sent with every advance request (button and drag); the script shows the error body's message in the existing error element.
 - `src/web-ui/routes/products.js` `handlePostBoardAdvance`: honest status mapping (401 and 403 as they are, other unexpected statuses as 502 `advance-failed`, 2xx and 3xx as success) and a `board_advance_failed` PostHog capture without secrets.
 - A test-mode artefact commit adapter wired in `src/web-ui/server.js` only when `NODE_ENV=test` (a separate wiring task per D37), so a seeded journey's gate-confirm can complete.
+- Board readiness (issue #1141): the board and `handlePostBoardAdvance` read session completion through the same restore path the chat page uses (one batched read), so a restart or deploy no longer leaves every card "not ready".
 - Spec work: `psh-s6` rewritten (signed in, real product); `s1.1`, `s3.1`, `s3.2` verified; the matrix lanes for the board specs and the `ep3-s1` reason updated.
 - Four guard tests named in the test plan; `decisions.md` entries and a Definition of Done.
 

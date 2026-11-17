@@ -20,6 +20,7 @@
 | AC5 | Board specs pass and join the core, or stay quarantined with the real reason | - | - | `s1.1`, `s3.1`, `s3.2`, `psh-s6` in the whole suite and twice in the core job | - | Live | 🟡 |
 | AC6 | `ep3-s1` reason corrected to #1042 | 1 (T5) | - | - | - | - | 🟢 |
 | AC7 | Advance works on staging | - | - | - | 1 | Live-only | 🟡 |
+| AC8 | Readiness survives a restart (issue #1141) | 1 (T6) | - | - | 1 (staging after deploy: no card is "not ready" only because of the deploy) | - | 🟡 |
 
 ## Coverage gaps
 
@@ -36,6 +37,7 @@
 - **T3 (AC3).** A failed advance calls the PostHog capture with event `board_advance_failed`, the status and a journey id prefix; the captured properties contain no token and no session id; the board script shows `body.error` or `body.reason` in the existing error element.
 - **T4 (AC4).** The test-mode commit adapter returns success under `NODE_ENV=test` and throws outside it (D37 point 1); with it wired, advancing a seeded ready journey with a valid token moves its stage from `discovery` to `benefit-metric`, read back from the journey store and the board HTML.
 - **T5 (AC6).** In `tests/e2e/capability-matrix.json` the `ep3-s1-regression` entry's reason names issue #1042 and no longer says "model"; the matrix guard (`check-lpw-s2-capability-matrix`) still passes.
+- **T6 (AC8).** With a completed session persisted (the fake test database / session store) and the in-memory `_sessionStore` empty, the board's card for that journey is ready and has an Advance control, and `handlePostBoardAdvance` does not answer 400 `not-ready`; the read is one batched call for the whole board (a spy counts calls, as the s1.1 test already does for `_getHtmlSessionsBulk`).
 - **E2E (CI).** `s1.1` AC1 and AC2, `s3.1` AC1 to AC3, `s3.2` AC1 to AC3 and the rewritten `psh-s6` pass in the whole suite and, if promoted, in the core job twice.
 
 ## Out of scope for this plan

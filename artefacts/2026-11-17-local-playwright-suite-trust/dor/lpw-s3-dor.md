@@ -10,7 +10,7 @@
 See `artefacts/2026-11-17-local-playwright-suite-trust/dor/lpw-s3-dor-contract.md`.
 
 ## Contract Review
-Contract review passed. All 7 acceptance criteria (AC) map to a named test, a CI run or a live step. The exclusion list (`csrfGuard`, gate-confirm behaviour, the real commit path, the ruleset) has zero assertions against it (B1/D1 check).
+Contract review passed. All 8 acceptance criteria (AC) map to a named test, a CI run or a live step. The exclusion list (`csrfGuard`, gate-confirm behaviour, the real commit path, the ruleset) has zero assertions against it (B1/D1 check).
 
 ## Short-track entry-condition note
 Short-track (`/test-plan -> /definition-of-ready -> coding agent`); H7 and H-GOV vacuously satisfied.
@@ -19,8 +19,8 @@ Short-track (`/test-plan -> /definition-of-ready -> coding agent`); H7 and H-GOV
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | As / Want / So with persona | Pass | "an operator moving features along the kanban board" |
-| H2 | At least 3 ACs in Given / When / Then | Pass | 7 ACs |
-| H3 | Every AC has a test | Pass | AC1 T1 and specs, AC2 T2, AC3 T3, AC4 T4 and spec, AC5 specs, AC6 T5, AC7 live |
+| H2 | At least 3 ACs in Given / When / Then | Pass | 8 ACs |
+| H3 | Every AC has a test | Pass | AC1 T1 and specs, AC2 T2, AC3 T3, AC4 T4 and spec, AC5 specs, AC6 T5, AC7 live, AC8 T6 |
 | H4 | Out of scope populated | Pass | |
 | H5 | Benefit linkage | Pass (short-track) | Restores a broken board action and makes failures visible |
 | H6 | Complexity rated | Pass | 2, Unstable |
@@ -40,7 +40,7 @@ Short-track (`/test-plan -> /definition-of-ready -> coding agent`); H7 and H-GOV
 |---|--------|------|
 | W4 | Pending | AC5 and AC7 are observed in CI and on staging after merge |
 | W5 | Accepted | The board specs that pass alone but fail in the whole suite may have a separate cause; AC5 requires it to be named if so |
-| W6 | Accepted | Issue #1140 is the source issue: the pull request body says `Fixes #1140` and `closingIssuesReferences` is checked |
+| W6 | Accepted | Issues #1140 and #1141 are the source issues: the pull request body says `Fixes #1140` and `Fixes #1141` and `closingIssuesReferences` is checked |
 
 ## Standards injection
 Domain tags `[web-ui] [kanban] [test]`: read `src/web-ui/views/kanban-view.js`, `src/web-ui/routes/products.js` (`handlePostBoardAdvance`), `src/web-ui/middleware/csrf.js`, `src/web-ui/routes/journey.js` (`handlePostGateConfirm`), issue #1140 and the s1.1, s3.1 and s3.2 specs first.
@@ -55,11 +55,11 @@ Proceed: Yes
 Story: artefacts/2026-11-17-local-playwright-suite-trust/stories/lpw-s3-board-advance-works.md
 Test plan: artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s3-test-plan.md
 Contract: artefacts/2026-11-17-local-playwright-suite-trust/dor/lpw-s3-dor-contract.md
-Goal: write T1 to T5 first and confirm they FAIL today; fix the board script and the advance handler; add the test-mode commit adapter as a separate wiring task; fix psh-s6; run the board specs in the whole suite and in the core job twice; correct the ep3-s1 reason.
+Goal: write T1 to T6 first and confirm they FAIL today; fix the board script and the advance handler; add the test-mode commit adapter as a separate wiring task; fix psh-s6; run the board specs in the whole suite and in the core job twice; correct the ep3-s1 reason.
 Constraints:
 - Do not weaken csrfGuard, exempt the route, or change gate-confirm. No new npm dependency.
 - The test-mode commit adapter must throw outside NODE_ENV=test; its wiring is its own task.
-- Work in a worktree under .worktrees/lpw-s3; verify the absolute path before every edit. Stage only the files you changed. Do NOT edit .github/pipeline-state.json or workspace/state.json from the worktree. Draft PR only; the operator merges. The PR body says "Fixes #1140" (verify closingIssuesReferences).
+- Work in a worktree under .worktrees/lpw-s3; verify the absolute path before every edit. Stage only the files you changed. Do NOT edit .github/pipeline-state.json or workspace/state.json from the worktree. Draft PR only; the operator merges. The PR body says "Fixes #1140" and "Fixes #1141" (verify closingIssuesReferences).
 Oversight level: Low - no named sign-off required.
 ```
 

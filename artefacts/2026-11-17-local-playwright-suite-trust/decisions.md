@@ -78,3 +78,7 @@ It holds 1119 statements no other spec executes. It passes alone and failed in t
 
 **2026-11-17 | CORRECTION (lpw-s3) | `ep3-s1-regression` is a known product bug, not a model-session timeout**
 GitHub issue #1042 (open since 2026-10-30) records that regress-back lands on the wrong stage's session and names this spec as the failing test. The `lpw-s2` matrix reason said it waits on a real model turn; `lpw-s3` corrects it to point at #1042 (the fix itself is out of scope).
+
+**2026-11-17 | FINDING (lpw-s3) | Second board defect, found from the operator's staging check: every card is "not ready" after a restart or deploy (issue #1141)**
+**Evidence:** the operator saw all cards "not ready to progress" on staging; opening a card's chat, then choosing "Leave as-is" on the minor-change prompt, enabled Advance. In code, the board and `handlePostBoardAdvance` read completion from `_getHtmlSessionsBulk`, which iterates the in-memory `_sessionStore` only; the chat page uses `_getSessionOrRestore`, which reads the persisted session back. Staging redeploys on every push to master, so the store is empty after each one. The minor-change prompt itself (`materiality-check.js`, res-s3 and res-s4) is existing, separate behaviour that appears when a session is reopened.
+**Decision:** fix it in `lpw-s3` as AC8 (one batched restore for the whole board), because without it the Advance fix cannot be seen working on any freshly deployed environment.

@@ -4,7 +4,7 @@
 **Discovery reference:** None - short-track skips discovery. Evidence: issue #1140 (reproduction output, code references, regression date), `artefacts/2026-11-17-local-playwright-suite-trust/decisions.md` ("CORRECTION (lpw-s2)"), `evidence/staging-capability-walk.md`.
 **Benefit-metric reference:** None - short-track skips benefit-metric; benefit linkage stated below
 **Domain:** [web-ui] [kanban] [test]
-**Source issue:** #1140
+**Source issues:** #1140 (Advance does nothing), #1141 (every card "not ready" after a restart or deploy)
 
 ## User Story
 
@@ -46,6 +46,8 @@ So that **the board is trustworthy: today both actions do nothing and the server
 **AC6:** Given the capability matrix, When this story ends, Then the `ep3-s1-regression` reason is corrected to the real cause (issue #1042: regress-back lands on the wrong stage's session; it is not a model-session timeout) and the matrix guard still passes.
 
 **AC7 (live, after merge and deploy):** Given staging, When a ready feature's Advance is clicked on the board, Then the card moves to the next column and a not-ready card has no Advance control; recorded in the Definition of Done (the operator or the agent with the operator's go-ahead, since it changes a staging journey).
+
+**AC8 (added after the operator's staging check, issue #1141):** Given a completed session that is persisted but not in memory (as after a restart or deploy), When the board renders or `handlePostBoardAdvance` runs, Then the session's completion is read the way the chat page reads it (restored from the database, in one batched read for the whole board, not one query per card), the card shows ready and Advance is enabled; a test clears the in-memory store with a persisted completed session and asserts both.
 
 ## Out of Scope
 
