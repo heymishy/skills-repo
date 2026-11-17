@@ -4,7 +4,7 @@
 - `scripts/measure-playwright-spec-coverage.js` (per-spec run, pure helpers, JSON and Markdown report), `scripts/capability-matrix.js` (`validateMatrix`), `scripts/select-core-specs.js` (`selectCore`), `scripts/list-core-specs.js`.
 - `.github/workflows/playwright-spec-coverage.yml`: runs the measurement; triggers only on a pull request that changes the workflow or the script, and on manual start; pinned `c8`; at most 60 minutes.
 - `tests/e2e/capability-matrix.json`: every spec file once, with capability, lane and (for quarantined) reason, owner, entry date and review date.
-- `.github/workflows/e2e.yml`: a new job `Core browser tests` (blocking, no `continue-on-error`, 15 minutes, runs the files from `list-core-specs.js`, uploads the report). The existing `e2e` job is not changed.
+- `.github/workflows/core-browser-tests.yml` (new): a job `Core browser tests` (blocking, no `continue-on-error`, 15 minutes, runs the files from `list-core-specs.js`, uploads the report), gated by `audit.core_browser_tests` in `context.yml`. `e2e.yml` is not changed.
 - Four guard tests named in the test plan.
 - Spec, fixture or fake-database fixes for the kanban, model-session and pod groups where one shared environment cause is found and confirmed in CI.
 - `evidence/per-spec-coverage.md`, `evidence/core-coverage.md`, and `decisions.md` entries (lanes, retire candidates, the fold decision, the two CI runs).

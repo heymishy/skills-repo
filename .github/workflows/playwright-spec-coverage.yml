@@ -1,0 +1,67 @@
+name: Playwright per-spec coverage (measurement)
+
+# lpw-s2: a measurement tool, not a gate. Runs every local browser spec file on its own against a fresh test server and
+# records which statements of src/web-ui each one executes (scripts/measure-playwright-spec-coverage.js). The result
+# chooses the required core of browser specs (scripts/select-core-specs.js).
+#
+# It runs only when this workflow or its script changes on a pull request, or when started by hand. It never runs on a
+# push to master and has no schedule, so it adds no cost to ordinary pull requests and is never a required check.
+# ADR-009: permissions limited to contents: read. The six staging-targeted specs are not run (they belong to the
+# Scenario A and B jobs); nothing here reaches shared staging.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/playwright-spec-coverage.yml'
+      - 'scripts/measure-playwright-spec-coverage.js'
+  workflow_dispatch:
+
+jobs:
+  measure:
+    name: Per-spec server coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Measure each spec on its own
+        run: node scripts/measure-playwright-spec-coverage.js "${RUNNER_TEMP}/spec-coverage"
+        env:
+          CI: 'true'
+          NODE_ENV: test
+          # Test-only credentials, not real OAuth credentials.
+          GITHUB_CLIENT_ID: e2e-test-client-id
+          GITHUB_CLIENT_SECRET: e2e-test-client-secret
+          SESSION_SECRET: e2e-test-session-secret-minimum32chars
+
+      - name: Upload the measurement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: per-spec-coverage
+          path: |
+            ${{ runner.temp }}/spec-coverage/measurement.json
+            ${{ runner.temp }}/spec-coverage/per-spec-coverage.json
+            ${{ runner.temp }}/spec-coverage/per-spec-coverage.md
+          if-no-files-found: warn
+          retention-days: 30

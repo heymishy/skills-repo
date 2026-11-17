@@ -1,0 +1,635 @@
+{
+  "description": "lpw-s2: every browser spec file, its product capability and its lane. core = blocking Core browser tests job; extended = passes, runs in the non-blocking all-specs job only; scenario = Scenario A/B jobs; quarantined = failing, with reason, owner and review date.",
+  "specs": [
+    {
+      "file": "tests/e2e/a1-staging-auth-stub.spec.js",
+      "capability": "signup-and-auth",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/a2-stripe-test-mode-plan-selection.spec.js",
+      "capability": "billing",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/a3-product-feature-ideate-canvas.spec.js",
+      "capability": "session-flow",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/a4-ideate-session-resume.spec.js",
+      "capability": "session-flow",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/a4-module-expand-collapse.spec.js",
+      "capability": "session-flow",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/action-queue.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/actr-s2-auto-resolve-live.spec.js",
+      "capability": "platform-checks",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/actr-s2-capture-target-fixture.spec.js",
+      "capability": "platform-checks",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/annotation.spec.js",
+      "capability": "artefact-view",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/artefact-preview.spec.js",
+      "capability": "artefact-view",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/artefact-read.spec.js",
+      "capability": "artefact-view",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/artefact-writeback.spec.js",
+      "capability": "artefact-view",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js",
+      "capability": "session-flow",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/b1-nav-toggle.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/bmau-s1-bulk-assign-rerender.spec.js",
+      "capability": "kanban-board",
+      "lane": "quarantined",
+      "reason": "Times out (30 s) alone and in the suite; cause not found. The board itself renders (verified over HTTP).",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js",
+      "capability": "signup-and-auth",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/bri-s3.3-multi-user-tenant-journey.spec.js",
+      "capability": "tenant-isolation",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/bri-s3.4-cross-tenant-isolation-journey.spec.js",
+      "capability": "tenant-isolation",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/bri-s3.5-billing-journey.spec.js",
+      "capability": "billing",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/bri-s3.6-auth-journey.spec.js",
+      "capability": "signup-and-auth",
+      "lane": "quarantined",
+      "reason": "Passes alone; fails after bri-s3.2 to bri-s3.5 because the test server shares one tenant (e2e-shared-org) that already has an admin.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/cams-s1-chat-artefact-responsive.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/csd-s1-data-model-diagram.spec.js",
+      "capability": "diagrams",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/csd-s2-canvas-diagram-rendering.spec.js",
+      "capability": "diagrams",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/design-definition-canvas-render.spec.js",
+      "capability": "definition-canvas",
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/dic-canvas.spec.js",
+      "capability": "definition-canvas",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/dsa-s1-artefact-viewer-restyle.spec.js",
+      "capability": "artefact-view",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/dsa-s2-dashboard-restyle.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "quarantined",
+      "reason": "AC7 counts differ (3 vs 2 and 1 vs 0 in progress); fails alone as well as in the suite.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/dsa-s3-landing-restyle.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/dsa-s4-chat-restyle.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/dsa-s6-mobile-responsiveness.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/dsda-s1-default-all-stories.spec.js",
+      "capability": "reference-and-stories",
+      "lane": "quarantined",
+      "reason": "After definition completes the journey now starts the review skill (definition-to-review autostart) instead of redirecting to /journey/:id/stories, so the spec lands on /skills/review/sessions/:id/chat. The stories page and its textarea still exist (GET /journey/:id/stories); rewrite to open that page directly.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/dsh-s3-breadcrumb-split-view.spec.js",
+      "capability": "session-flow",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js",
+      "capability": "session-flow",
+      "lane": "scenario",
+      "reason": "Runs against the pull request build in the Scenario A or B job (staging-style stub auth); not run by the local jobs."
+    },
+    {
+      "file": "tests/e2e/dsh-s6-archived-stage-transparent-render.spec.js",
+      "capability": "session-flow",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep1-s1-pod-creation.spec.js",
+      "capability": "pods",
+      "lane": "quarantined",
+      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep1-s2-product-default-pod.spec.js",
+      "capability": "pods",
+      "lane": "quarantined",
+      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep1-s3-feature-pod-inheritance.spec.js",
+      "capability": "pods",
+      "lane": "quarantined",
+      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep1-s3-launcher-layout.spec.js",
+      "capability": "skill-launch",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep1-s3-stage-panel-focus-management.spec.js",
+      "capability": "journey-canvas",
+      "lane": "quarantined",
+      "reason": "The stage panel never gets the sw-stage-panel--open class; a product-side difference found in lpw-s1.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep1-s4-stage-reorder.spec.js",
+      "capability": "journey-canvas",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep1-s4-stage-selector.spec.js",
+      "capability": "stage-model",
+      "lane": "quarantined",
+      "reason": "Scenario 2: back links exist for 2 stages where the spec expects 0; product change or defect, not yet decided.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep2-s1-presence-sidebar.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep2-s1-signals-panel.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/ep2-s2-stage-visibility.spec.js",
+      "capability": "stage-model",
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane. (Passes alone in the measurement; times out in the suite.)",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep2-s3-approval.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep2-s3-signals-pagination.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep2-s4-concurrent-merge.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ep3-s1-regression.spec.js",
+      "capability": "session-flow",
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ep4-s1-multi-pod-assign.spec.js",
+      "capability": "pods",
+      "lane": "quarantined",
+      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/feature-navigation.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/fjcv-s1-full-journey-core-flow-and-resume.spec.js",
+      "capability": "session-flow",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/fpd-s1-walkthrough-capture.spec.js",
+      "capability": "walkthrough-capture",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/fpd-s2-video-capture.spec.js",
+      "capability": "walkthrough-capture",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/fpd-s4-caption-sync.spec.js",
+      "capability": "walkthrough-capture",
+      "lane": "quarantined",
+      "reason": ".playback-ac__video is not found; the spec needs a playback fixture that does not exist.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/fpux.1-contrast-ratio.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/fpux.1-keyboard-focus.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/fpux.1-visual-consistency-theme.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "quarantined",
+      "reason": "Design token is rgb(20,23,26) where the spec expects rgb(24,24,27); the spec is stale.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/frsr-s1-feature-row-session-resume.spec.js",
+      "capability": "feature-creation",
+      "lane": "quarantined",
+      "reason": "Passes the connect-a-repo gate, then needs a repository rollup (product_rollups) the fake test database does not provide.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ic-s2-canvas-drag-position.spec.js",
+      "capability": "journey-canvas",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/ic-s4-keyboard-node-movement.spec.js",
+      "capability": "journey-canvas",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/iwu2-right-panel-layout.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "quarantined",
+      "reason": "The right panel still exists but changed: #assumption-cards is only rendered for the ideate skill (chat-view.js 3-panel layout; the spec opens discovery), and #draft-content no longer exists (the draft panel was restyled to .sw-draft-* in dsa-s4). Rewrite against ideate and the current draft markup.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/jae-s5-delivery-swimlane-grid.spec.js",
+      "capability": "journey-canvas",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js",
+      "capability": "journey-canvas",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/jcx-s3-emotion-curve.spec.js",
+      "capability": "journey-canvas",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/jcx-s6-swimlane-grid.spec.js",
+      "capability": "journey-canvas",
+      "lane": "quarantined",
+      "reason": "AC1: the grid header class appears twice (6 where 3 are expected); a product-side difference found in lpw-s1.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/jcx-s7-panel-entry-and-save-feedback.spec.js",
+      "capability": "journey-canvas",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/kbsf-s1-shell-wrapping-visual.spec.js",
+      "capability": "kanban-board",
+      "lane": "quarantined",
+      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/lphf-s1-keyboard-nav.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/lphf-s2-responsive.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/lphf-s3-responsive.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/lphf-s4-responsive.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/lphf-s5-responsive.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/pnfc-s1-new-feature-choice.spec.js",
+      "capability": "feature-creation",
+      "lane": "quarantined",
+      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/ppc-s5-video-lazy-load.spec.js",
+      "capability": "walkthrough-capture",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/psh-s4-dashboard-layout.spec.js",
+      "capability": "dashboard-and-nav",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/psh-s6-product-kanban.spec.js",
+      "capability": "kanban-board",
+      "lane": "quarantined",
+      "reason": "Invalid as written: uses the unauthenticated test() and a product that does not exist (/products/test-product-id/kanban), so it is redirected and finds 0 columns. Verified: with a signed-in session and a real product the board renders 8 [data-stage] columns. Quick fix.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/psh-s7-org-kanban.spec.js",
+      "capability": "kanban-board",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/rdac-s1-resume-shows-diagrams-artefact-conversation.spec.js",
+      "capability": "session-flow",
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/reference-upload.spec.js",
+      "capability": "reference-and-stories",
+      "lane": "quarantined",
+      "reason": "The reference upload is live (every skill session links to /journey/:id/reference, with its own upload route), but the spec enters through a new-product checkbox that no form in src/web-ui emits, so T9 lands on the skill chat and T10 to T15 never reach the modal. Rewrite: drive the modal and the reference page directly. The modal itself has no UI entry (product follow-up).",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/s1.1-board-advance-action.spec.js",
+      "capability": "kanban-interaction",
+      "lane": "quarantined",
+      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs).",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/s1.2-not-ready-explanation.spec.js",
+      "capability": "kanban-interaction",
+      "lane": "quarantined",
+      "reason": "Passes alone (verified locally); fails in the whole-suite job because the seeded card is not visible there (state shared with other specs). Order-dependence to isolate.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/s3.1-drag-to-advance.spec.js",
+      "capability": "kanban-interaction",
+      "lane": "quarantined",
+      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs).",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/s3.2-within-column-reorder.spec.js",
+      "capability": "kanban-interaction",
+      "lane": "quarantined",
+      "reason": "Verified locally: alone, the tests that only look at the board pass, but the one that clicks Advance fails: POST /api/board/journey/:id/advance answers {advanced:true} yet the card stays in its stage column, so the next-stage column never shows it (cause not yet found: harness sync gap or a product defect). In the whole-suite job every test here also fails earlier (card not visible: state shared with other specs). (AC1 and AC2, the reorder tests, pass alone.)",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/session-persistence.spec.js",
+      "capability": "session-flow",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/sign-off.spec.js",
+      "capability": "artefact-view",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/skill-launcher.spec.js",
+      "capability": "skill-launch",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/smoke.spec.js",
+      "capability": "platform-checks",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/spdr-s2-metric1-timing.spec.js",
+      "capability": "presence-and-signals",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/tfhc-s1-seed-journey-fixture.spec.js",
+      "capability": "journey-canvas",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js",
+      "capability": "stage-model",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/wuce18-keyboard-nav.spec.ts",
+      "capability": "accessibility-and-responsive",
+      "lane": "quarantined",
+      "reason": "Times out at 30 seconds in one test; cause not found.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
+    },
+    {
+      "file": "tests/e2e/wuce20-artefact-index-html.spec.js",
+      "capability": "artefact-view",
+      "lane": "core"
+    },
+    {
+      "file": "tests/e2e/wuce23-skill-launcher-landing.spec.js",
+      "capability": "skill-launch",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/wuce24-guided-question-form.spec.js",
+      "capability": "skill-launch",
+      "lane": "extended",
+      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+    },
+    {
+      "file": "tests/e2e/wuce25-session-commit-result.spec.js",
+      "capability": "session-flow",
+      "lane": "core"
+    }
+  ]
+}

@@ -30,3 +30,44 @@ Making the job required is the operator's ruleset change and belongs to `lpw-s2`
 
 **2026-11-17 | DECISION | Coverage with `c8` through `npx`, pinned, job-only**
 No dependency is added to `package.json`; if the server cannot flush V8 coverage on exit under Playwright's signal-based shutdown, fall back to route coverage only and record that.
+
+**2026-11-17 | DECISION (lpw-s2) | The core is chosen by a stated rule from a per-spec measurement, not by hand**
+**Context:** the operator wants a required core cherry-picked across specs by capability with no loss of capability or product coverage.
+**Decision:** each local spec ran alone on a fresh server and its executed `src/web-ui` statements were recorded (`evidence/per-spec-coverage.md`). `scripts/select-core-specs.js` picks, first, the best passing spec for every capability, then more passing specs by new statements added until the next adds under 0.1 percentage point; specs that failed in the measurement or in either `lpw-s1` run are never chosen. Result: 27 spec files, 110 tests, 99.3% of the statements every passing spec reaches together (`evidence/core-coverage.md`).
+**Rationale:** the browser specs differ little in server code (booting the server alone executes about 32% of the statements), so capability first and small unique gains second is the only stable way to pick; and the numbers make "no loss" checkable.
+
+**2026-11-17 | DECISION (lpw-s2) | Journeys are not folded into Scenario A or B**
+**Context:** the operator asked whether the cherry-pick consolidates scenarios into Scenario A and B.
+**Decision:** no. Scenario A and B run a stub-authenticated, staging-style harness (six specs); the local specs use the mocked test server and its fake database. The matrix records, for each capability, which core, Scenario or quarantined spec protects it; a capability with none is a named gap.
+**Rationale:** folding would mean rewriting specs for a different harness for no coverage gain; the measurement already shows the core covers the capabilities.
+
+**2026-11-17 | FINDING (lpw-s2) | The first measurement was invalid, and the first core included four specs it should not have**
+Both are recorded in `evidence/per-spec-coverage.md` and `evidence/core-runs.md`. The first measurement lost every spec after `design-definition-canvas-render` (a hung server on port 3999); the first core run failed on four specs the matrix builder failed to exclude (a CRLF pattern defect). Neither reached master.
+
+**2026-11-17 | CORRECTION (lpw-s2) | The kanban failures are NOT "the board no longer renders data-journey-id"; checked by running the specs and the server locally and by looking at staging**
+The first version of this entry said the board's cards no longer carry `data-journey-id` and that the specs predate a board rewrite. That was wrong: `kanban-view.js` still renders `data-journey-id` on cards (line 432), the staging org board shows 8 `[data-stage]` columns, 40 visible cards and 118 `data-journey-id` elements, and over HTTP the local test server returns the seeded card in its column. The wrong claim came from a search I cut short with `head`. What the checks actually show:
+- **Alone, the board specs mostly pass.** `s1.2` passes; `s3.1` AC2 and AC3 pass; `s3.2` AC1 and AC2 (the reorder tests) pass. In the whole-suite job the same specs fail earlier (the seeded card is not visible), so they depend on state left by other specs.
+- **One deterministic failure shared by three tests:** the ones that click Advance (`s1.1` AC1, `s3.1` AC1, `s3.2` AC3). `POST /api/board/journey/:id/advance` answers `{advanced: true}` but the card stays in its stage column. Reproduced locally over HTTP. Either the test harness does not sync the stage after a gate confirm (the fake database's journey row) or the product does not move the card until the next session starts. Not yet decided; this is the first thing `lpw-s3` checks.
+- `psh-s6` is invalid as written: it uses the unauthenticated `test()` and a product that does not exist (`/products/test-product-id/kanban`), so it is redirected and finds 0 columns. A quick fix.
+- `bmau-s1` times out alone; cause not found.
+
+**2026-11-17 | FINDING (lpw-s2) | The pod failures are one test-environment cause (verified)**
+`GET /api/team/members` returns `{"members": []}` in test mode, so the pod roster is empty. The pod specs click add buttons and search the roster for "Hamish" (the old hardcoded roster, replaced in rtri-s2), so they time out; reproduced locally with `ep1-s1` and `ep1-s2` failing alone. Fix: seed a team member in the test server and update the selectors (`lpw-s4`).
+
+**2026-11-17 | FINDING (lpw-s2) | Model-session specs** (`ep3-s1`, `rdac-s1`, `design-definition-canvas-render`, `ep2-s1-presence-sidebar`) wait on a real model turn (90 to 150 second timeouts); the CI job has no model gateway wired for them. Not yet verified locally.
+**Gaps this leaves (no passing core spec):** pods, reference-and-stories, kanban-interaction, feature-creation.
+
+**2026-11-17 | FINDING (lpw-s2) | None of the three "retire candidates" should be retired: each feature is live and its spec needs a rewrite (checked in code and on staging)**
+- `reference-upload` (7): reference upload is a live feature. Every skill session links to `/journey/:id/reference` ("Ref docs") with its own upload route (`server.js` 4011 to 4046). The spec enters through a new-product checkbox (`newProduct=1`), but no form in `src/web-ui` emits that field and the staging new-feature form offers only "rough idea" or "formed idea", so the strategy-grounding modal has no UI entry: T9 lands on the skill chat and T10 to T15 time out. Two actions: rewrite the spec to drive the reference page and the modal directly, and record the orphaned modal as a product follow-up (wire it in, or remove it).
+- `dsda-s1` (1): the flow changed on purpose. After definition the journey now starts the review skill (the "definition to review autostart" story, done 2026-07-24), so the spec lands on `/skills/review/sessions/:id/chat` instead of `/journey/:id/stories`. The stories page and its textarea still exist (`GET /journey/:id/stories`); the spec should open that page directly.
+- `iwu2-right-panel-layout` (7): the right panel exists but changed. `#assumption-cards` is rendered only for the `ideate` skill (`chat-view.js`, 3-panel layout) and the spec opens `discovery`; `#draft-content` is gone (the draft panel was restyled to `.sw-draft-*` in dsa-4). Rewrite against `ideate` and the current draft markup.
+Nothing is deleted; the matrix reasons say the same.
+
+**2026-11-17 | RECOMMENDATION (lpw-s2) | The largest single loss is `ep2-s2-stage-visibility`**
+It holds 1119 statements no other spec executes. It passes alone and failed in the core run with a browser crash ("page closed"), so it is quarantined as order- or environment-dependent. Isolating that cause is the highest-value follow-up for coverage.
+
+**2026-11-17 | NOTE (lpw-s2) | The core job is a separate workflow, and not yet required**
+`tests/check-b2-ci-gate-config.js` pins the exact job list of `e2e.yml`, so `Core browser tests` lives in `.github/workflows/core-browser-tests.yml`. It blocks (no `continue-on-error`) but is not in the ruleset; adding it is the operator's change after it has been green on real pull requests.
+
+**2026-11-17 | EVIDENCE (lpw-s2) | Staging capability walk and local verification of the quarantine reasons**
+`evidence/staging-capability-walk.md`: read-only GETs against staging for each capability with a core spec (confirmed: dashboard-and-nav, kanban-board, skill-launch, journey-canvas, session-flow for completed sessions, and the signals list; inconclusive: artefact-view; not verifiable read-only: tenant-isolation, in-progress session controls, billing and sign-up journeys, accessibility). The quarantine reasons for the kanban, pod and the three previously "retire candidate" specs were checked by running the specs and a local test server and by reading the code; the kanban reason was corrected. Open and not yet decided: the Advance action (`{advanced: true}` but the card stays in its column) is either a harness sync gap or a product defect; and one manual look is needed at the artefact viewer on staging.

@@ -1,0 +1,897 @@
+{
+  "totalStatements": 57062,
+  "unionStatements": 36909,
+  "seconds": 1721,
+  "specs": [
+    {
+      "spec": "tests/e2e/fjcv-s1-full-journey-core-flow-and-resume.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 24389,
+      "unique": 64,
+      "order": 1,
+      "added": 24389
+    },
+    {
+      "spec": "tests/e2e/ep2-s2-stage-visibility.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 21804,
+      "unique": 483,
+      "order": 2,
+      "added": 2448
+    },
+    {
+      "spec": "tests/e2e/ep1-s4-stage-reorder.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20760,
+      "unique": 76,
+      "order": 3,
+      "added": 2093
+    },
+    {
+      "spec": "tests/e2e/ep3-s1-regression.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 22471,
+      "unique": 284,
+      "order": 4,
+      "added": 911
+    },
+    {
+      "spec": "tests/e2e/s1.1-board-advance-action.spec.js",
+      "passed": 1,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 19973,
+      "unique": 0,
+      "order": 5,
+      "added": 837
+    },
+    {
+      "spec": "tests/e2e/actr-s2-auto-resolve-live.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19349,
+      "unique": 292,
+      "order": 6,
+      "added": 710
+    },
+    {
+      "spec": "tests/e2e/bri-s3.3-multi-user-tenant-journey.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20695,
+      "unique": 366,
+      "order": 7,
+      "added": 686
+    },
+    {
+      "spec": "tests/e2e/ep2-s4-concurrent-merge.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19164,
+      "unique": 619,
+      "order": 8,
+      "added": 619
+    },
+    {
+      "spec": "tests/e2e/dsa-s6-mobile-responsiveness.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19573,
+      "unique": 0,
+      "order": 9,
+      "added": 591
+    },
+    {
+      "spec": "tests/e2e/wuce20-artefact-index-html.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19264,
+      "unique": 516,
+      "order": 10,
+      "added": 520
+    },
+    {
+      "spec": "tests/e2e/ep2-s3-signals-pagination.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18727,
+      "unique": 208,
+      "order": 11,
+      "added": 510
+    },
+    {
+      "spec": "tests/e2e/dsa-s4-chat-restyle.spec.js",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 23844,
+      "unique": 0,
+      "order": 12,
+      "added": 262
+    },
+    {
+      "spec": "tests/e2e/dsa-s1-artefact-viewer-restyle.spec.js",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19099,
+      "unique": 106,
+      "order": 13,
+      "added": 188
+    },
+    {
+      "spec": "tests/e2e/bri-s3.5-billing-journey.spec.js",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 22122,
+      "unique": 179,
+      "order": 14,
+      "added": 179
+    },
+    {
+      "spec": "tests/e2e/bmau-s1-bulk-assign-rerender.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 21251,
+      "unique": 170,
+      "order": 15,
+      "added": 171
+    },
+    {
+      "spec": "tests/e2e/dic-canvas.spec.js",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 21532,
+      "unique": 137,
+      "order": 16,
+      "added": 146
+    },
+    {
+      "spec": "tests/e2e/dsa-s2-dashboard-restyle.spec.js",
+      "passed": 6,
+      "failed": 2,
+      "skipped": 0,
+      "covered": 19572,
+      "unique": 115,
+      "order": 17,
+      "added": 146
+    },
+    {
+      "spec": "tests/e2e/ep2-s3-approval.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 22610,
+      "unique": 80,
+      "order": 18,
+      "added": 141
+    },
+    {
+      "spec": "tests/e2e/wuce25-session-commit-result.spec.js",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18693,
+      "unique": 128,
+      "order": 19,
+      "added": 138
+    },
+    {
+      "spec": "tests/e2e/ppc-s5-video-lazy-load.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19203,
+      "unique": 123,
+      "order": 20,
+      "added": 123
+    },
+    {
+      "spec": "tests/e2e/skill-launcher.spec.js",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 3,
+      "covered": 18513,
+      "unique": 50,
+      "order": 21,
+      "added": 119
+    },
+    {
+      "spec": "tests/e2e/dsh-s6-archived-stage-transparent-render.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19812,
+      "unique": 48,
+      "order": 22,
+      "added": 114
+    },
+    {
+      "spec": "tests/e2e/annotation.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18465,
+      "unique": 88,
+      "order": 23,
+      "added": 88
+    },
+    {
+      "spec": "tests/e2e/ep1-s3-launcher-layout.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18303,
+      "unique": 0,
+      "order": 24,
+      "added": 86
+    },
+    {
+      "spec": "tests/e2e/jcx-s3-emotion-curve.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20711,
+      "unique": 6,
+      "order": 25,
+      "added": 83
+    },
+    {
+      "spec": "tests/e2e/spdr-s2-metric1-timing.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18634,
+      "unique": 52,
+      "order": 26,
+      "added": 73
+    },
+    {
+      "spec": "tests/e2e/bri-s3.4-cross-tenant-isolation-journey.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 24046,
+      "unique": 58,
+      "order": 27,
+      "added": 62
+    },
+    {
+      "spec": "tests/e2e/ic-s2-canvas-drag-position.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20709,
+      "unique": 0,
+      "order": 28,
+      "added": 61
+    },
+    {
+      "spec": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20989,
+      "unique": 57,
+      "order": 29,
+      "added": 57
+    },
+    {
+      "spec": "tests/e2e/b1-nav-toggle.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19323,
+      "unique": 51,
+      "order": 30,
+      "added": 51
+    },
+    {
+      "spec": "tests/e2e/artefact-read.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18876,
+      "unique": 49,
+      "order": 31,
+      "added": 49
+    },
+    {
+      "spec": "tests/e2e/ep1-s1-pod-creation.spec.js",
+      "passed": 0,
+      "failed": 5,
+      "skipped": 0,
+      "covered": 18368,
+      "unique": 0,
+      "order": 32,
+      "added": 35
+    },
+    {
+      "spec": "tests/e2e/action-queue.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18053,
+      "unique": 34,
+      "order": 33,
+      "added": 34
+    },
+    {
+      "spec": "tests/e2e/ep1-s4-stage-selector.spec.js",
+      "passed": 1,
+      "failed": 2,
+      "skipped": 0,
+      "covered": 19078,
+      "unique": 4,
+      "order": 34,
+      "added": 32
+    },
+    {
+      "spec": "tests/e2e/csd-s1-data-model-diagram.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 21327,
+      "unique": 0,
+      "order": 35,
+      "added": 29
+    },
+    {
+      "spec": "tests/e2e/iwu2-right-panel-layout.spec.js",
+      "passed": 1,
+      "failed": 7,
+      "skipped": 0,
+      "covered": 21127,
+      "unique": 26,
+      "order": 36,
+      "added": 26
+    },
+    {
+      "spec": "tests/e2e/fpd-s4-caption-sync.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18080,
+      "unique": 16,
+      "order": 37,
+      "added": 16
+    },
+    {
+      "spec": "tests/e2e/cams-s1-chat-artefact-responsive.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 24008,
+      "unique": 15,
+      "order": 38,
+      "added": 15
+    },
+    {
+      "spec": "tests/e2e/ep2-s1-signals-panel.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18546,
+      "unique": 13,
+      "order": 39,
+      "added": 13
+    },
+    {
+      "spec": "tests/e2e/wuce24-guided-question-form.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18253,
+      "unique": 12,
+      "order": 40,
+      "added": 12
+    },
+    {
+      "spec": "tests/e2e/pnfc-s1-new-feature-choice.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 24233,
+      "unique": 11,
+      "order": 41,
+      "added": 11
+    },
+    {
+      "spec": "tests/e2e/sign-off.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 3,
+      "covered": 18158,
+      "unique": 9,
+      "order": 42,
+      "added": 9
+    },
+    {
+      "spec": "tests/e2e/feature-navigation.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18173,
+      "unique": 6,
+      "order": 43,
+      "added": 6
+    },
+    {
+      "spec": "tests/e2e/smoke.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18011,
+      "unique": 6,
+      "order": 44,
+      "added": 6
+    },
+    {
+      "spec": "tests/e2e/design-definition-canvas-render.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 4,
+      "covered": 23617,
+      "unique": 0,
+      "order": 45,
+      "added": 5
+    },
+    {
+      "spec": "tests/e2e/s3.2-within-column-reorder.spec.js",
+      "passed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 19963,
+      "unique": 5,
+      "order": 46,
+      "added": 5
+    },
+    {
+      "spec": "tests/e2e/psh-s7-org-kanban.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18023,
+      "unique": 3,
+      "order": 47,
+      "added": 3
+    },
+    {
+      "spec": "tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 24088,
+      "unique": 1,
+      "order": 48,
+      "added": 1
+    },
+    {
+      "spec": "tests/e2e/a4-module-expand-collapse.spec.js",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 1,
+      "covered": 18835,
+      "unique": 0,
+      "order": 49,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/actr-s2-capture-target-fixture.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18804,
+      "unique": 0,
+      "order": 50,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/artefact-preview.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 5,
+      "covered": 17981,
+      "unique": 0,
+      "order": 51,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/artefact-writeback.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 5,
+      "covered": 17981,
+      "unique": 0,
+      "order": 52,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/bri-s3.6-auth-journey.spec.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19132,
+      "unique": 0,
+      "order": 53,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/csd-s2-canvas-diagram-rendering.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 21423,
+      "unique": 0,
+      "order": 54,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/dsa-s3-landing-restyle.spec.js",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 55,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/dsda-s1-default-all-stories.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 23161,
+      "unique": 0,
+      "order": 56,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/dsh-s3-breadcrumb-split-view.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19790,
+      "unique": 0,
+      "order": 57,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ep1-s2-product-default-pod.spec.js",
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "covered": 18955,
+      "unique": 0,
+      "order": 58,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ep1-s3-feature-pod-inheritance.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18951,
+      "unique": 0,
+      "order": 59,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ep1-s3-stage-panel-focus-management.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 20586,
+      "unique": 0,
+      "order": 60,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ep2-s1-presence-sidebar.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18951,
+      "unique": 0,
+      "order": 61,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ep4-s1-multi-pod-assign.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18951,
+      "unique": 0,
+      "order": 62,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/fpd-s1-walkthrough-capture.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18042,
+      "unique": 0,
+      "order": 63,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/fpd-s2-video-capture.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18042,
+      "unique": 0,
+      "order": 64,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/fpux.1-contrast-ratio.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 65,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/fpux.1-keyboard-focus.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 66,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/fpux.1-visual-consistency-theme.spec.js",
+      "passed": 1,
+      "failed": 2,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 67,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/frsr-s1-feature-row-session-resume.spec.js",
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "covered": 21086,
+      "unique": 0,
+      "order": 68,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/ic-s4-keyboard-node-movement.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20680,
+      "unique": 0,
+      "order": 69,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/jae-s5-delivery-swimlane-grid.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20619,
+      "unique": 0,
+      "order": 70,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 22511,
+      "unique": 0,
+      "order": 71,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/jcx-s6-swimlane-grid.spec.js",
+      "passed": 3,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 20705,
+      "unique": 0,
+      "order": 72,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/jcx-s7-panel-entry-and-save-feedback.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 20644,
+      "unique": 0,
+      "order": 73,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/kbsf-s1-shell-wrapping-visual.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19828,
+      "unique": 0,
+      "order": 74,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/lphf-s1-keyboard-nav.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 75,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/lphf-s2-responsive.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 76,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/lphf-s3-responsive.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 77,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/lphf-s4-responsive.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 78,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/lphf-s5-responsive.spec.js",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18005,
+      "unique": 0,
+      "order": 79,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/psh-s4-dashboard-layout.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18024,
+      "unique": 0,
+      "order": 80,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/psh-s6-product-kanban.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18024,
+      "unique": 0,
+      "order": 81,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/rdac-s1-resume-shows-diagrams-artefact-conversation.spec.js",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 23617,
+      "unique": 0,
+      "order": 82,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/reference-upload.spec.js",
+      "passed": 0,
+      "failed": 7,
+      "skipped": 0,
+      "covered": 22559,
+      "unique": 0,
+      "order": 83,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/s1.2-not-ready-explanation.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 19838,
+      "unique": 0,
+      "order": 84,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/s3.1-drag-to-advance.spec.js",
+      "passed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 19973,
+      "unique": 0,
+      "order": 85,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/session-persistence.spec.js",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 5,
+      "covered": 18005,
+      "unique": 0,
+      "order": 86,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/tfhc-s1-seed-journey-fixture.spec.js",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18446,
+      "unique": 0,
+      "order": 87,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/wuce18-keyboard-nav.spec.ts",
+      "passed": 1,
+      "failed": 1,
+      "skipped": 0,
+      "covered": 18830,
+      "unique": 0,
+      "order": 88,
+      "added": 0
+    },
+    {
+      "spec": "tests/e2e/wuce23-skill-launcher-landing.spec.js",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "covered": 18307,
+      "unique": 0,
+      "order": 89,
+      "added": 0
+    }
+  ]
+}
