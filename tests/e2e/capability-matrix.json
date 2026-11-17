@@ -114,8 +114,11 @@
     {
       "file": "tests/e2e/bri-s3.6-auth-journey.spec.js",
       "capability": "signup-and-auth",
-      "lane": "extended",
-      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+      "lane": "quarantined",
+      "reason": "Passes alone; fails after bri-s3.2 to bri-s3.5 because the test server shares one tenant (e2e-shared-org) that already has an admin.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
     },
     {
       "file": "tests/e2e/cams-s1-chat-artefact-responsive.spec.js",
@@ -278,7 +281,11 @@
     {
       "file": "tests/e2e/ep2-s2-stage-visibility.spec.js",
       "capability": "stage-model",
-      "lane": "core"
+      "lane": "quarantined",
+      "reason": "Waits for a real model session turn (90 to 150 second timeouts); the CI job has no model gateway for it. Needs the mock gateway wired in, or a real-model lane. (Passes alone in the measurement; times out in the suite.)",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
     },
     {
       "file": "tests/e2e/ep2-s3-approval.spec.js",
@@ -430,7 +437,11 @@
     {
       "file": "tests/e2e/kbsf-s1-shell-wrapping-visual.spec.js",
       "capability": "kanban-board",
-      "lane": "core"
+      "lane": "quarantined",
+      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
     },
     {
       "file": "tests/e2e/lphf-s1-keyboard-nav.spec.js",
@@ -465,7 +476,11 @@
     {
       "file": "tests/e2e/pnfc-s1-new-feature-choice.spec.js",
       "capability": "feature-creation",
-      "lane": "core"
+      "lane": "quarantined",
+      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
     },
     {
       "file": "tests/e2e/ppc-s5-video-lazy-load.spec.js",
@@ -490,8 +505,7 @@
     {
       "file": "tests/e2e/psh-s7-org-kanban.spec.js",
       "capability": "kanban-board",
-      "lane": "extended",
-      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+      "lane": "core"
     },
     {
       "file": "tests/e2e/rdac-s1-resume-shows-diagrams-artefact-conversation.spec.js",
@@ -523,7 +537,11 @@
     {
       "file": "tests/e2e/s1.2-not-ready-explanation.spec.js",
       "capability": "kanban-interaction",
-      "lane": "core"
+      "lane": "quarantined",
+      "reason": "The board no longer renders data-journey-id on its cards (kanban-view.js builds feature-rollup cards), so the spec cannot find the cards it seeds; it predates the change. Needs a rewrite against the current board.",
+      "owner": "operator (heymishy)",
+      "entered": "2026-11-17",
+      "reviewBy": "2026-12-15"
     },
     {
       "file": "tests/e2e/s3.1-drag-to-advance.spec.js",
@@ -580,8 +598,7 @@
     {
       "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js",
       "capability": "stage-model",
-      "lane": "extended",
-      "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
+      "lane": "core"
     },
     {
       "file": "tests/e2e/wuce18-keyboard-nav.spec.ts",
