@@ -50955,6 +50955,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-17-gate-integrity",
+      "name": "Required checks take their rules from master, and changes to gate files are visible",
+      "track": "short",
+      "stage": "definition",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-17T09:10:47.369Z",
+      "stories": [
+        {
+          "id": "gic-s1",
+          "slug": "gic-s1",
+          "name": "Required checks take their rules from master, and changes to gate files are visible",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T09:10:47.371Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-gate-integrity/test-plans/gic-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
