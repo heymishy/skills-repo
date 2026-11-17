@@ -28,20 +28,25 @@ jobs:
 
       - name: Check opt-in flag (audit.core_browser_tests in context.yml)
         id: core-config
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          # ADR-004: context.yml is the single config source of truth.
-          CORE_ENABLED="false"
-          if [ -f ".github/context.yml" ]; then
-            if command -v yq >/dev/null 2>&1; then
-              CORE_ENABLED=$(yq e '.audit.core_browser_tests // false' .github/context.yml)
-            else
-              if grep -q 'core_browser_tests: true' .github/context.yml; then
-                CORE_ENABLED="true"
-              fi
-            fi
+          # ADR-004: .github/context.yml is the single config source of truth. gic-s1: the flag is read from that file AS IT
+          # IS ON THE BASE BRANCH (scripts/read-base-flag.js), never from this pull request's checkout, so a pull request
+          # cannot switch this required check off by editing the flag in its own copy. Any failure to fetch the base branch
+          # or to read the flag fails this step (fail closed); it never falls back to "off".
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          # The reader itself comes from the base branch too. Only until gic-s1 has merged does the base lack it; then
+          # this checkout's copy is used once, and that is stated in the log.
+          if git cat-file -e "origin/${BASE_REF}:scripts/read-base-flag.js" 2>/dev/null; then
+            git show "origin/${BASE_REF}:scripts/read-base-flag.js" > "${RUNNER_TEMP}/read-base-flag.js"
+          else
+            echo "The base branch has no scripts/read-base-flag.js yet (first merge of gic-s1); using this checkout's copy."
+            cp scripts/read-base-flag.js "${RUNNER_TEMP}/read-base-flag.js"
           fi
+          CORE_ENABLED=$(node "${RUNNER_TEMP}/read-base-flag.js" audit.core_browser_tests --ref "origin/${BASE_REF}")
           echo "core_enabled=${CORE_ENABLED}" >> "$GITHUB_OUTPUT"
-          echo "Core browser tests gate flag: ${CORE_ENABLED}"
+          echo "Core browser tests gate flag (from the base branch): ${CORE_ENABLED}"
 
       - name: Set up Node.js
         if: steps.core-config.outputs.core_enabled == 'true'

@@ -204,23 +204,25 @@ jobs:
 
       - name: Check opt-in flag (audit.staging_e2e_scenario_a in context.yml)
         id: scenario-a-config
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          # ADR-004: context.yml is the single config source of truth — this
-          # flag is read from config, never hardcoded true/false here.
-          SCENARIO_A_ENABLED="false"
-          if [ -f ".github/context.yml" ]; then
-            if command -v yq >/dev/null 2>&1; then
-              SCENARIO_A_ENABLED=$(yq e '.audit.staging_e2e_scenario_a // false' .github/context.yml)
-            else
-              # Fallback: grep for the flag without yq — same pattern as the
-              # e2e-config step above (audit.e2e_tests).
-              if grep -q 'staging_e2e_scenario_a: true' .github/context.yml; then
-                SCENARIO_A_ENABLED="true"
-              fi
-            fi
+          # ADR-004: .github/context.yml is the single config source of truth. gic-s1: the flag is read from that file AS IT
+          # IS ON THE BASE BRANCH (scripts/read-base-flag.js), never from this pull request's checkout, so a pull request
+          # cannot switch this required check off by editing the flag in its own copy. Any failure to fetch the base branch
+          # or to read the flag fails this step (fail closed); it never falls back to "off".
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          # The reader itself comes from the base branch too. Only until gic-s1 has merged does the base lack it; then
+          # this checkout's copy is used once, and that is stated in the log.
+          if git cat-file -e "origin/${BASE_REF}:scripts/read-base-flag.js" 2>/dev/null; then
+            git show "origin/${BASE_REF}:scripts/read-base-flag.js" > "${RUNNER_TEMP}/read-base-flag.js"
+          else
+            echo "The base branch has no scripts/read-base-flag.js yet (first merge of gic-s1); using this checkout's copy."
+            cp scripts/read-base-flag.js "${RUNNER_TEMP}/read-base-flag.js"
           fi
+          SCENARIO_A_ENABLED=$(node "${RUNNER_TEMP}/read-base-flag.js" audit.staging_e2e_scenario_a --ref "origin/${BASE_REF}")
           echo "scenario_a_enabled=${SCENARIO_A_ENABLED}" >> "$GITHUB_OUTPUT"
-          echo "Scenario A staging E2E gate flag: ${SCENARIO_A_ENABLED}"
+          echo "Scenario A staging E2E gate flag (from the base branch): ${SCENARIO_A_ENABLED}"
 
       - name: Set up Node.js
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
@@ -424,23 +426,25 @@ jobs:
 
       - name: Check opt-in flag (audit.staging_e2e_scenario_b in context.yml)
         id: scenario-b-config
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          # ADR-004: context.yml is the single config source of truth -- this
-          # flag is read from config, never hardcoded true/false here.
-          SCENARIO_B_ENABLED="false"
-          if [ -f ".github/context.yml" ]; then
-            if command -v yq >/dev/null 2>&1; then
-              SCENARIO_B_ENABLED=$(yq e '.audit.staging_e2e_scenario_b // false' .github/context.yml)
-            else
-              # Fallback: grep for the flag without yq -- same pattern as the
-              # scenario-a-config step above.
-              if grep -q 'staging_e2e_scenario_b: true' .github/context.yml; then
-                SCENARIO_B_ENABLED="true"
-              fi
-            fi
+          # ADR-004: .github/context.yml is the single config source of truth. gic-s1: the flag is read from that file AS IT
+          # IS ON THE BASE BRANCH (scripts/read-base-flag.js), never from this pull request's checkout, so a pull request
+          # cannot switch this required check off by editing the flag in its own copy. Any failure to fetch the base branch
+          # or to read the flag fails this step (fail closed); it never falls back to "off".
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          # The reader itself comes from the base branch too. Only until gic-s1 has merged does the base lack it; then
+          # this checkout's copy is used once, and that is stated in the log.
+          if git cat-file -e "origin/${BASE_REF}:scripts/read-base-flag.js" 2>/dev/null; then
+            git show "origin/${BASE_REF}:scripts/read-base-flag.js" > "${RUNNER_TEMP}/read-base-flag.js"
+          else
+            echo "The base branch has no scripts/read-base-flag.js yet (first merge of gic-s1); using this checkout's copy."
+            cp scripts/read-base-flag.js "${RUNNER_TEMP}/read-base-flag.js"
           fi
+          SCENARIO_B_ENABLED=$(node "${RUNNER_TEMP}/read-base-flag.js" audit.staging_e2e_scenario_b --ref "origin/${BASE_REF}")
           echo "scenario_b_enabled=${SCENARIO_B_ENABLED}" >> "$GITHUB_OUTPUT"
-          echo "Scenario B staging E2E gate flag: ${SCENARIO_B_ENABLED}"
+          echo "Scenario B staging E2E gate flag (from the base branch): ${SCENARIO_B_ENABLED}"
 
       - name: Set up Node.js
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
