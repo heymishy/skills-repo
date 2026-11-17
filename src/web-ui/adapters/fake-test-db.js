@@ -945,6 +945,22 @@ function createFakeTestDb() {
     query: query,
     connect: connect,
     _upsertJourney: _upsertJourney,
+    // lpw-s4: seed one team member (person + identity + membership) so the roster read (listTeamMembers) returns it;
+    // idempotent per identity within a tenant. Mirrors the rows the real tables hold, so the inner join finds it.
+    _seedTeamMember: function(tenantId, identity, role) {
+      var existing = personIdentities.filter(function(pi) { return pi.identity_key === identity; })[0];
+      var personId;
+      if (existing) {
+        personId = existing.person_id;
+      } else {
+        personId = nextPersonId++;
+        people.push({ id: personId, created_at: new Date().toISOString() });
+        personIdentities.push({ identity_key: identity, person_id: personId, provider: 'e2e', created_at: new Date().toISOString() });
+      }
+      var already = teamMemberships.some(function(tm) { return tm.person_id === personId && tm.tenant_id === tenantId; });
+      if (!already) teamMemberships.push({ person_id: personId, tenant_id: tenantId, role: role, created_at: new Date().toISOString() });
+      return { identity: identity, role: role, tenantId: tenantId };
+    },
     _reset: function() {
       customerJourneys = [];
       customerJourneyStages = [];

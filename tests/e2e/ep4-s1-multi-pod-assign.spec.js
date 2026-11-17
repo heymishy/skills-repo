@@ -29,6 +29,7 @@
 // adapter; nothing here is mocked at the handler/store level.
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedTeam, addPodMember } = require('./fixtures/pods');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueName(label) {
@@ -39,10 +40,11 @@ function uniqueName(label) {
 // aside from the name and the roster member added -- factored out to avoid
 // duplicating the create-pod-btn/fill/add-member/save-pod-btn sequence.
 async function createPod(page, podName, memberDisplayName) {
+  await seedTeam(page, [memberDisplayName]);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', podName);
-  await page.locator('.roster-row', { hasText: memberDisplayName }).getByRole('button', { name: 'Add' }).click();
+  await addPodMember(page, memberDisplayName);
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toBeVisible();
 }
@@ -99,7 +101,7 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
 
   // --- Create the feature under this product via the REAL handler ---
   // It auto-inherits Pod A (ep1-s3), so it starts with exactly one pod
-  // assigned and 2 collaborators (the pod creator "me-uuid" + "hamish-uuid",
+  // assigned and 2 collaborators (the pod creator "me-uuid" + "Hamish",
   // per pod-manager.html's ORG_ROSTER/creator-pre-include convention).
   const productPageCsrf = await getCsrfToken(page.request, '/products/' + productId, 'product page');
   const featureRes = await page.request.post('/products/' + productId + '/features', {
@@ -143,8 +145,14 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
   await expect(modal).toBeVisible();
   await expect(page.locator('#ep4s1-modal-title')).toContainText(featureDisplayName);
 
+  // lpw-s4: other pod specs in the same run leave their own pods in the org, so the modal lists at least these two
+  // (it used to list exactly two when this spec ran against an empty org), and each of the two must be present.
   const checkboxes = modal.locator('.ep4s1-pod-checkbox');
-  await expect(checkboxes).toHaveCount(2);
+  // The label assertions retry until the modal has loaded its pod list; count() alone is a one-shot read and ran
+  // before the list rendered in CI (0 found), so it comes after them.
+  await expect(modal.locator('label', { hasText: podAName })).toHaveCount(1);
+  await expect(modal.locator('label', { hasText: podBName })).toHaveCount(1);
+  expect(await checkboxes.count()).toBeGreaterThanOrEqual(2);
 
   const podACheckbox = modal.locator('label', { hasText: podAName }).locator('.ep4s1-pod-checkbox');
   const podBCheckbox = modal.locator('label', { hasText: podBName }).locator('.ep4s1-pod-checkbox');
@@ -172,22 +180,22 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
 
   // --- "Current collaborators" lists members from BOTH pods ---
   // me-uuid: the creator, pre-included in every pod created above (design.md
-  // convention -- see pod-manager.html's openModal()). hamish-uuid: Pod A's
-  // explicitly-added member. susan-uuid: Pod B's explicitly-added member.
+  // convention -- see pod-manager.html's openModal()). Hamish: Pod A's
+  // explicitly-added member. Susan: Pod B's explicitly-added member.
   // populateFeatureCollaboratorsFromPods (Task 1) unions both pods' members
   // and de-duplicates me-uuid (present in both pods), so the union is
   // exactly these 3 -- not 4.
   const collaboratorSection = page.locator('#ep4s1-modal-pods');
   await expect(collaboratorSection).toContainText('Current collaborators');
   await expect(collaboratorSection).toContainText('me-uuid');
-  await expect(collaboratorSection).toContainText('hamish-uuid');
-  await expect(collaboratorSection).toContainText('susan-uuid');
+  await expect(collaboratorSection).toContainText('Hamish');
+  await expect(collaboratorSection).toContainText('Susan');
 
   // --- AC2: remove one collaborator, confirm they disappear from the modal on the next open ---
-  await page.click('button[aria-label="Remove hamish-uuid from this feature"]');
+  await page.click('button[aria-label="Remove Hamish from this feature"]');
   // ep4s1RemoveMember() re-opens the modal in place (no page reload) after a
   // successful DELETE -- assert against the re-rendered DOM, not a reload.
-  await expect(collaboratorSection).not.toContainText('hamish-uuid');
+  await expect(collaboratorSection).not.toContainText('Hamish');
   await expect(collaboratorSection).toContainText('me-uuid');
-  await expect(collaboratorSection).toContainText('susan-uuid');
+  await expect(collaboratorSection).toContainText('Susan');
 });

@@ -11,6 +11,7 @@
 // ep1-s3 will consume (see tests/check-ep1-s2-product-default-pod.js Part 4/4b).
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { seedTeam, addPodMember } = require('./fixtures/pods');
 const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueName(label) {
@@ -33,10 +34,11 @@ async function createTestProduct(page, name) {
 }
 
 async function createTestPod(page, podName) {
+  await seedTeam(page, ['Hamish']);
   await page.goto('/admin/pods/manager');
   await page.click('#create-pod-btn');
   await page.fill('#pod-name-input', podName);
-  await page.locator('.roster-row', { hasText: 'Hamish' }).getByRole('button', { name: 'Add' }).click();
+  await addPodMember(page, 'Hamish');
   await page.click('#save-pod-btn');
   await expect(page.locator('#success-banner')).toBeVisible();
 }

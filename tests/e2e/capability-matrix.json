@@ -211,29 +211,17 @@
     {
       "file": "tests/e2e/ep1-s1-pod-creation.spec.js",
       "capability": "pods",
-      "lane": "quarantined",
-      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/ep1-s2-product-default-pod.spec.js",
       "capability": "pods",
-      "lane": "quarantined",
-      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/ep1-s3-feature-pod-inheritance.spec.js",
       "capability": "pods",
-      "lane": "quarantined",
-      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/ep1-s3-launcher-layout.spec.js",
@@ -314,11 +302,7 @@
     {
       "file": "tests/e2e/ep4-s1-multi-pod-assign.spec.js",
       "capability": "pods",
-      "lane": "quarantined",
-      "reason": "Verified locally: GET /api/team/members returns {members: []} in test mode, so the Available roster is empty; the spec clicks add buttons and searches for \"Hamish\" (the old hardcoded roster, replaced in rtri-s2) and times out. Fix: seed a team member in the test server, then update the selectors.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/feature-navigation.spec.js",
