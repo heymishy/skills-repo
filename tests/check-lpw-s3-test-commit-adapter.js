@@ -105,6 +105,32 @@ test('T4e a seed route for another spec must not stop later journeys reaching th
   }
 });
 
+test('T4f after a restart (the session evicted from memory) the card is still ready and Advance still moves it (issue #1141)', async function () {
+  await withServer(3992, { E2E_STUB_ARTEFACT_COMMIT: 'true' }, async function (ctx) {
+    await ctx.get('/test/session');
+    const name = 'Restart Probe ' + Date.now();
+    await ctx.post('/products/new', { data: { name: name, description: 'p' }, headers: { 'Content-Type': 'application/json' } });
+    const csrf = await getCsrfToken(ctx, '/products/new', 'new product page');
+    const c = await ctx.post('/products/confirm', { form: { name: name, description: 'p', _csrf: csrf }, maxRedirects: 0 });
+    const productId = c.headers()['location'].split('/products/')[1];
+    await ctx.post('/test/seed-product-repo', { data: { productId: productId }, headers: { 'Content-Type': 'application/json' } });
+    // completed: true records the stage as completed by the session, as the real auto-save does when a session finishes
+    const seeded = await (await ctx.post('/test/seed-board-journey', { data: { productId: productId, stage: 'discovery', done: true, completed: true, featureSlug: 'lpw-s3-restart-' + Date.now() }, headers: { 'Content-Type': 'application/json' } })).json();
+    const s = { productId: productId, journeyId: seeded.journeyId };
+    const ev = await ctx.post('/test/evict-skill-session', { data: { sessionId: seeded.sessionId }, headers: { 'Content-Type': 'application/json' } });
+    assert.strictEqual((await ev.json()).evicted, true, 'the seeded session must have been in memory and is now gone');
+    const before = await columnOf(ctx, s);
+    assert.deepStrictEqual(before.columns, ['discovery']);
+    assert.ok(/kb-advance-btn[^>]*data-journey-id="[^"]*"/.test(before.html) && before.html.indexOf('class="kb-advance-btn" data-journey-id="' + s.journeyId + '"') !== -1,
+      'the card must offer Advance although its session is no longer in memory');
+    const token = (before.html.match(/KB_CSRF\s*=\s*"([0-9a-f]{16,})"/) || [])[1];
+    const adv = await ctx.post('/api/board/journey/' + s.journeyId + '/advance', { data: { _csrf: token }, headers: { 'Content-Type': 'application/json' } });
+    const body = await adv.json();
+    assert.strictEqual(adv.status(), 200, JSON.stringify(body));
+    assert.deepStrictEqual((await columnOf(ctx, s)).columns, ['benefit-metric']);
+  });
+});
+
 test('T4d without the opt-in env var the default stays the throwing stub: the advance is a 502, not a pretend commit', async function () {
   await withServer(3994, {}, async function (ctx) {
     const s = await seedReadyCard(ctx);
