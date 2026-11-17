@@ -50974,6 +50974,26 @@
           },
           "dorStatus": "signed-off",
           "prStatus": "merged"
+        },
+        {
+          "id": "lpw-s5",
+          "slug": "lpw-s5",
+          "name": "The model-session browser specs run against the test server without the chat page looping, and join the browser suite",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-17T19:38:11.174Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-17-local-playwright-suite-trust/test-plans/lpw-s5-test-plan.md"
+          },
+          "dorStatus": "signed-off"
         }
       ]
     },
