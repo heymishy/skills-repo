@@ -17,5 +17,10 @@
 
 **2026-11-18 | OPEN | Staging errors never become issues or incidents**
 **Context:** `src/web-ui/routes/error-bridge.js` answers `ignored: staging` for any error whose environment is staging. This error reached the error chain from staging and stopped there.
-**Decision:** none in this story. The incident for this bug was recorded by hand.
+**Decision:** none in this story. The bug is recorded here, not in `workspace/incidents.json` (see the next entry).
 **Rationale:** ignoring staging is a deliberate rule, probably to keep E2E noise out of the issue tracker; reversing it is the operator's decision.
+
+**2026-11-19 | DECISION | Incident record removed from workspace/incidents.json**
+**Context:** the incident was first recorded there as `cb7c5cc2-b6c8-4cd2-bedf-476173621b64` (type incident). That broke three tests that read the real file and pin it to the two seeded deferred-item records: `check-dsrf-s1-seeded-records.js` (no type:incident record may exist), `check-ddft-s5-web-ui-rendering.js` and `check-itar-s3-web-ui-rendering.js` (both assume zero incidents). CI on PR 1157 failed with those three as new regressions, and master carried the same failure from the first commit.
+**Decision:** take the record out of the file and keep the incident description in this file and the story.
+**Rationale:** the tests encode a deliberate rule, so loosening them is a separate decision. Recording real incidents in that file needs those tests changed to a fixture, which is the operator's call.
