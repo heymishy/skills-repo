@@ -410,8 +410,22 @@ jobs:
       - post-deploy-e2e-confirm
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+
+      # spg-s1: this job builds and deploys its own run's commit, so approving
+      # an old waiting run would put old code over newer code. Refuse unless
+      # that commit is the current head of master. Fails closed: if the head
+      # cannot be read the job stops. It sits before every deploy step on
+      # purpose and is a step, not an if:, so the red-suite-blocks-promote
+      # guarantee (bri-s2.6) is untouched.
+      - name: Refuse a stale promotion
+        run: node scripts/promotion-guard.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
       # ptvs-s1: this job builds and deploys its own separate image (--app
@@ -440,3 +454,21 @@ jobs:
         run: flyctl deploy --remote-only --config fly.toml --app skills-framework
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # spg-s1: once a newer commit has reached staging, any older run still waiting
+  # for approval is superseded; cancel it so the approval list shows only the run
+  # that matters. Cancelling a waiting run deploys and deletes nothing, and a
+  # failed cancel is reported as a warning, never as a failure.
+  cancel-superseded:
+    name: Cancel superseded waiting promotions
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cancel older runs waiting for approval
+        run: node scripts/cancel-superseded-promotions.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
