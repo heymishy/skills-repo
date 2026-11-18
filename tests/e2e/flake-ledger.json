@@ -1,0 +1,4 @@
+{
+  "description": "The only list of flaky browser tests. An entry needs test, firstSeen, owner, issue and reviewBy; reviewBy must be no more than 14 days after firstSeen. See tests/FLAKE-POLICY.md. Quarantined specs are in capability-matrix.json, not here.",
+  "entries": []
+}
