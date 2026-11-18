@@ -14,3 +14,8 @@
 **Context:** the line reporter interleaves the server log and does not repeat failures at the end in a usable form.
 **Decision:** the script writes the JSON report to a temporary file and prints one entry per failed test from it.
 **Rationale:** the JSON report carries the title, location and error for each result; the digest is then testable against fixture reports.
+
+**2026-11-18 | DECISION | A port is busy when something accepts a connection on it, probed on both loopback addresses**
+**Context:** the first version bound a server to the port to test it. On Windows a listener on 127.0.0.1 does not stop a bind on all interfaces, so the bind test reported a busy port as free (test T5a failed).
+**Decision:** the check connects to 127.0.0.1 and ::1 on the port; any connection means busy.
+**Rationale:** it tests what matters, which is whether something answers on the port, and matches how a conflicting test server would be found.
