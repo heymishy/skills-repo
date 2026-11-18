@@ -30,6 +30,7 @@
     "build": "node scripts/ci-build.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "verify": "node scripts/verify.js",
     "deploy:staging": "node scripts/deploy-staging.js"
   },
   "devDependencies": {
