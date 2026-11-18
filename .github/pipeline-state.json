@@ -51271,6 +51271,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-version-build-run",
+      "name": "The build stamp records the workflow run that built the image",
+      "track": "short",
+      "stage": "dor-signed-off",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-18T08:40:02.747Z",
+      "stories": [
+        {
+          "id": "vbr-s1",
+          "slug": "vbr-s1",
+          "name": "The build stamp records the workflow run that built the image, so an operator can find the run from the running app",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-11-18T08:40:02.747Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-version-build-run/test-plans/vbr-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
