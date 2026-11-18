@@ -51172,6 +51172,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-review-checklist",
+      "name": "A review checklist seeded from recorded defects",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-18T05:22:05.797Z",
+      "stories": [
+        {
+          "id": "rvc-s1",
+          "slug": "rvc-s1",
+          "name": "A review checklist, seeded from recorded defects, shows the items a change diff is likely to need",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-18T05:22:05.797Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-review-checklist/test-plans/rvc-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
