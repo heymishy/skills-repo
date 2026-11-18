@@ -62,6 +62,29 @@ test('T5 every scenario is an ordered step with a statement and an array of para
   assert.strictEqual(new Set(names).size, names.length, 'step names are unique');
 });
 
+// The first CI run found this: two products created in the same millisecond came back oldest first, because the fake
+// sorted on a millisecond timestamp and kept insertion order on a tie. Postgres sorts on its own timestamp and returns
+// the later insert first.
+test('T6 the fake lists products newest first even when two were created in the same millisecond', async function () {
+  const db = require(path.join(root, 'src', 'web-ui', 'adapters', 'fake-test-db.js')).createFakeTestDb();
+  const insert = function (name) {
+    return db.query('INSERT INTO products (tenant_id, name, description, mission, tech_stack, constraints, roadmap, architecture_guardrails, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING product_id',
+      ['tenant-a', name, '', '', '', '', '', '', 'tenant-a']);
+  };
+  const realNow = Date.now;
+  Date.now = function () { return 1700000000000; };           // freeze the clock so both inserts share one millisecond
+  try {
+    const realDate = global.Date;
+    global.Date = class extends realDate { constructor(...a) { if (a.length === 0) { super(1700000000000); } else { super(...a); } } };
+    try {
+      await insert('Alpha');
+      await insert('Beta');
+    } finally { global.Date = realDate; }
+  } finally { Date.now = realNow; }
+  const listed = await db.query('SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC', ['tenant-a']);
+  assert.deepStrictEqual(listed.rows.map(function (r) { return r.name; }), ['Beta', 'Alpha']);
+});
+
 (async function main() {
   let passed = 0, failed = 0;
   for (const t of tests) {

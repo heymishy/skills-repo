@@ -18,3 +18,8 @@
 **2026-11-18 | DECISION | A new workflow file, not a new job in e2e.yml**
 **Context:** `tests/check-b2-ci-gate-config.js` guards the job list in `e2e.yml`. The core browser workflow was also a separate file for the same reason.
 **Decision:** `.github/workflows/fake-db-differential.yml`, one job, not required until it has been green on real pull requests.
+
+**2026-11-18 | DECISION | The fake breaks created_at ties by insertion order, as the fake was meant to do; a real divergence found in CI is fixed in the fake**
+**Context:** the first CI run of the differential (run 44248973216) found that the newest-product-first list returned two products created in the same millisecond oldest first. The fake sorted on a millisecond timestamp and kept insertion order on a tie. Postgres sorts on its own microsecond timestamp.
+**Decision:** the fake records an insertion sequence on each product and breaks a created_at tie on it, newest first. This is a four-line change in src/web-ui/adapters/fake-test-db.js, larger than the one line the story allowed, so it is recorded here and in the DoD. Regression test T6 in tests/check-dfp-s1-fake-db-differential.js freezes the clock and fails on the old behaviour.
+**Rationale:** the browser suite lists products; an order the real database never produces could pass locally and mislead a test.
