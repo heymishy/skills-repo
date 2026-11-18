@@ -51144,7 +51144,7 @@
       "slug": "2026-11-18-verify-script",
       "name": "One command runs the core browser lane and prints what broke",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
@@ -51154,22 +51154,22 @@
           "id": "vfy-s1",
           "slug": "vfy-s1",
           "name": "One committed command boots the test server, runs the core browser lane, and prints what broke",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-18T04:42:20.431Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-18T05:13:28.054Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
-            "passing": 0,
+            "totalTests": 10,
+            "passing": 10,
             "artefact": "artefacts/2026-11-18-verify-script/test-plans/vfy-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
