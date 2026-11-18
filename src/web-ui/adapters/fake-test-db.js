@@ -100,8 +100,10 @@ function createFakeTestDb() {
 
     // ── products ─────────────────────────────────────────────────────────
     if (s.indexOf('INSERT INTO PRODUCTS') === 0) {
-      var productId = 'fake-product-' + (nextProductSeq++);
+      var productSeq = nextProductSeq++;
+      var productId = 'fake-product-' + productSeq;
       var row = {
+        seq:         productSeq, // dfp-s1: breaks created_at ties in insertion order, as Postgres does by its own clock
         product_id:  productId,
         tenant_id:   p[0],
         name:        p[1],
@@ -125,7 +127,7 @@ function createFakeTestDb() {
       var tenantIdList = p[0];
       var rows = products
         .filter(function(r) { return r.tenant_id === tenantIdList; })
-        .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
+        .sort(function(a, b) { return b.created_at.localeCompare(a.created_at) || b.seq - a.seq; })
         .map(function(r) { return { product_id: r.product_id, name: r.name, created_at: r.created_at }; });
       return Promise.resolve({ rows: rows });
     }
