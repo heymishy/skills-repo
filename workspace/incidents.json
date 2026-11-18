@@ -40,24 +40,5 @@
     "revisitCondition": "deferred to a broader `product/` refresh later",
     "linkedFeature": null,
     "linkedStory": null
-  },
-  {
-    "id": "cb7c5cc2-b6c8-4cd2-bedf-476173621b64",
-    "type": "incident",
-    "trigger": "Deleting a product fails when one of its journeys has artefacts",
-    "summary": "On wuce-staging, 2026-11-18, DELETE /products/:id threw a foreign key violation: update or delete on table journeys violates artefacts_journey_id_fkey on table artefacts (handleDeleteProduct, routes/products.js line 3438). The handler deletes journeys but not their artefacts, so any product with a started feature that has an artefact cannot be deleted. The page showed only Failed to delete product. Found while driving a staging walkthrough; the error reached the error capture chain via authGuard but the error bridge ignores staging, so no issue or incident was opened.",
-    "tags": [
-      "product-delete",
-      "foreign-key",
-      "staging",
-      "authguard",
-      "found-in-walkthrough"
-    ],
-    "priorIncidentLinks": [],
-    "status": "open",
-    "triageSummary": "No relevant prior incident was found for this record's tags.",
-    "confirmationStatus": null,
-    "createdAt": "2026-11-18T09:32:10.456Z",
-    "updatedAt": "2026-11-18T09:32:10.469Z"
   }
 ]
