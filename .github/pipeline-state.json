@@ -51139,6 +51139,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-verify-script",
+      "name": "One command runs the core browser lane and prints what broke",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-18T04:42:20.431Z",
+      "stories": [
+        {
+          "id": "vfy-s1",
+          "slug": "vfy-s1",
+          "name": "One committed command boots the test server, runs the core browser lane, and prints what broke",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-18T04:42:20.431Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-verify-script/test-plans/vfy-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
