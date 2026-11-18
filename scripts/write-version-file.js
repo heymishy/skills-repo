@@ -52,11 +52,16 @@ function buildVersionInfo() {
   const subject = _run('git log -1 --pretty=%s');
   const prNumber = parsePrNumberFromSubject(subject);
 
+  // vbr-s1: the Actions run that built this image. These name the run only;
+  // they do not say its tests passed (deploy-staging has no needs: on tests).
+  // Null outside Actions (local runs), never a guessed value.
   return {
     sha,
     shortSha,
     prNumber,
     commitSubject: subject,
+    buildRunId: process.env.GITHUB_RUN_ID || null,
+    buildRunAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
     deployedAt: new Date().toISOString()
   };
 }
