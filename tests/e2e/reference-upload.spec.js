@@ -2,11 +2,10 @@
 // Tests: T9–T15
 //
 // The strategy grounding modal has no entry in the journey form (nothing in
-// src/web-ui emits a new-product checkbox), so each test creates a journey the
-// way the page does (POST /api/journey with the form's CSRF token), reads its
-// id from the chat page it redirects to, and opens /journey/:id/reference-modal
-// directly. What is under test is the modal and its upload, skip and
-// reference-page routes, not how a person gets there.
+// src/web-ui emits a new-product checkbox), so each test posts the journey form
+// itself with the newProduct field the route handles (and the form's CSRF
+// token), follows the redirect to /journey/:id/reference-modal, and tests the
+// modal and its upload, skip and reference-page routes from there.
 
 'use strict';
 
@@ -14,23 +13,21 @@ const { expect }       = require('@playwright/test');
 const { withAuth }     = require('./fixtures/auth');
 const { getCsrfToken } = require('./fixtures/csrf');
 
-async function createJourney(page, featureName) {
+// POST /api/journey with newProduct=1 is the route that sends a new product to
+// the strategy grounding gate (journey.js, sdg.1); only the form field is
+// missing from the page, so the spec posts it the way the form would.
+async function openModal(page, featureName) {
   const csrf = await getCsrfToken(page.request, '/journey', 'journey home page');
   const created = await page.request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery', _csrf: csrf },
+    form: { featureName: featureName, startSkill: 'discovery', newProduct: '1', _csrf: csrf },
     maxRedirects: 0
   });
   expect(created.status(), 'POST /api/journey').toBe(303);
-  const chat = await page.request.get(created.headers()['location']);
-  const m = (await chat.text()).match(/\/api\/journey\/([0-9a-f-]+)\/gate-confirm/);
-  expect(m, 'journey id on the chat page').toBeTruthy();
-  return m[1];
-}
-
-async function openModal(page, featureName) {
-  const journeyId = await createJourney(page, featureName);
-  await page.goto('/journey/' + journeyId + '/reference-modal');
-  return journeyId;
+  const location = created.headers()['location'];
+  const m = location.match(/^\/journey\/([^/]+)\/reference-modal$/);
+  expect(m, 'new-product selection redirects to the reference modal').toBeTruthy();
+  await page.goto(location);
+  return decodeURIComponent(m[1]);
 }
 
 // T9 — The modal shows the strategy grounding gate with a Skip option
