@@ -51210,7 +51210,7 @@
       "slug": "2026-11-18-fake-db-differential",
       "name": "The in-memory test database agrees with real Postgres for users and products",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
@@ -51220,22 +51220,22 @@
           "id": "dfp-s1",
           "slug": "dfp-s1",
           "name": "The in-memory test database and real Postgres give the same answers for the users and products queries the browser suite relies on",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-18T06:04:40.857Z",
+          "acVerified": 6,
+          "updatedAt": "2026-11-18T06:29:15.171Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
-            "totalTests": 6,
-            "passing": 0,
+            "totalTests": 7,
+            "passing": 7,
             "artefact": "artefacts/2026-11-18-fake-db-differential/test-plans/dfp-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
