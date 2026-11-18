@@ -1,0 +1,62 @@
+name: Fake database differential
+
+# dfp-s1: runs the users and products scenarios against the in-memory test database (src/web-ui/adapters/fake-test-db.js)
+# and against a real Postgres 16 service container, and fails when their answers differ. Runs only when the fake, the
+# harness or its tests change, because a change elsewhere cannot make the two disagree. It is a separate workflow so the
+# e2e.yml job list (guarded by tests/check-b2-ci-gate-config.js) stays as it is. It is not a required check until the
+# operator adds it to the ruleset after it has been green on real pull requests.
+# ADR-009: permissions limited to contents: read.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'src/web-ui/adapters/fake-test-db.js'
+      - 'tests/differential/**'
+      - 'tests/check-dfp-s1-fake-db-differential.js'
+      - '.github/workflows/fake-db-differential.yml'
+  workflow_dispatch: {}
+
+jobs:
+  fake-db-differential:
+    name: Fake database differential
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: diff
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d diff"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies (the harness needs the pg driver)
+        run: npm ci --no-audit --no-fund
+
+      - name: Unit leg (normaliser, comparison, drift check, skip rule)
+        run: node tests/check-dfp-s1-fake-db-differential.js
+
+      - name: Differential against real Postgres 16 (a missing database fails the job)
+        env:
+          DIFF_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/diff
+          DIFF_REQUIRE_PG: '1'
+        run: node tests/differential/run.js
