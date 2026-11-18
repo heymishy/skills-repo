@@ -51304,6 +51304,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-delete-product-artefacts",
+      "name": "Deleting a product removes its journeys artefacts first",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-18T09:33:24.169Z",
+      "stories": [
+        {
+          "id": "vdp-s1",
+          "slug": "vdp-s1",
+          "name": "Deleting a product removes its journeys artefacts first, so a product with started features can be deleted",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-18T09:33:24.169Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-delete-product-artefacts/test-plans/vdp-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
