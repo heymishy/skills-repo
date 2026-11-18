@@ -3435,6 +3435,9 @@ async function handleDeleteProduct(req, res, _next, pool, posthog) {
   // directly assertable and journeys are actually removed, not orphaned
   // with product_id set to NULL (journeys.product_id is ON DELETE SET NULL,
   // which would leave stale rows behind -- not what AC1 requires).
+  // vdp-s1: artefacts.journey_id REFERENCES journeys(journey_id) with no
+  // cascade, so a journey that has artefacts cannot be deleted until they go.
+  await _pool.query('DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE product_id = $1)', [productId]);
   await _pool.query('DELETE FROM journeys WHERE product_id = $1', [productId]);
   await _pool.query('DELETE FROM products WHERE product_id = $1', [productId]);
 

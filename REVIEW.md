@@ -60,3 +60,9 @@ Fields: `paths` (comma-separated globs; `*` within a segment, `**` across segmen
 - paths: tests/check-*.js
 - check: a passing check prints at least one line, so a silent pass is not mistaken for a run that never happened.
 - source: workspace/learnings.md
+
+## Hard deletes of a parent row clear every dependent table
+- paths: src/web-ui/routes/**/*.js
+- match: DELETE FROM (journeys|products)\b
+- check: every table with a foreign key to the deleted table is cleared first, in an order the constraint allows (artefacts before journeys, journeys before products), and a test uses a pool that enforces the foreign key so a missed table fails the test.
+- source: artefacts/2026-11-18-delete-product-artefacts/decisions.md
