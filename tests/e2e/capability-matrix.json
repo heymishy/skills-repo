@@ -181,11 +181,7 @@
     {
       "file": "tests/e2e/dsda-s1-default-all-stories.spec.js",
       "capability": "reference-and-stories",
-      "lane": "quarantined",
-      "reason": "After definition completes the journey now starts the review skill (definition-to-review autostart) instead of redirecting to /journey/:id/stories, so the spec lands on /skills/review/sessions/:id/chat. The stories page and its textarea still exist (GET /journey/:id/stories); rewrite to open that page directly.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/dsh-s3-breadcrumb-split-view.spec.js",
@@ -369,11 +365,7 @@
     {
       "file": "tests/e2e/iwu2-right-panel-layout.spec.js",
       "capability": "accessibility-and-responsive",
-      "lane": "quarantined",
-      "reason": "The right panel still exists but changed: #assumption-cards is only rendered for the ideate skill (chat-view.js 3-panel layout; the spec opens discovery), and #draft-content no longer exists (the draft panel was restyled to .sw-draft-* in dsa-s4). Rewrite against ideate and the current draft markup.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/jae-s5-delivery-swimlane-grid.spec.js",
@@ -485,11 +477,7 @@
     {
       "file": "tests/e2e/reference-upload.spec.js",
       "capability": "reference-and-stories",
-      "lane": "quarantined",
-      "reason": "The reference upload is live (every skill session links to /journey/:id/reference, with its own upload route), but the spec enters through a new-product checkbox that no form in src/web-ui emits, so T9 lands on the skill chat and T10 to T15 never reach the modal. Rewrite: drive the modal and the reference page directly. The modal itself has no UI entry (product follow-up).",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "core"
     },
     {
       "file": "tests/e2e/s1.1-board-advance-action.spec.js",

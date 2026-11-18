@@ -1,8 +1,8 @@
 // dsda-s1-default-all-stories.spec.js — story dsda-s1
 // artefacts/2026-07-24-definition-stories-default-all/stories/dsda-s1.md
 //
-// AC3: after /definition completes and the journey redirects to
-// /journey/:id/stories, the story-list textarea remains a real, editable
+// AC3: after /definition completes, the story-list textarea on
+// /journey/:id/stories remains a real, editable
 // form field — the operator can adjust the list before submitting, and the
 // edited value (not whatever the server pre-filled) is what proceeds.
 //
@@ -107,7 +107,10 @@ async function driveJourneyToStoriesPage(pageRequest, featureName) {
     maxRedirects: 0
   });
   expect(afterDefinitionGate.status()).toBe(303);
-  expect(afterDefinitionGate.headers()['location']).toBe('/journey/' + journeyId + '/stories');
+  // Completing definition now starts the review skill (definition-to-review
+  // autostart) instead of redirecting to the stories page; the stories page
+  // is still served at GET /journey/:id/stories, so the test opens it directly.
+  expect(afterDefinitionGate.headers()['location']).toMatch(/\/skills\/review\/sessions\/[^/]+\/chat/);
 
   return journeyId;
 }
