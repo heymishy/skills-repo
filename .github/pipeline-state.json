@@ -51238,6 +51238,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-18-flake-policy",
+      "name": "A flake is a tracked, owned, time-limited entry in one ledger",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-18T06:53:09.083Z",
+      "stories": [
+        {
+          "id": "flk-s1",
+          "slug": "flk-s1",
+          "name": "A flake is a tracked, owned, time-limited entry in one ledger, and a rerun that passes is not a result until it is recorded",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-18T06:53:09.083Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-18-flake-policy/test-plans/flk-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
