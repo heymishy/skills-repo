@@ -51309,7 +51309,7 @@
       "slug": "2026-11-18-delete-product-artefacts",
       "name": "Deleting a product removes its journeys artefacts first",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
@@ -51319,22 +51319,22 @@
           "id": "vdp-s1",
           "slug": "vdp-s1",
           "name": "Deleting a product removes its journeys artefacts first, so a product with started features can be deleted",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-18T09:33:24.169Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-18T17:40:48.718Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-18-delete-product-artefacts/test-plans/vdp-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
