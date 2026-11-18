@@ -51337,6 +51337,81 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-19-promotion-safety",
+      "name": "Production promotion safety: stale-promotion guard, Fly health check, post-promotion verification",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-19T09:00:00.000Z",
+      "stories": [
+        {
+          "id": "spg-s1",
+          "slug": "spg-s1",
+          "name": "A production promotion refuses any commit that is not the head of master, and superseded waiting promotions are cancelled",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T09:00:00.000Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-19-promotion-safety/test-plans/spg-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        },
+        {
+          "id": "fhc-s1",
+          "slug": "fhc-s1",
+          "name": "Production declares a Fly health check on /health, so a dead process stops taking traffic and a bad release stops the deploy",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T09:00:00.000Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-19-promotion-safety/test-plans/fhc-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        },
+        {
+          "id": "ppv-s1",
+          "slug": "ppv-s1",
+          "name": "After a production promotion, a read-only job confirms production is running the promoted build and answering /health, and opens an issue if not",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T09:00:00.000Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-19-promotion-safety/test-plans/ppv-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
