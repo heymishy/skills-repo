@@ -40,6 +40,31 @@ function requireDbConnection() {
 
 const E2E_TENANT_PREFIX = 'e2e-test-';
 
+// dgn-s1: optional reporting. Every query is timed and announced to an optional `report(event)` hook so a run can say which
+// delete is slow or failing (the errors below are otherwise swallowed). The hook defaults to nothing, never throws into the
+// purge, and changes no query, parameter or order. Event: { status: 'start' | 'done' | 'chunk-done', phase: 'find' | 'purge',
+// table, ms, rowCount, error, chunk, chunks, chunkSize } (chunk fields only on purge events).
+function safeReport(report, event) {
+  if (typeof report !== 'function') return;
+  try { report(event); } catch (_) { /* reporting must never affect the purge */ }
+}
+
+async function timedQuery(db, report, meta, sql, params) {
+  safeReport(report, Object.assign({ status: 'start' }, meta));
+  const t0 = Date.now();
+  try {
+    const result = params === undefined ? await db.query(sql) : await db.query(sql, params);
+    let rowCount = null;
+    if (result && typeof result.rowCount === 'number') rowCount = result.rowCount;
+    else if (result && Array.isArray(result.rows)) rowCount = result.rows.length;
+    safeReport(report, Object.assign({ status: 'done', ms: Date.now() - t0, rowCount: rowCount }, meta));
+    return result;
+  } catch (err) {
+    safeReport(report, Object.assign({ status: 'done', ms: Date.now() - t0, rowCount: 0, error: String((err && err.message) || err) }, meta));
+    throw err;
+  }
+}
+
 /**
  * Find every distinct tenant_id (or email, for email/password identities
  * where tenantId === email) tagged with the e2e-test- prefix, across every
@@ -47,7 +72,7 @@ const E2E_TENANT_PREFIX = 'e2e-test-';
  * @param {object} db
  * @returns {Promise<string[]>}
  */
-async function findE2eTenantIds(db) {
+async function findE2eTenantIds(db, report) {
   const found = new Set();
   const queries = [
     "SELECT DISTINCT tenant_id AS id FROM credits WHERE tenant_id LIKE 'e2e-test-%'",
@@ -57,7 +82,8 @@ async function findE2eTenantIds(db) {
   ];
   for (const sql of queries) {
     let result;
-    try { result = await db.query(sql); } catch (_) { continue; } // table may not exist in every environment
+    const table = (sql.match(/FROM (\w+)/) || [])[1];
+    try { result = await timedQuery(db, report, { phase: 'find', table: table }, sql); } catch (_) { continue; } // table may not exist in every environment
     (result.rows || []).forEach((row) => { if (row.id) found.add(row.id); });
   }
   return [...found];
@@ -110,25 +136,28 @@ async function purgeTenant(db, tenantId) {
  * @param {string[]} tenantIds
  * @returns {Promise<void>}
  */
-async function purgeTenantsBatch(db, tenantIds) {
+async function purgeTenantsBatch(db, tenantIds, report, chunkInfo) {
   if (!tenantIds || tenantIds.length === 0) return;
-  await db.query(
+  // dgn-s1: `report` and `chunkInfo` ({ chunk, chunks }) are optional diagnostics; the statements below are unchanged.
+  const info = chunkInfo || {};
+  const run = (table, sql, params) => timedQuery(
+    db, report, { phase: 'purge', table: table, chunk: info.chunk, chunks: info.chunks, chunkSize: tenantIds.length }, sql, params
+  ).catch(() => {});
+  await run('artefacts',
     'DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = ANY($1::text[]))',
-    [tenantIds]
-  ).catch(() => {});
-  await db.query('DELETE FROM journeys WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM products WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {}); // cascades
-  await db.query('DELETE FROM credits WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM credit_audit_log WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM tenant_plan WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM user_roles WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM team_memberships WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query(
+    [tenantIds]);
+  await run('journeys', 'DELETE FROM journeys WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('products', 'DELETE FROM products WHERE tenant_id = ANY($1::text[])', [tenantIds]); // cascades
+  await run('credits', 'DELETE FROM credits WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('credit_audit_log', 'DELETE FROM credit_audit_log WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('tenant_plan', 'DELETE FROM tenant_plan WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('user_roles', 'DELETE FROM user_roles WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('team_memberships', 'DELETE FROM team_memberships WHERE tenant_id = ANY($1::text[])', [tenantIds]);
+  await run('impersonation_audit_log',
     'DELETE FROM impersonation_audit_log WHERE admin_tenant_id = ANY($1::text[]) OR target_tenant_id = ANY($1::text[])',
-    [tenantIds]
-  ).catch(() => {});
-  await db.query('DELETE FROM github_first_login WHERE github_user_id = ANY($1::text[])', [tenantIds]).catch(() => {});
-  await db.query('DELETE FROM users WHERE email = ANY($1::text[])', [tenantIds]).catch(() => {});
+    [tenantIds]);
+  await run('github_first_login', 'DELETE FROM github_first_login WHERE github_user_id = ANY($1::text[])', [tenantIds]);
+  await run('users', 'DELETE FROM users WHERE email = ANY($1::text[])', [tenantIds]);
 }
 
 // pebd-s1: found via a real, active production data-hygiene problem
@@ -161,14 +190,17 @@ function chunk(arr, size) {
  */
 async function purgeE2eTenants(db, options) {
   const opts = options || {};
-  const tenantIds = await findE2eTenantIds(db);
+  const tenantIds = await findE2eTenantIds(db, opts.report);
   if (typeof opts.onFound === 'function') {
     opts.onFound(tenantIds);
   }
   // pebd-s1: batched, chunked deletes instead of a fully sequential
   // per-tenant loop -- see purgeTenantsBatch's own doc comment.
-  for (const batch of chunk(tenantIds, BATCH_SIZE)) {
-    await purgeTenantsBatch(db, batch);
+  const batches = chunk(tenantIds, BATCH_SIZE);
+  for (let i = 0; i < batches.length; i++) {
+    const info = { chunk: i + 1, chunks: batches.length };
+    await purgeTenantsBatch(db, batches[i], opts.report, info);
+    safeReport(opts.report, { status: 'chunk-done', phase: 'purge', chunk: info.chunk, chunks: info.chunks, chunkSize: batches[i].length });
   }
   return { tenantCount: tenantIds.length, tenantIds };
 }
@@ -242,11 +274,54 @@ function getConfiguredTimeoutMs() {
  *   completed before the failure; the found array otherwise.
  * @returns {string}
  */
-function formatPurgeFailureMessage(err, foundTenantIds) {
-  if (foundTenantIds === null) {
-    return `purge-e2e-tenants failed (non-blocking), before any tenants were found: ${err.message}`;
+function formatPurgeFailureMessage(err, foundTenantIds, progress) {
+  // dgn-s1: `progress` (from createPurgeReport) says where the run was when it failed; omitted, the message is unchanged.
+  let where = '';
+  if (progress && progress.phase === 'find') {
+    where = ` (in the find step, table ${progress.table})`;
+  } else if (progress && progress.chunk) {
+    where = ` (in chunk ${progress.chunk} of ${progress.chunks}, table ${progress.table}; ${progress.tenantsDone} tenant(s) through completed chunks)`;
   }
-  return `purge-e2e-tenants failed (non-blocking), found ${foundTenantIds.length} tenant(s) but did not finish purging them: ${err.message}`;
+  if (foundTenantIds === null) {
+    return `purge-e2e-tenants failed (non-blocking), before any tenants were found: ${err.message}${where}`;
+  }
+  return `purge-e2e-tenants failed (non-blocking), found ${foundTenantIds.length} tenant(s) but did not finish purging them: ${err.message}${where}`;
+}
+
+/**
+ * dgn-s1: collects the report events of one run into per-table totals and remembers the query that was running last, so the
+ * CLI can print one summary block on success and on timeout. `progress` is updated live (read it from the failure path).
+ * @returns {{report: function, summarize: function, progress: object}}
+ */
+function createPurgeReport() {
+  const stats = {};
+  const order = [];
+  const progress = { phase: null, table: null, chunk: null, chunks: null, tenantsDone: 0 };
+  function report(e) {
+    if (!e) return;
+    if (e.status === 'start') {
+      progress.phase = e.phase; progress.table = e.table; progress.chunk = e.chunk || null; progress.chunks = e.chunks || null;
+      return;
+    }
+    if (e.status === 'chunk-done') { progress.tenantsDone += e.chunkSize || 0; return; }
+    if (e.status !== 'done') return;
+    const key = e.phase + ' ' + e.table;
+    if (!stats[key]) { stats[key] = { calls: 0, ms: 0, rows: 0, errors: 0, firstError: null }; order.push(key); }
+    const s = stats[key];
+    s.calls++; s.ms += e.ms || 0; s.rows += e.rowCount || 0;
+    if (e.error) { s.errors++; if (s.firstError === null) s.firstError = e.error; }
+  }
+  function summarize() {
+    const lines = ['[purge] summary'];
+    order.forEach((key) => {
+      const s = stats[key];
+      lines.push(`[purge]   ${key}: calls=${s.calls} ms=${s.ms} rows=${s.rows} errors=${s.errors}`);
+      if (s.firstError !== null) lines.push(`[purge]     first error: ${s.firstError}`);
+    });
+    if (progress.chunk) lines.push(`[purge]   progress: chunk ${progress.chunk} of ${progress.chunks}, tenants through completed chunks: ${progress.tenantsDone}`);
+    return lines.join('\n');
+  }
+  return { report, summarize, progress };
 }
 
 if (require.main === module) {
@@ -268,6 +343,7 @@ if (require.main === module) {
     // stcs-s1: tracked outside the try block so the catch handler can report
     // how far the operation got before a timeout fired (see below).
     let foundTenantIds = null;
+    const purgeReport = createPurgeReport(); // dgn-s1
     try {
       // stcs-s1: retry is a best-effort warm-up, not a hard gate -- if it
       // never succeeds (e.g. a genuinely bad/unreachable DATABASE_URL, not
@@ -292,12 +368,14 @@ if (require.main === module) {
       }
       const summary = await withTimeout(
         purgeE2eTenants(requireDbConnection(), {
-          onFound: (tenantIds) => { foundTenantIds = tenantIds; }
+          onFound: (tenantIds) => { foundTenantIds = tenantIds; },
+          report: purgeReport.report
         }),
         timeoutMs,
         'purgeE2eTenants'
       );
       console.log(`Purged ${summary.tenantCount} e2e-test- tenant(s): ${summary.tenantIds.join(', ') || '(none found)'}`);
+      console.log(purgeReport.summarize());
       process.exitCode = 0;
     } catch (err) {
       // Never a hard failure here (D37-adjacent, but deliberately inverted):
@@ -308,7 +386,8 @@ if (require.main === module) {
       // yet" is distinguishable from "found N tenants, timed out purging
       // them" in CI logs -- a generic message could not previously tell
       // these apart, hiding whether orphaned data is actually accumulating.
-      console.error(formatPurgeFailureMessage(err, foundTenantIds));
+      console.error(formatPurgeFailureMessage(err, foundTenantIds, purgeReport.progress));
+      console.error(purgeReport.summarize());
       process.exitCode = 0;
     } finally {
       try { await withTimeout(pool.end(), 5000, 'pool.end'); } catch (_) {}
@@ -329,6 +408,7 @@ module.exports = {
   connectWithRetry,
   getConfiguredTimeoutMs,
   formatPurgeFailureMessage,
+  createPurgeReport,
   withTimeout,
   DEFAULT_TIMEOUT_MS
 };
