@@ -25,6 +25,10 @@
  * Postgres wiring lives in the CLI entrypoint below.
  */
 
+// pts-s1: the tables whose journey_id REFERENCES journeys(journey_id) with no ON DELETE clause (session_turns, artefacts),
+// shared with the web app's product and journey deletes (vdp-s2). They must be cleared before the journeys are.
+const { JOURNEY_CHILD_TABLES } = require('../src/web-ui/utils/journey-child-tables');
+
 let _dbConnection = null;
 
 function setDbConnection(adapter) {
@@ -101,12 +105,15 @@ async function findE2eTenantIds(db, report) {
  * @returns {Promise<void>}
  */
 async function purgeTenant(db, tenantId) {
-  // journeys' artefacts must go first -- artefacts.journey_id is a plain FK
-  // with no ON DELETE clause (default RESTRICT).
-  await db.query(
-    'DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = $1)',
-    [tenantId]
-  ).catch(() => {});
+  // journeys' child rows must go first -- every table in JOURNEY_CHILD_TABLES (session_turns, artefacts) has a plain
+  // FK to journeys with no ON DELETE clause (default RESTRICT). pts-s1: session_turns was missing, so the journeys
+  // delete failed (silently) for any tenant whose journeys had session turns.
+  for (const table of JOURNEY_CHILD_TABLES) {
+    await db.query(
+      'DELETE FROM ' + table + ' WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = $1)',
+      [tenantId]
+    ).catch(() => {});
+  }
   await db.query('DELETE FROM journeys WHERE tenant_id = $1', [tenantId]).catch(() => {});
   await db.query('DELETE FROM products WHERE tenant_id = $1', [tenantId]).catch(() => {}); // cascades
   await db.query('DELETE FROM credits WHERE tenant_id = $1', [tenantId]).catch(() => {});
@@ -143,9 +150,12 @@ async function purgeTenantsBatch(db, tenantIds, report, chunkInfo) {
   const run = (table, sql, params) => timedQuery(
     db, report, { phase: 'purge', table: table, chunk: info.chunk, chunks: info.chunks, chunkSize: tenantIds.length }, sql, params
   ).catch(() => {});
-  await run('artefacts',
-    'DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = ANY($1::text[]))',
-    [tenantIds]);
+  // pts-s1: session_turns first, then artefacts (the list's order), then journeys. The artefacts statement text is unchanged.
+  for (const table of JOURNEY_CHILD_TABLES) {
+    await run(table,
+      'DELETE FROM ' + table + ' WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = ANY($1::text[]))',
+      [tenantIds]);
+  }
   await run('journeys', 'DELETE FROM journeys WHERE tenant_id = ANY($1::text[])', [tenantIds]);
   await run('products', 'DELETE FROM products WHERE tenant_id = ANY($1::text[])', [tenantIds]); // cascades
   await run('credits', 'DELETE FROM credits WHERE tenant_id = ANY($1::text[])', [tenantIds]);

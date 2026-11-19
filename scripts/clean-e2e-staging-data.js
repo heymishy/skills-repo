@@ -15,8 +15,8 @@
 // or heuristic is used, and there is no "delete everything" mode.
 //
 // Dry-run by default — prints a report and issues no DELETE. Pass --confirm
-// to actually delete the matched rows (artefacts first, by journey_id FK,
-// then journeys).
+// to actually delete the matched rows (each table that references journeys by
+// journey_id FK first -- session_turns, then artefacts -- then journeys).
 //
 // Requires DATABASE_URL in the environment (the operator's own staging
 // connection string — never hardcoded, never logged in full).
@@ -24,6 +24,8 @@
 // Usage: DATABASE_URL=... node scripts/clean-e2e-staging-data.js [--confirm]
 
 var MATCH_PREFIX = 'e2e-test-';
+// pts-s1: tables whose journey_id REFERENCES journeys(journey_id) with no cascade (shared with the web app, vdp-s2).
+var JOURNEY_CHILD_TABLES = require('../src/web-ui/utils/journey-child-tables').JOURNEY_CHILD_TABLES;
 
 function buildSelectQuery() {
   return {
@@ -49,7 +51,9 @@ async function run(pool, options) {
   }
 
   var journeyIds = rows.map(function(r) { return r.journey_id; });
-  await pool.query('DELETE FROM artefacts WHERE journey_id = ANY($1)', [journeyIds]);
+  for (var i = 0; i < JOURNEY_CHILD_TABLES.length; i++) {
+    await pool.query('DELETE FROM ' + JOURNEY_CHILD_TABLES[i] + ' WHERE journey_id = ANY($1)', [journeyIds]);
+  }
   await pool.query('DELETE FROM journeys WHERE journey_id = ANY($1)', [journeyIds]);
 
   return { matchedCount: rows.length, deleted: true, rows: rows };

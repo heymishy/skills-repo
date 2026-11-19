@@ -140,6 +140,15 @@ function createMockDb(seed) {
       tables.user_roles = tables.user_roles.filter(function(u) { return u.tenant_id !== params[0]; });
       return { rowCount: 0 };
     }
+    // pts-s1: every table in JOURNEY_CHILD_TABLES is now cleared before journeys. session_turns is not modelled here, so its
+    // deletes are accepted without effect; a product's artefacts are removed through its journeys so that no orphan remains.
+    if (/^DELETE FROM session_turns WHERE journey_id = \$1$/i.test(s)) { return { rowCount: 0 }; }
+    if (/^DELETE FROM session_turns WHERE journey_id IN \(SELECT journey_id FROM journeys WHERE product_id = \$1\)$/i.test(s)) { return { rowCount: 0 }; }
+    if (/^DELETE FROM artefacts WHERE journey_id IN \(SELECT journey_id FROM journeys WHERE product_id = \$1\)$/i.test(s)) {
+      const productJourneyIds = tables.journeys.filter(function(j) { return j.product_id === params[0]; }).map(function(j) { return j.journey_id; });
+      tables.artefacts = tables.artefacts.filter(function(a) { return productJourneyIds.indexOf(a.journey_id) === -1; });
+      return { rowCount: 0 };
+    }
     throw new Error('Unhandled mock query: ' + s);
   }
 

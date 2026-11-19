@@ -115,14 +115,14 @@ async function test(id, desc, fn) {
 }
 
 (async () => {
-  // T1 - AC1: purgeTenantsBatch issues 11 queries total for a batch of 3, not 33
-  await test('T1', 'purgeTenantsBatch issues exactly 11 queries (one per table) for a 3-tenant batch, not 33', async () => {
+  // T1 - AC1: purgeTenantsBatch issues 12 queries total for a batch of 3, not 36 (pts-s1 added the session_turns delete)
+  await test('T1', 'purgeTenantsBatch issues exactly 12 queries (one per table, session_turns added by pts-s1) for a 3-tenant batch, not 36', async () => {
     const { purgeTenantsBatch } = freshRequire();
     const db = makeFakeDb({});
     await purgeTenantsBatch(db, ['e2e-test-a@example.test', 'e2e-test-b@example.test', 'e2e-test-c@example.test']);
     const deleteQueries = db._queryLog.filter((q) => /^DELETE/.test(q.sql));
-    if (deleteQueries.length !== 11) {
-      throw new Error(`expected exactly 11 DELETE queries, got ${deleteQueries.length}`);
+    if (deleteQueries.length !== 12) {
+      throw new Error(`expected exactly 12 DELETE queries, got ${deleteQueries.length}`);
     }
     const nonArrayQuery = deleteQueries.find((q) => !Array.isArray(q.params[0]));
     if (nonArrayQuery) {
