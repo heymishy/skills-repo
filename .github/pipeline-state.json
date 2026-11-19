@@ -51417,7 +51417,7 @@
       "slug": "2026-11-19-audit-test-fixture",
       "name": "The live npm audit test checks the shape of the audit, not which packages are vulnerable today",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
@@ -51427,22 +51427,22 @@
           "id": "cvt-s1",
           "slug": "cvt-s1",
           "name": "The live npm audit test checks the shape of the audit, not which packages happen to be vulnerable today",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 4,
-          "acVerified": 0,
-          "updatedAt": "2026-11-19T10:00:00Z",
+          "acVerified": 4,
+          "updatedAt": "2026-11-19T05:58:44.760Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-11-19-audit-test-fixture/test-plans/cvt-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
