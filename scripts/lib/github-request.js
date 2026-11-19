@@ -3,24 +3,30 @@
 // github-request.js -- one small GitHub REST call using only Node built-ins, so
 // the promotion scripts (spg-s1) need no npm install on the Actions runner.
 // apiUrl is GITHUB_API_URL (https://api.github.com on Actions); tests point it
-// at a local fake server.
+// at a local fake server. An optional body (ppv-s1) is sent as JSON.
 
 const http = require('http');
 const https = require('https');
 
-function githubRequest(method, apiUrl, pathAndQuery, token) {
+function githubRequest(method, apiUrl, pathAndQuery, token, body) {
   return new Promise(function (resolve, reject) {
     let url;
     try { url = new URL(String(apiUrl).replace(/\/+$/, '') + pathAndQuery); } catch (e) { reject(e); return; }
     const transport = url.protocol === 'http:' ? http : https;
+    const payload = body === undefined ? null : JSON.stringify(body);
+    const headers = {
+      'Accept': 'application/vnd.github+json',
+      'Authorization': 'Bearer ' + token,
+      'User-Agent': 'skills-repo-promotion-scripts',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+    if (payload !== null) {
+      headers['Content-Type'] = 'application/json';
+      headers['Content-Length'] = Buffer.byteLength(payload);
+    }
     const req = transport.request(url, {
       method: method,
-      headers: {
-        'Accept': 'application/vnd.github+json',
-        'Authorization': 'Bearer ' + token,
-        'User-Agent': 'skills-repo-promotion-scripts',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
+      headers: headers,
       timeout: 15000
     }, function (res) {
       let body = '';
@@ -34,6 +40,7 @@ function githubRequest(method, apiUrl, pathAndQuery, token) {
     });
     req.on('timeout', function () { req.destroy(new Error('request timed out')); });
     req.on('error', reject);
+    if (payload !== null) req.write(payload);
     req.end();
   });
 }
