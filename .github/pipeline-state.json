@@ -51412,6 +51412,39 @@
           "prStatus": "none"
         }
       ]
+    },
+    {
+      "slug": "2026-11-19-audit-test-fixture",
+      "name": "The live npm audit test checks the shape of the audit, not which packages are vulnerable today",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-19T10:00:00Z",
+      "stories": [
+        {
+          "id": "cvt-s1",
+          "slug": "cvt-s1",
+          "name": "The live npm audit test checks the shape of the audit, not which packages happen to be vulnerable today",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T10:00:00Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-19-audit-test-fixture/test-plans/cvt-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
