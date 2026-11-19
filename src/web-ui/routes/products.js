@@ -5,6 +5,7 @@ var _posthog = require('../modules/posthog-server');
 var _posthogClientSnippet = require('../modules/posthog-client-snippet'); // rpiw-s1
 var _productDraft = require('../adapters/product-draft');
 var _htmlShell = require('../utils/html-shell');
+var JOURNEY_CHILD_TABLES = require('../utils/journey-child-tables').JOURNEY_CHILD_TABLES; // vdp-s2
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
@@ -3435,9 +3436,12 @@ async function handleDeleteProduct(req, res, _next, pool, posthog) {
   // directly assertable and journeys are actually removed, not orphaned
   // with product_id set to NULL (journeys.product_id is ON DELETE SET NULL,
   // which would leave stale rows behind -- not what AC1 requires).
-  // vdp-s1: artefacts.journey_id REFERENCES journeys(journey_id) with no
-  // cascade, so a journey that has artefacts cannot be deleted until they go.
-  await _pool.query('DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE product_id = $1)', [productId]);
+  // vdp-s1, vdp-s2: every table in JOURNEY_CHILD_TABLES (session_turns, artefacts)
+  // REFERENCES journeys(journey_id) with no cascade, so a journey that has rows in
+  // any of them cannot be deleted until they go. The names are a frozen constant.
+  for (var ct = 0; ct < JOURNEY_CHILD_TABLES.length; ct++) {
+    await _pool.query('DELETE FROM ' + JOURNEY_CHILD_TABLES[ct] + ' WHERE journey_id IN (SELECT journey_id FROM journeys WHERE product_id = $1)', [productId]);
+  }
   await _pool.query('DELETE FROM journeys WHERE product_id = $1', [productId]);
   await _pool.query('DELETE FROM products WHERE product_id = $1', [productId]);
 
