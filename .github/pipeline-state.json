@@ -51373,22 +51373,22 @@
           "id": "fhc-s1",
           "slug": "fhc-s1",
           "name": "Production declares a Fly health check on /health, so a dead process stops taking traffic and a bad release stops the deploy",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
-          "updatedAt": "2026-11-19T09:00:00.000Z",
+          "acVerified": 5,
+          "updatedAt": "2026-11-19T06:08:34.713Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-19-promotion-safety/test-plans/fhc-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         },
         {
           "id": "ppv-s1",
