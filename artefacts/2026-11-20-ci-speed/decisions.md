@@ -31,3 +31,11 @@
 **Not yet verified (AC6):** that the install step is under 60 s on both an Azure-hosted and an AWS-hosted runner. This needs the pull request's own CI run and, because GitHub picks the cloud, possibly re-runs. To be recorded in the DoD with run ids and the "Cloud:" line of each log.
 
 **Scope note:** the same-named failure mode exists in `ppc-capture-worker.yml` (on-demand, user-facing output). It is deliberately unchanged (D2).
+
+## D4. dgn-s1 goes before utp-s1, and dgn-s1 is diagnosis-first (2026-11-20)
+
+**Context:** after pwi-s1 the pull request critical path is the unit chain (3m23s) against the E2E smoke job (3m17s), so speeding up only the unit chain saves about 10 seconds; the pool phase is already within 2 s of its ideal for 2 slots (162 s against 160 s); and fhff-s1 (2026-11-01) measured 16 real runs and found `rb-s3` failing every time above 3 slots, so the cap of `ceil(cpus / 3)` is deliberate. The staging deploy path (deploy, smoke, post-deploy confirm, in series) spends about 3 minutes in two purge steps that have deleted nothing in the last 10 deploys.
+**Decision:** do `dgn-s1` next and defer `utp-s1`. `dgn-s1` adds reporting to `scripts/purge-e2e-tenants.js` and changes nothing it deletes, because the cause of the zero progress cannot be read from the code and only a real staging run with per-table timings will show it. The fix is a later story.
+**Rationale:** a guessed fix (lower the guard, add `session_turns`, skip the step) risks hiding the evidence or deleting 8,400 tenants of staging data on the first successful run without anyone having looked at it. One deploy with the report answers the question.
+**Alternatives rejected:** lowering the 90 s guard now (saves about 140 s per deploy but would also stop any partial progress and hides the cause); adding `session_turns` to the purge now (a behaviour change that may unleash an 8,400-tenant delete on staging, deserves a separate look); working on `utp-s1` first (about 10 seconds on a pull request).
+**Also found, not in scope:** 19 UI specs fail on every E2E smoke run and the `continue-on-error` job hides them (`reference/purge-and-e2e-tail-diagnosis-2026-11-20.md` section 2); each is a separate story and the operator should decide how to triage them.
