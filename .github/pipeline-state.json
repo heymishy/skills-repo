@@ -51478,6 +51478,38 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-20-ci-speed",
+      "name": "CI and test speed: Playwright install without apt, unit chain isolation, diagnose staging purge and E2E tail",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pwi-s1",
+          "slug": "pwi-s1",
+          "name": "The Playwright install in CI no longer downloads Ubuntu packages, so it takes seconds on every runner",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T17:40:10.811Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-20-ci-speed/test-plans/pwi-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-11-19T17:40:10.811Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
