@@ -23,7 +23,7 @@ function freshRequire() {
   return require(scriptPath);
 }
 
-const PURGE_TABLES = ['artefacts', 'journeys', 'products', 'credits', 'credit_audit_log', 'tenant_plan',
+const PURGE_TABLES = ['session_turns', 'artefacts', 'journeys', 'products', 'credits', 'credit_audit_log', 'tenant_plan',
   'user_roles', 'team_memberships', 'impersonation_audit_log', 'github_first_login', 'users'];
 const FIND_TABLES = ['credits', 'journeys', 'team_memberships', 'users'];
 const FK_ERROR = 'update or delete on table "journeys" violates foreign key constraint "session_turns_journey_id_fkey" on table "session_turns"';
@@ -62,14 +62,14 @@ function makeDb(tenantCount, failJourneys) {
     const purge = done.filter(function (e) { return e.phase === 'purge'; });
     ok(find.length === 4 && JSON.stringify(find.map(function (e) { return e.table; })) === JSON.stringify(FIND_TABLES),
       '4 find events, for ' + FIND_TABLES.join(', ') + ' (saw ' + find.length + ')');
-    ok(purge.length === 33, '33 purge events: 11 deletes in each of 3 chunks of 200, 200 and 50 (saw ' + purge.length + ')');
-    ok(JSON.stringify(purge.slice(0, 11).map(function (e) { return e.table; })) === JSON.stringify(PURGE_TABLES),
-      'the first chunk reports the 11 tables in the order they run');
+    ok(purge.length === 36, '36 purge events: 12 deletes in each of 3 chunks of 200, 200 and 50 (saw ' + purge.length + ')');
+    ok(JSON.stringify(purge.slice(0, 12).map(function (e) { return e.table; })) === JSON.stringify(PURGE_TABLES),
+      'the first chunk reports the 12 tables in the order they run');
     ok(purge.every(function (e) { return typeof e.ms === 'number' && e.ms >= 0 && typeof e.rowCount === 'number'; }),
       'every purge event has numeric ms and rowCount');
-    ok([1, 2, 3].every(function (c) { return purge.filter(function (e) { return e.chunk === c && e.chunks === 3; }).length === 11; }),
-      'events carry chunk 1, 2 and 3 of 3, 11 each');
-    ok(events.filter(function (e) { return e.status === 'start'; }).length === 37, 'a start event precedes each of the 37 queries');
+    ok([1, 2, 3].every(function (c) { return purge.filter(function (e) { return e.chunk === c && e.chunks === 3; }).length === 12; }),
+      'events carry chunk 1, 2 and 3 of 3, 12 each');
+    ok(events.filter(function (e) { return e.status === 'start'; }).length === 40, 'a start event precedes each of the 40 queries');
   }
 
   console.log('T2 (AC2): a failing delete is reported, the purge continues, nothing throws');
@@ -82,7 +82,7 @@ function makeDb(tenantCount, failJourneys) {
     ok(threw === null && result && result.tenantCount === 3, 'no error is thrown and 3 tenants are counted');
     ok(j && j.error === FK_ERROR, 'the journeys delete reports the foreign key error message');
     const after = done.map(function (e) { return e.table; });
-    ok(after.length === 11 && after.slice(after.indexOf('journeys') + 1).join(',') === PURGE_TABLES.slice(2).join(','),
+    ok(after.length === 12 && after.slice(after.indexOf('journeys') + 1).join(',') === PURGE_TABLES.slice(3).join(','),
       'the nine tables after journeys still ran');
   }
 
@@ -117,10 +117,10 @@ function makeDb(tenantCount, failJourneys) {
     const a = makeDb(450, false); const ra = await mod.purgeE2eTenants(a);
     const b = makeDb(450, false); const events = []; const rb = await mod.purgeE2eTenants(b, { report: function (e) { events.push(e); } });
     const c = makeDb(450, false); const rc = await mod.purgeE2eTenants(c, { report: function () { throw new Error('hook failure'); } });
-    ok(a.log.length === 37 && JSON.stringify(a.log) === JSON.stringify(b.log), 'no hook and a recording hook issue identical queries and parameters (37 each)');
+    ok(a.log.length === 40 && JSON.stringify(a.log) === JSON.stringify(b.log), 'no hook and a recording hook issue identical queries and parameters (40 each)');
     ok(JSON.stringify(a.log) === JSON.stringify(c.log) && rc.tenantCount === 450, 'a hook that throws changes neither the queries nor the result');
     ok(ra.tenantCount === 450 && rb.tenantCount === 450 && JSON.stringify(ra.tenantIds) === JSON.stringify(rb.tenantIds), 'the result is identical');
-    ok(!a.log.some(function (l) { return /session_turns/.test(l); }), 'no session_turns query is issued (no behaviour change)');
+    ok(a.log.filter(function (l) { return /DELETE FROM session_turns/.test(l); }).length === 3, 'a session_turns delete is issued once per chunk (pts-s1), the only change to the statement list');
   }
 
   console.log('T6 (AC3, wiring): the CLI prints the summary, and still exits 0, against an unreachable database');

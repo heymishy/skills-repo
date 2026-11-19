@@ -38,6 +38,8 @@
  */
 
 const DEFAULT_RETENTION_DAYS = 7;
+// pts-s1: tables whose journey_id REFERENCES journeys(journey_id) with no cascade (shared with the web app, vdp-s2).
+const { JOURNEY_CHILD_TABLES } = require('../src/web-ui/utils/journey-child-tables');
 const TAG_PREFIX = 'e2e-test-';
 
 // ---------------------------------------------------------------------------
@@ -120,7 +122,9 @@ async function findEligibleJourneys(db, cutoff) {
 }
 
 async function deleteJourneyRow(db, journey) {
-  await db.query('DELETE FROM artefacts WHERE journey_id = $1', [journey.journey_id]);
+  for (const table of JOURNEY_CHILD_TABLES) {
+    await db.query('DELETE FROM ' + table + ' WHERE journey_id = $1', [journey.journey_id]);
+  }
   await db.query('DELETE FROM journeys WHERE journey_id = $1', [journey.journey_id]);
 }
 
@@ -179,6 +183,10 @@ async function findEligibleProducts(db, cutoff) {
 }
 
 async function deleteProduct(db, product) {
+  // pts-s1: a product's journeys cannot be deleted while any child table still references them.
+  for (const table of JOURNEY_CHILD_TABLES) {
+    await db.query('DELETE FROM ' + table + ' WHERE journey_id IN (SELECT journey_id FROM journeys WHERE product_id = $1)', [product.product_id]);
+  }
   await db.query('DELETE FROM journeys WHERE product_id = $1', [product.product_id]);
   await db.query('DELETE FROM products WHERE product_id = $1', [product.product_id]);
 }
