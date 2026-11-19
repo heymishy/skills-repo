@@ -51445,6 +51445,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-19-cli-track-field",
+      "name": "The skills CLI writes a valid track on new features and rejects an invalid one",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-19T11:00:00Z",
+      "stories": [
+        {
+          "id": "ctk-s1",
+          "slug": "ctk-s1",
+          "name": "The skills CLI writes a valid track on new features and rejects an invalid one",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T11:00:00Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-19-cli-track-field/test-plans/ctk-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
