@@ -51510,6 +51510,38 @@
       ],
       "metrics": [],
       "updatedAt": "2026-11-19T17:40:10.811Z"
+    },
+    {
+      "slug": "2026-11-20-delete-product-session-turns",
+      "name": "Deleting a product clears its journeys' session history; a test fails when a new table references journeys without being cleared",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "vdp-s2",
+          "slug": "vdp-s2",
+          "name": "Deleting a product also clears its journeys' session history, and a test fails when a new table that references journeys is not cleared",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T17:47:28.555Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-20-delete-product-session-turns/test-plans/vdp-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-11-19T17:47:28.555Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
