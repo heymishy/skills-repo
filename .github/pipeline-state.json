@@ -51527,10 +51527,31 @@
           },
           "dorStatus": "signed-off",
           "prStatus": "merged"
+        },
+        {
+          "id": "pts-s1",
+          "slug": "pts-s1",
+          "name": "The e2e purge and cleanup scripts clear session history before journeys, so the staging backlog clears and the purge step stops costing 92 s",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-19T19:13:18.341Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-20-ci-speed/test-plans/pts-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-11-19T18:42:07.655Z"
+      "updatedAt": "2026-11-19T19:13:18.341Z"
     },
     {
       "slug": "2026-11-20-delete-product-session-turns",
