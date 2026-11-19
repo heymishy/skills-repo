@@ -1,6 +1,7 @@
 'use strict';
 
 const { Pool } = require('pg');
+const { JOURNEY_CHILD_TABLES } = require('../utils/journey-child-tables'); // vdp-s2
 
 let _pool = null;
 let _poolForTesting = null;
@@ -218,11 +219,12 @@ async function getSessionOriginForJourneys(journeyIds) {
 async function deleteJourney(journeyId) {
   const pool = _getPool();
   if (!pool) return { deleted: false };
-  // djfk-s1: session_turns.journey_id also has a plain FK to journeys
-  // (scripts/migrate-schema-pg.js) with no ON DELETE clause -- same
-  // constraint shape as artefacts above, so it must be deleted first too.
-  await pool.query('DELETE FROM session_turns WHERE journey_id = $1', [journeyId]);
-  await pool.query('DELETE FROM artefacts WHERE journey_id = $1', [journeyId]);
+  // djfk-s1, vdp-s2: session_turns and artefacts both have a plain FK to journeys
+  // (scripts/migrate-schema-pg.js) with no ON DELETE clause, so each must be deleted
+  // first. The list is shared with the product delete (utils/journey-child-tables.js).
+  for (const table of JOURNEY_CHILD_TABLES) {
+    await pool.query('DELETE FROM ' + table + ' WHERE journey_id = $1', [journeyId]);
+  }
   const result = await pool.query('DELETE FROM journeys WHERE journey_id = $1', [journeyId]);
   return { deleted: result.rowCount > 0 };
 }
