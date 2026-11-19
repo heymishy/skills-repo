@@ -43,3 +43,23 @@ Failing tests burn their timeouts (30 s for a test, 5 s per assertion, with "ret
 The 19 failing specs in that run, by file: `bmau-s1-bulk-assign-rerender`, `bri-s3.6-auth-journey` (AC1), `dsa-s1-artefact-viewer-restyle` (AC8), `dsa-s2-dashboard-restyle` (2), `ep1-s2-product-default-pod`, `ep1-s3-stage-panel-focus-management`, `ep1-s4-stage-selector`, `ep3-s1-regression`, `fpd-s4-caption-sync`, `fpux.1-visual-consistency-theme` (2), `frsr-s1-feature-row-session-resume` (2), `jcx-s6-swimlane-grid`, `pnfc-s1-new-feature-choice` (2), `spdr-s2-metric1-timing`, `wuce18-keyboard-nav`.
 
 The "Playwright E2E smoke tests" job has `continue-on-error: true` on the test step, so these failures never turn a pull request red. About 19 UI behaviours are untested in practice, and each failure costs time. Whether each is a real UI defect or test rot has not been investigated. This is a finding for the operator, separate from speed; it is not in scope for `dgn-s1`.
+
+## 3. Result of dgn-s1: the first real purge log (Staging Deploy run 44592470706, smoke job, merge `65e72915f`)
+
+The reporting added by dgn-s1 settles section 1. **The purge is not stuck at the start and does not make zero progress as section 1 inferred; it works through most of the backlog, and every journeys delete fails.**
+
+| Statement | Calls | Total ms | Rows deleted | Errors |
+|---|---|---|---|---|
+| find credits / team_memberships / users | 1 each | 156 to 162 | 7, 7, 8 | 0 |
+| find journeys | 1 | 935 | 8,435 | 0 |
+| purge artefacts | 35 | 5,554 | 28 | 0 |
+| purge journeys | 35 | 5,431 | 0 | 35 |
+| purge products | 34 | 36,155 | 6 | 0 |
+| each of credits, credit_audit_log, tenant_plan, user_roles, team_memberships, impersonation_audit_log, github_first_login, users | 34 each | 5,146 to 5,175 | 0 to 7 | 0 |
+
+The guard fired in chunk 35 of 43 with 6,800 tenants through completed chunks. Reading it:
+
+- **The cause of the backlog is the missing `session_turns` delete.** All 35 journeys deletes failed with `update or delete on table "journeys" violates foreign key constraint "session_turns_journey_id_fkey"`. The statement deletes a whole 200-tenant chunk at once, so one journey with session turns keeps every tenant in that chunk. Only about 8 of the 8,437 tenants exist in `credits`, `users` or `team_memberships`; roughly 8,430 are known only through `journeys` rows, which are therefore never removed and are found again on every run.
+- **The 90 s is round-trip latency plus the products delete.** Each simple delete costs about 152 ms (5,154 ms over 34 calls), which is a network round trip from the runner to the staging database, not query work; 11 statements per chunk is about 1.7 s. The `products` delete costs about 1.06 s per chunk (36,155 ms over 34 calls) while removing 6 rows in total. A chunk takes about 2.6 s, so 43 chunks need about 112 s against a 90 s guard.
+- **Effect of the fix (a prediction, not yet measured):** with `session_turns` cleared before `journeys`, each run should delete the chunks it reaches instead of nothing; the backlog of about 8,430 tenants should clear over a small number of deploys (each run reaches about 34 of 43 chunks), after which a run finds only the 14 to 28 tenants its own tests created, needs one chunk (about 3 s), and the two steps fall from 92 s to a few seconds each, about 3 minutes per deploy. Fewer, larger chunks (200 is the current size) would cut the latency cost further, but matter only until the backlog is gone.
+- **This deletes staging data at scale.** The rows are all tagged `e2e-test-` test tenants and removing them is what the script is for, but the first successful run would remove the session history and journeys of about 8,430 tenants. It needs the operator's go-ahead before it ships.

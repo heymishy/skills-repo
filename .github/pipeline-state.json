@@ -51511,22 +51511,22 @@
           "id": "dgn-s1",
           "slug": "dgn-s1",
           "name": "The staging purge reports which delete is slow or failing, how many tenants each chunk removed, and where it was when it timed out",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-19T18:42:07.655Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-19T18:58:46.258Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0,
+            "passing": 7,
             "artefact": "artefacts/2026-11-20-ci-speed/test-plans/dgn-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
