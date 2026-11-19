@@ -41,8 +41,11 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
+      # pwi-s1: no --with-deps. In this job it only added fonts and upgraded Mesa libraries that the runner image already has,
+      # from an apt mirror that serves about 72 kB/s on AWS-hosted runners (install median 212 s there, 16 s on Azure-hosted ones).
+      # Chromium's own shared libraries are already on the image. See artefacts/2026-11-20-ci-speed/decisions.md (D1).
       - name: Install Playwright browsers (Chromium only)
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Measure each spec on its own
         run: node scripts/measure-playwright-spec-coverage.js "${RUNNER_TEMP}/spec-coverage"

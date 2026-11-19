@@ -177,22 +177,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-      # rcfx-s1: --with-deps below also apt-get installs ~15 Ubuntu system
-      # packages (libnss3, xvfb, fonts, etc.) -- the browser-binary cache
-      # above does NOT cover this, so every run re-downloaded them from
-      # azure.archive.ubuntu.com, which has been slow enough recently to
-      # exceed this job's 10-minute timeout outright (confirmed from 3
-      # separate timed-out runs, all stuck in this exact apt-get step, not
-      # the actual E2E tests). Caching the downloaded .deb files lets apt
-      # skip the network fetch on a cache hit and install from disk instead.
-      - name: Cache apt packages for Playwright browser deps
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: ${{ runner.os }}-apt-playwright-deps-v1
-
+      # pwi-s1: no --with-deps. In this job it only added fonts and upgraded Mesa libraries that the runner image already has,
+      # from an apt mirror that serves about 72 kB/s on AWS-hosted runners (install median 212 s there, 16 s on Azure-hosted ones).
+      # Chromium's own shared libraries are already on the image. See artefacts/2026-11-20-ci-speed/decisions.md (D1).
       - name: Install Playwright browsers (Chromium only)
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Run @mocked suite against staging
         # rlcc-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
@@ -343,20 +332,9 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-      # rcfx-s1: see this file's own earlier "Cache apt packages" step
-      # comment -- identical root cause (uncached apt-get for --with-deps),
-      # identical fix. This is the job that actually timed out (run
-      # 40554112300, "Post-deploy real-staging E2E confirmation").
-      - name: Cache apt packages for Playwright browser deps
-        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: ${{ runner.os }}-apt-playwright-deps-v1
-
       - name: Install Playwright browsers (Chromium only)
         if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Re-run Scenario A spec files against the freshly-deployed app
         # Same spec file list as e2e.yml's scenario-a-staging-e2e job --
