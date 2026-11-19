@@ -472,3 +472,24 @@ jobs:
         run: node scripts/cancel-superseded-promotions.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ppv-s1: after a promotion, confirm production is running this run's build and
+  # answering /health. Read-only: GET requests to production, nothing deployed,
+  # restarted, rolled back or approved. It needs no approval of its own (no
+  # environment:), and promote-to-prod is not touched. On failure the script
+  # opens one production-verification issue; issues: write is held by this job
+  # only. The 10 minute limit covers the 5 minute poll plus checkout.
+  verify-production:
+    name: Verify production
+    needs: promote-to-prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm production runs this build and is healthy
+        run: node scripts/verify-production.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
