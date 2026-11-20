@@ -11,7 +11,9 @@ const { withAuth } = require('./fixtures/auth');
 
 withAuth('keyboard user can reach all nav links via Tab', async ({ page }: { page: import('@playwright/test').Page }) => {
   await page.goto('/dashboard');
-  const labels = ['Journeys', 'Run a Skill', 'Org board'];
+  // wuce18-repair: the sidebar's main-section links as html-shell.js's NAV_ITEMS renders them for a non-admin
+  // user. pan-s1 removed the old 'Run a Skill' row on purpose; Pod Manager and Signals were added since.
+  const labels = ['Org board', 'Pod Manager', 'Signals', 'Journeys'];
   for (const label of labels) {
     // :has-text() (not :text()) — the label lives in a nested <span>, so the
     // <a> itself is never the "smallest matching element" :text() requires;
