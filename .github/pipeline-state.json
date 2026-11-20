@@ -51616,6 +51616,38 @@
       ],
       "metrics": [],
       "updatedAt": "2026-11-20T06:17:13.742Z"
+    },
+    {
+      "slug": "2026-11-20-e2e-selector-hygiene",
+      "name": "Five E2E specs that fail on stale selectors and stale pinned colours check what they were written to check",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "esh-s1",
+          "slug": "esh-s1",
+          "name": "Five E2E specs that fail on stale selectors and stale pinned colours check what they were written to check",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 0,
+          "updatedAt": "2026-11-20T07:44:49.506Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-20-e2e-selector-hygiene/test-plans/esh-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-11-20T07:44:49.506Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
