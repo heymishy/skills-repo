@@ -1843,7 +1843,12 @@ async function handleGetJourneyResume(req, res) {
   }
 
   var journeyId = memJourney ? memJourney.journeyId : (diskJourney.journeyId || null);
-  var currentStage = diskJourney.currentStage || 'discovery';
+  // rgsr-s1 (issue #1042): the journey store's record (memJourney) carries the stage the journey is on in
+  // activeSkill -- regressToStage and setActiveSession both set it. A record saved by the store has no
+  // currentStage field, so reading only the disk record's currentStage sent every store-saved journey, a
+  // regressed one included, to a discovery session. currentStage stays the fallback for a disk-native
+  // journey whose store record has no stage.
+  var currentStage = (memJourney && memJourney.activeSkill) || diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
   // kcrs-s1 (AC4) -- propagate a safe ?from= board-return value through every
