@@ -8,7 +8,10 @@ const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 
 withAuth('captions display, synced, when enabled via native player controls', async ({ page }) => {
-  await page.goto('/playback/some-dod-complete-feature-with-a-real-package');
+  // fpsr-s1: a real feature whose story jcx-s3 has a committed .webm with a .vtt beside it,
+  // so the playback page renders a <video> with a captions <track>. The earlier placeholder
+  // slug matched no feature, so the page was a 404 and no video was ever rendered.
+  await page.goto('/playback/2026-10-11-journey-cx-redesign');
   const video = page.locator('.playback-ac__video').first();
   await expect(video).toBeVisible();
   const track = video.locator('track[kind="captions"]');

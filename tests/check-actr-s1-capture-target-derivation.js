@@ -73,7 +73,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const result = deriveCaptureTargetFromSpec(content, 'AC3');
     assert.deepStrictEqual(
       result,
-      { acId: 'AC3', url: '/playback/some-dod-complete-feature-with-a-real-package', selector: '.playback-ac__video' },
+      { acId: 'AC3', url: '/playback/2026-10-11-journey-cx-redesign', selector: '.playback-ac__video' },
       'expected both url and selector resolved from the real fpd-s4 file'
     );
     pass('AC2 (real-file): resolves both url and selector from the real fpd-s4-caption-sync.spec.js');
