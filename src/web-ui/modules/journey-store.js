@@ -66,9 +66,13 @@ function _pgWrite(journey) {
  * Create a new journey for a feature slug.
  * @param {string} featureSlug
  * @param {string} [productProfile] — product context profile name (default: 'default')
+ * @param {{skipDisk?: boolean}} [opts] — jpor-s1: skipDisk true leaves the journey out of the disk adapter at
+ *   creation. For a caller that creates under a placeholder slug and sets the real slug, tenant and product
+ *   straight after (setJourneyFields saves it to disk then); a disk save under the placeholder slug would leave
+ *   an untagged directory behind that every tenant's dashboard counts. Default behaviour is unchanged.
  * @returns {object} journey object
  */
-function createJourney(featureSlug, productProfile) {
+function createJourney(featureSlug, productProfile, opts) {
   var journeyId = crypto.randomUUID();
   var journey = {
     journeyId:      journeyId,
@@ -90,7 +94,7 @@ function createJourney(featureSlug, productProfile) {
     flaggedStages:  []
   };
   _journeys.set(journeyId, journey);
-  if (_diskAdapter) {
+  if (_diskAdapter && !(opts && opts.skipDisk)) {
     try { _diskAdapter.saveJourney(journey); } catch (_) {}
   }
   _pgWrite(journey);

@@ -155,11 +155,8 @@
     {
       "file": "tests/e2e/dsa-s2-dashboard-restyle.spec.js",
       "capability": "dashboard-and-nav",
-      "lane": "quarantined",
-      "reason": "AC7 counts differ (3 vs 2 and 1 vs 0 in progress); fails alone as well as in the suite.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Fixed in jpor-s1: the spec was right and the product was wrong. Creating a feature left an untagged \"pending\" placeholder journey on disk that every tenant's dashboard counted, so the in-progress counts were one too high (3 vs 2, 1 vs 0). All 8 tests pass in the CI E2E report for pull request #1174 (before: 6 passed, 2 failed in every recorded run). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/dsa-s3-landing-restyle.spec.js",
