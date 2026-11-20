@@ -58,3 +58,19 @@ Method: ran the specs locally against the test-mode server (`NODE_ENV=test`, `E2
 **Local run caveat.** The full local run (Windows, 195 s) had 39 failures against 17 on the CI runner, so about 20 extra failures are specific to this machine or to running the suite from the main checkout (for example `reference-upload`, `local/skill-flow-adapter-wiring`, `ep2-s2`). They were not investigated and are not evidence about CI.
 
 **Suggested next stories:** (1) one selector-hygiene story for `ep1-s3`, `frsr-s1`, `jcx-s6`, `ep1-s4` and `fpux.1` (scope to the visible view, update the pinned colours), which should turn about 7 of the 13 consistent failures green and is all spec-side; (2) a separate investigation of `bri-s3.6` AC1 against `bri-s3.3`; (3) test isolation, as before.
+
+## Update 2: `bri-s3.6` AC1 is a real defect in role resolution (2026-11-20)
+
+**The failing spec is correct; the product is wrong.** A person who signs in to a tenant that already has members, and who has no membership of their own in it, is given the role of an arbitrary existing member of that tenant, in practice often the admin.
+
+**Chain, all read in source and reproduced:**
+1. The server under test runs with `TENANT_ORG_ALLOWLIST: 'e2e-shared-org'` (`playwright.config.js`), so every login in the suite lands in one shared tenant. `bri-s3.3` seeds an admin (`e2e-alice`) into it.
+2. At login, `_bootstrapTenantAdmin` (`routes/auth.js` line 124) calls `resolveOrCreatePersonForIdentity`, so the new person now exists (a `people` row) but has **no** `team_memberships` row; the admin bootstrap does nothing because the tenant already has an admin.
+3. `resolveRoleForPerson` (`modules/user-roles.js` line 154) finds the person, finds no membership for that person and tenant, and takes its "defensive fallback" (line 175): `resolveRoleForTenant`, which runs `SELECT role FROM team_memberships WHERE tenant_id = $1 LIMIT 1` (line 115) with no `ORDER BY`, so it returns an arbitrary teammate's role. The code comment calls this case one that "should not happen in normal operation"; step 2 makes it happen on every new sign-in to an existing tenant.
+4. With the role resolved to `admin`, `handleAuthCallback` skips the first-login check (line 437) and redirects to `/dashboard` instead of `/welcome`. That is the symptom the spec catches.
+
+**Direct reproduction** (scratchpad probe against `fake-test-db`, no server): seed `e2e-alice` as admin of `e2e-shared-org`; create a brand-new person with `resolveOrCreatePersonForIdentity`; call `resolveRoleForPerson` for that person in that tenant. Result: `admin`.
+
+**Why it matters.** The same query runs against the real database in production wiring (`server.js` line 797). Any tenant shared by more than one person (the `TENANT_ORG_ALLOWLIST` mode, or any tenant where people are added) is exposed: a person with no membership row can receive another member's role, including admin. Whether the production deployment currently uses a shared tenant, and whether a membership row is always written before first sign-in on some other path, was not checked (no production configuration or data was read); both decide how exposed production is today. It is also why the history says this spec has failed since it was written: the earlier fix on this line (tir-s9) addressed which person is looked up, not what happens when the person has no row.
+
+**Likely fix, for a story (not started):** when a person resolves but has no membership in the tenant, return the lowest-privilege default (`'user'`) instead of a tenant-wide lookup, and keep `resolveRoleForTenant` only for callers that have no person at all (or give it a deterministic order and no admin default). The story needs a test that signs in a no-membership person to a tenant with an admin and asserts `'user'`, plus the unchanged `bri-s3.6` spec, which then passes by itself.
