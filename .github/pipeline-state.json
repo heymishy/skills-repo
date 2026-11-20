@@ -51653,33 +51653,33 @@
       "slug": "2026-11-20-collapsed-group-tab-order",
       "name": "Content inside a collapsed product-view group is not reachable by keyboard or screen reader until the group is opened",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "ctab-s1",
           "slug": "ctab-s1",
           "name": "Content inside a collapsed product-view group is not reachable by keyboard or screen reader until the group is opened",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-20T08:24:01.866Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-20T09:12:57.290Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-11-20-collapsed-group-tab-order/test-plans/ctab-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-11-20T08:24:01.866Z"
+      "updatedAt": "2026-11-20T09:12:57.496Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
