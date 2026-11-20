@@ -7,22 +7,9 @@
 // own precedent) — run with:
 //   npx playwright test tests/e2e/bmau-s1-bulk-assign-rerender.spec.js
 //
-// KNOWN GAP (pre-existing, not introduced by this story): modulesAdapter
-// (src/web-ui/adapters/modules-adapter.js) is only wired in server.js's
-// `if (process.env.DATABASE_URL)` block -- it has no in-memory
-// createFakeTestDb() backing, unlike products/journeys/standards. Running
-// this spec against the standard local/CI harness (NODE_ENV=test, no
-// DATABASE_URL) will fail with "Adapter not wired: modulesDb" the moment it
-// tries to create a module. Running it against a real Postgres instance
-// (DATABASE_URL set) works, but creates real product/module/feature rows in
-// whatever database that is -- do not point this at a shared staging/dev
-// database without a deliberate, intentional cleanup plan (this repo has
-// already accumulated significant real-data E2E pollution from exactly this
-// pattern elsewhere -- see workspace/learnings.md). A real Postgres test
-// instance (local, disposable, or a dedicated E2E-only database) is the
-// right target. Follow-up: extend fake-test-db.js with product_modules/
-// feature_module_assignments support (mirroring smug-s1's standards
-// extension) so this spec runs in the standard harness like every other one.
+// bmau-s1-repair: module creation works in the standard local/CI harness (the fake test database backs
+// product modules), so this spec runs there like every other one. Product-view module groups start
+// collapsed (pdt-s1), so the spec opens the Unclassified group before it checks the boxes inside it.
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
@@ -104,6 +91,12 @@ withAuth('bulk-assigning checked features moves their rows into the target modul
   // ── Real browser: navigate, check 2 boxes, select Target Module, assign ──
   await page.goto('/products/' + productId);
   await page.waitForLoadState('networkidle');
+
+  // pdt-s1: module groups start collapsed and their content is not focusable or clickable until opened.
+  // Both features are unclassified, so open that group before checking the boxes inside it.
+  const unclassifiedToggle = page.locator('.a4-module-header', { hasText: 'Unclassified' });
+  await unclassifiedToggle.click();
+  await expect(unclassifiedToggle).toHaveAttribute('aria-expanded', 'true');
 
   const checkboxes = page.locator('.bmau-item-checkbox');
   await expect(checkboxes).toHaveCount(2);
