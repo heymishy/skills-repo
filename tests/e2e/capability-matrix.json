@@ -306,11 +306,8 @@
     {
       "file": "tests/e2e/fpd-s4-caption-sync.spec.js",
       "capability": "walkthrough-capture",
-      "lane": "quarantined",
-      "reason": ".playback-ac__video is not found; the spec needs a playback fixture that does not exist.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Fixed in fpsr-s1: the playback fixture existed all along. The spec opened a placeholder slug that matches no feature, so the page was a 404 with no video; it now opens the feature 2026-10-11-journey-cx-redesign, whose committed jcx-s3 evidence has a video with captions. Its test passes in the CI E2E report for pull request #1175 (before: failed in every recorded run). It depends on that committed evidence staying in place. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/fpux.1-contrast-ratio.spec.js",
