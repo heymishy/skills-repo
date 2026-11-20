@@ -51745,6 +51745,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-21-wuce18-spec-repair",
+      "name": "The keyboard-navigation E2E spec checks the nav links the sidebar has today, so it passes instead of timing out",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-20T19:37:19.364Z",
+      "stories": [
+        {
+          "id": "wkrp-s1",
+          "slug": "wkrp-s1",
+          "name": "The keyboard-navigation E2E spec checks the nav links the sidebar has today, so it passes instead of timing out",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-20T19:37:19.364Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-21-wuce18-spec-repair/test-plans/wkrp-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
