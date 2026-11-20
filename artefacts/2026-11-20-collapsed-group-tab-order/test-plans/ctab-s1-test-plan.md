@@ -37,7 +37,7 @@ T1 and T2 fail before the change (the emitted rule for a collapsed group has no 
 
 ## Manual steps
 
-- **M1 (AC7):** `git diff --stat master...HEAD` lists only `src/web-ui/routes/products.js`, the new check, the new spec and artefacts; the `src/` diff touches only the two stylesheet strings.
+- **M1 (AC7):** `git diff --stat master...HEAD` lists only `src/web-ui/routes/products.js`, the new check, the new spec, one entry in `tests/e2e/capability-matrix.json`, and artefacts; the `src/` diff touches only the two stylesheet strings.
 - **Local run:** the new spec, `a4-module-expand-collapse`, `frsr-s1`, `ep2-s1` and `ep2-s2` together, in a worktree with a copy of `sessions-store/` as before, so the product view has realistic data; delete the copy with the worktree.
 - **Screen reader (not automated):** an accessibility-tree snapshot (`page.accessibility.snapshot` or `locator.ariaSnapshot`) of the collapsed page shows the header but not the rows; recorded as a one-line check in the DoD if it works cheaply.
 

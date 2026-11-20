@@ -973,8 +973,11 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   return (
     incidentsHtml +
     '<style>' +
-      '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
-      '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
+      // ctab-s1: a collapsed body is also visibility:hidden, so its links and buttons leave the tab order and the
+      // accessibility tree (the 0fr clip alone leaves them focusable). The visibility change waits for the 0.25s
+      // collapse animation and applies at once on expand, so the animation is unchanged.
+      '.a4-module-body { display: grid; grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows 0.25s ease, visibility 0s linear 0s; overflow: hidden; }' +
+      '.a4-module-body--collapsed { grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s; }' +
       '.a4-module-body-inner { min-height: 0; overflow: hidden; }' +
       '.pvc-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}' +
       '.pvc-tab{padding:8px 14px;font-family:inherit;font-size:13.5px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}' +

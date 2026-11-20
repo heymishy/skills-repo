@@ -38,7 +38,7 @@ So that **focus never lands on something I cannot see, and opening a group is th
 **AC4:** Given the stylesheet the product view emits, When a group is collapsed, Then its body is `visibility: hidden` with a visibility transition delayed by the length of the existing animation (0.25 s); and when it is not collapsed, Then it is visible with no delay, so expanding shows the content at once and collapsing hides it only after the animation.
 **AC5:** Given the existing group-related checks, When they run, Then they pass unchanged: `check-pdt-s1-consolidate-epic-list`, `check-pflx-s1-auto-expand-search-match`, and the specs `a4-module-expand-collapse`, `frsr-s1-feature-row-session-resume`, `ep2-s1-presence-sidebar` and `ep2-s2-stage-visibility` (which already open a group before touching its rows).
 **AC6:** Given a search that opens a collapsed group (pflx-s1), When the group is open, Then its rows are reachable by Tab, because the search removes the same class.
-**AC7:** Given the pull request, When its changed files are listed, Then `src/` has only `products.js` (stylesheet strings only), and the rest are the new check, the new spec and artefacts.
+**AC7:** Given the pull request, When its changed files are listed, Then `src/` has only `products.js` (stylesheet strings only), and the rest are the new check, the new spec, its one entry in `tests/e2e/capability-matrix.json` (the lpw-s2 rule: every spec file is listed once with a capability and a lane), and artefacts.
 
 ## Out of Scope
 
