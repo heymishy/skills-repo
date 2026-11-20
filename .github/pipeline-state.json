@@ -51536,18 +51536,18 @@
           "health": "green",
           "acTotal": 8,
           "acVerified": 0,
-          "updatedAt": "2026-11-19T19:13:18.341Z",
+          "updatedAt": "2026-11-20T06:00:56.936Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-11-20-ci-speed/test-plans/pts-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
@@ -51584,6 +51584,38 @@
       ],
       "metrics": [],
       "updatedAt": "2026-11-19T18:03:17.785Z"
+    },
+    {
+      "slug": "2026-11-20-role-resolution-fallback",
+      "name": "A person with no membership in a tenant gets the lowest role, not another member's role",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "rrf-s1",
+          "slug": "rrf-s1",
+          "name": "A person with no membership in a tenant gets the lowest role, not another member's role",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-20T06:00:50.518Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-20-role-resolution-fallback/test-plans/rrf-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-11-20T06:00:50.518Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
