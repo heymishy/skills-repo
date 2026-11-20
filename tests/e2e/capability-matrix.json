@@ -138,6 +138,12 @@
       "reason": "Passes alone and in the suite; adds under 0.1 percentage point of server statements beyond the core, or its capability is already represented."
     },
     {
+      "file": "tests/e2e/ctab-s1-collapsed-group-tab-order.spec.js",
+      "capability": "accessibility-and-responsive",
+      "lane": "extended",
+      "reason": "Passes alone (4 of 4). Kept out of the core because a spec that creates a product and a feature, run in parallel with ep2-s1 or ep2-s2, makes those fail (reproduced on master with frsr-s1 alone, and with this spec); move to the core once test isolation is fixed."
+    },
+    {
       "file": "tests/e2e/design-definition-canvas-render.spec.js",
       "capability": "definition-canvas",
       "lane": "core"
