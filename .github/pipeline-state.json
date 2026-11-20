@@ -51783,32 +51783,32 @@
       "slug": "2026-11-21-journey-pending-orphan",
       "name": "Creating a feature no longer leaves an untagged placeholder journey on disk that every tenant dashboard counts",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-20T21:02:33.551Z",
+      "updatedAt": "2026-11-20T22:36:38.156Z",
       "stories": [
         {
           "id": "jpor-s1",
           "slug": "jpor-s1",
           "name": "Creating a feature no longer leaves an untagged placeholder journey on disk that every tenant dashboard counts",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-20T21:02:33.551Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-20T22:36:31.731Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-11-21-journey-pending-orphan/test-plans/jpor-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
