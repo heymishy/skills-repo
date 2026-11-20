@@ -85,11 +85,8 @@
     {
       "file": "tests/e2e/bmau-s1-bulk-assign-rerender.spec.js",
       "capability": "kanban-board",
-      "lane": "quarantined",
-      "reason": "Fails in every CI E2E run recorded. It clicks a bulk-assign checkbox inside a product-view group that starts collapsed, without opening the group first (the same defect as frsr-s1 had, repaired in esh-s1); Playwright reports \"element is not visible\". Not yet repaired.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in bmrp-s1 (#1172: the spec opens the collapsed Unclassified group before it ticks the boxes inside it; it used to time out with \"element is not visible\"). Passes alone 3 of 3 locally and in the CI E2E reports for pull requests #1172 and #1173, its first CI passes. The matrix move was left out of the #1172 merge and is made here. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js",
@@ -533,11 +530,8 @@
     {
       "file": "tests/e2e/wuce18-keyboard-nav.spec.ts",
       "capability": "accessibility-and-responsive",
-      "lane": "quarantined",
-      "reason": "Times out at 30 seconds in one test; cause not found.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in wkrp-s1 (the label list is the main-section nav the sidebar renders today: Org board, Pod Manager, Signals, Journeys; it used to wait 30 seconds for a \"Run a Skill\" link that pan-s1 removed on purpose). Both tests pass alone 3 of 3 locally and in the CI E2E report for pull request #1173. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/wuce20-artefact-index-html.spec.js",
