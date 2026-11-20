@@ -51685,33 +51685,33 @@
       "slug": "2026-11-20-e2e-session-reseed-csrf",
       "name": "Re-seeding the shared E2E test session no longer invalidates the CSRF token of a test that is already running",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "tiso-s1",
           "slug": "tiso-s1",
           "name": "Re-seeding the shared E2E test session no longer invalidates the CSRF token of a test that is already running",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-20T09:45:23.832Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-20T18:24:56.687Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-11-20-e2e-session-reseed-csrf/test-plans/tiso-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-11-20T09:45:23.832Z"
+      "updatedAt": "2026-11-20T18:24:56.872Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
