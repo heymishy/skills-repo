@@ -13,7 +13,7 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | `ep1-s3` passes on the visible Edit link | - | - | 1 (existing, repaired) | - | - | 🟢 |
-| AC2 | `frsr-s1` both tests pass on the visible row link | - | - | 2 (existing, repaired) | - | - | 🟡 |
+| AC2 | `frsr-s1` both tests open the collapsed group first, then pass on its row link | - | - | 2 (existing, repaired) | - | - | 🟡 |
 | AC3 | `jcx-s6` AC1 counts visible headers; other three still pass | - | - | 4 (existing, one repaired) | - | - | 🟢 |
 | AC4 | `ep1-s4` three scenarios scoped to the seeded journey | - | - | 3 (existing, repaired) | - | - | 🟢 |
 | AC5 | `fpux.1` AC2a and AC2b compare against resolved tokens | - | - | 3 (existing, two repaired) | - | - | 🟢 |
@@ -30,14 +30,14 @@ The nine tests fail before the change. Measured on 2026-11-20 on master `c05f5fb
 ## Tests (the specs are the tests; each repair)
 
 - **AC1, `ep1-s3`:** the trigger is `page.locator('.sw-stage-edit:visible').first()` (visible match), everything else unchanged.
-- **AC2, `frsr-s1`:** the link is `page.locator('a.pvc-item-link:visible').first()` in both tests, everything else unchanged.
+- **AC2, `frsr-s1`:** a helper `featureGroup(page)` returns the visible `.a4-module-section` that contains a row link (the inactive tab panels hold hidden copies). Each test opens that group first (click on `.a4-module-header` in the first, focus plus Enter in the second), asserts `aria-expanded="true"`, then acts on `a.pvc-item-link` inside the group. Every original assertion stays. The first attempt, `:visible` alone, found a link that Playwright counts as visible but that sits in a collapsed group (zero-height, clipped), so the click was intercepted by the group header and timed out; the keyboard test passed only because `focus()` works on a clipped link.
 - **AC3, `jcx-s6` AC1:** `headers` is `page.locator('.sw-cx-grid-cell--header:visible')`; the count of 3 and the left-to-right order assertions are unchanged. The other tests keep their selectors; they already pass.
 - **AC4, `ep1-s4`:** `seedStage` already returns `{ journeyId, ... }`; each scenario builds its locator from `a[data-stage-nav][href*="/journey/" + journeyId + "/"]` (and, for scenarios 1 and 2, the label). Scenario 2 still expects count 0 for the later stage's link; scenario 3 still expects focus to stay on the single dot after ArrowRight and Enter to navigate to confirm-back.
 - **AC5, `fpux.1`:** the expected `epicBg` is the resolved value of the page's `--surface` token for that theme and the expected `storyColor` the resolved `--ink`, each read by giving a temporary element `background-color: var(--surface)` or `color: var(--ink)` on the same document and reading its computed colour. AC2b keeps `expect(epicBg).not.toBe('rgb(255, 255, 255)')` and also asserts the dark `--ink` differs from the light one.
 
 ## Manual steps
 
-- **M1 (AC6), deliberate breaks, local only, never committed:** (a) `ep1-s4` scenario 2: seed a `benefit-metric` stage for the same journey id and expect count 0, which must fail; (b) `fpux.1` AC2a: set the expected token to `--ink-2`, which must fail; (c) `jcx-s6` AC1: expect 4, which must fail; (d) `ep1-s3` and `frsr-s1`: point the selector at a nonexistent class, which must fail. Record each result in the DoD.
+- **M1 (AC6), deliberate breaks, local only, never committed:** (a) `ep1-s4` scenario 2: expect the seeded journey's own Discovery dot count to be 0 instead of 1, which must fail; (b) `fpux.1` AC2a: set the expected token to `--ink-2`, which must fail; (c) `jcx-s6` AC1: expect 4, which must fail; (d) `ep1-s3`: point the trigger selector at a nonexistent class; (e) `frsr-s1`: point the group selector at a nonexistent class; both must fail. Record each result in the DoD.
 - **M2 (AC7):** on the pull request's `Playwright E2E smoke tests` run, read the `pw-report-json` artefact (or the job summary) and list the failing tests; compare with the last master run's list. Record both lists.
 - **M3 (AC8):** `git diff --stat master...HEAD` lists only the five files and artefacts.
 - **Local run:** the five files together, with the untracked-path snapshot taken before and the folders created removed after. Because the local tenant holds many leftover journeys, a pass here is the stronger check for AC4 than a pass on CI.

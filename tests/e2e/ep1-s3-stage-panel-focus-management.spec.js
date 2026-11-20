@@ -68,7 +68,7 @@ withAuth('stage panel opens with focus inside it, traps Tab/Shift+Tab, and Escap
   await page.goto('/journeys/' + journeyId);
   await page.waitForLoadState('networkidle');
 
-  const editLink = page.locator('.sw-stage-edit').first();
+  const editLink = page.locator('.sw-stage-edit:visible').first(); // :visible, the page also holds hidden copies of the Edit link (esh-s1)
   await editLink.focus(); // the trigger element AC4 must return focus to
   await editLink.press('Enter'); // activates the click handler
 

@@ -57,13 +57,24 @@ async function createFeature(page, productId) {
   expect(res.status(), 'feature creation should redirect into a skill session').toBe(303);
 }
 
+// The product view's module groups start collapsed (pdt-s1 AC2), and a collapsed
+// group clips its rows to zero height, so a user opens the group first. The page
+// also holds hidden copies of each row in the inactive tab panels, so the group is
+// the visible one that contains a row link (esh-s1).
+function featureGroup(page) {
+  return page.locator('.a4-module-section:visible').filter({ has: page.locator('a.pvc-item-link') }).first();
+}
+
 withAuth('AC1: clicking a feature row navigates to its artefact-index page (/features/:slug)', async ({ page }) => {
   const productId = await createProduct(page, 'FRSR Product ' + uniqueLabel('click'));
   await createFeature(page, productId);
 
   await page.goto('/products/' + productId);
 
-  const featureLink = page.locator('a.pvc-item-link').first();
+  const group = featureGroup(page);
+  await group.locator('.a4-module-header').click();
+  await expect(group.locator('.a4-module-header')).toHaveAttribute('aria-expanded', 'true');
+  const featureLink = group.locator('a.pvc-item-link').first();
   await expect(featureLink).toBeVisible();
   const href = await featureLink.getAttribute('href');
   expect(href, 'expected the feature row link to point at /features/:slug').toMatch(/^\/features\//);
@@ -83,7 +94,13 @@ withAuth('AC1: a feature row is keyboard-activatable (not mouse-only)', async ({
 
   await page.goto('/products/' + productId);
 
-  const featureLink = page.locator('a.pvc-item-link').first();
+  const group = featureGroup(page);
+  const header = group.locator('.a4-module-header');
+  await header.focus();
+  await expect(header).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+  const featureLink = group.locator('a.pvc-item-link').first();
   await expect(featureLink).toBeVisible();
   const href = await featureLink.getAttribute('href');
 

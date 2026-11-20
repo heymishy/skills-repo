@@ -12,6 +12,20 @@ function fixtureHtml(theme) {
   return html.replace('<html lang="en">', `<html lang="en" data-theme="${theme}">`);
 }
 
+// Resolve a design token the way the page itself does, instead of pinning a hex
+// literal that the design system is free to change (esh-s1). cssProp is a
+// camelCase style property, token is a custom property such as '--ink'.
+async function resolveToken(page, cssProp, token) {
+  return page.evaluate(([prop, name]) => {
+    const probe = document.createElement('div');
+    probe.style[prop] = 'var(' + name + ')';
+    document.body.appendChild(probe);
+    const value = getComputedStyle(probe)[prop];
+    probe.remove();
+    return value;
+  }, [cssProp, token]);
+}
+
 test('AC1: .sw-epic-group computed style matches .sw-card reference values', async ({ page }) => {
   await page.setContent(fixtureHtml('light'));
   const ref = await page.locator('#ref').evaluate((el) => {
@@ -29,15 +43,19 @@ test('AC2a: .sw-epic-group/.sw-story-row resolve to light-theme token values', a
   await page.setContent(fixtureHtml('light'));
   const epicBg = await page.locator('#epic').evaluate((el) => getComputedStyle(el).backgroundColor);
   const storyColor = await page.locator('#story-summary').evaluate((el) => getComputedStyle(el).color);
-  expect(epicBg).toBe('rgb(255, 255, 255)'); // --surface light: #FFFFFF
-  expect(storyColor).toBe('rgb(24, 24, 27)'); // --ink light: #18181B
+  expect(epicBg).toBe(await resolveToken(page, 'backgroundColor', '--surface'));
+  expect(storyColor).toBe(await resolveToken(page, 'color', '--ink'));
 });
 
 test('AC2b: .sw-epic-group/.sw-story-row resolve to dark-theme token values, different from light', async ({ page }) => {
   await page.setContent(fixtureHtml('dark'));
   const epicBg = await page.locator('#epic').evaluate((el) => getComputedStyle(el).backgroundColor);
   const storyColor = await page.locator('#story-summary').evaluate((el) => getComputedStyle(el).color);
-  expect(epicBg).toBe('rgb(28, 28, 26)'); // --surface dark: #1C1C1A
-  expect(storyColor).toBe('rgb(244, 244, 242)'); // --ink dark: #F4F4F2
+  expect(epicBg).toBe(await resolveToken(page, 'backgroundColor', '--surface'));
+  expect(storyColor).toBe(await resolveToken(page, 'color', '--ink'));
   expect(epicBg).not.toBe('rgb(255, 255, 255)');
+  // Dark must differ from light: read the same two tokens again with the light theme.
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
+  expect(epicBg).not.toBe(await resolveToken(page, 'backgroundColor', '--surface'));
+  expect(storyColor).not.toBe(await resolveToken(page, 'color', '--ink'));
 });
