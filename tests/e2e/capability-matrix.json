@@ -86,7 +86,7 @@
       "file": "tests/e2e/bmau-s1-bulk-assign-rerender.spec.js",
       "capability": "kanban-board",
       "lane": "quarantined",
-      "reason": "Times out (30 s) alone and in the suite; cause not found. The board itself renders (verified over HTTP).",
+      "reason": "Fails in every CI E2E run recorded. It clicks a bulk-assign checkbox inside a product-view group that starts collapsed, without opening the group first (the same defect as frsr-s1 had, repaired in esh-s1); Playwright reports \"element is not visible\". Not yet repaired.",
       "owner": "operator (heymishy)",
       "entered": "2026-11-17",
       "reviewBy": "2026-12-15"
@@ -114,11 +114,8 @@
     {
       "file": "tests/e2e/bri-s3.6-auth-journey.spec.js",
       "capability": "signup-and-auth",
-      "lane": "quarantined",
-      "reason": "Passes alone; fails after bri-s3.2 to bri-s3.5 because the test server shares one tenant (e2e-shared-org) that already has an admin.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes in all four CI E2E runs recorded (master baseline and pull requests #1168, #1169, #1170); the earlier failure after bri-s3.2 to bri-s3.5 (one shared tenant that already had an admin) was not reproduced. Moved out of quarantine on that evidence. Non-blocking; if it fails again, quarantine it again."
     },
     {
       "file": "tests/e2e/cams-s1-chat-artefact-responsive.spec.js",
@@ -141,7 +138,7 @@
       "file": "tests/e2e/ctab-s1-collapsed-group-tab-order.spec.js",
       "capability": "accessibility-and-responsive",
       "lane": "extended",
-      "reason": "Passes alone (4 of 4). Kept out of the core because a spec that creates a product and a feature, run in parallel with ep2-s1 or ep2-s2, makes those fail (reproduced on master with frsr-s1 alone, and with this spec); move to the core once test isolation is fixed."
+      "reason": "Passes alone (4 of 4), in the CI run for #1170 and, together with frsr-s1 and the ep2 specs, in 5 of 5 local runs after tiso-s1. It used to make ep2-s1 and ep2-s2 fail when run in parallel with them (a shared-session CSRF 403, fixed in tiso-s1). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/design-definition-canvas-render.spec.js",
@@ -229,11 +226,8 @@
     {
       "file": "tests/e2e/ep1-s3-stage-panel-focus-management.spec.js",
       "capability": "journey-canvas",
-      "lane": "quarantined",
-      "reason": "The stage panel never gets the sw-stage-panel--open class; a product-side difference found in lpw-s1.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in esh-s1 (it now targets the visible stage edit button, so the hidden duplicate no longer breaks it). Passes in the three CI runs since (#1168, #1169, #1170). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/ep1-s4-stage-reorder.spec.js",
@@ -243,11 +237,8 @@
     {
       "file": "tests/e2e/ep1-s4-stage-selector.spec.js",
       "capability": "stage-model",
-      "lane": "quarantined",
-      "reason": "Scenario 2: back links exist for 2 stages where the spec expects 0; product change or defect, not yet decided.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in esh-s1 (it now counts only the stage dots of its own journey, so the shared tenant's other journeys no longer add back links). Passes in the three CI runs since (#1168, #1169, #1170). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/ep2-s1-presence-sidebar.spec.js",
@@ -342,20 +333,14 @@
     {
       "file": "tests/e2e/fpux.1-visual-consistency-theme.spec.js",
       "capability": "accessibility-and-responsive",
-      "lane": "quarantined",
-      "reason": "Design token is rgb(20,23,26) where the spec expects rgb(24,24,27); the spec is stale.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in esh-s1 (it compares against the resolved design tokens instead of fixed colour values). Passes in the three CI runs since (#1168, #1169, #1170). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/frsr-s1-feature-row-session-resume.spec.js",
       "capability": "feature-creation",
-      "lane": "quarantined",
-      "reason": "Passes the connect-a-repo gate, then needs a repository rollup (product_rollups) the fake test database does not provide.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in esh-s1 (it opens the collapsed group first and picks the group that holds feature rows). Passes in the three CI runs since (#1168, #1169, #1170), and together with ctab-s1 and the ep2 specs in 5 of 5 local runs after tiso-s1. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/ic-s2-canvas-drag-position.spec.js",
@@ -393,11 +378,8 @@
     {
       "file": "tests/e2e/jcx-s6-swimlane-grid.spec.js",
       "capability": "journey-canvas",
-      "lane": "quarantined",
-      "reason": "AC1: the grid header class appears twice (6 where 3 are expected); a product-side difference found in lpw-s1.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in esh-s1 (it counts only the visible grid header cells). Passes in the three CI runs since (#1168, #1169, #1170). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/jcx-s7-panel-entry-and-save-feedback.spec.js",
@@ -408,11 +390,8 @@
     {
       "file": "tests/e2e/kbsf-s1-shell-wrapping-visual.spec.js",
       "capability": "kanban-board",
-      "lane": "quarantined",
-      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Passes in all four CI E2E runs recorded (master baseline and pull requests #1168, #1169, #1170); the earlier whole-suite failure was not reproduced and its cause was never isolated. Moved out of quarantine on that evidence. Non-blocking; if it fails again, quarantine it again."
     },
     {
       "file": "tests/e2e/lphf-s1-keyboard-nav.spec.js",
@@ -447,11 +426,8 @@
     {
       "file": "tests/e2e/pnfc-s1-new-feature-choice.spec.js",
       "capability": "feature-creation",
-      "lane": "quarantined",
-      "reason": "Passes when run alone but fails in the whole-suite job, so it depends on state left by other specs on the shared server; cause not yet isolated.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Failed 2 of 4 tests on the master baseline run and in the local whole-suite runs before tiso-s1 (the shared session's CSRF token was being invalidated by other specs); passes in the three CI runs since, and it failed in neither of the two local whole-suite runs after the fix. The cause of every earlier failure was not separately proven. Non-blocking; if it fails again, quarantine it again."
     },
     {
       "file": "tests/e2e/ppc-s5-video-lazy-load.spec.js",
@@ -547,7 +523,7 @@
       "file": "tests/e2e/tiso-s1-reseed-keeps-csrf.spec.js",
       "capability": "platform-checks",
       "lane": "extended",
-      "reason": "Passes alone (about 3 seconds, deterministic). It is the guard for the shared-session re-seed that used to invalidate a running spec CSRF token; a candidate for the core lane together with the other lane changes after test isolation."
+      "reason": "Passes alone (about 3 seconds, deterministic) and in the CI run for #1170. It is the guard for the shared-session re-seed that used to invalidate a running spec's CSRF token; a candidate for the core lane. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js",
