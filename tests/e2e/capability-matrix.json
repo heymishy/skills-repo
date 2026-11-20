@@ -85,11 +85,8 @@
     {
       "file": "tests/e2e/bmau-s1-bulk-assign-rerender.spec.js",
       "capability": "kanban-board",
-      "lane": "quarantined",
-      "reason": "Fails in every CI E2E run recorded. It clicks a bulk-assign checkbox inside a product-view group that starts collapsed, without opening the group first (the same defect as frsr-s1 had, repaired in esh-s1); Playwright reports \"element is not visible\". Not yet repaired.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Repaired in bmrp-s1 (the spec opens the collapsed Unclassified group before it ticks the boxes inside it; it used to time out with \"element is not visible\"). Passes alone 3 of 3 locally and in the CI E2E report for pull request #1172, its first CI pass. Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js",
