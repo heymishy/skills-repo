@@ -134,16 +134,21 @@ async function resolveRoleForTenant(pool, tenantId) {
  * EXACT prior behaviour for every pre-rtri-s4 caller -- no backfill is
  * attempted.
  *
- * Falls through to the pre-tir-s7 resolveRoleForTenant behaviour (tenant-only
- * lookup, legacy user_roles fallback, default 'user') in two cases:
+ * Returns the lowest role, 'user', in two cases (rrf-s1):
  *  - resolvePersonForIdentity returns null — a completely unknown identity
- *    with no team_memberships/person_identities row anywhere (AC4). This
- *    story does NOT add auto-creation of a person/team_membership row for a
- *    brand-new signup — the existing default-to-'user' behaviour is
- *    preserved exactly as before.
- *  - a personId IS resolved but no team_memberships row matches both filters
- *    (defensive — should not happen in normal operation for a resolved
- *    person, but avoids a hard failure if it ever does).
+ *    with no team_memberships/person_identities row anywhere. This module
+ *    does NOT auto-create a person/team_membership row for a brand-new
+ *    signup.
+ *  - a personId IS resolved but no team_memberships row matches both filters.
+ *    This is NOT a rare case: the login path creates the person row (see
+ *    routes/auth.js _bootstrapTenantAdmin) before this lookup runs, so every
+ *    sign-in by someone who was never given a membership in a tenant lands here.
+ *
+ * rrf-s1: both cases used to fall back to resolveRoleForTenant, which is
+ * SELECT role FROM team_memberships WHERE tenant_id = $1 LIMIT 1 with no
+ * ORDER BY -- in a tenant that already had members that returned an arbitrary
+ * member's role (often admin), so a person with no membership of their own was
+ * handed someone else's role. A missing row must never raise a role.
  *
  * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
  * @param {string} identityKey - the identity string used to resolve personId (GitHub login, Google sub, or email — whatever the login flow already computes as tenantId today)
@@ -154,8 +159,8 @@ async function resolveRoleForTenant(pool, tenantId) {
 async function resolveRoleForPerson(pool, identityKey, tenantId, provider) {
   const personId = await resolvePersonForIdentity(pool, identityKey);
   if (personId == null) {
-    // AC4: unknown identity — no auto-creation, fall through unchanged.
-    return resolveRoleForTenant(pool, tenantId);
+    // rrf-s1: unknown identity — no auto-creation, and never another member's role.
+    return 'user';
   }
 
   if (provider) {
@@ -169,10 +174,9 @@ async function resolveRoleForPerson(pool, identityKey, tenantId, provider) {
   );
   if (membership.rows.length) return membership.rows[0].role;
 
-  // Defensive fallback: personId resolved but no row matches both filters —
-  // defer to the same legacy-table + default-'user' semantics as
-  // resolveRoleForTenant rather than throwing.
-  return resolveRoleForTenant(pool, tenantId);
+  // rrf-s1: personId resolved but this person has no membership in this tenant —
+  // the lowest role, not the tenant-wide lookup (which returns an arbitrary member's role).
+  return 'user';
 }
 
 module.exports = {
