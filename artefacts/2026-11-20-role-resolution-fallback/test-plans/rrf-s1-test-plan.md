@@ -22,14 +22,14 @@
 
 ## Red-first plan
 
-T1 and T3 fail before the change: both return `'admin'` for a tenant whose only member is an admin (T1 was reproduced with a probe script during diagnosis). T2 and T4 pass before and after; they exist to prove the fix did not remove a real role. If an existing test pinned the arbitrary-row fallback (most likely `check-tir-s7` T4 or `check-tir-s1`), it fails after the change and is updated deliberately with a comment naming this story.
+T1, T3, T4 and T5 fail before the change: T1 and T3 return `'admin'` for a tenant whose only member is an admin (T1 was reproduced with a probe script during diagnosis), T4's second assertion (a second new person resolves to `'user'`) fails the same way while its first half (the first person keeps `'admin'`) passes, and T5 finds the call to `resolveRoleForTenant`. T2 passes before and after; it exists to prove the fix did not remove a real role. Confirmed on 2026-11-20: 1 passed, 4 failed before the change; 5 passed after. If an existing test pinned the arbitrary-row fallback (most likely `check-tir-s7` T4 or `check-tir-s1`), it fails after the change and is updated deliberately with a comment naming this story.
 
 ## Tests
 
 - **T1 (AC1):** seed `e2e-alice` (person 101) as admin of `e2e-shared-org`; create a new person with `resolveOrCreatePersonForIdentity` (the same call the login path makes); assert `resolveRoleForPerson(db, 'brand-new-user', 'e2e-shared-org', 'github')` is `'user'`. Also assert no `team_memberships` row was written by the call.
 - **T2 (AC2):** seed admin, engineer and viewer memberships for three people in one tenant; assert each resolves to their own role, in two different orders, so a result that depends on row order fails.
 - **T3 (AC3):** an identity with no `person_identities` row in a tenant that has members resolves to `'user'`, and no person or identity row is created.
-- **T4 (AC4):** an empty tenant; run `bootstrapTenantAdminIfNeeded` for the first person; assert `resolveRoleForPerson` returns `'admin'`, and a second new person in the same tenant then resolves to `'user'`.
+- **T4 (AC4):** an empty tenant; the first person gets the admin membership row the bootstrap writes (the in-memory database does not model the bootstrap's atomic claim statement, which `tab-s1`'s tests cover), and `resolveRoleForPerson` returns `'admin'` for them; a second new person in the same tenant then resolves to `'user'`.
 - **T5 (guard):** a source check that `resolveRoleForPerson` no longer contains a call to `resolveRoleForTenant`, so the arbitrary-row lookup cannot be reintroduced behind it (naming this story in the failure message).
 
 ## Manual steps
