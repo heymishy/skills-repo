@@ -300,7 +300,14 @@ function seedTestSession(id, data, options) {
   if (process.env.NODE_ENV !== 'test' && !allowOutsideTest) {
     throw new Error('seedTestSession is only available in NODE_ENV=test');
   }
-  _sessions.set(id, Object.assign({}, data));
+  // tiso-s1: every withAuth spec shares one session id and each spec's setup re-seeds it. Replacing the
+  // whole session also dropped its csrfToken, so a spec already part-way through a flow lost the token its
+  // page had embedded and its next POST got csrfGuard's plain-text 403. Carry the existing token over (it is
+  // generated once per session and reused by design) and reset everything else, as before.
+  const existing = _sessions.get(id);
+  const next = Object.assign({}, data);
+  if (existing && existing.csrfToken) { next.csrfToken = existing.csrfToken; }
+  _sessions.set(id, next);
 }
 
 module.exports = {

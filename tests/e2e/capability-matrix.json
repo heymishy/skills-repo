@@ -544,6 +544,12 @@
       "lane": "core"
     },
     {
+      "file": "tests/e2e/tiso-s1-reseed-keeps-csrf.spec.js",
+      "capability": "platform-checks",
+      "lane": "extended",
+      "reason": "Passes alone (about 3 seconds, deterministic). It is the guard for the shared-session re-seed that used to invalidate a running spec CSRF token; a candidate for the core lane together with the other lane changes after test isolation."
+    },
+    {
       "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js",
       "capability": "stage-model",
       "lane": "core"
