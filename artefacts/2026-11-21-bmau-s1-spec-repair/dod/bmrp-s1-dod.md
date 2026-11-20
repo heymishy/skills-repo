@@ -1,0 +1,31 @@
+# bmrp-s1 Definition of Done
+
+Date: 2026-11-21. Story: the bulk-assign E2E spec opens the collapsed group it clicks in, so it passes instead of timing out. Pull request #1172 merged 2026-11-21 (`255830384`). No issue.
+
+## Result: COMPLETE. All 6 acceptance criteria met. The repaired spec passed in the CI E2E report on its first run, the first CI pass it has ever had. One caveat on AC5: the matrix commit was pushed after the CI run and merged without a CI run of its own (see below).
+
+## AC Coverage
+
+| AC | Status | Evidence | Class | Deviation |
+|---|---|---|---|---|
+| AC1 | ✅ | `tests/e2e/bmau-s1-bulk-assign-rerender.spec.js` run alone: before the change, failed at the first `check()` with "element is not visible" after 30 s (measured on master `7ff0618ff`); after, 3 of 3 passes (8.4 s, 5.2 s, 5.1 s) | automated | none |
+| AC2 | ✅ | the spec clicks the Unclassified group's header and asserts `aria-expanded="true"` before it uses the checkboxes (read in the diff, M2) | manual (diff read) | none |
+| AC3 | ✅ | every original assertion is kept: rows move into the target module's body (2) with the URL unchanged, Unclassified ends at 0, headers read (2) and (0). The second half of the spec had never run in this harness before; it passes | automated + diff read | none |
+| AC4 | ✅ | the stale "KNOWN GAP ... Adapter not wired: modulesDb" header is replaced. It was wrong: the spec creates the module (201) and reaches the checkbox | manual (diff read) | none |
+| AC5 | ✅ with deviation | CI E2E report for the pull request's spec commit (`5a9e27800`, run `44799391089`): `bmau-s1` 1 passed, 0 failed. The matrix entry moved from `quarantined` to `extended` with a rewritten reason (commit `52a9cb493`) | automated (CI report) | the matrix commit was pushed after that run and the pull request was merged without a CI run on it. Verified locally instead: `check-lpw-s2-capability-matrix` (8 of 8) and `check-lpw-s3-matrix-reason` (3 of 3) pass. Master's CI covers it after the merge |
+| AC6 | ✅ | the pull request changed the spec and `tests/e2e/capability-matrix.json` only, plus artefacts | manual (diff check) | none |
+
+## CI evidence
+
+All 9 checks passed on the spec commit, including `Lint, typecheck, test, build` (no new regression against the known baseline), Core browser tests and both scenario jobs. In the E2E report, the quarantined specs read: `bmau-s1` passes; `dsa-s2` (2 failures), `ep3-s1`, `fpd-s4` and `wuce18` (1 failure) still fail, as before. A wider local `npm test` showed only the two known local-only failures (`check-pcr-s1-test-runner`, `check-p3.5-validate-trace`), which also fail on the master checkout.
+
+## Observations and follow-ups
+
+- **The second half of the spec was untested until now**, and it passed first time. The risk named in the DoR (W1, a further failure behind the first) did not materialise.
+- **`bmau-s1` is now `extended`**, non-blocking. Moving it to `core` is the operator's call.
+- **Four specs remain quarantined:** `wuce18` (stale: it expects a "Run a Skill" nav link that pan-s1 removed on purpose; the nav now has Org board, Pod Manager, Signals and Journeys), `fpd-s4` (needs a playback fixture that does not exist), `ep3-s1` (product bug, issue #1042) and `dsa-s2` (counts shared-tenant journeys).
+- **The process gap:** a commit pushed to a draft pull request just before the merge got no CI run. For matrix-only follow-ups, wait for the run on the final commit before asking for the merge.
+
+## Scope Deviations
+
+None.
