@@ -4112,7 +4112,10 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   // discovery and 404'd at gate-confirm ("Journey not found"). See
   // decisions.md FIX entry -- confirmed live via direct DB inspection.
   var _journeyStore = require('../modules/journey-store');
-  var created = _journeyStore.createJourney('pending', 'default');
+  // jpor-s1: the placeholder slug is replaced by setJourneyFields just below, which saves the journey to disk
+  // under its real slug, tenant and product. Saving it here too would leave an untagged "pending" directory
+  // behind that every tenant's dashboard counts.
+  var created = _journeyStore.createJourney('pending', 'default', { skipDisk: true });
   var journeyId = created.journeyId;
   // fsdn-s1: build a human-readable slug from the operator's given name,
   // consistent with handlePostJourney (routes/journey.js) -- fall back to
