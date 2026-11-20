@@ -51811,6 +51811,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-21-fpd-s4-spec-repair",
+      "name": "The caption-sync E2E spec opens a playback page that exists, so it passes instead of failing to find a video",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-20T23:18:21.303Z",
+      "stories": [
+        {
+          "id": "fpsr-s1",
+          "slug": "fpsr-s1",
+          "name": "The caption-sync E2E spec opens a playback page that exists, so it passes instead of failing to find a video",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-20T23:18:21.303Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-21-fpd-s4-spec-repair/test-plans/fpsr-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
