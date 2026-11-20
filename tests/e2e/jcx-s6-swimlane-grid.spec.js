@@ -66,7 +66,7 @@ withAuth('stages render left-to-right as columns, not stacked (AC1)', async ({ p
   await openCustomerExperienceView(page, journeyId);
   await page.waitForSelector('.sw-cx-swimlane-grid');
 
-  const headers = page.locator('.sw-cx-grid-cell--header');
+  const headers = page.locator('.sw-cx-grid-cell--header:visible'); // :visible, the hidden delivery grid reuses this class (esh-s1)
   await expect(headers).toHaveCount(3);
   const xs = [];
   for (let i = 0; i < 3; i++) {

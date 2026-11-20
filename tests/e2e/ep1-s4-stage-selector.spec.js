@@ -21,14 +21,22 @@ async function seedStage(request, featureSlug, stageName) {
   return res.json();
 }
 
+// The shared e2e-tester tenant also holds journeys left by other specs and runs,
+// so every locator is scoped to the journey this scenario seeded, through the
+// journeyId the seed endpoint returns (esh-s1).
+function navDots(page, journeyId, label) {
+  const byLabel = label ? '[aria-label="' + label + '"]' : '';
+  return page.locator('a[data-stage-nav]' + byLabel + '[href*="/journey/' + journeyId + '/"]');
+}
+
 // ── Scenario 1: stage selector visible, backward navigation with confirm ──
 
 withAuth('Scenario 1: stage selector visible and backward navigation with confirm', async ({ page }) => {
   const featureSlug = 'ep1s4-e2e-scenario1-' + Date.now();
-  await seedStage(page.request, featureSlug, 'discovery');
+  const seeded = await seedStage(page.request, featureSlug, 'discovery');
 
   await page.goto('/journey');
-  const navDot = page.locator('a[data-stage-nav][aria-label="Move back to Discovery"]').first();
+  const navDot = navDots(page, seeded.journeyId, 'Move back to Discovery').first();
   await expect(navDot).toBeVisible();
 
   await navDot.click();
@@ -49,12 +57,15 @@ withAuth('Scenario 1: stage selector visible and backward navigation with confir
 
 withAuth('Scenario 2: forward navigation is disabled for stages not yet reached', async ({ page }) => {
   const featureSlug = 'ep1s4-e2e-scenario2-' + Date.now();
-  await seedStage(page.request, featureSlug, 'discovery');
+  const seeded = await seedStage(page.request, featureSlug, 'discovery');
 
   await page.goto('/journey');
+  // The seeded journey's own Discovery dot is there, so the zero count below is
+  // about this journey and not an empty match caused by a wrong scope.
+  await expect(navDots(page, seeded.journeyId, 'Move back to Discovery')).toHaveCount(1);
   // benefit-metric is later than discovery and was never completed for this
   // fixture — must render as a plain, non-clickable span, not a link.
-  const laterStageLink = page.locator('a[data-stage-nav][aria-label="Move back to Benefits"]');
+  const laterStageLink = navDots(page, seeded.journeyId, 'Move back to Benefits');
   await expect(laterStageLink).toHaveCount(0);
 });
 
@@ -70,10 +81,10 @@ withAuth('Scenario 3: stage selector is keyboard-accessible', async ({ page }) =
   // move focus off the page when there's only one dot in the group (the
   // no-op boundary case the handler's own bounds check exists for).
   const featureSlug = 'ep1s4-e2e-scenario3-' + Date.now();
-  await seedStage(page.request, featureSlug, 'discovery');
+  const seeded = await seedStage(page.request, featureSlug, 'discovery');
 
   await page.goto('/journey');
-  const navDot = page.locator('a[data-stage-nav]').first();
+  const navDot = navDots(page, seeded.journeyId).first();
   await navDot.focus();
   await expect(navDot).toBeFocused();
 
