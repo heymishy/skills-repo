@@ -51712,6 +51712,39 @@
       ],
       "metrics": [],
       "updatedAt": "2026-11-20T18:24:56.872Z"
+    },
+    {
+      "slug": "2026-11-21-bmau-s1-spec-repair",
+      "name": "The bulk-assign E2E spec opens the collapsed group it clicks in, so it passes instead of timing out",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-20T19:01:37.621Z",
+      "stories": [
+        {
+          "id": "bmrp-s1",
+          "slug": "bmrp-s1",
+          "name": "The bulk-assign E2E spec opens the collapsed group it clicks in, so it passes instead of timing out",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 0,
+          "updatedAt": "2026-11-20T19:01:37.621Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 1,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-21-bmau-s1-spec-repair/test-plans/bmrp-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
