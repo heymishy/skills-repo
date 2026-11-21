@@ -8,7 +8,7 @@ A flake is a browser test that fails on some runs and passes on others with the 
 
 A failing job may be rerun. A rerun that passes is not a result until the flake is recorded. Before a passing rerun counts, the test must have an entry in `tests/e2e/flake-ledger.json` with the first failure's message in its note. A rerun without an entry means the flake is not yet tracked and the operator must add one.
 
-Retries inside a single run (the Playwright retry setting) are off in this repository. If they are turned on, a test that passes on retry is a flake and needs an entry in the same way.
+Retries inside a single run (the Playwright retry setting) are off in this repository, with one exception: the three staging steps in `.github/workflows/staging-deploy.yml` (the staging smoke test and the two post-deploy confirmation steps) run with `--retries=1`, because one transient failure there blocks the promotion to production. A test that passes on retry is a flake and needs an entry in the same way. Each of those steps lists the tests it marked flaky in its step summary (`scripts/flake-check.js --report`, without `--strict`), so a flake that is not yet in the ledger shows as NOT IN LEDGER and does not fail the run.
 
 ## The ledger
 
