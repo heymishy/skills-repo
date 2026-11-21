@@ -18,7 +18,7 @@ So that **a journey regressed to an earlier stage continues at that stage, and t
 
 ## Architecture Constraints
 
-- Change confined to one line of `src/web-ui/routes/journey.js` (plus a comment), one new node check, one matrix entry (after CI) and artefacts. `src/` changes go through a pull request.
+- Change confined to one line of `src/web-ui/routes/journey.js` (plus a comment), one new node check, one matrix entry (after CI), the one expectation in `tests/check-lpw-s3-matrix-reason.js` that pins `ep3-s1` as quarantined, and artefacts. `src/` changes go through a pull request.
 - Fallback order is preserved for every case where the store's record has no active stage: disk `currentStage`, then `discovery`. In disk mode `memJourney` is the saved store-shaped record (from `listJourneys`), and `setActiveSession` does not save to disk, so its `activeSkill` is the stage as of the last save by `completeStage`, `setJourneyFields` or `regressToStage`; that is never less accurate than the disk `currentStage` it replaces, which a store-saved journey does not have at all.
 - The Postgres path is unchanged in effect: its synthesised disk record already used `activeSkill` as `currentStage`.
 - No journey data is read differently, moved or deleted; no change to `regressToStage`, the disk adapter or the regress handler.
@@ -37,7 +37,7 @@ So that **a journey regressed to an earlier stage continues at that stage, and t
 **AC4:** Given a fresh journeys root, When `tests/e2e/ep3-s1-regression.spec.js` runs, Then it passes (before: fails in 2 of 2 runs on master), 3 of 3 consecutive runs.
 **AC5:** Given the existing resume checks (`check-s0.2-resume-existing-session`, `check-s0.1-resume-guard`, `check-sec4-early-return`, `check-aslr-s1-active-stage-link-resume`, `check-kcrs-s1-kanban-card-resume-session`, `check-frsr-s1-feature-row-session-resume`, `check-def-s1-session-resume`), When `npm test` runs, Then there is no new failure against the known baseline.
 **AC6:** Given the pull request's CI run, When the E2E report is read, Then `ep3-s1` passes there; the matrix entry then moves from `quarantined` to `extended` with a rewritten reason, and CI runs on the final commit before the merge is requested; the pull request body carries `Fixes #1042` and the issue is linked as closing.
-**AC7:** Given the pull request, When its changed files are listed (and again on master after the merge), Then `src/` contains only `web-ui/routes/journey.js`, and the rest are the new check, the matrix file and artefacts.
+**AC7:** Given the pull request, When its changed files are listed (and again on master after the merge), Then `src/` contains only `web-ui/routes/journey.js`, and the rest are the new check, the matrix file, `tests/check-lpw-s3-matrix-reason.js` (its T5a expects the `extended` lane) and artefacts.
 
 ## Out of Scope
 

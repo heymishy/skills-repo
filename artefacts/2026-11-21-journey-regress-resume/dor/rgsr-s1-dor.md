@@ -8,7 +8,7 @@
 
 ## Contract Proposal
 - `src/web-ui/routes/journey.js` (AC1, AC2, AC3): in `handleGetJourneyResume`, `var currentStage = (memJourney && memJourney.activeSkill) || diskJourney.currentStage || 'discovery';` with a comment saying why; nothing else in the file changes.
-- `tests/check-rgsr-s1-resume-lands-on-regressed-stage.js` (T1 to T3), and the `ep3-s1` entry in `tests/e2e/capability-matrix.json` (AC6, only after CI shows the spec passing).
+- `tests/check-rgsr-s1-resume-lands-on-regressed-stage.js` (T1 to T3), the `ep3-s1` entry in `tests/e2e/capability-matrix.json` (AC6, only after CI shows the spec passing), and T5a in `tests/check-lpw-s3-matrix-reason.js`, which asserts the entry's lane and must follow the move (`quarantined` becomes `extended`; its reason rules stay).
 - `decisions.md` and a DoD.
 - Not built: no change to `regressToStage`, `saveJourney`, `loadAllFromDisk`, the disk adapter, the regress handler, `handleGetJourneyById` or any spec; no migration; no `core` move.
 
