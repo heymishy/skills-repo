@@ -51849,32 +51849,32 @@
       "slug": "2026-11-21-journey-regress-resume",
       "name": "Resuming a journey lands on the stage the journey is on, so a regressed journey no longer drops the user into a discovery session",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-20T23:53:13.705Z",
+      "updatedAt": "2026-11-21T00:28:45.407Z",
       "stories": [
         {
           "id": "rgsr-s1",
           "slug": "rgsr-s1",
           "name": "Resuming a journey lands on the stage the journey is on, so a regressed journey no longer drops the user into a discovery session",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-20T23:53:13.705Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-21T00:28:45.159Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-11-21-journey-regress-resume/test-plans/rgsr-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
