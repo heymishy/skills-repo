@@ -17,6 +17,7 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: write   # ciw-s1: the run opens a draft pull request instead of pushing to master
 
     steps:
       - name: Checkout repository
@@ -37,17 +38,19 @@ jobs:
       - name: Run improvement agent
         run: node src/improvement-agent/index.js --verbose
 
-      - name: Commit agent outputs
+      - name: Deliver agent outputs as a draft pull request
+        # ciw-s1: this step used to commit and `git push` to master, which the repository ruleset refuses for the Actions bot, so
+        # every scheduled run since 2026-10-19 failed. scripts/improvement-agent-deliver.js stages only workspace/proposals/,
+        # workspace/state.json and workspace/dream-run-result.json (the traces fetched above are unstaged first), fails closed on
+        # anything else, and pushes a bot branch with a draft pull request, or adds to the open dreaming pull request. It never
+        # pushes to master. The pull request is opened with the default token, so its required checks do not run: the operator
+        # merges it with the admin bypass.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add workspace/proposals/ workspace/state.json workspace/dream-run-result.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: improvement agent dream run [post-merge]"
-            git push
-          fi
+          node scripts/improvement-agent-deliver.js
 
       - name: Emit attention notice if human review required
         if: always()
