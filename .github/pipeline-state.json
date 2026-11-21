@@ -50466,21 +50466,22 @@
           "id": "ciw-s1",
           "slug": "ciw-s1",
           "name": "Make the scheduled Improvement Agent dreaming workflow succeed without pushing to master",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
-          "updatedAt": "2026-11-21T04:28:26.690Z",
-          "blocker": "Draft: awaiting answers to trigger and required-check questions",
+          "acVerified": 5,
+          "updatedAt": "2026-11-21T04:56:12.245Z",
+          "blocker": "AC6 live manual run awaits the operator's go-ahead",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0,
+            "passing": 8,
             "artefact": "artefacts/2026-11-16-ci-regression-review/test-plans/ciw-s1-test-plan.md"
-          }
+          },
+          "prStatus": "merged"
         },
         {
           "id": "ciw-s2",
