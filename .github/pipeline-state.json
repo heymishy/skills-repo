@@ -51877,6 +51877,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-21-coverage-ratchet",
+      "name": "Server code coverage is measured for the unit chain as well as the browser suite, and a pull request cannot lower either number",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-21T01:26:19.447Z",
+      "stories": [
+        {
+          "id": "cvrt-s1",
+          "slug": "cvrt-s1",
+          "name": "Server code coverage is measured for the unit chain as well as the browser suite, and a pull request cannot lower either number",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 0,
+          "updatedAt": "2026-11-21T01:26:19.447Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-21-coverage-ratchet/test-plans/cvrt-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
