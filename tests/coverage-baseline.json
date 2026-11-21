@@ -1,0 +1,12 @@
+{
+  "description": "cvrt-s1: the recorded server code coverage floor for each suite, in percent. scripts/coverage-ratchet.js fails a pull request whose measured coverage is more than 0.5 percentage points below these numbers; it reads this file from the BASE branch, so a pull request cannot lower its own floor. Numbers come from CI (Linux), never from a developer machine. unit = the unit chain (scripts/run-all-tests.js) under c8 --all --include src/**; e2e = the browser suite's server coverage over src/web-ui/** (e2e.yml, without --all).",
+  "recorded": "2026-11-21",
+  "source": {
+    "unit": "PR Checks run 44851271104, commit 7997de0b6 (pull request #1177), artefact unit-coverage-44851271104",
+    "e2e": "E2E Tests (Playwright) run 44851271151, commit 7997de0b6 (pull request #1177), artefact playwright-server-coverage"
+  },
+  "suites": {
+    "unit": { "statements": 87.72, "branches": 78.63, "functions": 90.55, "lines": 87.72 },
+    "e2e": { "statements": 66.42, "branches": 59.76, "functions": 44.96, "lines": 66.42 }
+  }
+}
