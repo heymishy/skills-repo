@@ -12,6 +12,10 @@
  *   - Fails closed: any other staged path, or more than MAX_FILES files, stops the run before anything is pushed.
  *   - Nothing is pushed to master and nothing is force-pushed.
  *   - No change: no branch and no pull request ("No changes to commit").
+ *   - A quiet week (dqw-s1): the agent rewrites state.json and dream-run-result.json on every run, so there are almost always
+ *     changes; a pull request is opened only when a proposal file is staged or dream-run-result.json has
+ *     humanAttentionRequired: true. Otherwise "Nothing to review this week", nothing staged, no branch, no pull request.
+ *     With no proposals a missing or malformed dream-run-result.json fails the run (nothing found must mean the agent ran).
  *   - An open dreaming pull request (head branch starting `improvement-agent/dream-`): one commit is added to its branch
  *     with an ordinary fast-forward push, and no second pull request is opened.
  *
@@ -59,6 +63,22 @@ function runGh(cwd, gh, args) {
   return (r.stdout || '').trim();
 }
 
+/**
+ * dqw-s1: is there anything for a human to review? Proposal files staged (added or modified) always count; with none,
+ * dream-run-result.json must say humanAttentionRequired: true. Throws when the file is needed and missing or malformed.
+ */
+function hasSomethingToReview(cwd, entries) {
+  const proposals = entries.filter(function(e) { return e.status !== 'D' && e.file.indexOf('workspace/proposals/') === 0; });
+  if (proposals.length > 0) return true;
+  const resultPath = path.join(cwd, 'workspace', 'dream-run-result.json');
+  let result;
+  try { result = JSON.parse(fs.readFileSync(resultPath, 'utf8')); }
+  catch (e) {
+    throw new Error('workspace/dream-run-result.json is missing or not valid JSON (' + e.message + '); with no proposals it is the only evidence the agent ran, so failing the run');
+  }
+  return !!(result && result.humanAttentionRequired === true);
+}
+
 function stamp(now) {
   const iso = now.toISOString(); // 2026-11-23T03:17:00.000Z
   return iso.slice(0, 10) + '-' + iso.slice(11, 13) + iso.slice(14, 16);
@@ -100,6 +120,13 @@ function deliver(opts) {
   }
   if (entries.length > maxFiles) {
     throw new Error('refusing to commit: ' + entries.length + ' files staged, more than ' + maxFiles + ' (a dreaming run adds a handful of proposals)');
+  }
+
+  // dqw-s1: a week with nothing to review opens no pull request and leaves any open one alone.
+  if (!hasSomethingToReview(cwd, entries)) {
+    git(cwd, ['reset', '-q']);
+    log('Nothing to review this week: no proposals and humanAttentionRequired is not true; no branch or pull request');
+    return { status: 'quiet' };
   }
 
   // Is there already an open dreaming pull request? Then add to its branch instead of opening another.
