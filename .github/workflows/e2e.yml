@@ -133,6 +133,21 @@ jobs:
           npx --yes c8@10.1.3 report --temp-directory "${LPW_SERVER_COVERAGE_DIR}" --reporter=json-summary --reporter=lcov --reports-dir=coverage-e2e --include="src/web-ui/**" || true
           node scripts/summarise-playwright-report.js coverage coverage-e2e/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
 
+      # cvrt-s1: compare the browser suite's server coverage with the floor recorded on the base branch (tests/coverage-baseline.json,
+      # read from the base branch so a pull request cannot lower its own floor). A normal step: the job keeps exactly one continue-on-error.
+      - name: Coverage ratchet (browser suite)
+        if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          base_coverage=""
+          if git cat-file -e "origin/${BASE_REF}:tests/coverage-baseline.json" 2>/dev/null; then
+            git show "origin/${BASE_REF}:tests/coverage-baseline.json" > "${RUNNER_TEMP}/base-coverage-baseline.json"
+            base_coverage="${RUNNER_TEMP}/base-coverage-baseline.json"
+          fi
+          node scripts/coverage-ratchet.js e2e coverage-e2e/coverage-summary.json $base_coverage
+
       - name: Upload the server coverage report
         if: always() && steps.e2e-config.outputs.e2e_enabled == 'true'
         uses: actions/upload-artifact@v4
