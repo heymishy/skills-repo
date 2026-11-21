@@ -12,9 +12,9 @@ function entry(name) { return matrix.specs.filter(function (e) { return e.file =
 const tests = [];
 function test(name, fn) { tests.push({ name: name, fn: fn }); }
 
-test('T5a ep3-s1-regression names issue #1042 and no longer blames a model-session timeout', function () {
+test('T5a ep3-s1-regression is out of quarantine (fixed in rgsr-s1), names issue #1042 and does not blame a model-session timeout', function () {
   const e = entry('ep3-s1-regression');
-  assert.ok(e, 'entry missing'); assert.strictEqual(e.lane, 'quarantined');
+  assert.ok(e, 'entry missing'); assert.strictEqual(e.lane, 'extended');
   assert.ok(/#1042/.test(e.reason), 'reason must name #1042: ' + e.reason);
   assert.ok(!/real model|model turn|model session/i.test(e.reason), 'reason must not say it waits on a model: ' + e.reason);
 });

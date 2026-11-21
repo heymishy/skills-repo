@@ -269,11 +269,8 @@
     {
       "file": "tests/e2e/ep3-s1-regression.spec.js",
       "capability": "session-flow",
-      "lane": "quarantined",
-      "reason": "Known product bug, issue #1042: regress-back lands on the wrong stage's session (the spec fails waiting for a definition-stage session URL). Not a model-session timeout; fix is a separate story.",
-      "owner": "operator (heymishy)",
-      "entered": "2026-11-17",
-      "reviewBy": "2026-12-15"
+      "lane": "extended",
+      "reason": "Fixed in rgsr-s1 (issue #1042): the spec was right and the product was wrong. Resuming a journey read the stage from a disk field the journey store never writes, so a regressed journey, and any store-saved journey with no live session, resumed in a discovery session; the resume handler now reads the store record's active stage first. The test passes in the CI E2E report for pull request #1176 (before: failed in every recorded run). Non-blocking; moving it to the core is the operator's call."
     },
     {
       "file": "tests/e2e/ep4-s1-multi-pod-assign.spec.js",
