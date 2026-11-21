@@ -51988,32 +51988,32 @@
       "slug": "2026-11-21-promotion-guard-bookkeeping",
       "name": "A production promotion is not refused because of bookkeeping commits that landed after the deployed commit",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "metrics": [],
       "guardrails": [],
-      "updatedAt": "2026-11-21T07:21:49.963Z",
+      "updatedAt": "2026-11-21T08:18:04.516Z",
       "stories": [
         {
           "id": "pgb-s1",
           "slug": "pgb-s1",
           "name": "A production promotion is not refused because of bookkeeping commits that landed after the deployed commit",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
-          "acVerified": 0,
-          "updatedAt": "2026-11-21T07:21:49.963Z",
+          "acVerified": 7,
+          "updatedAt": "2026-11-21T08:18:04.306Z",
           "blocker": "",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "testPlan": {
             "status": "written",
             "totalTests": 17,
-            "passing": 0,
+            "passing": 17,
             "artefact": "artefacts/2026-11-21-promotion-guard-bookkeeping/test-plans/pgb-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
-          "prStatus": "none"
+          "prStatus": "merged"
         }
       ]
     }
