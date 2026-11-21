@@ -198,14 +198,26 @@ jobs:
         # (observed live: bri-s3.4 captured beforeCount=1, then afterCount=4).
         # Serializing this job's specs removes the race entirely; it does not
         # touch playwright.config.js, so local/dev parallelism is unaffected.
-        run: npx playwright test --grep "@mocked" --workers=1
+        run: npx playwright test --grep "@mocked" --workers=1 --retries=1 --reporter=list,json
         env:
           CI: 'true'
+          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-staging-smoke.json
           E2E_BASE_URL: https://wuce-staging.fly.dev
           # dss-s1: lets the 4 named /test/* routes these specs depend on
           # work against real staging (which has no NODE_ENV=test guard),
           # matching e2e.yml's existing pattern for Scenario A/B.
           E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+
+      - name: Flaky tests this run (flake ledger)
+        # sfr-s1: The staging smoke step retries a failed test once, so a one-off blip no longer blocks the promotion. A test that only passed
+        # on retry is listed here (tracked in tests/e2e/flake-ledger.json, or NOT IN LEDGER). Reported, not enforced: no strict mode.
+        if: always()
+        run: |
+          if [ -f pw-staging-smoke.json ]; then
+            node scripts/flake-check.js --report pw-staging-smoke.json >> "$GITHUB_STEP_SUMMARY" || true
+          else
+            echo "No Playwright report was written by the smoke step." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload Playwright traces and screenshots on failure
         if: failure()
@@ -343,23 +355,47 @@ jobs:
         # not new test coverage.
         if: steps.pmec-config.outputs.scenario_a_enabled == 'true'
         id: pmec-scenario-a-run
-        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js --workers=1
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js --workers=1 --retries=1 --reporter=list,json
         env:
           CI: 'true'
+          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-staging-confirm-a.json
           E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
           E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
           E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Flaky tests this run (flake ledger)
+        # sfr-s1: The Scenario A post-deploy step retries a failed test once, so a one-off blip no longer blocks the promotion. A test that only passed
+        # on retry is listed here (tracked in tests/e2e/flake-ledger.json, or NOT IN LEDGER). Reported, not enforced: no strict mode.
+        if: always() && steps.pmec-config.outputs.scenario_a_enabled == 'true'
+        run: |
+          if [ -f pw-staging-confirm-a.json ]; then
+            node scripts/flake-check.js --report pw-staging-confirm-a.json >> "$GITHUB_STEP_SUMMARY" || true
+          else
+            echo "No Playwright report was written by the Scenario A step." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Re-run Scenario B spec file against the freshly-deployed app
         # Same spec file as e2e.yml's scenario-b-staging-e2e job.
         if: steps.pmec-config.outputs.scenario_b_enabled == 'true'
         id: pmec-scenario-b-run
-        run: npx playwright test tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js --workers=1
+        run: npx playwright test tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js --workers=1 --retries=1 --reporter=list,json
         env:
           CI: 'true'
+          PLAYWRIGHT_JSON_OUTPUT_NAME: pw-staging-confirm-b.json
           E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
           E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
           E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Flaky tests this run (flake ledger)
+        # sfr-s1: The Scenario B post-deploy step retries a failed test once, so a one-off blip no longer blocks the promotion. A test that only passed
+        # on retry is listed here (tracked in tests/e2e/flake-ledger.json, or NOT IN LEDGER). Reported, not enforced: no strict mode.
+        if: always() && steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        run: |
+          if [ -f pw-staging-confirm-b.json ]; then
+            node scripts/flake-check.js --report pw-staging-confirm-b.json >> "$GITHUB_STEP_SUMMARY" || true
+          else
+            echo "No Playwright report was written by the Scenario B step." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload Playwright traces and screenshots on failure
         if: always() && (steps.pmec-scenario-a-run.outcome == 'failure' || steps.pmec-scenario-b-run.outcome == 'failure')
