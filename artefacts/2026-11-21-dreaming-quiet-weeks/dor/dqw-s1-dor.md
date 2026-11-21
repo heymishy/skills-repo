@@ -8,7 +8,7 @@
 
 ## Contract Proposal
 - `scripts/improvement-agent-deliver.js` (AC1 to AC6): after staging and the existing fail-closed checks, if no staged proposal file (added or modified under `workspace/proposals/`) exists, read `workspace/dream-run-result.json`; missing or malformed fails with a message naming the file; `humanAttentionRequired: true` continues to delivery; anything else (including `skipped: true`) logs "Nothing to review this week", unstages everything and returns a quiet status with no branch, commit or pull request. The check runs before the open-pull-request lookup, so an open dreaming pull request is not touched on a quiet week.
-- `tests/check-dqw-s1-quiet-weeks.js` (Q1 to Q8).
+- `tests/check-dqw-s1-quiet-weeks.js` (Q1 to Q9; Q9 added after the mutation check).
 - `decisions.md` and a DoD.
 - Not built: no change to the workflow, to `src/improvement-agent/*`, to what the agent counts as a proposal, or to `lastDreamRun` persistence; no change to the ciw-s1 check.
 

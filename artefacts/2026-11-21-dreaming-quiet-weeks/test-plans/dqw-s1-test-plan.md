@@ -12,7 +12,7 @@
 
 | AC | Description | Unit | Integration | E2E | Manual | Risk |
 |----|-------------|------|-------------|-----|--------|------|
-| AC1 | Only state and result changed, attention false: no branch, commit or pull request; "Nothing to review this week"; exit 0 (also CLI); nothing left staged | - | 1 (Q1) | - | - | 🟢 |
+| AC1 | Only state and result changed, attention false: no branch, commit or pull request; "Nothing to review this week"; exit 0 (also CLI); nothing left staged; a deleted proposal file is not a proposal | - | 2 (Q1; Q9, added after the mutation check) | - | - | 🟢 |
 | AC2 | `skipped: true` is quiet | - | 1 (Q2) | - | - | 🟢 |
 | AC3 | Missing or malformed result with no proposals fails closed naming the file | - | 2 (Q3 missing, Q4 malformed) | - | - | 🟢 |
 | AC4 | Proposals open a pull request even if attention is false; attention true opens one without proposals | - | 2 (Q5, Q6) | - | - | 🟢 |
@@ -22,7 +22,7 @@
 
 ## Red first
 
-Expected on master before the change: Q1 (quiet week), Q2 (skipped), Q3 (missing result), Q4 (malformed result) and Q7 (open pull request plus a quiet week) fail, because the merged script opens a pull request or adds a commit whenever any allowed path changed and never reads the result file. Q5 (proposals with attention false), Q6 (attention true without proposals) and Q8 (stray path in a quiet week) already pass and pin behaviour that must not change. Measured before any implementation.
+Expected on master before the change: Q1 (quiet week), Q2 (skipped), Q3 (missing result), Q4 (malformed result) and Q7 (open pull request plus a quiet week) fail, because the merged script opens a pull request or adds a commit whenever any allowed path changed and never reads the result file. Q5 (proposals with attention false), Q6 (attention true without proposals) and Q8 (stray path in a quiet week) already pass and pin behaviour that must not change. Measured on the merged script before the change: Q1, Q2, Q3, Q4 and Q7 failed, Q5, Q6 and Q8 passed. Q9 (a deleted proposal is not a proposal) was added after the mutation check showed nothing pinned that rule (mutation M6); six mutations of the new branches are now each caught by the matching test.
 
 ## Manual steps
 
