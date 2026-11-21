@@ -47,7 +47,10 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          npm test > test-output.log 2>&1 || true
+          # cvrt-s1: the unit chain runs under c8 so its server coverage is measured (json-summary only: no text report, so
+          # nothing is added to test-output.log; the runner spawns each test file with the inherited environment). --all counts
+          # source files no test loads at 0%, so a new file with no tests lowers the number instead of going unseen.
+          npx --yes c8@10.1.3 --all --include="src/**" --reporter=json-summary --reports-dir=coverage-unit --temp-directory="${RUNNER_TEMP}/unit-v8-coverage" npm test > test-output.log 2>&1 || true
           # gic-s1: the known-failures baseline is a rule that judges this pull request, so it is also read from the base
           # branch. Entries this pull request adds to its own copy are not honoured (removals are). Fails closed if the base
           # branch cannot be fetched.
@@ -71,3 +74,26 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # cvrt-s1: keep the unit chain's server coverage summary for later audits, and compare it with the floor recorded on the base
+      # branch (tests/coverage-baseline.json, read from the base branch so a pull request cannot lower its own floor).
+      - name: Upload unit coverage summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage-${{ github.run_id }}
+          path: coverage-unit/coverage-summary.json
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Coverage ratchet (unit chain)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          base_coverage=""
+          if git cat-file -e "origin/${BASE_REF}:tests/coverage-baseline.json" 2>/dev/null; then
+            git show "origin/${BASE_REF}:tests/coverage-baseline.json" > "${RUNNER_TEMP}/base-coverage-baseline.json"
+            base_coverage="${RUNNER_TEMP}/base-coverage-baseline.json"
+          fi
+          node scripts/coverage-ratchet.js unit coverage-unit/coverage-summary.json $base_coverage
