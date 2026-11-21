@@ -18,4 +18,12 @@
 
 **Context:** coverage depends on platform (path handling, the server tests that only run on Linux or only on Windows) and on which checks pass.
 **Decision:** the numbers in `tests/coverage-baseline.json` come from the pull request's own CI artefacts, recorded in a second commit, exactly as lane moves wait for CI evidence.
+
+## D4. The unit suite counts never-loaded files (`--all`); the browser suite's measurement stays as it was (2026-11-21)
+
+**Context:** by default c8 reports only files a process actually loaded. A new source file with no unit test is never loaded by the unit chain, so it would not lower the unit percentage, and the floor would not see the exact thing it exists to catch. A local measurement of the stored raw data showed the difference: 89.82% statements without `--all`, 87.17% with it (18 source files at 0%). The browser suite's c8 report (lpw-s1) has no `--all` and already feeds a number the operator and the per-spec coverage selection have used.
+**Decision:** the unit chain runs under `c8 --all --include="src/**"`; the browser suite's existing report is not changed, and the ratchet is added after it as it stands.
+**Rationale:** the unit floor is new, so there is no history to keep comparable and it should count unloaded files; the browser number has history, and changing its denominator would silently move a metric other work reads. The browser floor still guards against losing browser tests; new untested files are caught by the unit floor.
+**Risk accepted:** the browser floor cannot see a new file that no browser test loads; recorded in the DoD. If wanted later, add `--all` to the browser report and re-record that baseline in the same pull request that says why.
+
 **Operator go-ahead (2026-11-21, "OK do it 2 and 3" after the stand-back audit):** deliver the coverage ratchet end to end; investigate the `deploy-group` lock before choosing a change.

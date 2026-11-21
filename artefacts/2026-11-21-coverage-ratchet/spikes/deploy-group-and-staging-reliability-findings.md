@@ -18,6 +18,10 @@ The audit named the lock as the main cause of unreliable staging deploys. The da
 - **The flake policy exists but is unused:** `tests/FLAKE-POLICY.md` says in-run retries are off in this repository and a rerun that passes needs a ledger entry first; `tests/e2e/flake-ledger.json` has zero entries, although the `bri-s3.3` flake has been seen at least four times. No CI step runs `scripts/flake-check.js --strict`.
 - **Current production state (for the record):** run `44843951925` (commit `ceb2d035c`) deployed to staging, passed its smoke and confirmation steps, and is waiting at "Promote to production (manual approval required)". Run `44685953879`, noted earlier as the one waiting, ended `cancelled` (superseded). Approval is the operator's.
 
+## Addendum (2026-11-21, after the cvrt-s1 merge): every code merge supersedes a waiting production promotion
+
+The staging deploy workflow includes a "Cancel superseded waiting promotions" step, so each merge to master that changes code starts a new deploy and ends the previous run's waiting "Promote to production" step as `cancelled`. Confirmed for run `44843951925` (commit `ceb2d035c`, which had passed staging smoke and the real-staging confirmation): it ended `cancelled` when the merge of #1177 landed, and the current run is `44853341112` (commit `b32c0b92c`). The earlier run `44685953879` also ended `cancelled` at its promotion step, most likely the same way, but its cause was not checked. In a stretch where merges arrive faster than the operator approves, promotion can never complete. This is a process point, not a defect: either approve a promotion before the next code merge, or batch merges and approve after the last one. No change made; it needs the operator's decision on cadence.
+
 ## Options
 
 | Option | What changes | For | Against |
