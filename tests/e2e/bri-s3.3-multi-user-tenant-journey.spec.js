@@ -122,6 +122,9 @@ async function createProduct(ctx, name) {
   return location.split('/products/')[1];
 }
 
+// sfx-s1: records how long the /admin/credits calls take and how many tenants the page renders (see the fixture).
+const { summariseAdminCreditsCall } = require('./fixtures/admin-credits-diagnostics');
+
 test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tenant', () => {
 
   test.beforeAll(async ({ request }) => {
@@ -156,10 +159,25 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
 
     // AC1: a genuinely admin-gated route (requireAdmin middleware) must
     // differentiate by role -- alice (admin) succeeds, bob (engineer) is denied.
-    const aliceAdminRes = await alice.ctx.get('/admin/credits');
+    // sfx-s1: this call has failed intermittently against staging (status not 200, or an aborted connection after a 200).
+    // Print how long it took and how many tenants it rendered, then assert exactly as before; a thrown error is logged and
+    // rethrown so a failure still fails the test.
+    const aliceStart = Date.now();
+    let aliceAdminRes;
+    let aliceBody;
+    try {
+      aliceAdminRes = await alice.ctx.get('/admin/credits');
+      aliceBody = await aliceAdminRes.text();
+    } catch (e) {
+      console.log(summariseAdminCreditsCall({ who: 'alice', status: aliceAdminRes ? aliceAdminRes.status() : undefined, elapsedMs: Date.now() - aliceStart, error: e }));
+      throw e;
+    }
+    console.log(summariseAdminCreditsCall({ who: 'alice', status: aliceAdminRes.status(), elapsedMs: Date.now() - aliceStart, body: aliceBody }));
     expect(aliceAdminRes.status()).toBe(200);
 
+    const bobStart = Date.now();
     const bobAdminRes = await bob.ctx.get('/admin/credits');
+    console.log(summariseAdminCreditsCall({ who: 'bob', status: bobAdminRes.status(), elapsedMs: Date.now() - bobStart }));
     expect(bobAdminRes.status()).toBe(403);
 
     // Verify zero real LLM calls were made
