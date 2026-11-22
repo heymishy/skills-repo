@@ -7,7 +7,7 @@
       "issue": "https://github.com/heymishy/skills-repo/issues/1181",
       "firstSeen": "2026-11-21",
       "reviewBy": "2026-12-05",
-      "note": "GET /admin/credits (spec lines 159 to 160) failed in the staging smoke step on 2026-11-19 as \"apiRequestContext.get: aborted\" after the server had answered 200 OK (run 44583265861) and on 2026-11-20 as an expect(...).toBe failure at line 160 (run 44800060471); earlier noted as a benign gateway blip on the staging host. Two attributed failures in the 2026-11-19 to 2026-11-21 window (a third smoke failure on 2026-11-19, run 44583170710, could not be attributed to a test). Cause not established. Tracking issue #1181."
+      "note": "GET /admin/credits (spec lines 159 to 160) failed in the staging smoke step on 2026-11-19 as \"apiRequestContext.get: aborted\" after the server had answered 200 OK (run 44583265861) and on 2026-11-20 as an expect(...).toBe failure at line 160 (run 44800060471); earlier noted as a benign gateway blip on the staging host. Two attributed failures in the 2026-11-19 to 2026-11-21 window (a third smoke failure on 2026-11-19, run 44583170710, could not be attributed to a test). Cause not established. Tracking issue #1181. Third attributed occurrence: on 2026-11-21 the staging smoke run 44880044029 failed this test's first attempt at line 160 (alice's GET /admin/credits was not 200) and passed on the retry, so the retry setting (sfr-s1) cleared it. From sfx-s1 the spec prints the status, elapsed time and tenant row count of each /admin/credits call."
     },
     {
       "test": "a1-staging-auth-stub.spec.js > AC1: GitHub OAuth stub creates a real staging user and a valid session",

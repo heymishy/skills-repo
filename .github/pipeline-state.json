@@ -52016,6 +52016,39 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-11-21-staging-flake-fixes",
+      "name": "The first post-deploy auth call gets a cold-start budget, and the /admin/credits call records what it needs to explain its flake",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [],
+      "guardrails": [],
+      "updatedAt": "2026-11-21T08:19:06.778Z",
+      "stories": [
+        {
+          "id": "sfx-s1",
+          "slug": "sfx-s1",
+          "name": "The first post-deploy auth call gets a cold-start budget, and the /admin/credits call records what it needs to explain its flake",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-11-21T08:19:06.778Z",
+          "blocker": "",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 18,
+            "passing": 0,
+            "artefact": "artefacts/2026-11-21-staging-flake-fixes/test-plans/sfx-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

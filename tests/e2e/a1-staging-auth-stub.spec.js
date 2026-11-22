@@ -21,6 +21,7 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
+const { evaluateBudgets, COLD_START_BUDGET_MS, WARM_BUDGET_MS } = require('./fixtures/latency-budget');
 const {
   STAGING_BASE_URL,
   hasStubSecret,
@@ -36,9 +37,11 @@ test.describe('a1-staging-safe-auth-stub', () => {
   test('AC1: GitHub OAuth stub creates a real staging user and a valid session', async ({ request }) => {
     test.skip(!hasStubSecret(), 'requires E2E_STAGING_AUTH_STUB_SECRET in the environment');
 
-    const { login, elapsedMs } = await stubGithubLogin(request);
+    // sfx-s1: in the post-deploy run this is the first request a freshly deployed app receives, so its round-trip includes
+    // the cold start (it failed the old single 5 s check on 2026-11-19, run 44468809588). The first call gets the cold-start
+    // budget; a second, warm call below keeps the 5 s NFR-Performance requirement.
+    const { login, elapsedMs: coldMs } = await stubGithubLogin(request);
     expect(login).toMatch(/^e2e-test-gh-/);
-    expect(elapsedMs, 'auth stub round-trip must complete in under 5s (NFR-Performance)').toBeLessThan(5000);
 
     // The stub call rotates the session and sets a fresh session cookie; the shared
     // `request` context carries that cookie automatically on the follow-up call.
@@ -47,6 +50,10 @@ test.describe('a1-staging-safe-auth-stub', () => {
     const me = await meRes.json();
     expect(me.authenticated, 'a valid session cookie must authenticate the follow-up request').toBe(true);
     expect(me.login).toBe(login);
+
+    const { elapsedMs: warmMs } = await stubGithubLogin(request);
+    const budgets = evaluateBudgets({ coldMs: coldMs, warmMs: warmMs });
+    expect(budgets.failures, 'auth stub round-trip budgets (NFR-Performance): cold-start ' + COLD_START_BUDGET_MS + ' ms, warm ' + WARM_BUDGET_MS + ' ms; measured cold ' + coldMs + ' ms, warm ' + warmMs + ' ms').toEqual([]);
   });
 
   test('NFR-Audit: the stub login is recorded in the audit log, keyed by the generated identity', async ({ request }) => {
