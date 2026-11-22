@@ -3598,3 +3598,13 @@ Every skill that writes `pipeline-state.json` at a checkpoint documents the same
 **What happened:** a 20-second code read pointed at a per-view GitHub fetch for about 355 features; a 15-minute read-only measurement confirmed 16 s against 0.5 s for other pages and then corrected two assumptions: the "deferred section" fix would have broken the pod rollup that shares the same data, and the 2.9 MB HTML is only 154 KB on the wire because the host already compresses it. The follow-up story built on the first read (sidebar query, page weight, log noise) turned out not to be worth building once each item was re-checked against numbers. The fix that mattered (a stale-while-revalidate cache) took the page from 16 s to under 0.5 s with no UI change.
 
 **Rule:** (1) For a performance report, take one read-only timing (and transferred size, not decoded size) before designing the fix, and a second after deploy; put both in the DoD. (2) Before building a "while we are here" companion story, re-check each item against a measurement and defer with the evidence and a named revisit trigger when it does not earn its cost. (3) Check what else consumes the data before deferring or splitting its fetch.
+---
+
+## D65 - Fix a flake at its cause when the cause is known; instrument it when it is not
+
+**Date:** 2026-11-21
+**Observed at:** `staging-flake-fixes` (sfx-s1), the two flake-ledger entries from pull request 1181.
+
+**What happened:** one flaky check (`a1` AC1) was the first request a freshly deployed app receives, so its single 5-second budget included the cold start; the fix gives that first call a 15-second cold-start budget and keeps the 5-second requirement on a second, warm call. The other (`bri-s3.3` AC1, `/admin/credits`) had no measurement of its time or tenant count, so a product change would have been a guess; the test now prints status, elapsed time and tenant row count and changes no assertion.
+
+**Rule:** (1) Split a flake's budget by the thing that causes the variance (cold versus warm) instead of raising one number. (2) For a flake whose cause is unmeasured, add evidence capture, not a retry or a speculative product fix, and record the decision in `decisions.md`. (3) A quiet retry inside a test hides the evidence; the global retry already covers a one-off.
