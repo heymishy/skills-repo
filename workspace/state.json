@@ -1,6 +1,6 @@
 {
-  "currentPhase": "2026-11-22: nine short-track stories now at definition of done (fpsr-s1, rgsr-s1, cvrt-s1, ciw-s1, dqw-s1, sfr-s1, pgb-s1, and sfx-s1 staging flake fixes, merged as pull request 1184); next story pls-s1 (products list page).",
-  "lastUpdated": "2026-11-22T06:40:01.608Z",
+  "currentPhase": "2026-11-22: nine short-track stories now at definition of done (fpsr-s1, rgsr-s1, cvrt-s1, ciw-s1, dqw-s1, sfr-s1, pgb-s1, and sfx-s1 staging flake fixes, merged as pull request 1184). The products list page (pls-s1) was already delivered and at definition of done on 2026-11-15; no next story is chosen yet.",
+  "lastUpdated": "2026-11-22T08:00:44.033Z",
   "activeFeature": "2026-11-04-inner-loop-cycle-efficiency",
   "previousFeature": "2026-10-19-real-playback-capture-automation",
   "cycle": {
@@ -53,8 +53,8 @@
   },
   "checkpoint": {
     "writtenAt": "2026-11-22",
-    "contextAtWrite": "sfx-s1 merged (pull request 1184, commit 14913039d) and its definition of done written. Staging deploy run 44992728956 (commit 14913039d) passed deploy, smoke and the real-staging confirmation and is waiting for the operator to approve the production promotion. The previous promotion, run 44884053350, completed successfully on 2026-11-22 under the new guard.",
-    "resumeInstruction": "Next: (1) operator approves or declines staging run 44992728956 (the agent never approves a promotion); (2) remove .worktrees/sfx-s1 (rmdir the node_modules junction first, with approval); (3) /branch-setup for pls-s1 (DoR signed off 2026-11-15; artefacts/2026-11-15-products-list-page), then the inner loop to a draft pull request (operator merges). Do not change repo settings, force-push, or approve a promotion.",
+    "contextAtWrite": "sfx-s1 merged (pull request 1184, commit 14913039d) and its definition of done written. Staging deploy run 44992728956 (commit 14913039d) passed deploy, smoke and the real-staging confirmation and is waiting for the operator to approve the production promotion. The previous promotion, run 44884053350, completed successfully on 2026-11-22 under the new guard. The .worktrees/sfx-s1 worktree was removed (junction first; main node_modules intact); the merged local branch fix/sfx-s1-staging-flake-fixes remains.",
+    "resumeInstruction": "Next: (1) operator approves or declines staging run 44992728956 (the agent never approves a promotion); (2) the operator chooses the next story: pls-s1 is already complete (pull request 1104, definition of done 2026-11-15), so the earlier \"next: pls-s1\" notes were stale; (3) optional: delete the merged local branch fix/sfx-s1-staging-flake-fixes and the old worktrees (junction first). Do not change repo settings, force-push, or approve a promotion.",
     "pendingActions": [
       "Operator: approve or decline staging deploy run 44992728956 (commit 14913039d, the sfx-s1 merge); it has passed deploy, smoke and the real-staging confirmation and waits at the production step.",
       "Operator: review the two flake-ledger entries in tests/e2e/flake-ledger.json by 2026-12-05 (the check-flk-s1 test goes red from 2026-12-06 unless they are fixed, removed or renewed); sfx-s1 addresses both.",
